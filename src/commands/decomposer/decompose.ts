@@ -4,16 +4,13 @@ import * as xml2js from 'xml2js';
 
 import { SfCommand, Flags } from '@salesforce/sf-plugins-core';
 import { Messages } from '@salesforce/core';
-import {
-        METADATA_DIR_DEFAULT_VALUE, 
-        XML_HEADER,
-      } from '../../helpers/constants.js';
+import { METADATA_DIR_DEFAULT_VALUE, XML_HEADER } from '../../helpers/constants.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('sfdx-decomposer', 'decomposer.decompose');
 const metadataJsonPath = 'src/metadata/metadata.json';
 const jsonData: Metadata[] = JSON.parse(fs.readFileSync(metadataJsonPath, 'utf-8'));
-const metaSuffixOptions = jsonData.map((item: any) => item.metaSuffix);
+const metaSuffixOptions = jsonData.map((item: Metadata) => item.metaSuffix);
 
 export type DecomposerDecomposeResult = {
   path: string;
@@ -54,10 +51,10 @@ export default class DecomposerDecompose extends SfCommand<DecomposerDecomposeRe
     const metaAttributes = getAttributesForMetadataType(jsonData, metadataTypeToRetrieve);
 
     if (metaAttributes) {
-      const metaSuffix = metaAttributes['metaSuffix'];
-      const directoryName = metaAttributes['directoryName'];
-      const fieldNames = metaAttributes['fieldNames'];
-      const xmlElement = metaAttributes['xmlElement'];
+      const metaSuffix = metaAttributes.metaSuffix;
+      const directoryName = metaAttributes.directoryName;
+      const fieldNames = metaAttributes.fieldNames;
+      const xmlElement = metaAttributes.xmlElement;
       const metadataPath = `${dxDirectory}/${directoryName}`;
       this.parseMetadataFiles(metadataPath, metaSuffix, fieldNames, xmlElement);
     } else {
@@ -79,7 +76,7 @@ export default class DecomposerDecompose extends SfCommand<DecomposerDecomposeRe
         const xmlContent = fs.readFileSync(filePath, 'utf-8');
         const baseName = path.basename(filePath, `.${metaSuffix}-meta.xml`);
         const outputPath = path.join(metadataPath, metaSuffix === 'labels' ? '' : baseName);
-        xml2jsParser(xmlContent, outputPath, fieldNames, xmlElement, baseName, metaSuffix)
+        xml2jsParser(xmlContent, outputPath, fieldNames, xmlElement, baseName, metaSuffix);
       }
     });
   }
@@ -92,7 +89,7 @@ interface Metadata {
   fieldNames: string;
 }
 
-function getAttributesForMetadataType(jsonData: Metadata[], metadataType: string) {
+function getAttributesForMetadataType(jsonData: Metadata[], metadataType: string): Metadata | null {
   const metadata = jsonData.find((item) => item.metaSuffix === metadataType);
 
   if (metadata) {
@@ -101,7 +98,15 @@ function getAttributesForMetadataType(jsonData: Metadata[], metadataType: string
   return null;
 }
 
-function xml2jsParser(xmlString: string, metadataPath: string, fieldNames: string, xmlElement: string, baseName: string, metaSuffix: string, indent: string = '    '): void {
+function xml2jsParser(
+  xmlString: string,
+  metadataPath: string,
+  fieldNames: string,
+  xmlElement: string,
+  baseName: string,
+  metaSuffix: string,
+  indent: string = '    '
+): void {
   const parser = new xml2js.Parser({ explicitArray: false });
 
   parser.parseString(xmlString, (err, result) => {
@@ -202,8 +207,12 @@ function findFieldName(element: any, fieldNames: string): string | undefined {
   return undefined;
 }
 
-function printChildElements(element: any, parentKey: string | null = null, xmlContent: string, indent: string = '    '): string {
-
+function printChildElements(
+  element: any,
+  parentKey: string | null = null,
+  xmlContent: string,
+  indent: string = '    '
+): string {
   // Recursive function to handle nested elements
   function processElement(element: any, parentKey: string | null = null, currentIndent: string = ''): void {
     if (typeof element === 'object') {
