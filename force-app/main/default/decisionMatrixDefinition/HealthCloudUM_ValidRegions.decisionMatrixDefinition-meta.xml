@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DecisionMatrixDefinition xmlns="http://soap.sforce.com/2006/04/metadata">
+    <versions>
+        <fullName>HealthCloudUM_ValidRegions_V1</fullName>
+        <columns>
+            <columnType>Input</columnType>
+            <dataType>Text</dataType>
+            <displaySequence>2</displaySequence>
+            <isWildcardColumn>false</isWildcardColumn>
+            <name>State</name>
+        </columns>
+        <columns>
+            <columnType>Input</columnType>
+            <dataType>Text</dataType>
+            <displaySequence>1</displaySequence>
+            <isWildcardColumn>false</isWildcardColumn>
+            <name>City</name>
+        </columns>
+        <columns>
+            <columnType>Output</columnType>
+            <dataType>Boolean</dataType>
+            <displaySequence>3</displaySequence>
+            <isWildcardColumn>false</isWildcardColumn>
+            <name>IsValid</name>
+        </columns>
+        <decisionMatrixDefinition>HealthCloudUM_ValidRegions</decisionMatrixDefinition>
+        <label>HealthCloudUM_ValidRegions V1</label>
+        <startDate>2022-05-02T13:04:06.000Z</startDate>
+        <status>Draft</status>
+        <versionNumber>1</versionNumber>
+    </versions>
+    <label>HealthCloudUM_ValidRegions</label>
+    <type>Standard</type>
+</DecisionMatrixDefinition>

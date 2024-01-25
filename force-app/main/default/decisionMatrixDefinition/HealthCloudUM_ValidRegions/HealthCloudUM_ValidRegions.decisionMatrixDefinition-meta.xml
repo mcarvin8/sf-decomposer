@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DecisionMatrixDefinition>
+    <label>HealthCloudUM_ValidRegions</label>
+    <type>Standard</type>
+</DecisionMatrixDefinition>

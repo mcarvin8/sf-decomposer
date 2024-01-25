@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <objectPermissions>
+        <allowCreate>true</allowCreate>
+        <allowDelete>true</allowDelete>
+        <allowEdit>true</allowEdit>
+        <allowRead>true</allowRead>
+        <viewAllRecords>true</viewAllRecords>
+        <modifyAllRecords>true</modifyAllRecords>
+        <object>Job_Request__c</object>
+    </objectPermissions>

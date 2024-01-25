@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Profile xmlns="http://soap.sforce.com/2006/04/metadata">
+    <applicationVisibilities>
+        <application>PubApps__Myriad_Publishing</application>
+        <default>false</default>
+        <visible>true</visible>
+    </applicationVisibilities>
+    <objectPermissions>
+        <object>TestWeblinks__c</object>
+    </objectPermissions>
+    <recordTypeVisibilities>
+        <default>true</default>
+        <recordType>TestWeblinks__c.My First Recordtype</recordType>
+        <visible>true</visible>
+    </recordTypeVisibilities>
+    <tabVisibilities>
+        <tab>Myriad Publications</tab>
+        <visibility>DefaultOn</visibility>
+    </tabVisibilities>
+    <userPermissions>
+        <enabled>true</enabled>
+        <name>APIEnabled</name>
+    </userPermissions>
+    <custom>true</custom>
+</Profile>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <assignments>
+        <name>Set_Contact_ID</name>
+        <label>Set Contact ID</label>
+        <locationX>50</locationX>
+        <locationY>674</locationY>
+        <assignmentItems>
+            <assignToReference>contact.Id</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>existingId</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Update_Contact</targetReference>
+        </connector>
+    </assignments>

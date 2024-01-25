@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <fieldUpdates>
+        <fullName>Field_Update</fullName>
+        <description>TestField update desc</description>
+        <field>Name</field>
+        <formula>Name & "Updated"</formula>
+        <name>Field Update</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Formula</operation>
+        <protected>false</protected>
+    </fieldUpdates>

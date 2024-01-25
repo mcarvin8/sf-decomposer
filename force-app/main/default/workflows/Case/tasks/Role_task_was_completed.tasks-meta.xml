@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <tasks>
+        <fullName>Role_task_was_completed</fullName>
+        <assignedTo>R11</assignedTo>
+        <assignedToType>role</assignedToType>
+        <dueDateOffset>-2</dueDateOffset>
+        <notifyAssignee>true</notifyAssignee>
+        <offsetFromField>CustomObjectForWorkflow__c.CreatedDate</offsetFromField>
+        <priority>High</priority>
+        <protected>false</protected>
+        <status>Completed</status>
+        <subject>Role task was completed</subject>
+    </tasks>

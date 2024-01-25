@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <recordLookups>
+        <name>Find_a_Match</name>
+        <label>Find a Match</label>
+        <locationX>182</locationX>
+        <locationY>458</locationY>
+        <assignNullValuesIfNoRecordsFound>true</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Update_or_Create</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>FirstName</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>contact.FirstName</elementReference>
+            </value>
+        </filters>
+        <filters>
+            <field>LastName</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>contact.LastName</elementReference>
+            </value>
+        </filters>
+        <object>Contact</object>
+        <outputAssignments>
+            <assignToReference>existingId</assignToReference>
+            <field>Id</field>
+        </outputAssignments>
+    </recordLookups>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <alerts>
+        <fullName>Another_alert</fullName>
+        <description>Another alert</description>
+        <protected>false</protected>
+        <recipients>
+            <type>accountOwner</type>
+        </recipients>
+        <recipients>
+            <field>Contact__c</field>
+            <type>contactLookup</type>
+        </recipients>
+        <recipients>
+            <field>Email__c</field>
+            <type>email</type>
+        </recipients>
+        <template>TestEmail/Email Test</template>
+    </alerts>

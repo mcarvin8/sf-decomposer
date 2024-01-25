@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <tasks>
+        <fullName>Another_task_was_completed</fullName>
+        <assignedToType>owner</assignedToType>
+        <description>Random Comment</description>
+        <dueDateOffset>20</dueDateOffset>
+        <notifyAssignee>true</notifyAssignee>
+        <priority>High</priority>
+        <protected>false</protected>
+        <status>Completed</status>
+        <subject>Another task was completed</subject>
+    </tasks>

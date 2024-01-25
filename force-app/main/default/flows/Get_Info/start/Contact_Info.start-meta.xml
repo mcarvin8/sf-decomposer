@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <start>
+        <locationX>254</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Contact_Info</targetReference>
+        </connector>
+    </start>

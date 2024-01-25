@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <textTemplates>
+        <name>chatterMessage</name>
+        <isViewedAsPlainText>false</isViewedAsPlainText>
+        <text>The contact was {!created_or_updated}.</text>
+    </textTemplates>

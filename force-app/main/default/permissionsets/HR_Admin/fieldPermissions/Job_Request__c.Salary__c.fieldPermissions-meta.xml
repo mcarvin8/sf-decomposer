@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Job_Request__c.Salary__c</field>
+        <readable>true</readable>
+    </fieldPermissions>

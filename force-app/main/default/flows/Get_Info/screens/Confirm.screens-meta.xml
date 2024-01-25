@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <screens>
+        <name>Confirm</name>
+        <label>Confirm</label>
+        <locationX>50</locationX>
+        <locationY>998</locationY>
+        <allowBack>false</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>true</allowPause>
+        <fields>
+            <name>confirmation_message</name>
+            <fieldText>Thanks! <a href="/{!contact.Id}">The contact</a> was {!created_or_updated}.</fieldText>
+            <fieldType>DisplayText</fieldType>
+        </fields>
+        <showFooter>true</showFooter>
+        <showHeader>true</showHeader>
+    </screens>

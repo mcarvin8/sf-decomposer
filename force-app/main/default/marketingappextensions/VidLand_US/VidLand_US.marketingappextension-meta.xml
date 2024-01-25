@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<MarketingAppExtension>
+    <description>VidLand extension for US region</description>
+    <isActive>true</isActive>
+    <masterLabel>VidLand_US</masterLabel>
+</MarketingAppExtension>

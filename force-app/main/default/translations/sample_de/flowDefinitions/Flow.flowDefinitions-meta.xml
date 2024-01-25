@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <flowDefinitions>
+        <label>Flow Label!</label>
+        <fullName>Flow</fullName>
+            <flows>
+        <fullName>Flow Version</fullName>
+        <label>Flow version Label</label>
+    </flows>
+    </flowDefinitions>

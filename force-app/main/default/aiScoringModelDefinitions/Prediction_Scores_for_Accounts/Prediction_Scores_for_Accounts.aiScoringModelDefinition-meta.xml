@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AIScoringModelDefinition>
+    <aiModelConfig>Prediction_Scores_for_Accounts</aiModelConfig>
+    <description>Test for metadata</description>
+    <masterLabel>Test</masterLabel>
+</AIScoringModelDefinition>

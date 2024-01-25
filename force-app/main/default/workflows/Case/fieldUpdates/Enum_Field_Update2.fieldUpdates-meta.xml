@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <fieldUpdates>
+        <fullName>Enum_Field_Update2</fullName>
+        <description>Blah</description>
+        <field>EnumField__c</field>
+        <literalValue>PLX2</literalValue>
+        <name>Enum Field Update2</name>
+        <notifyAssignee>true</notifyAssignee>
+        <operation>Literal</operation>
+        <protected>false</protected>
+    </fieldUpdates>

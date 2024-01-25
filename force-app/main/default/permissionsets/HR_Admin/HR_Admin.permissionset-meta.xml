@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PermissionSet>
+    <description>Grants all rights needed for an HR administrator to manage employees.</description>
+    <label>HR Administration</label>
+    <userLicense>Salesforce</userLicense>
+</PermissionSet>

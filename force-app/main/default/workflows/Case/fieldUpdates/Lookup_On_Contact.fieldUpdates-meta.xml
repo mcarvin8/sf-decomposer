@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <fieldUpdates>
+        <fullName>Lookup_On_Contact</fullName>
+        <field>RealOwner__c</field>
+        <lookupValue>admin@acme.com</lookupValue>
+        <name>Lookup On Contact</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>LookupValue</operation>
+        <protected>false</protected>
+    </fieldUpdates>

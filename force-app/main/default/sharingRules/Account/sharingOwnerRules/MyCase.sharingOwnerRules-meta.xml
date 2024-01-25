@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <sharingOwnerRules>
+        <fullName>MyCase</fullName>
+        <accessLevel>Edit</accessLevel>
+        <description>my case test owner sharing rule desc</description>
+        <label>MyCase</label>
+            <sharedFrom>
+        <role>COO</role>
+    </sharedFrom>
+            <sharedTo>
+        <role>CEO</role>
+    </sharedTo>
+    </sharingOwnerRules>

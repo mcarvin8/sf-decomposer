@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SharingRules xmlns="http://soap.sforce.com/2006/04/metadata">
+    <sharingCriteriaRules>
+        <fullName>AccountCriteriaShareWithCEO</fullName>
+        <accessLevel>Edit</accessLevel>
+        <accountSettings>
+            <caseAccessLevel>Read</caseAccessLevel>
+            <contactAccessLevel>Edit</contactAccessLevel>
+            <opportunityAccessLevel>Edit</opportunityAccessLevel>
+        </accountSettings>
+        <criteriaItems>
+            <field>Name</field>
+            <operation>startsWith</operation>
+            <value>Test</value>
+        </criteriaItems>
+        <description>my account criteria rule description</description>
+        <label>AccountCriteriaShareWithCEO</label>
+        <sharedTo>
+            <role>CEO</role>
+        </sharedTo>
+    </sharingCriteriaRules>
+    <sharingOwnerRules>
+        <fullName>MyCase</fullName>
+        <accessLevel>Edit</accessLevel>
+        <description>my case test owner sharing rule desc</description>
+        <label>MyCase</label>
+        <sharedFrom>
+            <role>COO</role>
+        </sharedFrom>
+        <sharedTo>
+            <role>CEO</role>
+        </sharedTo>
+    </sharingOwnerRules>
+    <sharingTerritoryRules>
+        <fullName>MyAccountTerritoryRule</fullName>
+        <accessLevel>Read</accessLevel>
+        <accountSettings>
+            <caseAccessLevel>None</caseAccessLevel>
+            <contactAccessLevel>Read</contactAccessLevel>
+            <opportunityAccessLevel>None</opportunityAccessLevel>
+        </accountSettings>
+        <description>MyAccountTerritoryRule desc</description>
+        <label>MyAccountTerritoryRule</label>
+        <sharedFrom>
+            <territory>My_territory</territory>
+        </sharedFrom>
+        <sharedTo>
+            <role>CEO</role>
+        </sharedTo>
+    </sharingTerritoryRules>
+</SharingRules>
