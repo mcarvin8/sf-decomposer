@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AIScoringModelDefinition xmlns="http://soap.sforce.com/2006/04/metadata">
+    <aiScoringModelDefVersions>
+        <fullName>V1</fullName>
+        <aiScoringModelDefinition>Test</aiScoringModelDefinition>
+        <aiScoringSteps>
+            <aiModelConfigStep>Prediction_Scores_for_Accounts.GrainSelector</aiModelConfigStep>
+            <stepDetail>{label:Account,name:Account}</stepDetail>
+        </aiScoringSteps>
+        <aiScoringSteps>
+            <aiModelConfigStep>Prediction_Scores_for_Accounts.AugmentedDataset</aiModelConfigStep>
+        </aiScoringSteps>
+        <aiScoringSteps>
+            <aiModelConfigStep>Prediction_Scores_for_Accounts.TargetConditionBuilder</aiModelConfigStep>
+            <stepDetail>{specificOutcomeDefined:Yes,label:Financial accounts are associated with an account,name:FA_Target}</stepDetail>
+        </aiScoringSteps>
+        <aiScoringSteps>
+            <aiModelConfigStep>Prediction_Scores_for_Accounts.InputVariableSelector</aiModelConfigStep>
+        </aiScoringSteps>
+        <aiScoringSteps>
+            <aiModelConfigStep>Prediction_Scores_for_Accounts.CustomFilter</aiModelConfigStep>
+        </aiScoringSteps>
+        <aiScoringSteps>
+            <aiModelConfigStep>Prediction_Scores_for_Accounts.WriteBackConnector</aiModelConfigStep>
+        </aiScoringSteps>
+        <developerName>V1</developerName>
+        <masterLabel>V1</masterLabel>
+        <modelMode>TRAIN_AND_DEPLOY</modelMode>
+    </aiScoringModelDefVersions>
+    <aiModelConfig>Prediction_Scores_for_Accounts</aiModelConfig>
+    <description>Test for metadata</description>
+    <masterLabel>Test</masterLabel>
+</AIScoringModelDefinition>

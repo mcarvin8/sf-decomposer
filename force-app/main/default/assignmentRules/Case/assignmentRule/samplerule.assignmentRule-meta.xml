@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <assignmentRule>
+        <fullName>samplerule</fullName>
+        <active>false</active>
+        <ruleEntry>
+            <assignedTo>testUser@org.com</assignedTo>
+            <assignedToType>User</assignedToType>
+            <criteriaItems>
+                <field>Case.IsEscalated</field>
+                <operation>equals</operation>
+                <value>True</value>
+            </criteriaItems>
+            <template>emailtemplate</template>
+        </ruleEntry>
+    </assignmentRule>

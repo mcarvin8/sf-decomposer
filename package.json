@@ -1,0 +1,182 @@
+{
+  "name": "sfdx-decomposer",
+  "description": "Decomposes Salesforce metadata into more manageable files.",
+  "version": "1.0.0",
+  "dependencies": {
+    "@oclif/core": "^3.18.1",
+    "@salesforce/core": "^6.4.7",
+    "@salesforce/sf-plugins-core": "^7.1.3"
+  },
+  "devDependencies": {
+    "@oclif/plugin-command-snapshot": "^5.0.2",
+    "@salesforce/cli-plugins-testkit": "^5.1.7",
+    "@salesforce/dev-scripts": "^8.3.0",
+    "@types/xml2js": "^0.4.14",
+    "eslint-plugin-sf-plugin": "^1.17.2",
+    "oclif": "^4.3.4",
+    "shx": "0.3.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "/lib",
+    "/messages",
+    "/oclif.manifest.json",
+    "/oclif.lock"
+  ],
+  "keywords": [
+    "force",
+    "salesforce",
+    "salesforcedx",
+    "sf",
+    "sf-plugin",
+    "sfdx",
+    "sfdx-plugin"
+  ],
+  "license": "BSD-3-Clause",
+  "oclif": {
+    "commands": "./lib/commands",
+    "bin": "sf",
+    "topicSeparator": " ",
+    "devPlugins": [
+      "@oclif/plugin-help"
+    ],
+    "topics": {
+      "hello": {
+        "description": "Commands to say hello."
+      },
+      "decomposer": {
+        "description": "description for decomposer"
+      }
+    },
+    "flexibleTaxonomy": true
+  },
+  "scripts": {
+    "build": "wireit",
+    "clean": "sf-clean",
+    "clean-all": "sf-clean all",
+    "clean:lib": "shx rm -rf lib && shx rm -rf coverage && shx rm -rf .nyc_output && shx rm -f oclif.manifest.json oclif.lock",
+    "compile": "wireit",
+    "docs": "sf-docs",
+    "format": "wireit",
+    "lint": "wireit",
+    "postinstall": "yarn husky install",
+    "postpack": "shx rm -f oclif.manifest.json oclif.lock",
+    "prepack": "sf-prepack",
+    "test": "wireit",
+    "test:nuts": "nyc mocha \"**/*.nut.ts\" --slow 4500 --timeout 600000 --parallel",
+    "test:only": "wireit",
+    "version": "oclif readme"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "wireit": {
+    "build": {
+      "dependencies": [
+        "compile",
+        "lint"
+      ]
+    },
+    "compile": {
+      "command": "tsc -p . --pretty --incremental",
+      "files": [
+        "src/**/*.ts",
+        "**/tsconfig.json",
+        "messages/**"
+      ],
+      "output": [
+        "lib/**",
+        "*.tsbuildinfo"
+      ],
+      "clean": "if-file-deleted"
+    },
+    "format": {
+      "command": "prettier --write \"+(src|test|schemas)/**/*.+(ts|js|json)|command-snapshot.json\"",
+      "files": [
+        "src/**/*.ts",
+        "test/**/*.ts",
+        "schemas/**/*.json",
+        "command-snapshot.json",
+        ".prettier*"
+      ],
+      "output": []
+    },
+    "lint": {
+      "command": "eslint src test --color --cache --cache-location .eslintcache",
+      "files": [
+        "src/**/*.ts",
+        "test/**/*.ts",
+        "messages/**",
+        "**/.eslint*",
+        "**/tsconfig.json"
+      ],
+      "output": []
+    },
+    "test:compile": {
+      "command": "tsc -p \"./test\" --pretty",
+      "files": [
+        "test/**/*.ts",
+        "**/tsconfig.json"
+      ],
+      "output": []
+    },
+    "test": {
+      "dependencies": [
+        "test:compile",
+        "test:only",
+        "lint"
+      ]
+    },
+    "test:only": {
+      "command": "nyc mocha \"test/**/*.test.ts\"",
+      "env": {
+        "FORCE_COLOR": "2"
+      },
+      "files": [
+        "test/**/*.ts",
+        "src/**/*.ts",
+        "**/tsconfig.json",
+        ".mocha*",
+        "!*.nut.ts",
+        ".nycrc"
+      ],
+      "output": []
+    },
+    "test:command-reference": {
+      "command": "\"./bin/dev\" commandreference:generate --erroronwarnings",
+      "files": [
+        "src/**/*.ts",
+        "messages/**",
+        "package.json"
+      ],
+      "output": [
+        "tmp/root"
+      ]
+    },
+    "test:deprecation-policy": {
+      "command": "\"./bin/dev\" snapshot:compare",
+      "files": [
+        "src/**/*.ts"
+      ],
+      "output": [],
+      "dependencies": [
+        "compile"
+      ]
+    },
+    "test:json-schema": {
+      "command": "\"./bin/dev\" schema:compare",
+      "files": [
+        "src/**/*.ts",
+        "schemas"
+      ],
+      "output": []
+    }
+  },
+  "exports": "./lib/index.js",
+  "type": "module",
+  "author": "Matt Carvin"
+}

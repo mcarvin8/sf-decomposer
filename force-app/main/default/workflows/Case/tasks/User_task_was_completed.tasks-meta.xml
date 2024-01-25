@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <tasks>
+        <fullName>User_task_was_completed</fullName>
+        <assignedTo>admin@acme.com</assignedTo>
+        <assignedToType>user</assignedToType>
+        <dueDateOffset>-2</dueDateOffset>
+        <notifyAssignee>true</notifyAssignee>
+        <offsetFromField>User.CreatedDate</offsetFromField>
+        <priority>High</priority>
+        <protected>false</protected>
+        <status>Completed</status>
+        <subject>User task was completed</subject>
+    </tasks>

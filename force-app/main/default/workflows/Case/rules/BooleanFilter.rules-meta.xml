@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <rules>
+        <fullName>BooleanFilter</fullName>
+        <active>false</active>
+        <booleanFilter>1 AND 2 OR 3</booleanFilter>
+        <criteriaItems>
+            <field>CustomObjectForWorkflow__c.CreatedById</field>
+            <operation>notEqual</operation>
+        </criteriaItems>
+        <criteriaItems>
+            <field>CustomObjectForWorkflow__c.CreatedById</field>
+            <operation>notEqual</operation>
+            <value>abc</value>
+        </criteriaItems>
+        <criteriaItems>
+            <field>CustomObjectForWorkflow__c.CreatedById</field>
+            <operation>equals</operation>
+            <value>xyz</value>
+        </criteriaItems>
+        <triggerType>onCreateOrTriggeringUpdate</triggerType>
+    </rules>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <autoResponseRule>
+        <fullName>leadtest2</fullName>
+        <active>false</active>
+        <ruleEntry>
+            <criteriaItems>
+                <field>Lead.Account</field>
+                <operation>contains</operation>
+                <value>testing</value>
+            </criteriaItems>
+            <senderEmail>test@test.org</senderEmail>
+            <senderName>tester name j</senderName>
+            <replyToEmail>test@@test.org</replyToEmail>
+            <template>emailtemplate</template>
+        </ruleEntry>
+    </autoResponseRule>

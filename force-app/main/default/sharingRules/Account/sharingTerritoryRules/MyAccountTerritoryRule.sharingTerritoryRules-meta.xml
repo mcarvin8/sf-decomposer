@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <sharingTerritoryRules>
+        <fullName>MyAccountTerritoryRule</fullName>
+        <accessLevel>Read</accessLevel>
+            <accountSettings>
+        <caseAccessLevel>None</caseAccessLevel>
+        <contactAccessLevel>Read</contactAccessLevel>
+        <opportunityAccessLevel>None</opportunityAccessLevel>
+    </accountSettings>
+        <description>MyAccountTerritoryRule desc</description>
+        <label>MyAccountTerritoryRule</label>
+            <sharedFrom>
+        <territory>My_territory</territory>
+    </sharedFrom>
+            <sharedTo>
+        <role>CEO</role>
+    </sharedTo>
+    </sharingTerritoryRules>

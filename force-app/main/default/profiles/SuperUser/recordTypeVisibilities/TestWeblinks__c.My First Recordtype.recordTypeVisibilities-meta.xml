@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <recordTypeVisibilities>
+        <default>true</default>
+        <recordType>TestWeblinks__c.My First Recordtype</recordType>
+        <visible>true</visible>
+    </recordTypeVisibilities>

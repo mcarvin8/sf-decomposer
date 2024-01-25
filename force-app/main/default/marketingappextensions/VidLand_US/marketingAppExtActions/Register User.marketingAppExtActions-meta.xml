@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <marketingAppExtActions>
+        <_>
+        
+        
+        
+        
+    >
+        
+        
+        
+        
+    </_>
+        <marketingAppExtension>VidLand_US</marketingAppExtension>
+        <apiName>register_user</apiName>
+        <isActive>true</isActive>
+        <description>Register User for VidLand</description>
+        <actionSelector>VidLand_Register_User</actionSelector>
+        <actionSchema>
+   				{
+	"properties": {
+	  "UserId": {
+		"type": "string",
+		"title": ""
+	  },
+	  "WebinarId": {
+		"type": "string",
+		"value": "webinarIdXYZ"
+	  }
+	},
+	"view": {
+	  "components": [{
+		"definition": "lightning/control",
+		"scope": "#/properties/UserId"
+	  }]
+	},
+	"required": [
+	  "UserId",
+	  "WebinarId",
+	  "From",
+	  "Body"
+	]
+  }
+        </actionSchema>
+        <actionParams>
+   				{
+	"isStandard": false,
+    "type": "apex"
+  }
+        </actionParams>
+        <actionName>Register User</actionName>
+    </marketingAppExtActions>

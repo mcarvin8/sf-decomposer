@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <formulas>
+        <name>created_or_updated</name>
+        <dataType>String</dataType>
+        <expression>IF({!Create_Contact}, "created", "updated")</expression>
+    </formulas>

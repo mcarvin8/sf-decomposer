@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <variables>
+        <name>updateExisting</name>
+        <dataType>Boolean</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+    </variables>

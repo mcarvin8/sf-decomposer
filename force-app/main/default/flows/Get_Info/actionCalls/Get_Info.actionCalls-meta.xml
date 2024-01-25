@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <actionCalls>
+        <name>Get_Info</name>
+        <label>Get Info</label>
+        <locationX>380</locationX>
+        <locationY>242</locationY>
+        <actionName>GetFirstFromCollection</actionName>
+        <actionType>apex</actionType>
+        <connector>
+            <targetReference>Update_If_Existing</targetReference>
+        </connector>
+        <dataTypeMappings>
+            <typeName>T__inputCollection</typeName>
+            <typeValue>Account</typeValue>
+        </dataTypeMappings>
+        <dataTypeMappings>
+            <typeName>U__outputMember</typeName>
+            <typeValue>Account</typeValue>
+        </dataTypeMappings>
+        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>inputCollection</name>
+            <value>
+                <elementReference>accts.accounts</elementReference>
+            </value>
+        </inputParameters>
+        <nameSegment>GetFirstFromCollection</nameSegment>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+        <versionSegment>1</versionSegment>
+    </actionCalls>

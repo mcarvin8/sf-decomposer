@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow>
+    <apiVersion>49.0</apiVersion>
+    <environments>Default</environments>
+    <interviewLabel>New Contact {!$Flow.CurrentDateTime}</interviewLabel>
+    <isAdditionalPermissionRequiredToRun>true</isAdditionalPermissionRequiredToRun>
+    <isTemplate>true</isTemplate>
+    <label>New Contact</label>
+    <processType>Flow</processType>
+    <status>Draft</status>
+</Flow>
