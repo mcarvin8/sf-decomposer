@@ -93,19 +93,8 @@ export default class DecomposerCompose extends SfCommand<DecomposerComposeResult
     if (metaSuffix === 'labels') {
       const combinedXmlContents: string[] = processFilesInDirectory(metadataPath);
       const filePath = path.join(metadataPath, CUSTOM_LABELS_FILE);
-      // Combine XML contents into a single string
-      let finalXmlContent = combinedXmlContents.join('\n');
-      
-      // Remove duplicate XML declarations
-      finalXmlContent = finalXmlContent.replace(/<\?xml version="1.0" encoding="UTF-8"\?>/g, '');
 
-      // Remove duplicate occurrences of the XML element tags
-      finalXmlContent = finalXmlContent.replace(`<${xmlElement}>`, '');
-      finalXmlContent = finalXmlContent.replace(`</${xmlElement}>`, '');
-      finalXmlContent = finalXmlContent.replace(/(\n\s*){2,}/g, `\n${INDENT}`);
-
-      fs.writeFileSync(filePath, `${XML_HEADER}\n<${xmlElement} ${NAMESPACE}>${finalXmlContent}</${xmlElement}>`);
-      this.log(`Created composed file: ${filePath}`);
+      composeAndWriteFile(combinedXmlContents, filePath, xmlElement);
     } else {
       const subdirectories = fs.readdirSync(metadataPath)
         .map((file) => path.join(metadataPath, file))
@@ -117,19 +106,7 @@ export default class DecomposerCompose extends SfCommand<DecomposerComposeResult
         const subdirectoryBasename = path.basename(subdirectory)
         const filePath = path.join(metadataPath, `${subdirectoryBasename}.${metaSuffix}-meta.xml`);
 
-        // Combine XML contents into a single string
-        let finalXmlContent = combinedXmlContents.join('\n');
-  
-        // Remove duplicate XML declarations
-        finalXmlContent = finalXmlContent.replace(/<\?xml version="1.0" encoding="UTF-8"\?>/g, '');
-
-        // Remove duplicate occurrences of the XML element tags
-        finalXmlContent = finalXmlContent.replace(`<${xmlElement}>`, '');
-        finalXmlContent = finalXmlContent.replace(`</${xmlElement}>`, '');
-        finalXmlContent = finalXmlContent.replace(/(\n\s*){2,}/g, `\n${INDENT}`);
-
-        fs.writeFileSync(filePath, `${XML_HEADER}\n<${xmlElement} ${NAMESPACE}>${finalXmlContent}</${xmlElement}>`);
-        this.log(`Created composed file: ${filePath}`);
+        composeAndWriteFile(combinedXmlContents, filePath, xmlElement);
       });
     }
   }
@@ -147,4 +124,31 @@ function getAttributesForMetadataType(jsonData: Metadata[], metadataType: string
     return metadata;
   }
   return null;
+}
+
+function composeAndWriteFile(combinedXmlContents: string[], filePath: string, xmlElement: string): void {
+  // Combine XML contents into a single string
+  let finalXmlContent = combinedXmlContents.join('\n');
+
+  // Remove duplicate XML declarations
+  finalXmlContent = finalXmlContent.replace(/<\?xml version="1.0" encoding="UTF-8"\?>/g, '');
+
+  // Remove duplicate parent elements
+  finalXmlContent = finalXmlContent.replace(`<${xmlElement}>`, '');
+  finalXmlContent = finalXmlContent.replace(`</${xmlElement}>`, '');
+
+  // Ensure special characters are replaced with the right HTML entity
+  finalXmlContent = finalXmlContent.replace(/&/g, '&amp;');
+  finalXmlContent = finalXmlContent.replace(/"/g, '&quot;');
+  finalXmlContent = finalXmlContent.replace(/<>/g, '&lt;&gt;');
+  finalXmlContent = finalXmlContent.replace(/ >= /g, ' &gt;= ');
+  finalXmlContent = finalXmlContent.replace(/ <= /g, ' &lt;= ');
+  finalXmlContent = finalXmlContent.replace(/ < /g, ' &lt; ');
+  finalXmlContent = finalXmlContent.replace(/ > /g, ' &gt; ');
+
+  // Remove extra newlines
+  finalXmlContent = finalXmlContent.replace(/(\n\s*){2,}/g, `\n${INDENT}`);
+
+  fs.writeFileSync(filePath, `${XML_HEADER}\n<${xmlElement} ${NAMESPACE}>${finalXmlContent}</${xmlElement}>`);
+  console.log(`Created composed file: ${filePath}`);
 }
