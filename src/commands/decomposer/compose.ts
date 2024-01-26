@@ -68,7 +68,14 @@ export default class DecomposerCompose extends SfCommand<DecomposerComposeResult
     const processFilesInDirectory = (dirPath: string): string[] => {
       const combinedXmlContents: string[] = [];
       const files = fs.readdirSync(dirPath);
-  
+
+      // Sort files based on the name
+      files.sort((fileA, fileB) => {
+        const fullNameA = fileA.split('.')[0].toLowerCase();
+        const fullNameB = fileB.split('.')[0].toLowerCase();
+        return fullNameA.localeCompare(fullNameB);
+      });
+
       files.forEach((file) => {
         const filePath = path.join(dirPath, file);
   
@@ -148,8 +155,7 @@ function composeAndWriteFile(combinedXmlContents: string[], filePath: string, xm
   finalXmlContent = finalXmlContent.replace(/ > /g, ' &gt; ');
 
   finalXmlContent = finalXmlContent.replace(/<formula>(.*?)<\/formula>/gs, (match, group) => {
-    // Replace any additional greater thans/lesser thans that may have escaped above replacement
-    // Spaces in replacements above are required to avoid replacing XML tags
+    // Replace the '<' character within the formula tag
     const updatedFormula = group.replace(/</g, '&lt;').replace(/>/g, '&gt;');
     return `<formula>${updatedFormula}</formula>`;
   });
