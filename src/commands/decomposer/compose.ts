@@ -140,11 +140,19 @@ function composeAndWriteFile(combinedXmlContents: string[], filePath: string, xm
   // Ensure special characters are replaced with the right HTML entity
   finalXmlContent = finalXmlContent.replace(/&/g, '&amp;');
   finalXmlContent = finalXmlContent.replace(/"/g, '&quot;');
+  finalXmlContent = finalXmlContent.replace(/'/g, '&apos;');
   finalXmlContent = finalXmlContent.replace(/<>/g, '&lt;&gt;');
   finalXmlContent = finalXmlContent.replace(/ >= /g, ' &gt;= ');
   finalXmlContent = finalXmlContent.replace(/ <= /g, ' &lt;= ');
   finalXmlContent = finalXmlContent.replace(/ < /g, ' &lt; ');
   finalXmlContent = finalXmlContent.replace(/ > /g, ' &gt; ');
+
+  finalXmlContent = finalXmlContent.replace(/<formula>(.*?)<\/formula>/gs, (match, group) => {
+    // Replace any additional greater thans/lesser thans that may have escaped above replacement
+    // Spaces in replacements above are required to avoid replacing XML tags
+    const updatedFormula = group.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return `<formula>${updatedFormula}</formula>`;
+  });
 
   // Remove extra newlines
   finalXmlContent = finalXmlContent.replace(/(\n\s*){2,}/g, `\n${INDENT}`);
