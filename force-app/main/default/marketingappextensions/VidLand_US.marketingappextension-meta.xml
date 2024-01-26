@@ -1,46 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <MarketingAppExtension xmlns="http://soap.sforce.com/2006/04/metadata">
-    <marketingAppExtActions>
-        <marketingAppExtension>VidLand_US</marketingAppExtension>
-        <apiName>register_user</apiName>
-        <isActive>true</isActive>
-        <description>Register User for VidLand</description>
-    &gt;
-        <actionSelector>VidLand_Register_User</actionSelector>
-        <actionSchema>
+<marketingAppExtActions>
+    <marketingAppExtension>VidLand_US</marketingAppExtension>
+    <apiName>register_user</apiName>
+    <isActive>true</isActive>
+    <description>Register User for VidLand</description>
+    &amp;gt;
+    <actionSelector>VidLand_Register_User</actionSelector>
+    <actionSchema>
    				{
-	&quot;properties&quot;: {
-	  &quot;UserId&quot;: {
-		&quot;type&quot;: &quot;string&quot;,
-		&quot;title&quot;: &quot;&quot;
+	&amp;quot;properties&amp;quot;: {
+	  &amp;quot;UserId&amp;quot;: {
+		&amp;quot;type&amp;quot;: &amp;quot;string&amp;quot;,
+		&amp;quot;title&amp;quot;: &amp;quot;&amp;quot;
 	  },
-	  &quot;WebinarId&quot;: {
-		&quot;type&quot;: &quot;string&quot;,
-		&quot;value&quot;: &quot;webinarIdXYZ&quot;
+	  &amp;quot;WebinarId&amp;quot;: {
+		&amp;quot;type&amp;quot;: &amp;quot;string&amp;quot;,
+		&amp;quot;value&amp;quot;: &amp;quot;webinarIdXYZ&amp;quot;
 	  }
 	},
-	&quot;view&quot;: {
-	  &quot;components&quot;: [{
-		&quot;definition&quot;: &quot;lightning/control&quot;,
-		&quot;scope&quot;: &quot;#/properties/UserId&quot;
+	&amp;quot;view&amp;quot;: {
+	  &amp;quot;components&amp;quot;: [{
+		&amp;quot;definition&amp;quot;: &amp;quot;lightning/control&amp;quot;,
+		&amp;quot;scope&amp;quot;: &amp;quot;#/properties/UserId&amp;quot;
 	  }]
 	},
-	&quot;required&quot;: [
-	  &quot;UserId&quot;,
-	  &quot;WebinarId&quot;,
-	  &quot;From&quot;,
-	  &quot;Body&quot;
+	&amp;quot;required&amp;quot;: [
+	  &amp;quot;UserId&amp;quot;,
+	  &amp;quot;WebinarId&amp;quot;,
+	  &amp;quot;From&amp;quot;,
+	  &amp;quot;Body&amp;quot;
 	]
   }
         </actionSchema>
-        <actionParams>
+    <actionParams>
    				{
-	&quot;isStandard&quot;: false,
-    &quot;type&quot;: &quot;apex&quot;
+	&amp;quot;isStandard&amp;quot;: false,
+    &amp;quot;type&amp;quot;: &amp;quot;apex&amp;quot;
   }
         </actionParams>
-        <actionName>Register User</actionName>
-    </marketingAppExtActions>
+    <actionName>Register User</actionName>
+</marketingAppExtActions>
     <marketingAppExtActivities>
         <fullName>user_attended</fullName>
         <description>User attended activity capture for VidLand</description>

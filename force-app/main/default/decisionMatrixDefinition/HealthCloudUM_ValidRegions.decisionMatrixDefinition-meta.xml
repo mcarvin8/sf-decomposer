@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <DecisionMatrixDefinition xmlns="http://soap.sforce.com/2006/04/metadata">
+    <label>HealthCloudUM_ValidRegions</label>
+    <type>Standard</type>
     <versions>
         <fullName>HealthCloudUM_ValidRegions_V1</fullName>
         <columns>
@@ -29,6 +31,4 @@
         <status>Draft</status>
         <versionNumber>1</versionNumber>
     </versions>
-    <label>HealthCloudUM_ValidRegions</label>
-    <type>Standard</type>
 </DecisionMatrixDefinition>

@@ -31,7 +31,7 @@
     </actionCalls>
     <actionCalls>
         <name>Post_to_Contact_s_Feed</name>
-        <label>Post to Contact's Feed</label>
+        <label>Post to Contact&apos;s Feed</label>
         <locationX>50</locationX>
         <locationY>890</locationY>
         <actionName>chatterPost</actionName>
@@ -139,6 +139,14 @@
         <dataType>String</dataType>
         <expression>IF({!Create_Contact}, &quot;created&quot;, &quot;updated&quot;)</expression>
     </formulas>
+    <apiVersion>49.0</apiVersion>
+    <environments>Default</environments>
+    <interviewLabel>New Contact {!$Flow.CurrentDateTime}</interviewLabel>
+    <isAdditionalPermissionRequiredToRun>true</isAdditionalPermissionRequiredToRun>
+    <isTemplate>true</isTemplate>
+    <label>New Contact</label>
+    <processType>Flow</processType>
+    <status>Draft</status>
     <processMetadataValues>
         <name>BuilderType</name>
         <value>
@@ -218,7 +226,7 @@
         <allowPause>true</allowPause>
         <fields>
             <name>confirmation_message</name>
-            <fieldText>Thanks! &lt;a href=&quot;/{!contact.Id}&quot;&gt;The contact&lt;/a&gt; was {!created_or_updated}.</fieldText>
+            <fieldText>Thanks! &amp;lt;a href=&amp;quot;/{!contact.Id}&amp;quot;&amp;gt;The contact&amp;lt;/a&amp;gt; was {!created_or_updated}.</fieldText>
             <fieldType>DisplayText</fieldType>
         </fields>
         <showFooter>true</showFooter>
@@ -332,12 +340,4 @@
         <isInput>false</isInput>
         <isOutput>false</isOutput>
     </variables>
-    <apiVersion>49.0</apiVersion>
-    <environments>Default</environments>
-    <interviewLabel>New Contact {!$Flow.CurrentDateTime}</interviewLabel>
-    <isAdditionalPermissionRequiredToRun>true</isAdditionalPermissionRequiredToRun>
-    <isTemplate>true</isTemplate>
-    <label>New Contact</label>
-    <processType>Flow</processType>
-    <status>Draft</status>
 </Flow>
