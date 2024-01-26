@@ -4,7 +4,7 @@ import * as path from 'node:path';
 
 import { SfCommand, Flags } from '@salesforce/sf-plugins-core';
 import { Messages } from '@salesforce/core';
-import { METADATA_DIR_DEFAULT_VALUE, XML_HEADER, NAMESPACE } from '../../helpers/constants.js';
+import { METADATA_DIR_DEFAULT_VALUE, XML_HEADER, NAMESPACE, CUSTOM_LABELS_FILE } from '../../helpers/constants.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('sfdx-decomposer', 'decomposer.compose');
@@ -92,7 +92,7 @@ export default class DecomposerCompose extends SfCommand<DecomposerComposeResult
     // Process other metadata files in subdirectories
     if (metaSuffix === 'labels') {
       const combinedXmlContents: string[] = processFilesInDirectory(metadataPath);
-      const filePath = path.join(metadataPath, 'CustomLabels.labels-meta.xml');
+      const filePath = path.join(metadataPath, CUSTOM_LABELS_FILE);
       // Combine XML contents into a single string
       let finalXmlContent = combinedXmlContents.join('\n');
       
@@ -103,8 +103,8 @@ export default class DecomposerCompose extends SfCommand<DecomposerComposeResult
       finalXmlContent = finalXmlContent.replace(`<${xmlElement}>`, '');
       finalXmlContent = finalXmlContent.replace(`</${xmlElement}>`, '');
 
-      this.log(`Created composed file: ${filePath}`);
       fs.writeFileSync(filePath, `${XML_HEADER}\n<${xmlElement} ${NAMESPACE}>\n${finalXmlContent}\n</${xmlElement}>`);
+      this.log(`Created composed file: ${filePath}`);
     } else {
       const subdirectories = fs.readdirSync(metadataPath)
         .map((file) => path.join(metadataPath, file))
@@ -113,7 +113,9 @@ export default class DecomposerCompose extends SfCommand<DecomposerComposeResult
       subdirectories.forEach((subdirectory) => {
         this.log('Processing subdirectory:', subdirectory);
         const combinedXmlContents: string[] = processFilesInDirectory(subdirectory);
-  
+        const subdirectoryBasename = path.basename(subdirectory)
+        const filePath = path.join(metadataPath, `${subdirectoryBasename}.${metaSuffix}-meta.xml`);
+
         // Combine XML contents into a single string
         let finalXmlContent = combinedXmlContents.join('\n');
   
@@ -124,8 +126,8 @@ export default class DecomposerCompose extends SfCommand<DecomposerComposeResult
         finalXmlContent = finalXmlContent.replace(`<${xmlElement}>`, '');
         finalXmlContent = finalXmlContent.replace(`</${xmlElement}>`, '');
 
-        this.log(`Combined XML contents after processing subdirectory ${subdirectory}:`);
-        this.log(finalXmlContent);
+        fs.writeFileSync(filePath, `${XML_HEADER}\n<${xmlElement} ${NAMESPACE}>\n${finalXmlContent}\n</${xmlElement}>`);
+        this.log(`Created composed file: ${filePath}`);
       });
     }
   }
