@@ -155,7 +155,8 @@ function composeAndWriteFile(combinedXmlContents: string[], filePath: string, xm
   finalXmlContent = finalXmlContent.replace(/ > /g, ' &gt; ');
 
   finalXmlContent = finalXmlContent.replace(/<formula>(.*?)<\/formula>/gs, (match, group) => {
-    // Replace the '<' character within the formula tag
+    // Replace any additional greater thans/lesser thans that may have escaped above replacement
+    // Spaces in replacements above are required to avoid replacing XML tags
     const updatedFormula = group.replace(/</g, '&lt;').replace(/>/g, '&gt;');
     return `<formula>${updatedFormula}</formula>`;
   });

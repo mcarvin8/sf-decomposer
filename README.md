@@ -22,24 +22,6 @@ This repository provides a template for creating a plugin for the Salesforce CLI
 3. Create your plugin's repo in the salesforcecli github org
 4. When you're ready, replace the contents of this README with the information you want.
 
-## Learn about `sf` plugins
-
-Salesforce CLI plugins are based on the [oclif plugin framework](<(https://oclif.io/docs/introduction.html)>). Read the [plugin developer guide](https://developer.salesforce.com/docs/atlas.en-us.sfdx_cli_plugins.meta/sfdx_cli_plugins/cli_plugins_architecture_sf_cli.htm) to learn about Salesforce CLI plugin development.
-
-This repository contains a lot of additional scripts and tools to help with general Salesforce node development and enforce coding standards. You should familiarize yourself with some of the [node developer packages](#tooling) used by Salesforce. 
-
-Additionally, there are some additional tests that the Salesforce CLI will enforce if this plugin is ever bundled with the CLI. These test are included by default under the `posttest` script and it is required to keep these tests active in your plugin if you plan to have it bundled.
-
-### Tooling
-
-- [@salesforce/core](https://github.com/forcedotcom/sfdx-core)
-- [@salesforce/kit](https://github.com/forcedotcom/kit)
-- [@salesforce/sf-plugins-core](https://github.com/salesforcecli/sf-plugins-core)
-- [@salesforce/ts-types](https://github.com/forcedotcom/ts-types)
-- [@salesforce/ts-sinon](https://github.com/forcedotcom/ts-sinon)
-- [@salesforce/dev-config](https://github.com/forcedotcom/dev-config)
-- [@salesforce/dev-scripts](https://github.com/forcedotcom/dev-scripts)
-
 ### Hooks
 
 For cross clouds commands, e.g. `sf env list`, we utilize [oclif hooks](https://oclif.io/docs/hooks) to get the relevant information from installed plugins.
@@ -81,67 +63,63 @@ Please report any issues at https://github.com/forcedotcom/cli/issues
 External contributors will be required to sign a Contributor's License
 Agreement. You can do so by going to https://cla.salesforce.com/sign-cla.
 
-### Build
-
-To build the plugin locally, make sure to have yarn installed and run the following commands:
-
-```bash
-# Clone the repository
-git clone git@github.com:salesforcecli/sfdx-decomposer
-
-# Install the dependencies and compile
-yarn && yarn build
-```
-
-To use your plugin, run using the local `./bin/dev` or `./bin/dev.cmd` file.
-
-```bash
-# Run using local run file.
-./bin/dev hello world
-```
-
-There should be no differences when running via the Salesforce CLI or using the local run file. However, it can be useful to link the plugin to do some additional testing or run your commands from anywhere on your machine.
-
-```bash
-# Link your plugin to the sf cli
-sf plugins link .
-# To verify
-sf plugins
-```
-
 ## Commands
 
-<!-- commands -->
+`sfdx-decomposer` supports 2 commands:
+    - sf decomposer decompose
+    - sf decomposer compose
 
-- [`sf hello world`](#sf-hello-world)
+The same arguments are used for both commands.
 
-## `sf hello world`
+## `sf decomposer decompose`
 
-Say hello either to the world or someone you know.
+Decomposes the original metadata files into smaller files for version control. Excluding custom labels, the smaller files will be placed into new sub-directories:
+    - {metadata}
 
 ```
 USAGE
-  $ sf hello world [--json] [-n <value>]
+  $ sf decomposer decompose -t <value> -d <value> [--json]
 
 FLAGS
-  -n, --name=<value>  [default: World] The name of the person you'd like to say hello to.
+  -n, --metadata-type=<value> The type of metadata to decompose.
+  -d, --dx-directory=<value>  [default: force-app/main/default] The root directory containing your Salesforce metadata.
 
 GLOBAL FLAGS
   --json  Format output as json.
 
 DESCRIPTION
-  Say hello either to the world or someone you know.
+  This command will read all of the original metadata files and separate them into multiple XML files by elements and field names.
 
-  Say hello either to the world or someone you know.
+  You should use this to create files for version control after retrieving metadata from an org.
 
 EXAMPLES
-  Say hello to the world:
+  Decompose all flows:
 
-    $ sf hello world
-
-  Say hello to someone you know:
-
-    $ sf hello world --name Astro
+    $ sf decomposer decompose -t "flow"
 ```
 
-<!-- commandsstop -->
+## `sf decomposer compose`
+
+Reads all of the files created by the decompoose command and re-creates the original meta files suitable for CLI deployments.
+
+```
+USAGE
+  $ sf decomposer compose -t <value> -d <value> [--json]
+
+FLAGS
+  -n, --metadata-type=<value> The type of metadata to compose.
+  -d, --dx-directory=<value>  [default: force-app/main/default] The root directory containing your Salesforce metadata.
+
+GLOBAL FLAGS
+  --json  Format output as json.
+
+DESCRIPTION
+  This command will read all of the decomposed files and re-create the original meta files in the original locations.
+
+  You should use this to compile files before you deploy the metadata to your org.
+
+EXAMPLES
+  Compose all flows:
+
+    $ sf decomposer compose -t "flow"
+```
