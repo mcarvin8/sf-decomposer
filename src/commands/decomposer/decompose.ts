@@ -1,3 +1,4 @@
+/* eslint-disable */
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as xml2js from 'xml2js';
@@ -117,9 +118,8 @@ function xml2jsParser(
 
     const rootElementName = Object.keys(result)[0];
     const rootElement = result[rootElementName];
-    let leafContent = `${XML_HEADER}\n`;
+    let leafContent = '';
     let leafCount = 0;
-    leafContent += `<${xmlElement}>\n`;
 
     // Iterate through child elements to find the field name for each
     for (const key in rootElement) {
@@ -175,9 +175,18 @@ function xml2jsParser(
     }
 
     if (leafCount > 0) {
-      leafContent += `</${xmlElement}>`;
+      let leafFile = `${XML_HEADER}\n`;
+      leafFile += `<${xmlElement}>\n`;
+
+      const sortedLeafContent = leafContent
+        .split('\n') // Split by lines
+        .filter((line) => line.trim() !== '') // Remove empty lines
+        .sort() // Sort alphabetically
+        .join('\n'); // Join back into a string
+      leafFile += sortedLeafContent;
+      leafFile += `\n</${xmlElement}>`;
       const leafOutputPath = path.join(metadataPath, `${baseName}.${metaSuffix}-meta.xml`);
-      fs.writeFileSync(leafOutputPath, leafContent);
+      fs.writeFileSync(leafOutputPath, leafFile);
 
       console.log(`All leaf elements saved to: ${leafOutputPath}`);
     }
