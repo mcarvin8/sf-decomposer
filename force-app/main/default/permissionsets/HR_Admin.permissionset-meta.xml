@@ -13,6 +13,9 @@
         <field>Job_Request__c.Salary__c</field>
         <readable>true</readable>
     </fieldPermissions>
+    <description>Grants all rights needed for an HR administrator to manage employees.</description>
+    <label>HR Administration</label>
+    <userLicense>Salesforce</userLicense>
     <objectPermissions>
         <allowCreate>true</allowCreate>
         <allowDelete>true</allowDelete>
@@ -38,7 +41,4 @@
         <enabled>true</enabled>
         <name>APIEnabled</name>
     </userPermissions>
-    <description>Grants all rights needed for an HR administrator to manage employees.</description>
-    <label>HR Administration</label>
-    <userLicense>Salesforce</userLicense>
 </PermissionSet>

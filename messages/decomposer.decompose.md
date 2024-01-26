@@ -8,11 +8,13 @@ More information about a command. Don't repeat the summary.
 
 # flags.name.summary
 
-Description of a flag.
+Decomposes the original metadata files created by retrievals.
 
 # flags.name.description
 
-More information about a flag. Don't repeat the summary.
+This command will read all of the original metadata files and separate them into multiple XML files by elements and field names.
+
+You should use this to create files for version control after retrieving metadata from an org.
 
 # examples
 

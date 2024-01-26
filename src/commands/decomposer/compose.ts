@@ -4,7 +4,7 @@ import * as path from 'node:path';
 
 import { SfCommand, Flags } from '@salesforce/sf-plugins-core';
 import { Messages } from '@salesforce/core';
-import { METADATA_DIR_DEFAULT_VALUE, XML_HEADER, NAMESPACE, CUSTOM_LABELS_FILE } from '../../helpers/constants.js';
+import { METADATA_DIR_DEFAULT_VALUE, XML_HEADER, NAMESPACE, CUSTOM_LABELS_FILE, INDENT } from '../../helpers/constants.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('sfdx-decomposer', 'decomposer.compose');
@@ -102,8 +102,9 @@ export default class DecomposerCompose extends SfCommand<DecomposerComposeResult
       // Remove duplicate occurrences of the XML element tags
       finalXmlContent = finalXmlContent.replace(`<${xmlElement}>`, '');
       finalXmlContent = finalXmlContent.replace(`</${xmlElement}>`, '');
+      finalXmlContent = finalXmlContent.replace(/(\n\s*){2,}/g, `\n${INDENT}`);
 
-      fs.writeFileSync(filePath, `${XML_HEADER}\n<${xmlElement} ${NAMESPACE}>\n${finalXmlContent}\n</${xmlElement}>`);
+      fs.writeFileSync(filePath, `${XML_HEADER}\n<${xmlElement} ${NAMESPACE}>${finalXmlContent}</${xmlElement}>`);
       this.log(`Created composed file: ${filePath}`);
     } else {
       const subdirectories = fs.readdirSync(metadataPath)
@@ -125,8 +126,9 @@ export default class DecomposerCompose extends SfCommand<DecomposerComposeResult
         // Remove duplicate occurrences of the XML element tags
         finalXmlContent = finalXmlContent.replace(`<${xmlElement}>`, '');
         finalXmlContent = finalXmlContent.replace(`</${xmlElement}>`, '');
+        finalXmlContent = finalXmlContent.replace(/(\n\s*){2,}/g, `\n${INDENT}`);
 
-        fs.writeFileSync(filePath, `${XML_HEADER}\n<${xmlElement} ${NAMESPACE}>\n${finalXmlContent}\n</${xmlElement}>`);
+        fs.writeFileSync(filePath, `${XML_HEADER}\n<${xmlElement} ${NAMESPACE}>${finalXmlContent}</${xmlElement}>`);
         this.log(`Created composed file: ${filePath}`);
       });
     }

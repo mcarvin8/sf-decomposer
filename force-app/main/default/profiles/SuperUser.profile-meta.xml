@@ -13,6 +13,7 @@
         <recordType>TestWeblinks__c.My First Recordtype</recordType>
         <visible>true</visible>
     </recordTypeVisibilities>
+    <custom>true</custom>
     <tabVisibilities>
         <tab>Myriad Publications</tab>
         <visibility>DefaultOn</visibility>
@@ -21,5 +22,4 @@
         <enabled>true</enabled>
         <name>APIEnabled</name>
     </userPermissions>
-    <custom>true</custom>
 </Profile>

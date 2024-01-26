@@ -40,7 +40,7 @@
         <fullName>Field_Update</fullName>
         <description>TestField update desc</description>
         <field>Name</field>
-        <formula>Name &amp; &quot;Updated&quot;</formula>
+        <formula>Name & "Updated"</formula>
         <name>Field Update</name>
         <notifyAssignee>false</notifyAssignee>
         <operation>Formula</operation>

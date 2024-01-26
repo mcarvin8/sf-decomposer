@@ -1,10 +1,12 @@
 # summary
 
-Summary of a command.
+Re-composes the files created by the 'decompose' command into the original directories with the original file-names.
 
 # description
 
-More information about a command. Don't repeat the summary.
+This command will read all of the decomposed XML files by sub-directories and add them to the same file.
+
+You should use this before deploying metadata to the target org.
 
 # flags.name.summary
 
