@@ -6,11 +6,10 @@ import * as xml2js from 'xml2js';
 import { SfCommand, Flags } from '@salesforce/sf-plugins-core';
 import { Messages } from '@salesforce/core';
 import { METADATA_DIR_DEFAULT_VALUE, XML_HEADER } from '../../helpers/constants.js';
+import jsonData from '../../metadata/metadata.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('sfdx-decomposer', 'decomposer.decompose');
-const metadataJsonPath = 'src/metadata/metadata.json';
-const jsonData: Metadata[] = JSON.parse(fs.readFileSync(metadataJsonPath, 'utf-8'));
 const metaSuffixOptions = jsonData.map((item: Metadata) => item.metaSuffix);
 
 export type DecomposerDecomposeResult = {
