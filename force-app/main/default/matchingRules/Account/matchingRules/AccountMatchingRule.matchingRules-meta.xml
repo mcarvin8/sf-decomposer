@@ -3,15 +3,15 @@
         <fullName>AccountMatchingRule</fullName>
         <label>Matching rule for accounts</label>
         <description>this is sample rule description</description>
-            <matchingRuleItems>
-        <blankValueBehavior>NullNotAllowed</blankValueBehavior>
-        <fieldName>BillingCity</fieldName>
-        <matchingMethod>City</matchingMethod>
-    </matchingRuleItems>
-            <matchingRuleItems>
-        <blankValueBehavior>NullNotAllowed</blankValueBehavior>
-        <fieldName>Name</fieldName>
-        <matchingMethod>CompanyName</matchingMethod>
-    </matchingRuleItems>
+        <matchingRuleItems>
+            <blankValueBehavior>NullNotAllowed</blankValueBehavior>
+            <fieldName>BillingCity</fieldName>
+            <matchingMethod>City</matchingMethod>
+        </matchingRuleItems>
+        <matchingRuleItems>
+            <blankValueBehavior>NullNotAllowed</blankValueBehavior>
+            <fieldName>Name</fieldName>
+            <matchingMethod>CompanyName</matchingMethod>
+        </matchingRuleItems>
         <ruleStatus>Inactive</ruleStatus>
     </matchingRules>

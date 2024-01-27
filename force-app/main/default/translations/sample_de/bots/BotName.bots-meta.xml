@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
     <bots>
         <fullName>BotName</fullName>
-            <botVersions>
-        <botDialogs>Dialogs</botDialogs>
-        <fullName>DialogName</fullName>
-    </botVersions>
+        <botVersions>
+            <botDialogs>Dialogs</botDialogs>
+            <fullName>DialogName</fullName>
+        </botVersions>
     </bots>

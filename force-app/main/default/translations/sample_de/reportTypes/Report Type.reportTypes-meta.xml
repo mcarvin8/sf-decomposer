@@ -3,12 +3,12 @@
         <label>Report Type Label!</label>
         <desctiption>Report Type Description</desctiption>
         <name>Report Type</name>
-            <sections>
+        <sections>
             <columns>
-        <label>Column Label</label>
-        <name>Column Name</name>
-    </columns>
-        <label>Section Label</label>
-        <name>Section Name</name>
-    </sections>
+                <label>Column Label</label>
+                <name>Column Name</name>
+            </columns>
+            <label>Section Label</label>
+            <name>Section Name</name>
+        </sections>
     </reportTypes>

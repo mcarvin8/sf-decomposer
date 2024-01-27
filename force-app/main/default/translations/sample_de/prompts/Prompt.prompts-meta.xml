@@ -3,8 +3,8 @@
         <label>Prompt Label!</label>
         <desctiption>Prompt Description</desctiption>
         <name>Prompt</name>
-            <promptVersions>
-        <label>Prompt Version Label</label>
-        <name>Prompt Versions</name>
-    </promptVersions>
+        <promptVersions>
+            <label>Prompt Version Label</label>
+            <name>Prompt Versions</name>
+        </promptVersions>
     </prompts>
