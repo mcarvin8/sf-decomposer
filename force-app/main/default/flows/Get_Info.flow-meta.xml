@@ -226,7 +226,7 @@
         <allowPause>true</allowPause>
         <fields>
             <name>confirmation_message</name>
-            <fieldText>Thanks! &amp;lt;a href=&amp;quot;/{!contact.Id}&amp;quot;&amp;gt;The contact&amp;lt;/a&amp;gt; was {!created_or_updated}.</fieldText>
+            <fieldText>Thanks! &lt;a href=&quot;/{!contact.Id}&quot;&gt;The contact&lt;/a&gt; was {!created_or_updated}.</fieldText>
             <fieldType>DisplayText</fieldType>
         </fields>
         <showFooter>true</showFooter>

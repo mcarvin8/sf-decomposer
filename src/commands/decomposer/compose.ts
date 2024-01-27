@@ -161,6 +161,13 @@ function composeAndWriteFile(combinedXmlContents: string[], filePath: string, xm
     return `<formula>${updatedFormula}</formula>`;
   });
 
+  finalXmlContent = finalXmlContent.replace(/<fieldText>(.*?)<\/fieldText>/gs, (match, group) => {
+    // Replace any additional greater thans/lesser thans that may have escaped above replacement
+    // Spaces in replacements above are required to avoid replacing XML tags
+    const updatedFormula = group.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return `<fieldText>${updatedFormula}</fieldText>`;
+  });
+
   // Remove extra newlines
   finalXmlContent = finalXmlContent.replace(/(\n\s*){2,}/g, `\n${INDENT}`);
 
