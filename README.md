@@ -2,8 +2,6 @@
 
 [![NPM](https://img.shields.io/npm/v/sfdx-decomposer.svg?label=sfdx-decomposer)](https://www.npmjs.com/package/sfdx-decomposer) [![Downloads/week](https://img.shields.io/npm/dw/sfdx-decomposer.svg)](https://npmjs.org/package/sfdx-decomposer) [![License](https://img.shields.io/badge/License-BSD%203--Clause-brightgreen.svg)](https://raw.githubusercontent.com/salesforcecli/sfdx-decomposer/main/LICENSE.txt)
 
-IN-DEVELOPMENT: Converting the Python project (https://github.com/mcarvin8/sfdx-decomposer) into a SFDX plugin.
-
 The `sfdx-decomposer` is a simple plugin to read the original metadata files for certain metadata types and create smaller, more manageable files for version control. When it's time to deploy decomposed metadata to an org, the inverse function (`compose`) will re-create metadata files for CLI deployments.
 
 **DISCLAIMERS:**
@@ -29,7 +27,7 @@ The same arguments are used for both commands.
 Decomposes the original metadata files into smaller files for version control. Excluding custom labels, the smaller files will be placed into new sub-directories:
 
 - force-app/main/default/workflows
-  - Case (parent workflow)
+  - Case
     - alerts
     - fieldUpdates
     - outboundMessages
@@ -67,7 +65,7 @@ EXAMPLES
 
 ## `sf decomposer compose`
 
-Reads all of the files created by the decompoose command and re-creates the original meta files suitable for CLI deployments.
+Reads all of the files created by the decompose command and re-creates the original meta files suitable for CLI deployments.
 
 ```
 USAGE
@@ -125,12 +123,12 @@ Per Salesforce documentation for **Standard/Global Value Set Translations**, whe
 
 The `decompose` function will not process these comments correctly (see example below). Ensure all meta files have proper translations before decomposing them.
 
-`decompose` version
-
 ```xml
     <valueTranslation>
-        <masterLabel>Hot</masterLabel>
-        <translation></translation>
+        <masterLabel>Warm</masterLabel>
+        <translation>
+            <#comment> Warm </#comment>
+        </translation>
     </valueTranslation>
 ```
 
@@ -204,3 +202,78 @@ Salesforce CLI version 2.10.2 correctly handles opt-in style with directories on
 !**/decisionMatrixDefinition/*.decisionMatrixDefinition-meta.xml
 !**/aiScoringModelDefinitions/*.aiScoringModelDefinition-meta.xml
 ```
+
+## Adding Metadata Types
+
+To add a metadata type via a Pull Request:
+
+1. Reference the metadata type details in https://developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_intro.htm
+2. Add the metadata to the JSON data in `src\metadata\metadata.ts`:
+   - `directoryName` should be the root folder for that metadata type
+   - `metaSuffix` should be the suffix the original meta files use (ex: `labels` is the suffix for `CustomLabels.labels-meta.xml`)
+   - `xmlElement` should be the root element of the original meta files (ex: `CustomLabels` is the root element in meta header `<CustomLabels xmlns="http://soap.sforce.com/2006/04/metadata">`)
+   - `fieldNames` should contain a comma-seperated list (no spaces) of Required Field Names for Nested Elements under the metadata type
+     - Field Names are used to name decomposed meta files for nested elements and should contain unique values
+     - In the below XML file, the `apexClass` field name is a required field name for the nested `<classAccesses>` element and should be included in possible field names for permission set
+     - Fields which do not have nested elements such as `<description>` should not be included in `fieldNames` (All unnested elements will be added to the same meta file when decomposed)
+     - Field Names will be evaluated in the order they appear in the list (ensure `fullName` is first since it's inherited from the Metadata type)
+
+```json
+  {
+    "directoryName": "permissionsets",
+    "metaSuffix": "permissionset",
+    "xmlElement": "PermissionSet",
+    "fieldNames": "fullName,application,apexClass,name,externalDataSource,flow,object,apexPage,recordType,tab,field"
+  },
+```
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Grants all rights needed for an HR administrator to manage employees.</description>
+    <label>HR Administration</label>
+    <userLicense>Salesforce</userLicense>
+    <applicationVisibilities>
+        <application>JobApps__Recruiting</application>
+        <visible>true</visible>
+    </applicationVisibilities>
+    <userPermissions>
+        <enabled>true</enabled>
+        <name>APIEnabled</name>
+    </userPermissions>
+    <objectPermissions>
+        <allowCreate>true</allowCreate>
+        <allowDelete>true</allowDelete>
+        <allowEdit>true</allowEdit>
+        <allowRead>true</allowRead>
+        <viewAllRecords>true</viewAllRecords>
+        <modifyAllRecords>true</modifyAllRecords>
+        <object>Job_Request__c</object>
+    </objectPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Job_Request__c.Salary__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <pageAccesses>
+        <apexPage>Job_Request_Web_Form</apexPage>
+        <enabled>true</enabled>
+    </pageAccesses>
+    <classAccesses>
+      <apexClass>Send_Email_Confirmation</apexClass>
+      <enabled>true</enabled>
+    </classAccesses>
+    <tabSettings>
+        <tab>Job_Request__c</tab>
+        <visibility>Available</visibility>
+    </tabSettings>
+    <recordTypeVisibilities>
+        <recordType>Recruiting.DevManager</recordType>
+        <visible>true</visible>
+    </recordTypeVisibilities>
+</PermissionSet>
+```
+
+3. Add an example meta file to the `force-app/main/default` under the proper `directoryName`.
+4. Run the `decompose` function to decompose the original meta files for the new metadata type. Confirm the files are decomposed as intended.
+5. Run the `compose` function to recompose the meta files for the new metadata type. Confirm the meta files created are accepted for deployments.
