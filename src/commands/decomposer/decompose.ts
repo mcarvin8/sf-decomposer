@@ -1,7 +1,7 @@
 /* eslint-disable */
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import * as xml2js from 'xml2js';
+import { XMLParser } from 'fast-xml-parser';
 
 import { SfCommand, Flags } from '@salesforce/sf-plugins-core';
 import { Messages } from '@salesforce/core';
@@ -11,6 +11,17 @@ import jsonData from '../../metadata/metadata.js';
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('sfdx-decomposer', 'decomposer.decompose');
 const metaSuffixOptions = jsonData.map((item: Metadata) => item.metaSuffix);
+
+const XML_PARSER_OPTION = {
+  commentPropName: '#comment',
+  ignoreAttributes: false,
+  ignoreNameSpace: false,
+  parseTagValue: false,
+  parseNodeValue: false,
+  parseAttributeValue: false,
+  trimValues: true,
+  processEntities: false,
+};
 
 export type DecomposerDecomposeResult = {
   path: string;
@@ -108,29 +119,48 @@ function xml2jsParser(
   metaSuffix: string,
   indent: string = '    '
 ): void {
-  const parser = new xml2js.Parser({ explicitArray: false });
+  try {
+    const xmlParser = new XMLParser(XML_PARSER_OPTION);
+    const result = xmlParser.parse(xmlString);
 
-  parser.parseString(xmlString, (err, result) => {
-    if (err) {
-      console.error('Error parsing XML:', err);
-      return;
-    }
-
-    const rootElementName = Object.keys(result)[0];
+    const rootElementName = Object.keys(result)[1];
     const rootElement = result[rootElementName];
     let leafContent = '';
     let leafCount = 0;
 
     // Iterate through child elements to find the field name for each
-    for (const key in rootElement) {
-      if (Array.isArray(rootElement[key])) {
-        // Iterate through the elements of the array
-        for (const element of rootElement[key]) {
+    Object.keys(rootElement)
+      .filter((key: string) => !key.startsWith('@'))
+      .forEach((key: string) => {
+        if (Array.isArray(rootElement[key])) {
+          // Iterate through the elements of the array
+          for (const element of rootElement[key]) {
+            let elementContent = '';
+            elementContent += `${XML_HEADER}\n`;
+
+            const fieldName = findFieldName(element, fieldNames);
+            const outputDirectory = path.join(metadataPath, metaSuffix === 'labels' ? '' : key);
+            const outputFileName: string = `${fieldName}.${metaSuffix === 'labels' ? key.slice(0, -1) : key}-meta.xml`;
+            const outputPath = path.join(outputDirectory, outputFileName);
+
+            // Create the output directory if it doesn't exist
+            fs.mkdirSync(outputDirectory, { recursive: true });
+
+            // Call the printChildElements to build the XML content string
+            elementContent = printChildElements(element, key, elementContent);
+
+            // Write the XML content to the determined output path
+            fs.writeFileSync(outputPath, elementContent);
+
+            console.log(`XML content saved to: ${outputPath}`);
+          }
+        } else if (typeof rootElement[key] === 'object') {
           let elementContent = '';
           elementContent += `${XML_HEADER}\n`;
 
-          const fieldName = findFieldName(element, fieldNames);
-          const outputDirectory = path.join(metadataPath, metaSuffix === 'labels' ? '' : key);
+          const fieldName = findFieldName(rootElement[key], fieldNames);
+
+          const outputDirectory = path.join(metadataPath, key);
           const outputFileName: string = `${fieldName}.${metaSuffix === 'labels' ? key.slice(0, -1) : key}-meta.xml`;
           const outputPath = path.join(outputDirectory, outputFileName);
 
@@ -138,41 +168,20 @@ function xml2jsParser(
           fs.mkdirSync(outputDirectory, { recursive: true });
 
           // Call the printChildElements to build the XML content string
-          elementContent = printChildElements(element, key, elementContent);
+          elementContent = printChildElements(rootElement[key], key, elementContent);
 
           // Write the XML content to the determined output path
           fs.writeFileSync(outputPath, elementContent);
 
           console.log(`XML content saved to: ${outputPath}`);
+        } else {
+          // Process XML elements that do not have children (e.g., leaf elements)
+          const fieldValue = rootElement[key];
+          // Append leaf element to the accumulated XML content
+          leafContent += `${indent}<${key}>${fieldValue}</${key}>\n`;
+          leafCount++;
         }
-      } else if (typeof rootElement[key] === 'object' && key !== '$') {
-        let elementContent = '';
-        elementContent += `${XML_HEADER}\n`;
-
-        const fieldName = findFieldName(rootElement[key], fieldNames);
-
-        const outputDirectory = path.join(metadataPath, key);
-        const outputFileName: string = `${fieldName}.${metaSuffix === 'labels' ? key.slice(0, -1) : key}-meta.xml`;
-        const outputPath = path.join(outputDirectory, outputFileName);
-
-        // Create the output directory if it doesn't exist
-        fs.mkdirSync(outputDirectory, { recursive: true });
-
-        // Call the printChildElements to build the XML content string
-        elementContent = printChildElements(rootElement[key], key, elementContent);
-
-        // Write the XML content to the determined output path
-        fs.writeFileSync(outputPath, elementContent);
-
-        console.log(`XML content saved to: ${outputPath}`);
-      } else if (key !== '$') {
-        // Process XML elements that do not have children (e.g., leaf elements)
-        const fieldValue = rootElement[key];
-        // Append leaf element to the accumulated XML content
-        leafContent += `${indent}<${key}>${fieldValue}</${key}>\n`;
-        leafCount++;
-      }
-    }
+      });
 
     if (leafCount > 0) {
       let leafFile = `${XML_HEADER}\n`;
@@ -190,7 +199,9 @@ function xml2jsParser(
 
       console.log(`All leaf elements saved to: ${leafOutputPath}`);
     }
-  });
+  } catch (err) {
+    console.error('Error parsing XML:', err);
+  }
 }
 
 function findFieldName(element: any, fieldNames: string): string | undefined {
