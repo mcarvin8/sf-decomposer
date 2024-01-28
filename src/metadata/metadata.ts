@@ -79,12 +79,6 @@ const jsonData: Metadata[] = [
       'fieldNames': 'fullName,masterLabel'
     },
     {
-      'directoryName': 'marketingappextensions',
-      'metaSuffix': 'marketingappextension',
-      'xmlElement': 'MarketingAppExtension',
-      'fieldNames': 'fullName,actionName,masterLabel'
-    },
-    {
       'directoryName': 'translations',
       'metaSuffix': 'translation',
       'xmlElement': 'Translation',

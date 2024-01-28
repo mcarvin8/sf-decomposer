@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-    <marketingAppExtActivities>
-        <fullName>user_attended</fullName>
-        <description>User attended activity capture for VidLand</description>
-        <isActive>true</isActive>
-        <marketingAppExtension>VidLand_US</marketingAppExtension>
-        <masterLabel>user attended</masterLabel>
-    </marketingAppExtActivities>

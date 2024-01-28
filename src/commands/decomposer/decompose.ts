@@ -79,6 +79,7 @@ export default class DecomposerDecompose extends SfCommand<DecomposerDecomposeRe
         xml2jsParser(xmlContent, outputPath, fieldNames, xmlElement, baseName, metaSuffix);
       }
     });
+    this.log(`All metadata files have been decomposed for the metadata type: ${metaSuffix}`);
   }
 }
 

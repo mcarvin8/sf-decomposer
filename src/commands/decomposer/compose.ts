@@ -115,6 +115,7 @@ export default class DecomposerCompose extends SfCommand<DecomposerComposeResult
         composeAndWriteFile(combinedXmlContents, filePath, xmlElement);
       });
     }
+    this.log(`All metadata files have been composed for the metadata type: ${metaSuffix}`);
   }
 }
 interface Metadata {

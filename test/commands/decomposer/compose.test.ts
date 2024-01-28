@@ -2,6 +2,7 @@ import { TestContext } from '@salesforce/core/lib/testSetup.js';
 import { expect } from 'chai';
 import { stubSfCommandUx } from '@salesforce/sf-plugins-core';
 import DecomposerCompose from '../../../src/commands/decomposer/compose.js';
+import jsonData from '../../../src/metadata/metadata.js';
 
 describe('decomposer compose', () => {
   const $$ = new TestContext();
@@ -15,28 +16,14 @@ describe('decomposer compose', () => {
     $$.restore();
   });
 
-  it('runs hello', async () => {
-    await DecomposerCompose.run([]);
-    const output = sfCommandStubs.log
-      .getCalls()
-      .flatMap((c) => c.args)
-      .join('\n');
-    expect(output).to.include('hello world');
-  });
-
-  it('runs hello with --json and no provided name', async () => {
-    const result = await DecomposerCompose.run([]);
-    expect(result.path).to.equal(
-      'C:\\Users\\matth\\Documents\\sfdx-decomposer-plugin\\src\\commands\\decomposer\\compose.ts'
-    );
-  });
-
-  it('runs hello world --name Astro', async () => {
-    await DecomposerCompose.run(['--name', 'Astro']);
-    const output = sfCommandStubs.log
-      .getCalls()
-      .flatMap((c) => c.args)
-      .join('\n');
-    expect(output).to.include('hello Astro');
-  });
+  it('should compose all supported metadata types', async () => {
+    for (const metadataType of jsonData) {
+      // eslint-disable-next-line no-await-in-loop
+      await DecomposerCompose.run(['--metadata-type', metadataType.metaSuffix]);
+        const output = sfCommandStubs.log
+          .getCalls()
+          .flatMap((c) => c.args)
+          .join('\n');
+        expect(output).to.include(`All metadata files have been composed for the metadata type: ${metadataType.metaSuffix}`);
+      }});
 });
