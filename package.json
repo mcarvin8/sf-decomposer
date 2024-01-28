@@ -1,7 +1,7 @@
 {
   "name": "sfdx-decomposer",
   "description": "Decomposes Salesforce metadata into more manageable files.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "dependencies": {
     "@oclif/core": "^3.18.1",
     "@salesforce/core": "^6.4.7",
@@ -55,15 +55,15 @@
     "flexibleTaxonomy": true
   },
   "scripts": {
-    "build": "wireit",
+    "command-docs": "oclif readme",
+    "build": "tsc -b",
     "clean": "sf-clean",
     "clean-all": "sf-clean all",
     "clean:lib": "shx rm -rf lib && shx rm -rf coverage && shx rm -rf .nyc_output && shx rm -f oclif.manifest.json oclif.lock",
-    "compile": "wireit",
+    "compile": "sf-compile",
     "docs": "sf-docs",
-    "format": "wireit",
+    "format": "sf-format",
     "lint": "wireit",
-    "postinstall": "yarn husky install",
     "postpack": "shx rm -f oclif.manifest.json oclif.lock",
     "prepack": "sf-prepack",
     "test": "wireit",
