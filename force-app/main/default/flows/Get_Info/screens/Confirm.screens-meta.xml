@@ -9,7 +9,7 @@
         <allowPause>true</allowPause>
         <fields>
             <name>confirmation_message</name>
-            <fieldText>Thanks! <a href="/{!contact.Id}">The contact</a> was {!created_or_updated}.</fieldText>
+            <fieldText>Thanks! &lt;a href=&quot;/{!contact.Id}&quot;&gt;The contact&lt;/a&gt; was {!created_or_updated}.</fieldText>
             <fieldType>DisplayText</fieldType>
         </fields>
         <showFooter>true</showFooter>

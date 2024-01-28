@@ -4,7 +4,13 @@ import * as path from 'node:path';
 
 import { SfCommand, Flags } from '@salesforce/sf-plugins-core';
 import { Messages } from '@salesforce/core';
-import { METADATA_DIR_DEFAULT_VALUE, XML_HEADER, NAMESPACE, CUSTOM_LABELS_FILE, INDENT } from '../../helpers/constants.js';
+import {
+  METADATA_DIR_DEFAULT_VALUE,
+  XML_HEADER,
+  NAMESPACE,
+  CUSTOM_LABELS_FILE,
+  INDENT,
+} from '../../helpers/constants.js';
 import jsonData from '../../metadata/metadata.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
@@ -77,12 +83,12 @@ export default class DecomposerCompose extends SfCommand<DecomposerComposeResult
 
       files.forEach((file) => {
         const filePath = path.join(dirPath, file);
-  
+
         if (fs.statSync(filePath).isFile()) {
           if (metaSuffix === 'labels' && !file.endsWith(`label-meta.xml`)) {
             return; // Skip files that don't match the expected naming convention for custom labels
           }
-  
+
           const xmlContent = fs.readFileSync(filePath, 'utf-8');
           combinedXmlContents.push(xmlContent);
         } else if (fs.statSync(filePath).isDirectory()) {
@@ -90,10 +96,10 @@ export default class DecomposerCompose extends SfCommand<DecomposerComposeResult
           combinedXmlContents.push(...subdirectoryContents); // Concatenate contents from subdirectories
         }
       });
-  
+
       return combinedXmlContents;
     };
-  
+
     // Process labels in root metadata folder
     // Process other metadata files in subdirectories
     if (metaSuffix === 'labels') {
@@ -102,14 +108,15 @@ export default class DecomposerCompose extends SfCommand<DecomposerComposeResult
 
       composeAndWriteFile(combinedXmlContents, filePath, xmlElement);
     } else {
-      const subdirectories = fs.readdirSync(metadataPath)
+      const subdirectories = fs
+        .readdirSync(metadataPath)
         .map((file) => path.join(metadataPath, file))
         .filter((filePath) => fs.statSync(filePath).isDirectory());
-  
+
       subdirectories.forEach((subdirectory) => {
         this.log('Processing subdirectory:', subdirectory);
         const combinedXmlContents: string[] = processFilesInDirectory(subdirectory);
-        const subdirectoryBasename = path.basename(subdirectory)
+        const subdirectoryBasename = path.basename(subdirectory);
         const filePath = path.join(metadataPath, `${subdirectoryBasename}.${metaSuffix}-meta.xml`);
 
         composeAndWriteFile(combinedXmlContents, filePath, xmlElement);
@@ -143,30 +150,6 @@ function composeAndWriteFile(combinedXmlContents: string[], filePath: string, xm
   // Remove duplicate parent elements
   finalXmlContent = finalXmlContent.replace(`<${xmlElement}>`, '');
   finalXmlContent = finalXmlContent.replace(`</${xmlElement}>`, '');
-
-  // Ensure special characters are replaced with the right HTML entity
-  finalXmlContent = finalXmlContent.replace(/&/g, '&amp;');
-  finalXmlContent = finalXmlContent.replace(/"/g, '&quot;');
-  finalXmlContent = finalXmlContent.replace(/'/g, '&apos;');
-  finalXmlContent = finalXmlContent.replace(/<>/g, '&lt;&gt;');
-  finalXmlContent = finalXmlContent.replace(/ >= /g, ' &gt;= ');
-  finalXmlContent = finalXmlContent.replace(/ <= /g, ' &lt;= ');
-  finalXmlContent = finalXmlContent.replace(/ < /g, ' &lt; ');
-  finalXmlContent = finalXmlContent.replace(/ > /g, ' &gt; ');
-
-  finalXmlContent = finalXmlContent.replace(/<formula>(.*?)<\/formula>/gs, (match, group) => {
-    // Replace any additional greater thans/lesser thans that may have escaped above replacement
-    // Spaces in replacements above are required to avoid replacing XML tags
-    const updatedFormula = group.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    return `<formula>${updatedFormula}</formula>`;
-  });
-
-  finalXmlContent = finalXmlContent.replace(/<fieldText>(.*?)<\/fieldText>/gs, (match, group) => {
-    // Replace any additional greater thans/lesser thans that may have escaped above replacement
-    // Spaces in replacements above are required to avoid replacing XML tags
-    const updatedFormula = group.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    return `<fieldText>${updatedFormula}</fieldText>`;
-  });
 
   // Remove extra newlines
   finalXmlContent = finalXmlContent.replace(/(\n\s*){2,}/g, `\n${INDENT}`);

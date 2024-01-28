@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
     <actionCalls>
         <name>Post_to_Contact_s_Feed</name>
-        <label>Post to Contact's Feed</label>
+        <label>Post to Contact&apos;s Feed</label>
         <locationX>50</locationX>
         <locationY>890</locationY>
         <actionName>chatterPost</actionName>

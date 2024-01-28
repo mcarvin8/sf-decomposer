@@ -2,5 +2,5 @@
     <formulas>
         <name>created_or_updated</name>
         <dataType>String</dataType>
-        <expression>IF({!Create_Contact}, "created", "updated")</expression>
+        <expression>IF({!Create_Contact}, &quot;created&quot;, &quot;updated&quot;)</expression>
     </formulas>
