@@ -4,35 +4,10 @@
 
 IN-DEVELOPMENT: Converting the Python project (https://github.com/mcarvin8/sfdx-decomposer) into a SFDX plugin.
 
-## Using the template
+The `sfdx-decomposer` is a simple plugin to read the original metadata files for certain metadata types and create smaller, more manageable files for version control. When it's time to deploy decomposed metadata to an org, the inverse function (`compose`) will re-create metadata files for CLI deployments.
 
-This repository provides a template for creating a plugin for the Salesforce CLI. To convert this template to a working plugin:
-
-1. Please get in touch with the Platform CLI team. We want to help you develop your plugin.
-2. Generate your plugin:
-
-   ```
-   sf plugins install dev
-   sf dev generate plugin
-
-   git init -b main
-   git add . && git commit -m "chore: initial commit"
-   ```
-
-3. Create your plugin's repo in the salesforcecli github org
-4. When you're ready, replace the contents of this README with the information you want.
-
-### Hooks
-
-For cross clouds commands, e.g. `sf env list`, we utilize [oclif hooks](https://oclif.io/docs/hooks) to get the relevant information from installed plugins.
-
-This plugin includes sample hooks in the [src/hooks directory](src/hooks). You'll just need to add the appropriate logic. You can also delete any of the hooks if they aren't required for your plugin.
-
-# Everything past here is only a suggestion as to what should be in your specific plugin's description
-
-This plugin is bundled with the [Salesforce CLI](https://developer.salesforce.com/tools/sfdxcli). For more information on the CLI, read the [getting started guide](https://developer.salesforce.com/docs/atlas.en-us.sfdx_setup.meta/sfdx_setup/sfdx_setup_intro.htm).
-
-We always recommend using the latest version of these commands bundled with the CLI, however, you can install a specific version or tag if needed.
+**DISCLAIMERS:**
+It is highly recommended that you extensively test this plugin in a sandbox environment on the metadata types you wish to use this tool for. Do not change your production/QA pipelines until you have tested this and are happy with the results. Confirm your deployment pipelines are stable prior to implementing this plugin.
 
 ## Install
 
@@ -40,41 +15,33 @@ We always recommend using the latest version of these commands bundled with the 
 sf plugins install sfdx-decomposer@x.y.z
 ```
 
-## Issues
-
-Please report any issues at https://github.com/forcedotcom/cli/issues
-
-## Contributing
-
-1. Please read our [Code of Conduct](CODE_OF_CONDUCT.md)
-2. Create a new issue before starting your project so that we can keep track of
-   what you are trying to add/fix. That way, we can also offer suggestions or
-   let you know if there is already an effort in progress.
-3. Fork this repository.
-4. [Build the plugin locally](#build)
-5. Create a _topic_ branch in your fork. Note, this step is recommended but technically not required if contributing using a fork.
-6. Edit the code in your fork.
-7. Write appropriate tests for your changes. Try to achieve at least 95% code coverage on any new code. No pull request will be accepted without unit tests.
-8. Sign CLA (see [CLA](#cla) below).
-9. Send us a pull request when you are done. We'll review your code, suggest any needed changes, and merge it in.
-
-### CLA
-
-External contributors will be required to sign a Contributor's License
-Agreement. You can do so by going to https://cla.salesforce.com/sign-cla.
-
 ## Commands
 
 `sfdx-decomposer` supports 2 commands:
-    - sf decomposer decompose
-    - sf decomposer compose
+
+- `sf decomposer decompose`
+- `sf decomposer compose`
 
 The same arguments are used for both commands.
 
 ## `sf decomposer decompose`
 
 Decomposes the original metadata files into smaller files for version control. Excluding custom labels, the smaller files will be placed into new sub-directories:
-    - {metadata}
+
+- force-app/main/default/workflows
+  - Case (parent workflow)
+    - alerts
+    - fieldUpdates
+    - outboundMessages
+    - rules
+    - tasks
+      - User_task_was_completed.tasks-meta.xml
+
+Custom Labels will be decomposed directly in the root labels folder and will have a different extension compared to the original labels file:
+
+- force-app/main/default/labels
+  - quoteAuto.label-meta.xml
+  - quoteManual.label-meta.xml
 
 ```
 USAGE
@@ -122,4 +89,118 @@ EXAMPLES
   Compose all flows:
 
     $ sf decomposer compose -t "flow"
+```
+
+## Supported Metadata
+
+The following metadata types are supported:
+
+- Custom Labels (`-t "labels"`)
+- Workflows (`-t "workflow"`)
+- Profiles (`-t "profile"`)
+- Permission Sets (`-t "permissionset"`)
+- Flows (`-t "flow"`)
+- Matching Rules (`-t "matchingRule"`)
+- Assignment Rules (`-t "assignmentRules"`)
+- Escalation Rules (`-t "escalationRules"`)
+- Sharing Rules (`-t "sharingRules"`)
+- Auto Response Rules (`-t "autoResponseRules"`)
+- Global Value Set Translation (`-t "globalValueSetTranslation"`)
+- Standard Value Set Translation (`-t "standardValueSetTranslation"`)
+- Translations (`-t "translation"`)
+- Standard Value Sets (`-t "standardValueSet"`)
+- Global Value Sets (`-t "globalValueSet"`)
+- AI Scoring Model Definition (`-t "aiScoringModelDefinition"`)
+- Decision Matrix Definition (`-t "decisionMatrixDefinition"`)
+
+**NOTE**:
+Per Salesforce documentation for **Standard/Global Value Set Translations**, when a value isn't translated, its translation becomes a comment that's paired with its label.
+
+```xml
+    <valueTranslation>
+        <masterLabel>Warm</masterLabel>
+        <translation><!-- Warm --></translation>
+    </valueTranslation>
+```
+
+The `decompose` function will not process these comments correctly (see example below). Ensure all meta files have proper translations before decomposing them.
+
+`decompose` version
+
+```xml
+    <valueTranslation>
+        <masterLabel>Hot</masterLabel>
+        <translation></translation>
+    </valueTranslation>
+```
+
+## Ignore Files
+
+The `.gitignore` and `.forceignore` files in your repository should be updated based on the metadata types you wish to decompose.
+
+Salesforce CLI version 2.10.2 correctly handles opt-in style with directories on the `.forceignore` file. Ensure you're using a version of the CLI which supports opt-in style with directories.
+
+### `.gitignore` updates
+
+```
+# Ignore the original files created by retrievals
+**/permissionsets/*.permissionset-meta.xml
+**/profiles/*.profile-meta.xml
+**/labels/CustomLabels.labels-meta.xml
+**/workflows/*.workflow-meta.xml
+**/flows/*.flow-meta.xml
+**/matchingRules/*.matchingRule-meta.xml
+**/assignmentRules/*.assignmentRules-meta.xml
+**/escalationRules/*.escalationRules-meta.xml
+**/sharingRules/*.sharingRules-meta.xml
+**/autoResponseRules/*.autoResponseRules-meta.xml
+**/globalValueSetTranslations/*.globalValueSetTranslation-meta.xml
+**/standardValueSetTranslations/*.standardValueSetTranslation-meta.xml
+**/translations/*.translation-meta.xml
+**/globalValueSets/*.globalValueSet-meta.xml
+**/standardValueSets/*.standardValueSet-meta.xml
+**/decisionMatrixDefinition/*.decisionMatrixDefinition-meta.xml
+**/aiScoringModelDefinitions/*.aiScoringModelDefinition-meta.xml
+```
+
+### `.forceignore` updates
+
+```
+# Ignore all XMLs by default
+**/profiles/**/*.xml
+**/permissionsets/**/*.xml
+**/labels/*.xml
+**/workflows/**/*.xml
+**/flows/**/*.xml
+**/matchingRules/**/*.xml
+**/assignmentRules/**/*.xml
+**/escalationRules/**/*.xml
+**/sharingRules/**/*.xml
+**/autoResponseRules/**/*.xml
+**/globalValueSetTranslations/**/*.xml
+**/standardValueSetTranslations/**/*.xml
+**/translations/**/*.xml
+**/globalValueSets/**/*.xml
+**/standardValueSets/**/*.xml
+**/decisionMatrixDefinition/**/*.xml
+**/aiScoringModelDefinitions/**/*.xml
+
+# Allow the meta files
+!**/permissionsets/*.permissionset-meta.xml
+!**/labels/CustomLabels.labels-meta.xml
+!**/workflows/*.workflow-meta.xml
+!**/profiles/*.profile-meta.xml
+!**/flows/*.flow-meta.xml
+!**/matchingRules/*.matchingRule-meta.xml
+!**/assignmentRules/*.assignmentRules-meta.xml
+!**/escalationRules/*.escalationRules-meta.xml
+!**/sharingRules/*.sharingRules-meta.xml
+!**/autoResponseRules/*.autoResponseRules-meta.xml
+!**/globalValueSetTranslations/*.globalValueSetTranslation-meta.xml
+!**/standardValueSetTranslations/*.standardValueSetTranslation-meta.xml
+!**/translations/*.translation-meta.xml
+!**/globalValueSets/*.globalValueSet-meta.xml
+!**/standardValueSets/*.standardValueSet-meta.xml
+!**/decisionMatrixDefinition/*.decisionMatrixDefinition-meta.xml
+!**/aiScoringModelDefinitions/*.aiScoringModelDefinition-meta.xml
 ```
