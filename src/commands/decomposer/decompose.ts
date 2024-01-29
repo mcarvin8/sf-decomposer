@@ -44,17 +44,13 @@ export default class DecomposerDecompose extends SfCommand<DecomposerDecomposeRe
 
     const metadataTypeToRetrieve = flags['metadata-type'];
     const dxDirectory = flags['dx-directory'];
-    const metaAttributes = getAttributesForMetadataType(jsonData, metadataTypeToRetrieve);
+    const metaAttributes = getAttributesForMetadataType(jsonData, metadataTypeToRetrieve, dxDirectory);
 
     if (metaAttributes) {
-      const metaSuffix = metaAttributes.metaSuffix;
-      const directoryName = metaAttributes.directoryName;
-      const fieldNames = metaAttributes.fieldNames;
-      const xmlElement = metaAttributes.xmlElement;
-      const metadataPath = `${dxDirectory}/${directoryName}`;
+      const { metaSuffix, fieldNames, xmlElement, metadataPath } = metaAttributes;
       this.parseMetadataFiles(metadataPath, metaSuffix, fieldNames, xmlElement);
     } else {
-      this.log(`Metadata type ${metadataTypeToRetrieve} not found.`);
+      this.error(`Metadata type ${metadataTypeToRetrieve} not found.`);
     }
 
     return {
