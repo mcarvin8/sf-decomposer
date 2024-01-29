@@ -16,7 +16,7 @@ export function xml2jsParser(
   xmlElement: string,
   baseName: string,
   metaSuffix: string,
-  indent: string = '    '
+  indent: string
 ): void {
   try {
     const xmlParser = new XMLParser(XML_PARSER_OPTION);
@@ -46,7 +46,7 @@ export function xml2jsParser(
             fs.mkdirSync(outputDirectory, { recursive: true });
 
             // Call the printChildElements to build the XML content string
-            elementContent = printChildElements(element, key, elementContent);
+            elementContent = printChildElements(element, key, elementContent, indent);
 
             // Write the XML content to the determined output path
             fs.writeFileSync(outputPath, elementContent);
@@ -67,7 +67,7 @@ export function xml2jsParser(
           fs.mkdirSync(outputDirectory, { recursive: true });
 
           // Call the printChildElements to build the XML content string
-          elementContent = printChildElements(rootElement[key], key, elementContent);
+          elementContent = printChildElements(rootElement[key], key, elementContent, indent);
 
           // Write the XML content to the determined output path
           fs.writeFileSync(outputPath, elementContent);

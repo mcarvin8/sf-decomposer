@@ -4,7 +4,7 @@ import * as path from 'node:path';
 
 import { SfCommand, Flags } from '@salesforce/sf-plugins-core';
 import { Messages } from '@salesforce/core';
-import { METADATA_DIR_DEFAULT_VALUE } from '../../helpers/constants.js';
+import { INDENT, METADATA_DIR_DEFAULT_VALUE } from '../../helpers/constants.js';
 import jsonData from '../../metadata/metadata.js';
 import { Metadata } from '../../metadata/metadataInterface.js';
 import { getAttributesForMetadataType } from '../../service/getAttributesForMetadataType.js';
@@ -72,7 +72,7 @@ export default class DecomposerDecompose extends SfCommand<DecomposerDecomposeRe
         const xmlContent = fs.readFileSync(filePath, 'utf-8');
         const baseName = path.basename(filePath, `.${metaSuffix}-meta.xml`);
         const outputPath = path.join(metadataPath, metaSuffix === 'labels' ? '' : baseName);
-        xml2jsParser(xmlContent, outputPath, fieldNames, xmlElement, baseName, metaSuffix);
+        xml2jsParser(xmlContent, outputPath, fieldNames, xmlElement, baseName, metaSuffix, INDENT);
       }
     });
     this.log(`All metadata files have been decomposed for the metadata type: ${metaSuffix}`);

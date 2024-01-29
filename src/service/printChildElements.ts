@@ -4,7 +4,7 @@ export function printChildElements(
   element: any,
   parentKey: string | null = null,
   xmlContent: string,
-  indent: string = '    '
+  indent: string
 ): string {
   // Recursive function to handle nested elements
   function processElement(element: any, parentKey: string | null = null, currentIndent: string = ''): void {
