@@ -4,14 +4,11 @@ import * as path from 'node:path';
 
 import { SfCommand, Flags } from '@salesforce/sf-plugins-core';
 import { Messages } from '@salesforce/core';
-import {
-  METADATA_DIR_DEFAULT_VALUE,
-  XML_HEADER,
-  NAMESPACE,
-  CUSTOM_LABELS_FILE,
-  INDENT,
-} from '../../helpers/constants.js';
+import { METADATA_DIR_DEFAULT_VALUE, CUSTOM_LABELS_FILE } from '../../helpers/constants.js';
 import jsonData from '../../metadata/metadata.js';
+import { Metadata } from '../../metadata/metadataInterface.js';
+import { getAttributesForMetadataType } from '../../service/getAttributesForMetadataType.js';
+import { composeAndWriteFile } from '../../service/composeAndWriteFile.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('sfdx-decomposer', 'decomposer.compose');
@@ -118,36 +115,4 @@ export default class DecomposerCompose extends SfCommand<DecomposerComposeResult
     }
     this.log(`All metadata files have been composed for the metadata type: ${metaSuffix}`);
   }
-}
-interface Metadata {
-  directoryName: string;
-  metaSuffix: string;
-  xmlElement: string;
-}
-
-function getAttributesForMetadataType(jsonData: Metadata[], metadataType: string): Metadata | null {
-  const metadata = jsonData.find((item) => item.metaSuffix === metadataType);
-
-  if (metadata) {
-    return metadata;
-  }
-  return null;
-}
-
-function composeAndWriteFile(combinedXmlContents: string[], filePath: string, xmlElement: string): void {
-  // Combine XML contents into a single string
-  let finalXmlContent = combinedXmlContents.join('\n');
-
-  // Remove duplicate XML declarations
-  finalXmlContent = finalXmlContent.replace(/<\?xml version="1.0" encoding="UTF-8"\?>/g, '');
-
-  // Remove duplicate parent elements
-  finalXmlContent = finalXmlContent.replace(`<${xmlElement}>`, '');
-  finalXmlContent = finalXmlContent.replace(`</${xmlElement}>`, '');
-
-  // Remove extra newlines
-  finalXmlContent = finalXmlContent.replace(/(\n\s*){2,}/g, `\n${INDENT}`);
-
-  fs.writeFileSync(filePath, `${XML_HEADER}\n<${xmlElement} ${NAMESPACE}>${finalXmlContent}</${xmlElement}>`);
-  console.log(`Created composed file: ${filePath}`);
 }
