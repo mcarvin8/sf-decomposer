@@ -43,7 +43,7 @@ Custom Labels will be decomposed directly in the root labels folder and will hav
 
 ```
 USAGE
-  $ sf decomposer decompose -t <value> -d <value> [--json]
+  $ sf decomposer decompose -m <value> -d <value> [--json]
 
 FLAGS
   -m, --metadata-type=<value> The type of metadata to decompose.
@@ -60,7 +60,7 @@ DESCRIPTION
 EXAMPLES
   Decompose all flows:
 
-    $ sf decomposer decompose -t "flow"
+    $ sf decomposer decompose -m "flow"
 ```
 
 ## `sf decomposer compose`
@@ -69,7 +69,7 @@ Reads all of the files created by the decompose command and re-creates the origi
 
 ```
 USAGE
-  $ sf decomposer compose -t <value> -d <value> [--json]
+  $ sf decomposer compose -m <value> -d <value> [--json]
 
 FLAGS
   -m, --metadata-type=<value> The type of metadata to compose.
@@ -86,7 +86,7 @@ DESCRIPTION
 EXAMPLES
   Compose all flows:
 
-    $ sf decomposer compose -t "flow"
+    $ sf decomposer compose -m "flow"
 ```
 
 ## Supported Metadata
