@@ -33,12 +33,6 @@ export default class DecomposerDecompose extends SfCommand<DecomposerDecomposeRe
   public static readonly examples = messages.getMessages('examples');
 
   public static readonly flags = {
-    name: Flags.string({
-      summary: messages.getMessage('flags.name.summary'),
-      description: messages.getMessage('flags.name.description'),
-      char: 'n',
-      required: false,
-    }),
     'dx-directory': Flags.directory({
       summary: messages.getMessage('flags.dx-directory.summary'),
       char: 'd',
@@ -48,7 +42,7 @@ export default class DecomposerDecompose extends SfCommand<DecomposerDecomposeRe
     }),
     'metadata-type': Flags.option({
       summary: messages.getMessage('flags.metadata-type.summary'),
-      char: 't',
+      char: 'm',
       required: true,
       options: metaSuffixOptions,
     })(),

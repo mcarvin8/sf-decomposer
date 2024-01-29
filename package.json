@@ -54,14 +54,6 @@
     "devPlugins": [
       "@oclif/plugin-help"
     ],
-    "topics": {
-      "hello": {
-        "description": "Commands to say hello."
-      },
-      "decomposer": {
-        "description": "description for decomposer"
-      }
-    },
     "flexibleTaxonomy": true
   },
   "scripts": {

@@ -46,7 +46,7 @@ USAGE
   $ sf decomposer decompose -t <value> -d <value> [--json]
 
 FLAGS
-  -n, --metadata-type=<value> The type of metadata to decompose.
+  -m, --metadata-type=<value> The type of metadata to decompose.
   -d, --dx-directory=<value>  [default: force-app/main/default] The root directory containing your Salesforce metadata.
 
 GLOBAL FLAGS
@@ -72,7 +72,7 @@ USAGE
   $ sf decomposer compose -t <value> -d <value> [--json]
 
 FLAGS
-  -n, --metadata-type=<value> The type of metadata to compose.
+  -m, --metadata-type=<value> The type of metadata to compose.
   -d, --dx-directory=<value>  [default: force-app/main/default] The root directory containing your Salesforce metadata.
 
 GLOBAL FLAGS
