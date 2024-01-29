@@ -1,3 +1,5 @@
+'use strict';
+
 import { Metadata } from './metadataInterface.js';
 
 const jsonData: Metadata[] = [

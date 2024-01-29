@@ -1,4 +1,5 @@
-/* eslint-disable */
+'use strict';
+
 import { SfCommand, Flags } from '@salesforce/sf-plugins-core';
 import { Messages } from '@salesforce/core';
 import { METADATA_DIR_DEFAULT_VALUE } from '../../helpers/constants.js';
