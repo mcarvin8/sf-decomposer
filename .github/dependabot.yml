@@ -11,6 +11,7 @@ updates:
     open-pull-requests-limit: 5
     pull-request-branch-name:
       separator: '-'
+    target-branch: 'beta'
     commit-message:
       # cause a release for non-dev-deps
       prefix: fix(deps)
