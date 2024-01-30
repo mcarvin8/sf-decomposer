@@ -1,10 +1,8 @@
 'use strict';
 
-interface ElementWithFieldNames {
-  [key: string]: string | ElementWithFieldNames;
-}
+import { XmlElement } from '../types/xmlElement.js';
 
-export function findFieldName(element: ElementWithFieldNames, fieldNames: string): string | undefined {
+export function findFieldName(element: XmlElement, fieldNames: string): string | undefined {
   const fieldNamesArray = fieldNames.split(',');
 
   for (const fieldName of fieldNamesArray) {
@@ -13,7 +11,7 @@ export function findFieldName(element: ElementWithFieldNames, fieldNames: string
       if (typeof element[fieldName] === 'string') {
         return element[fieldName] as string;
       } else if (typeof element[fieldName] === 'object') {
-        const childFieldName = findFieldName(element[fieldName] as ElementWithFieldNames, fieldNames);
+        const childFieldName = findFieldName(element[fieldName] as XmlElement, fieldNames);
         if (childFieldName !== undefined) {
           return childFieldName;
         }
@@ -24,7 +22,7 @@ export function findFieldName(element: ElementWithFieldNames, fieldNames: string
   // Iterate through child elements to find the field name
   for (const key in element) {
     if (typeof element[key] === 'object' && element[key] !== null) {
-      const childFieldName = findFieldName(element[key] as ElementWithFieldNames, fieldNames);
+      const childFieldName = findFieldName(element[key] as XmlElement, fieldNames);
       if (childFieldName !== undefined) {
         return childFieldName;
       }
