@@ -81,7 +81,7 @@ function buildNestedFile(
 
   const fieldName = findFieldName(element, fieldNames);
 
-  const outputDirectory = path.join(metadataPath, parentKey);
+  const outputDirectory = path.join(metadataPath, metaSuffix === 'labels' ? '' : parentKey);
   const outputFileName: string = `${fieldName}.${
     metaSuffix === 'labels' ? parentKey.slice(0, -1) : parentKey
   }-meta.xml`;
