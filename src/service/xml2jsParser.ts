@@ -61,7 +61,7 @@ export function xml2jsParser(
       const leafOutputPath = path.join(metadataPath, `${baseName}.${metaSuffix}-meta.xml`);
       fs.writeFileSync(leafOutputPath, leafFile);
 
-      console.log(`All leaf elements saved to: ${leafOutputPath}`);
+      // console.log(`All leaf elements saved to: ${leafOutputPath}`);
     }
   } catch (err) {
     console.error('Error parsing XML:', err);
@@ -99,5 +99,5 @@ function buildNestedFile(
 
   // Write the XML content to the determined output path
   fs.writeFileSync(outputPath, decomposeFileContents);
-  console.log(`XML content saved to: ${outputPath}`);
+  // console.log(`XML content saved to: ${outputPath}`);
 }

@@ -1,4 +1,4 @@
-/* eslint-disable */
+'use strict';
 
 import * as fs from 'node:fs';
 import * as path from 'node:path';
@@ -22,7 +22,7 @@ export function composeFileHandler(metadataPath: string, metaSuffix: string, xml
       const filePath = path.join(dirPath, file);
 
       if (fs.statSync(filePath).isFile()) {
-        if (metaSuffix === 'labels' && !file.endsWith(`label-meta.xml`)) {
+        if (metaSuffix === 'labels' && !file.endsWith('label-meta.xml')) {
           return; // Skip files that don't match the expected naming convention for custom labels
         }
 
@@ -51,7 +51,7 @@ export function composeFileHandler(metadataPath: string, metaSuffix: string, xml
       .filter((filePath) => fs.statSync(filePath).isDirectory());
 
     subdirectories.forEach((subdirectory) => {
-      console.log('Processing subdirectory:', subdirectory);
+      // console.log('Processing subdirectory:', subdirectory);
       const combinedXmlContents: string[] = processFilesInDirectory(subdirectory);
       const subdirectoryBasename = path.basename(subdirectory);
       const filePath = path.join(metadataPath, `${subdirectoryBasename}.${metaSuffix}-meta.xml`);

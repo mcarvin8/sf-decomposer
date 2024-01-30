@@ -1,4 +1,4 @@
-/* eslint-disable */
+'use strict';
 
 import * as fs from 'node:fs';
 import { XML_HEADER, NAMESPACE, INDENT } from '../helpers/constants.js';
@@ -18,5 +18,5 @@ export function composeAndWriteFile(combinedXmlContents: string[], filePath: str
   finalXmlContent = finalXmlContent.replace(/(\n\s*){2,}/g, `\n${INDENT}`);
 
   fs.writeFileSync(filePath, `${XML_HEADER}\n<${xmlElement} ${NAMESPACE}>${finalXmlContent}</${xmlElement}>`);
-  console.log(`Created composed file: ${filePath}`);
+  // console.log(`Created composed file: ${filePath}`);
 }
