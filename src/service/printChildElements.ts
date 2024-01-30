@@ -1,10 +1,11 @@
 /* eslint-disable */
 
 import { XMLBuilder } from 'fast-xml-parser';
+import { XmlElement } from '../types/xmlElement.js';
 import { INDENT } from '../helpers/constants.js';
 import { JSON_PARSER_OPTION } from '../types/jsonParserOptions.js';
 
-export function printChildElements(element: any, indentLevel: number = 2): string {
+export function printChildElements(element: XmlElement, indentLevel: number = 2): string {
   const xmlBuilder = new XMLBuilder(JSON_PARSER_OPTION);
   const xmlString = xmlBuilder.build(element);
 

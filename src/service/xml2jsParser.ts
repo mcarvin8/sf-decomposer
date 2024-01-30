@@ -1,10 +1,11 @@
-/* eslint-disable */
+'use strict';
 
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { XMLParser } from 'fast-xml-parser';
 
 import { XML_PARSER_OPTION } from '../types/xmlParserOptions.js';
+import { XmlElement } from '../types/xmlElement.js';
 import { XML_HEADER } from '../helpers/constants.js';
 import { findFieldName } from './findFieldName.js';
 import { printChildElements } from './printChildElements.js';
@@ -20,10 +21,10 @@ export function xml2jsParser(
 ): void {
   try {
     const xmlParser = new XMLParser(XML_PARSER_OPTION);
-    const result = xmlParser.parse(xmlString);
+    const result = xmlParser.parse(xmlString) as Record<string, XmlElement>;
 
     const rootElementName = Object.keys(result)[1];
-    const rootElement = result[rootElementName];
+    const rootElement: XmlElement = result[rootElementName];
     let leafContent = '';
     let leafCount = 0;
 
@@ -33,16 +34,16 @@ export function xml2jsParser(
       .forEach((key: string) => {
         if (Array.isArray(rootElement[key])) {
           // Iterate through the elements of the array
-          for (const element of rootElement[key]) {
+          for (const element of rootElement[key] as XmlElement[]) {
             buildNestedFile(element, metadataPath, metaSuffix, fieldNames, key, indent);
           }
         } else if (typeof rootElement[key] === 'object') {
-          buildNestedFile(rootElement[key], metadataPath, metaSuffix, fieldNames, key, indent);
+          buildNestedFile(rootElement[key] as XmlElement, metadataPath, metaSuffix, fieldNames, key, indent);
         } else {
           // Process XML elements that do not have children (e.g., leaf elements)
           const fieldValue = rootElement[key];
           // Append leaf element to the accumulated XML content
-          leafContent += `${indent}<${key}>${fieldValue}</${key}>\n`;
+          leafContent += `${indent}<${key}>${String(fieldValue)}</${key}>\n`;
           leafCount++;
         }
       });
@@ -64,18 +65,18 @@ export function xml2jsParser(
       // console.log(`All leaf elements saved to: ${leafOutputPath}`);
     }
   } catch (err) {
-    console.error('Error parsing XML:', err);
+    // console.error('Error parsing XML:', err);
   }
 }
 
 function buildNestedFile(
-  element: any,
+  element: XmlElement,
   metadataPath: string,
   metaSuffix: string,
   fieldNames: string,
   parentKey: string,
   indent: string
-) {
+): void {
   let elementContent = '';
   elementContent += `${XML_HEADER}\n`;
 
