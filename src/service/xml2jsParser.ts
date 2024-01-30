@@ -46,10 +46,14 @@ export function xml2jsParser(
             fs.mkdirSync(outputDirectory, { recursive: true });
 
             // Call the printChildElements to build the XML content string
-            elementContent = printChildElements(element, key, elementContent, indent);
+            elementContent = printChildElements(element);
+            let decomposeFileContents = `${XML_HEADER}\n`;
+            decomposeFileContents += `${indent}<${key}>\n`;
+            decomposeFileContents += `${elementContent}\n`;
+            decomposeFileContents += `${indent}</${key}>\n`;
 
             // Write the XML content to the determined output path
-            fs.writeFileSync(outputPath, elementContent);
+            fs.writeFileSync(outputPath, decomposeFileContents);
 
             console.log(`XML content saved to: ${outputPath}`);
           }
@@ -67,10 +71,14 @@ export function xml2jsParser(
           fs.mkdirSync(outputDirectory, { recursive: true });
 
           // Call the printChildElements to build the XML content string
-          elementContent = printChildElements(rootElement[key], key, elementContent, indent);
+          elementContent = printChildElements(rootElement[key]);
+          let decomposeFileContents = `${XML_HEADER}\n`;
+          decomposeFileContents += `${indent}<${key}>\n`;
+          decomposeFileContents += `${elementContent}\n`;
+          decomposeFileContents += `${indent}</${key}>\n`;
 
           // Write the XML content to the determined output path
-          fs.writeFileSync(outputPath, elementContent);
+          fs.writeFileSync(outputPath, decomposeFileContents);
 
           console.log(`XML content saved to: ${outputPath}`);
         } else {
