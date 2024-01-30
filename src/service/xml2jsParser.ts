@@ -34,53 +34,10 @@ export function xml2jsParser(
         if (Array.isArray(rootElement[key])) {
           // Iterate through the elements of the array
           for (const element of rootElement[key]) {
-            let elementContent = '';
-            elementContent += `${XML_HEADER}\n`;
-
-            const fieldName = findFieldName(element, fieldNames);
-            const outputDirectory = path.join(metadataPath, metaSuffix === 'labels' ? '' : key);
-            const outputFileName: string = `${fieldName}.${metaSuffix === 'labels' ? key.slice(0, -1) : key}-meta.xml`;
-            const outputPath = path.join(outputDirectory, outputFileName);
-
-            // Create the output directory if it doesn't exist
-            fs.mkdirSync(outputDirectory, { recursive: true });
-
-            // Call the printChildElements to build the XML content string
-            elementContent = printChildElements(element);
-            let decomposeFileContents = `${XML_HEADER}\n`;
-            decomposeFileContents += `${indent}<${key}>\n`;
-            decomposeFileContents += `${elementContent}\n`;
-            decomposeFileContents += `${indent}</${key}>\n`;
-
-            // Write the XML content to the determined output path
-            fs.writeFileSync(outputPath, decomposeFileContents);
-
-            console.log(`XML content saved to: ${outputPath}`);
+            buildNestedFile(element, metadataPath, metaSuffix, fieldNames, key, indent);
           }
         } else if (typeof rootElement[key] === 'object') {
-          let elementContent = '';
-          elementContent += `${XML_HEADER}\n`;
-
-          const fieldName = findFieldName(rootElement[key], fieldNames);
-
-          const outputDirectory = path.join(metadataPath, key);
-          const outputFileName: string = `${fieldName}.${metaSuffix === 'labels' ? key.slice(0, -1) : key}-meta.xml`;
-          const outputPath = path.join(outputDirectory, outputFileName);
-
-          // Create the output directory if it doesn't exist
-          fs.mkdirSync(outputDirectory, { recursive: true });
-
-          // Call the printChildElements to build the XML content string
-          elementContent = printChildElements(rootElement[key]);
-          let decomposeFileContents = `${XML_HEADER}\n`;
-          decomposeFileContents += `${indent}<${key}>\n`;
-          decomposeFileContents += `${elementContent}\n`;
-          decomposeFileContents += `${indent}</${key}>\n`;
-
-          // Write the XML content to the determined output path
-          fs.writeFileSync(outputPath, decomposeFileContents);
-
-          console.log(`XML content saved to: ${outputPath}`);
+          buildNestedFile(rootElement[key], metadataPath, metaSuffix, fieldNames, key, indent);
         } else {
           // Process XML elements that do not have children (e.g., leaf elements)
           const fieldValue = rootElement[key];
@@ -109,4 +66,38 @@ export function xml2jsParser(
   } catch (err) {
     console.error('Error parsing XML:', err);
   }
+}
+
+function buildNestedFile(
+  element: any,
+  metadataPath: string,
+  metaSuffix: string,
+  fieldNames: string,
+  parentKey: string,
+  indent: string
+) {
+  let elementContent = '';
+  elementContent += `${XML_HEADER}\n`;
+
+  const fieldName = findFieldName(element, fieldNames);
+
+  const outputDirectory = path.join(metadataPath, parentKey);
+  const outputFileName: string = `${fieldName}.${
+    metaSuffix === 'labels' ? parentKey.slice(0, -1) : parentKey
+  }-meta.xml`;
+  const outputPath = path.join(outputDirectory, outputFileName);
+
+  // Create the output directory if it doesn't exist
+  fs.mkdirSync(outputDirectory, { recursive: true });
+
+  // Call the printChildElements to build the XML content string
+  elementContent = printChildElements(element);
+  let decomposeFileContents = `${XML_HEADER}\n`;
+  decomposeFileContents += `${indent}<${parentKey}>\n`;
+  decomposeFileContents += `${elementContent}\n`;
+  decomposeFileContents += `${indent}</${parentKey}>\n`;
+
+  // Write the XML content to the determined output path
+  fs.writeFileSync(outputPath, decomposeFileContents);
+  console.log(`XML content saved to: ${outputPath}`);
 }
