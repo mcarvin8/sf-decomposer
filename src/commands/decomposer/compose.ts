@@ -46,7 +46,7 @@ export default class DecomposerCompose extends SfCommand<DecomposerComposeResult
 
     if (metaAttributes) {
       const { metaSuffix, xmlElement, metadataPath } = metaAttributes;
-      composeFileHandler(metadataPath, metaSuffix, xmlElement);
+      await composeFileHandler(metadataPath, metaSuffix, xmlElement);
       this.log(`All metadata files have been composed for the metadata type: ${metaSuffix}`);
     } else {
       this.error(`Metadata type ${metadataTypeToRetrieve} not found.`);
