@@ -164,6 +164,8 @@ Salesforce CLI version 2.10.2 correctly handles opt-in style with directories on
 **/standardValueSets/*.standardValueSet-meta.xml
 **/decisionMatrixDefinition/*.decisionMatrixDefinition-meta.xml
 **/aiScoringModelDefinitions/*.aiScoringModelDefinition-meta.xml
+**/bots/*/*.botVersion-meta.xml
+**/bots/*/*.bot-meta.xml
 ```
 
 ### `.forceignore` updates
@@ -187,6 +189,7 @@ Salesforce CLI version 2.10.2 correctly handles opt-in style with directories on
 **/standardValueSets/**/*.xml
 **/decisionMatrixDefinition/**/*.xml
 **/aiScoringModelDefinitions/**/*.xml
+**/bots/**/*.xml
 
 # Allow the meta files
 !**/permissionsets/*.permissionset-meta.xml
@@ -206,4 +209,6 @@ Salesforce CLI version 2.10.2 correctly handles opt-in style with directories on
 !**/standardValueSets/*.standardValueSet-meta.xml
 !**/decisionMatrixDefinition/*.decisionMatrixDefinition-meta.xml
 !**/aiScoringModelDefinitions/*.aiScoringModelDefinition-meta.xml
+!**/bots/*/*.botVersion-meta.xml
+!**/bots/*/*.bot-meta.xml
 ```
