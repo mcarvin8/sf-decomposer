@@ -5,4 +5,5 @@ export interface Metadata {
   metaSuffix: string;
   xmlElement: string;
   fieldNames: string;
+  recurse?: boolean;
 }

@@ -20,7 +20,6 @@ export function composeFileHandler(metadataPath: string, metaSuffix: string, xml
 
     files.forEach((file) => {
       const filePath = path.join(dirPath, file);
-
       if (fs.statSync(filePath).isFile()) {
         if (metaSuffix === 'labels' && !file.endsWith('label-meta.xml')) {
           return; // Skip files that don't match the expected naming convention for custom labels
@@ -44,6 +43,44 @@ export function composeFileHandler(metadataPath: string, metaSuffix: string, xml
     const filePath = path.join(metadataPath, CUSTOM_LABELS_FILE);
 
     composeAndWriteFile(combinedXmlContents, filePath, xmlElement);
+  } else if (metaSuffix === 'bot' || metaSuffix === 'botVersion') {
+    const botDirectories = fs
+      .readdirSync(metadataPath)
+      .map((file) => path.join(metadataPath, file))
+      .filter((filePath) => fs.statSync(filePath).isDirectory());
+
+    botDirectories.forEach((botDirectory) => {
+      const subdirectories = fs
+        .readdirSync(botDirectory)
+        .map((file) => path.join(botDirectory, file))
+        .filter((filePath) => {
+          const isDirectory = fs.statSync(filePath).isDirectory();
+
+          if (isDirectory) {
+            if (metaSuffix === 'botVersion') {
+              // Scan sub-directories that have 'v#' regex
+              return /v\d+/.test(path.basename(filePath));
+            } else if (metaSuffix === 'bot') {
+              // Scan sub-directories that do NOT have 'v#' regex
+              return !/v\d+/.test(path.basename(filePath));
+            }
+          }
+
+          return false; // Default case, not a directory or doesn't match conditions
+        });
+
+      subdirectories.forEach((subdirectory) => {
+        // Process each sub-subdirectory
+        const combinedXmlContents: string[] = processFilesInDirectory(subdirectory);
+        const subdirectoryBasename = path.basename(subdirectory);
+        const filePath = path.join(
+          metadataPath,
+          path.basename(botDirectory),
+          `${subdirectoryBasename}.${metaSuffix}-meta.xml`
+        );
+        composeAndWriteFile(combinedXmlContents, filePath, xmlElement);
+      });
+    });
   } else {
     const subdirectories = fs
       .readdirSync(metadataPath)
