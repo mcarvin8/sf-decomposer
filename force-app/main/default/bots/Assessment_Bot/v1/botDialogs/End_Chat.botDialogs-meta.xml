@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <botDialogs>
+        <botSteps>
+            <botSteps>
+                <conversationSystemMessage>
+                    <type>EndChat</type>
+                </conversationSystemMessage>
+                <type>SystemMessage</type>
+            </botSteps>
+            <type>Group</type>
+        </botSteps>
+        <botSteps>
+            <type>Wait</type>
+        </botSteps>
+        <developerName>End_Chat</developerName>
+        <label>End Chat</label>
+        <showInFooterMenu>false</showInFooterMenu>
+    </botDialogs>

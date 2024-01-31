@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <botDialogs>
+        <botDialogGroup>Message_Items</botDialogGroup>
+        <botSteps>
+            <botMessages>
+                <message>{!AssessmentItemMessage}</message>
+            </botMessages>
+            <type>Message</type>
+        </botSteps>
+        <botSteps>
+            <type>Wait</type>
+        </botSteps>
+        <developerName>Message_Item</developerName>
+        <label>Message Item</label>
+        <showInFooterMenu>false</showInFooterMenu>
+    </botDialogs>

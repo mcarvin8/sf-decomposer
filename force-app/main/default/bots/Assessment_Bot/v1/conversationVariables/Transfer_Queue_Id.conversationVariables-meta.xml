@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <conversationVariables>
+        <SObjectType>Queue</SObjectType>
+        <dataType>Id</dataType>
+        <developerName>Transfer_Queue_Id</developerName>
+        <label>Transfer Queue Id</label>
+    </conversationVariables>

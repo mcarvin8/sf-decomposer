@@ -8,21 +8,13 @@ This command will read all of the decomposed XML files by sub-directories and ad
 
 You should use this before deploying metadata to the target org.
 
-# flags.name.summary
-
-Description of a flag.
-
-# flags.name.description
-
-More information about a flag. Don't repeat the summary.
-
 # examples
 
-- <%= config.bin %> <%= command.id %>
+- `sf decomposer compose -m "flow"`
 
 # flags.dx-directory.summary
 
-Directory containing Salesforce metadata (default: 'force-app/main/default').
+Directory containing Salesforce metadata (default: `force-app/main/default`).
 
 # flags.metadata-type.summary
 

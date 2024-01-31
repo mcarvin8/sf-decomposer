@@ -5,7 +5,10 @@
 The `sfdx-decomposer` is a simple plugin to read the original metadata files for certain metadata types and create smaller, more manageable files for version control. When it's time to deploy decomposed metadata to an org, the inverse function (`compose`) will re-create metadata files for CLI deployments.
 
 **DISCLAIMERS:**
-It is highly recommended that you extensively test this plugin in a sandbox environment on the metadata types you wish to use this tool for. Do not change your production/QA pipelines until you have tested this and are happy with the results. Confirm your deployment pipelines are stable prior to implementing this plugin.
+
+- It is highly recommended that you extensively test this plugin in a sandbox environment on the metadata types you wish to use this tool for.
+- Do not change your production/QA pipelines until you have tested this and are happy with the results.
+- Confirm your deployment pipelines are stable prior to implementing this plugin.
 
 ## Install
 
@@ -15,7 +18,7 @@ sf plugins install sfdx-decomposer@x.y.z
 
 ## Commands
 
-`sfdx-decomposer` supports 2 commands:
+The `sfdx-decomposer` supports 2 commands:
 
 - `sf decomposer decompose`
 - `sf decomposer compose`
@@ -43,10 +46,10 @@ Custom Labels will be decomposed directly in the root labels folder and will hav
 
 ```
 USAGE
-  $ sf decomposer decompose -t <value> -d <value> [--json]
+  $ sf decomposer decompose -m <value> -d <value> [--json]
 
 FLAGS
-  -n, --metadata-type=<value> The type of metadata to decompose.
+  -m, --metadata-type=<value> The type of metadata to decompose.
   -d, --dx-directory=<value>  [default: force-app/main/default] The root directory containing your Salesforce metadata.
 
 GLOBAL FLAGS
@@ -60,7 +63,7 @@ DESCRIPTION
 EXAMPLES
   Decompose all flows:
 
-    $ sf decomposer decompose -t "flow"
+    $ sf decomposer decompose -m "flow"
 ```
 
 ## `sf decomposer compose`
@@ -69,10 +72,10 @@ Reads all of the files created by the decompose command and re-creates the origi
 
 ```
 USAGE
-  $ sf decomposer compose -t <value> -d <value> [--json]
+  $ sf decomposer compose -m <value> -d <value> [--json]
 
 FLAGS
-  -n, --metadata-type=<value> The type of metadata to compose.
+  -m, --metadata-type=<value> The type of metadata to compose.
   -d, --dx-directory=<value>  [default: force-app/main/default] The root directory containing your Salesforce metadata.
 
 GLOBAL FLAGS
@@ -86,30 +89,32 @@ DESCRIPTION
 EXAMPLES
   Compose all flows:
 
-    $ sf decomposer compose -t "flow"
+    $ sf decomposer compose -m "flow"
 ```
 
 ## Supported Metadata
 
 The following metadata types are supported:
 
-- Custom Labels (`-t "labels"`)
-- Workflows (`-t "workflow"`)
-- Profiles (`-t "profile"`)
-- Permission Sets (`-t "permissionset"`)
-- Flows (`-t "flow"`)
-- Matching Rules (`-t "matchingRule"`)
-- Assignment Rules (`-t "assignmentRules"`)
-- Escalation Rules (`-t "escalationRules"`)
-- Sharing Rules (`-t "sharingRules"`)
-- Auto Response Rules (`-t "autoResponseRules"`)
-- Global Value Set Translation (`-t "globalValueSetTranslation"`)
-- Standard Value Set Translation (`-t "standardValueSetTranslation"`)
-- Translations (`-t "translation"`)
-- Standard Value Sets (`-t "standardValueSet"`)
-- Global Value Sets (`-t "globalValueSet"`)
-- AI Scoring Model Definition (`-t "aiScoringModelDefinition"`)
-- Decision Matrix Definition (`-t "decisionMatrixDefinition"`)
+- Custom Labels (`-m "labels"`)
+- Workflows (`-m "workflow"`)
+- Profiles (`-m "profile"`)
+- Permission Sets (`-m "permissionset"`)
+- Flows (`-m "flow"`)
+- Matching Rules (`-m "matchingRule"`)
+- Assignment Rules (`-m "assignmentRules"`)
+- Escalation Rules (`-m "escalationRules"`)
+- Sharing Rules (`-m "sharingRules"`)
+- Auto Response Rules (`-m "autoResponseRules"`)
+- Global Value Set Translation (`-m "globalValueSetTranslation"`)
+- Standard Value Set Translation (`-m "standardValueSetTranslation"`)
+- Translations (`-m "translation"`)
+- Standard Value Sets (`-m "standardValueSet"`)
+- Global Value Sets (`-m "globalValueSet"`)
+- AI Scoring Model Definition (`-m "aiScoringModelDefinition"`)
+- Decision Matrix Definition (`-m "decisionMatrixDefinition"`)
+- Bot (`-m "bot"`)
+- Bot Version (`-m "botVersion"`)
 
 **NOTE**:
 Per Salesforce documentation for **Standard/Global Value Set Translations**, when a value isn't translated, its translation becomes a comment that's paired with its label.
@@ -159,6 +164,8 @@ Salesforce CLI version 2.10.2 correctly handles opt-in style with directories on
 **/standardValueSets/*.standardValueSet-meta.xml
 **/decisionMatrixDefinition/*.decisionMatrixDefinition-meta.xml
 **/aiScoringModelDefinitions/*.aiScoringModelDefinition-meta.xml
+**/bots/*/*.botVersion-meta.xml
+**/bots/*/*.bot-meta.xml
 ```
 
 ### `.forceignore` updates
@@ -182,6 +189,7 @@ Salesforce CLI version 2.10.2 correctly handles opt-in style with directories on
 **/standardValueSets/**/*.xml
 **/decisionMatrixDefinition/**/*.xml
 **/aiScoringModelDefinitions/**/*.xml
+**/bots/**/*.xml
 
 # Allow the meta files
 !**/permissionsets/*.permissionset-meta.xml
@@ -201,79 +209,6 @@ Salesforce CLI version 2.10.2 correctly handles opt-in style with directories on
 !**/standardValueSets/*.standardValueSet-meta.xml
 !**/decisionMatrixDefinition/*.decisionMatrixDefinition-meta.xml
 !**/aiScoringModelDefinitions/*.aiScoringModelDefinition-meta.xml
+!**/bots/*/*.botVersion-meta.xml
+!**/bots/*/*.bot-meta.xml
 ```
-
-## Adding Metadata Types
-
-To add a metadata type via a Pull Request:
-
-1. Reference the metadata type details in https://developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_intro.htm
-2. Add the metadata to the JSON data in `src\metadata\metadata.ts`:
-   - `directoryName` should be the root folder for that metadata type
-   - `metaSuffix` should be the suffix the original meta files use (ex: `labels` is the suffix for `CustomLabels.labels-meta.xml`)
-   - `xmlElement` should be the root element of the original meta files (ex: `CustomLabels` is the root element in meta header `<CustomLabels xmlns="http://soap.sforce.com/2006/04/metadata">`)
-   - `fieldNames` should contain a comma-seperated list (no spaces) of Required Field Names for Nested Elements under the metadata type
-     - Field Names are used to name decomposed meta files for nested elements and should contain unique values
-     - In the below XML file, the `apexClass` field name is a required field name for the nested `<classAccesses>` element and should be included in possible field names for permission set
-     - Fields which do not have nested elements such as `<description>` should not be included in `fieldNames` (All unnested elements will be added to the same meta file when decomposed)
-     - Field Names will be evaluated in the order they appear in the list (ensure `fullName` is first since it's inherited from the Metadata type)
-
-```json
-  {
-    "directoryName": "permissionsets",
-    "metaSuffix": "permissionset",
-    "xmlElement": "PermissionSet",
-    "fieldNames": "fullName,application,apexClass,name,externalDataSource,flow,object,apexPage,recordType,tab,field"
-  },
-```
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
-    <description>Grants all rights needed for an HR administrator to manage employees.</description>
-    <label>HR Administration</label>
-    <userLicense>Salesforce</userLicense>
-    <applicationVisibilities>
-        <application>JobApps__Recruiting</application>
-        <visible>true</visible>
-    </applicationVisibilities>
-    <userPermissions>
-        <enabled>true</enabled>
-        <name>APIEnabled</name>
-    </userPermissions>
-    <objectPermissions>
-        <allowCreate>true</allowCreate>
-        <allowDelete>true</allowDelete>
-        <allowEdit>true</allowEdit>
-        <allowRead>true</allowRead>
-        <viewAllRecords>true</viewAllRecords>
-        <modifyAllRecords>true</modifyAllRecords>
-        <object>Job_Request__c</object>
-    </objectPermissions>
-    <fieldPermissions>
-        <editable>true</editable>
-        <field>Job_Request__c.Salary__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
-    <pageAccesses>
-        <apexPage>Job_Request_Web_Form</apexPage>
-        <enabled>true</enabled>
-    </pageAccesses>
-    <classAccesses>
-      <apexClass>Send_Email_Confirmation</apexClass>
-      <enabled>true</enabled>
-    </classAccesses>
-    <tabSettings>
-        <tab>Job_Request__c</tab>
-        <visibility>Available</visibility>
-    </tabSettings>
-    <recordTypeVisibilities>
-        <recordType>Recruiting.DevManager</recordType>
-        <visible>true</visible>
-    </recordTypeVisibilities>
-</PermissionSet>
-```
-
-3. Add an example meta file to the `force-app/main/default` under the proper `directoryName`.
-4. Run the `decompose` function to decompose the original meta files for the new metadata type. Confirm the files are decomposed as intended.
-5. Run the `compose` function to recompose the meta files for the new metadata type. Confirm the meta files created are accepted for deployments.

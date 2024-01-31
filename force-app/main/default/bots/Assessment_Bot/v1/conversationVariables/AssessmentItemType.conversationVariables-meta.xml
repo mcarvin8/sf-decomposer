@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <conversationVariables>
+        <dataType>Text</dataType>
+        <developerName>AssessmentItemType</developerName>
+        <label>AssessmentItemType</label>
+    </conversationVariables>
