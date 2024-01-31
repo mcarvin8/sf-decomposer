@@ -18,7 +18,7 @@ sf plugins install sfdx-decomposer@x.y.z
 
 ## Commands
 
-`sfdx-decomposer` supports 2 commands:
+The `sfdx-decomposer` supports 2 commands:
 
 - `sf decomposer decompose`
 - `sf decomposer compose`
