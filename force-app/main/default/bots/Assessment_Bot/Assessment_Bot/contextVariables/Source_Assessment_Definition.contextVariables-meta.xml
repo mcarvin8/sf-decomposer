@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <contextVariables>
+        <contextVariableMappings>
+            <SObjectType>LiveChatTranscript</SObjectType>
+            <fieldName>LiveChatTranscript.Source_Assessment_Definition__c</fieldName>
+            <messageType>WebChat</messageType>
+        </contextVariableMappings>
+        <dataType>Id</dataType>
+        <developerName>Source_Assessment_Definition</developerName>
+        <label>Source Assessment Definition</label>
+    </contextVariables>

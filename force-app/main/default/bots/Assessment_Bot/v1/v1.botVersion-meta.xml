@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BotVersion>
+    <entryDialog>Welcome</entryDialog>
+    <fullName>v1</fullName>
+    <mainMenuDialog>Welcome</mainMenuDialog>
+    <responseDelayMilliseconds>0</responseDelayMilliseconds>
+</BotVersion>

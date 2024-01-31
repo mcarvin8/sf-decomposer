@@ -107,6 +107,21 @@ const jsonData: Metadata[] = [
     xmlElement: 'AIScoringModelDefinition',
     fieldNames: 'fullName,name',
   },
+  {
+    directoryName: 'bots',
+    metaSuffix: 'botVersion',
+    xmlElement: 'BotVersion',
+    fieldNames: 'fullName,name,developerName,stepIdentifier,invocationActionName,parameterName,nlpProviderType,dialog',
+    recurse: true,
+  },
+  {
+    directoryName: 'bots',
+    metaSuffix: 'bot',
+    xmlElement: 'Bot',
+    fieldNames:
+      'fullName,name,developerName,stepIdentifier,invocationActionName,parameterName,nlpProviderType,dialog,chatButtonName',
+    recurse: true,
+  },
 ];
 
 export default jsonData;

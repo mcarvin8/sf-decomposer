@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <conversationVariables>
+        <dataType>Text</dataType>
+        <developerName>Transfer_Assessment_Id</developerName>
+        <label>Transfer Assessment Id</label>
+    </conversationVariables>

@@ -11,6 +11,7 @@ export function getAttributesForMetadataType(
   fieldNames: string;
   xmlElement: string;
   metadataPath: string;
+  recurse?: boolean;
 } | null {
   const metadata = jsonData.find((item) => item.metaSuffix === metadataType);
 
@@ -20,12 +21,14 @@ export function getAttributesForMetadataType(
     const fieldNames = metadata.fieldNames;
     const xmlElement = metadata.xmlElement;
     const metadataPath = `${dxDirectory}/${directoryName}`;
+    const recurse = metadata.recurse ?? false;
 
     return {
       metaSuffix,
       fieldNames,
       xmlElement,
       metadataPath,
+      recurse,
     };
   }
 

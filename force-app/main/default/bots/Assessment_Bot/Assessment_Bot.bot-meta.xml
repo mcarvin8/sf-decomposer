@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Bot xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Bot that does an assessment based on the configured assessment metadata</description>
+    <label>Assessment Bot</label>
+    <logPrivateConversationData>true</logPrivateConversationData>
+    <botMlDomain>
+        <label>Assessment Bot</label>
+        <name>Assessment_Bot</name>
+    </botMlDomain>
+    <contextVariables>
+        <contextVariableMappings>
+            <SObjectType>LiveChatTranscript</SObjectType>
+            <fieldName>LiveChatTranscript.ChatKey</fieldName>
+            <messageType>WebChat</messageType>
+        </contextVariableMappings>
+        <dataType>Text</dataType>
+        <developerName>ChatKey</developerName>
+        <label>Chat Key</label>
+    </contextVariables>
+    <contextVariables>
+        <contextVariableMappings>
+            <SObjectType>LiveChatTranscript</SObjectType>
+            <fieldName>LiveChatTranscript.ContactId</fieldName>
+            <messageType>WebChat</messageType>
+        </contextVariableMappings>
+        <dataType>Id</dataType>
+        <developerName>ContactId</developerName>
+        <label>Contact Id</label>
+    </contextVariables>
+    <contextVariables>
+        <contextVariableMappings>
+            <SObjectType>LiveChatTranscript</SObjectType>
+            <fieldName>LiveChatTranscript.LiveChatVisitorId</fieldName>
+            <messageType>WebChat</messageType>
+        </contextVariableMappings>
+        <dataType>Id</dataType>
+        <developerName>EndUserId</developerName>
+        <label>End User Id</label>
+    </contextVariables>
+    <contextVariables>
+        <contextVariableMappings>
+            <SObjectType>LiveChatTranscript</SObjectType>
+            <fieldName>LiveChatTranscript.Id</fieldName>
+            <messageType>WebChat</messageType>
+        </contextVariableMappings>
+        <dataType>Id</dataType>
+        <developerName>RoutableId</developerName>
+        <label>Routable Id</label>
+    </contextVariables>
+    <contextVariables>
+        <contextVariableMappings>
+            <SObjectType>LiveChatTranscript</SObjectType>
+            <fieldName>LiveChatTranscript.Source_Assessment_Definition__c</fieldName>
+            <messageType>WebChat</messageType>
+        </contextVariableMappings>
+        <dataType>Id</dataType>
+        <developerName>Source_Assessment_Definition</developerName>
+        <label>Source Assessment Definition</label>
+    </contextVariables>
+</Bot>

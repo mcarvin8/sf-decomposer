@@ -113,6 +113,8 @@ The following metadata types are supported:
 - Global Value Sets (`-m "globalValueSet"`)
 - AI Scoring Model Definition (`-m "aiScoringModelDefinition"`)
 - Decision Matrix Definition (`-m "decisionMatrixDefinition"`)
+- Bot (`-m "bot"`)
+- Bot Version (`-m "botVersion"`)
 
 **NOTE**:
 Per Salesforce documentation for **Standard/Global Value Set Translations**, when a value isn't translated, its translation becomes a comment that's paired with its label.
