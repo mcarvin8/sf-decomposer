@@ -5,7 +5,10 @@
 The `sfdx-decomposer` is a simple plugin to read the original metadata files for certain metadata types and create smaller, more manageable files for version control. When it's time to deploy decomposed metadata to an org, the inverse function (`compose`) will re-create metadata files for CLI deployments.
 
 **DISCLAIMERS:**
-It is highly recommended that you extensively test this plugin in a sandbox environment on the metadata types you wish to use this tool for. Do not change your production/QA pipelines until you have tested this and are happy with the results. Confirm your deployment pipelines are stable prior to implementing this plugin.
+
+- It is highly recommended that you extensively test this plugin in a sandbox environment on the metadata types you wish to use this tool for.
+- Do not change your production/QA pipelines until you have tested this and are happy with the results.
+- Confirm your deployment pipelines are stable prior to implementing this plugin.
 
 ## Install
 
@@ -93,23 +96,23 @@ EXAMPLES
 
 The following metadata types are supported:
 
-- Custom Labels (`-t "labels"`)
-- Workflows (`-t "workflow"`)
-- Profiles (`-t "profile"`)
-- Permission Sets (`-t "permissionset"`)
-- Flows (`-t "flow"`)
-- Matching Rules (`-t "matchingRule"`)
-- Assignment Rules (`-t "assignmentRules"`)
-- Escalation Rules (`-t "escalationRules"`)
-- Sharing Rules (`-t "sharingRules"`)
-- Auto Response Rules (`-t "autoResponseRules"`)
-- Global Value Set Translation (`-t "globalValueSetTranslation"`)
-- Standard Value Set Translation (`-t "standardValueSetTranslation"`)
-- Translations (`-t "translation"`)
-- Standard Value Sets (`-t "standardValueSet"`)
-- Global Value Sets (`-t "globalValueSet"`)
-- AI Scoring Model Definition (`-t "aiScoringModelDefinition"`)
-- Decision Matrix Definition (`-t "decisionMatrixDefinition"`)
+- Custom Labels (`-m "labels"`)
+- Workflows (`-m "workflow"`)
+- Profiles (`-m "profile"`)
+- Permission Sets (`-m "permissionset"`)
+- Flows (`-m "flow"`)
+- Matching Rules (`-m "matchingRule"`)
+- Assignment Rules (`-m "assignmentRules"`)
+- Escalation Rules (`-m "escalationRules"`)
+- Sharing Rules (`-m "sharingRules"`)
+- Auto Response Rules (`-m "autoResponseRules"`)
+- Global Value Set Translation (`-m "globalValueSetTranslation"`)
+- Standard Value Set Translation (`-m "standardValueSetTranslation"`)
+- Translations (`-m "translation"`)
+- Standard Value Sets (`-m "standardValueSet"`)
+- Global Value Sets (`-m "globalValueSet"`)
+- AI Scoring Model Definition (`-m "aiScoringModelDefinition"`)
+- Decision Matrix Definition (`-m "decisionMatrixDefinition"`)
 
 **NOTE**:
 Per Salesforce documentation for **Standard/Global Value Set Translations**, when a value isn't translated, its translation becomes a comment that's paired with its label.
