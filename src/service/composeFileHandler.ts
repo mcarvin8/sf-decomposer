@@ -32,7 +32,13 @@ const processFilesInDirectory = async (dirPath: string, metaSuffix: string): Pro
   return combinedXmlContents;
 };
 
-export async function composeFileHandler(metadataPath: string, metaSuffix: string, xmlElement: string): Promise<void> {
+export async function composeFileHandler(metaAttributes: {
+  metaSuffix: string;
+  xmlElement: string;
+  metadataPath: string;
+}): Promise<void> {
+  const { metaSuffix, xmlElement, metadataPath } = metaAttributes;
+
   // Process labels in root metadata folder
   // Process other metadata files in subdirectories
   if (metaSuffix === 'labels') {

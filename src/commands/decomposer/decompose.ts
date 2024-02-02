@@ -2,15 +2,15 @@
 
 import { SfCommand, Flags } from '@salesforce/sf-plugins-core';
 import { Messages } from '@salesforce/core';
+import { RegistryAccess } from '@salesforce/source-deploy-retrieve';
 import { METADATA_DIR_DEFAULT_VALUE } from '../../helpers/constants.js';
-import jsonData from '../../metadata/metadata.js';
-import { Metadata } from '../../metadata/metadataInterface.js';
-import { getAttributesForMetadataType } from '../../service/getAttributesForMetadataType.js';
+import { jsonData, defaultuniqueIdElements } from '../../metadata/metadata.js';
 import { decomposeFileHandler } from '../../service/decomposeFileHandler.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('sfdx-decomposer', 'decomposer.decompose');
-const metaSuffixOptions = jsonData.map((item: Metadata) => item.metaSuffix);
+const registryAccess = new RegistryAccess();
+const metaSuffixOptions = jsonData.map((item) => item.metaSuffix);
 
 export type DecomposerDecomposeResult = {
   path: string;
@@ -42,12 +42,26 @@ export default class DecomposerDecompose extends SfCommand<DecomposerDecomposeRe
 
     const metadataTypeToRetrieve = flags['metadata-type'];
     const dxDirectory = flags['dx-directory'];
-    const metaAttributes = getAttributesForMetadataType(jsonData, metadataTypeToRetrieve, dxDirectory);
+    const metadataTypeEntry = jsonData.find((item) => item.metaSuffix === metadataTypeToRetrieve);
 
-    if (metaAttributes) {
-      const { metaSuffix, fieldNames, xmlElement, metadataPath, recurse } = metaAttributes;
-      await decomposeFileHandler(metadataPath, metaSuffix, fieldNames, xmlElement, recurse);
-      this.log(`All metadata files have been decomposed for the metadata type: ${metaSuffix}`);
+    if (metadataTypeEntry) {
+      const { metaSuffix } = metadataTypeEntry;
+      const metadataType = registryAccess.getTypeBySuffix(metaSuffix);
+      if (metadataType) {
+        const metaAttributes = {
+          metaSuffix,
+          xmlElement: metadataType.name,
+          metadataPath:
+            metaSuffix === 'botVersion'
+              ? `${dxDirectory}/bots` // Change the directoryName to 'bots' until SDR is fixed
+              : `${dxDirectory}/${metadataType.directoryName}`,
+          uniqueIdElements: defaultuniqueIdElements,
+        };
+        await decomposeFileHandler(metaAttributes);
+        this.log(`All metadata files have been decomposed for the metadata type: ${metaSuffix}`);
+      } else {
+        this.error(`Metadata type definition not found for suffix: ${metadataTypeToRetrieve}`);
+      }
     } else {
       this.error(`Metadata type ${metadataTypeToRetrieve} not found.`);
     }

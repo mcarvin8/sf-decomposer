@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Translation xmlns="http://soap.sforce.com/2006/04/metadata">
+<Translations xmlns="http://soap.sforce.com/2006/04/metadata">
     <bots>
         <fullName>BotName</fullName>
         <botVersions>
@@ -66,4 +66,4 @@
         <label>SControl Label!</label>
         <name>SControl</name>
     </scontrols>
-</Translation>
+</Translations>
