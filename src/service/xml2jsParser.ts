@@ -7,13 +7,13 @@ import { XMLParser } from 'fast-xml-parser';
 import { XML_PARSER_OPTION } from '../types/xmlParserOptions.js';
 import { XmlElement } from '../types/xmlElement.js';
 import { XML_HEADER } from '../helpers/constants.js';
-import { findFieldName } from './findFieldName.js';
+import { findUniqueIdElement } from './findUniqueIdElement.js';
 import { printChildElements } from './printChildElements.js';
 
 export function xml2jsParser(
   xmlString: string,
   metadataPath: string,
-  fieldNames: string,
+  uniqueIdElements: string,
   xmlElement: string,
   baseName: string,
   metaSuffix: string,
@@ -35,10 +35,10 @@ export function xml2jsParser(
         if (Array.isArray(rootElement[key])) {
           // Iterate through the elements of the array
           for (const element of rootElement[key] as XmlElement[]) {
-            buildNestedFile(element, metadataPath, metaSuffix, fieldNames, key, indent);
+            buildNestedFile(element, metadataPath, metaSuffix, uniqueIdElements, key, indent);
           }
         } else if (typeof rootElement[key] === 'object') {
-          buildNestedFile(rootElement[key] as XmlElement, metadataPath, metaSuffix, fieldNames, key, indent);
+          buildNestedFile(rootElement[key] as XmlElement, metadataPath, metaSuffix, uniqueIdElements, key, indent);
         } else {
           // Process XML elements that do not have children (e.g., leaf elements)
           const fieldValue = rootElement[key];
@@ -73,14 +73,14 @@ function buildNestedFile(
   element: XmlElement,
   metadataPath: string,
   metaSuffix: string,
-  fieldNames: string,
+  uniqueIdElements: string,
   parentKey: string,
   indent: string
 ): void {
   let elementContent = '';
   elementContent += `${XML_HEADER}\n`;
 
-  const fieldName = findFieldName(element, fieldNames);
+  const fieldName = findUniqueIdElement(element, uniqueIdElements);
 
   const outputDirectory = path.join(metadataPath, metaSuffix === 'labels' ? '' : parentKey);
   const outputFileName: string = `${fieldName}.${

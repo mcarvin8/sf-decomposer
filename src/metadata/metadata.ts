@@ -1,127 +1,112 @@
 'use strict';
 
-import { Metadata } from './metadataInterface.js';
+import { RegistryAccess } from '@salesforce/source-deploy-retrieve';
 
-const jsonData: Metadata[] = [
+// Create an instance of RegistryAccess
+const registryAccess = new RegistryAccess();
+
+// String to store default unqiue ID element
+let defaultuniqueIdElements: string = 'fullName';
+
+// Define supported metadata and any specific field names for nested elements
+// Default: `fullName` inherited from the Metadata type
+
+const jsonData = [
   {
-    directoryName: 'labels',
     metaSuffix: 'labels',
-    xmlElement: 'CustomLabels',
-    fieldNames: 'fullName',
   },
   {
-    directoryName: 'workflows',
     metaSuffix: 'workflow',
-    xmlElement: 'Workflow',
-    fieldNames: 'fullName',
   },
   {
-    directoryName: 'profiles',
     metaSuffix: 'profile',
-    xmlElement: 'Profile',
-    fieldNames:
-      'fullName,application,apexClass,name,externalDataSource,flow,object,apexPage,recordType,tab,field,startAddress,dataCategoryGroup,layout,weekdayStart,friendlyname',
+    uniqueIdElements:
+      'application,apexClass,name,externalDataSource,flow,object,apexPage,recordType,tab,field,startAddress,dataCategoryGroup,layout,weekdayStart,friendlyname',
   },
   {
-    directoryName: 'permissionsets',
     metaSuffix: 'permissionset',
-    xmlElement: 'PermissionSet',
-    fieldNames: 'fullName,application,apexClass,name,externalDataSource,flow,object,apexPage,recordType,tab,field',
+    uniqueIdElements: 'application,apexClass,name,externalDataSource,flow,object,apexPage,recordType,tab,field',
   },
   {
-    directoryName: 'matchingRules',
     metaSuffix: 'matchingRule',
-    xmlElement: 'MatchingRules',
-    fieldNames: 'fullName,name',
+    uniqueIdElements: 'name',
   },
   {
-    directoryName: 'assignmentRules',
     metaSuffix: 'assignmentRules',
-    xmlElement: 'AssignmentRules',
-    fieldNames: 'fullName,name',
+    uniqueIdElements: 'name',
   },
   {
-    directoryName: 'flows',
     metaSuffix: 'flow',
-    xmlElement: 'Flow',
-    fieldNames:
-      'fullName,apexClass,name,object,field,layout,actionName,targetReference,assignToReference,choiceText,promptText',
+    uniqueIdElements:
+      'apexClass,name,object,field,layout,actionName,targetReference,assignToReference,choiceText,promptText',
   },
   {
-    directoryName: 'escalationRules',
     metaSuffix: 'escalationRules',
-    xmlElement: 'EscalationRules',
-    fieldNames: 'fullName,name',
+    uniqueIdElements: 'name',
   },
   {
-    directoryName: 'sharingRules',
     metaSuffix: 'sharingRules',
-    xmlElement: 'SharingRules',
-    fieldNames: 'fullName,name',
+    uniqueIdElements: 'name',
   },
   {
-    directoryName: 'autoResponseRules',
     metaSuffix: 'autoResponseRules',
-    xmlElement: 'AutoResponseRules',
-    fieldNames: 'fullName,name',
+    uniqueIdElements: 'name',
   },
   {
-    directoryName: 'globalValueSetTranslations',
     metaSuffix: 'globalValueSetTranslation',
-    xmlElement: 'GlobalValueSetTranslation',
-    fieldNames: 'fullName,masterLabel',
+    uniqueIdElements: 'masterLabel',
   },
   {
-    directoryName: 'standardValueSetTranslations',
     metaSuffix: 'standardValueSetTranslation',
-    xmlElement: 'StandardValueSetTranslation',
-    fieldNames: 'fullName,masterLabel',
+    uniqueIdElements: 'masterLabel',
   },
   {
-    directoryName: 'translations',
     metaSuffix: 'translation',
-    xmlElement: 'Translation',
-    fieldNames: 'fullName,name',
+    uniqueIdElements: 'name',
   },
   {
-    directoryName: 'globalValueSets',
     metaSuffix: 'globalValueSet',
-    xmlElement: 'GlobalValueSet',
-    fieldNames: 'fullName,name',
+    uniqueIdElements: 'name',
   },
   {
-    directoryName: 'standardValueSets',
     metaSuffix: 'standardValueSet',
-    xmlElement: 'StandardValueSet',
-    fieldNames: 'fullName,name',
+    uniqueIdElements: 'name',
   },
   {
-    directoryName: 'decisionMatrixDefinition',
     metaSuffix: 'decisionMatrixDefinition',
-    xmlElement: 'DecisionMatrixDefinition',
-    fieldNames: 'fullName,name',
+    uniqueIdElements: 'name',
   },
   {
-    directoryName: 'aiScoringModelDefinitions',
     metaSuffix: 'aiScoringModelDefinition',
-    xmlElement: 'AIScoringModelDefinition',
-    fieldNames: 'fullName,name',
+    uniqueIdElements: 'name',
   },
   {
-    directoryName: 'bots',
     metaSuffix: 'botVersion',
-    xmlElement: 'BotVersion',
-    fieldNames: 'fullName,name,developerName,stepIdentifier,invocationActionName,parameterName,nlpProviderType,dialog',
-    recurse: true,
+    uniqueIdElements: 'name,developerName,stepIdentifier,invocationActionName,parameterName,nlpProviderType,dialog',
   },
   {
-    directoryName: 'bots',
     metaSuffix: 'bot',
-    xmlElement: 'Bot',
-    fieldNames:
-      'fullName,name,developerName,stepIdentifier,invocationActionName,parameterName,nlpProviderType,dialog,chatButtonName',
-    recurse: true,
+    uniqueIdElements:
+      'name,developerName,stepIdentifier,invocationActionName,parameterName,nlpProviderType,dialog,chatButtonName',
   },
 ];
 
-export default jsonData;
+// Iterate over jsonData and call getTypeBySuffix for each metaSuffix
+jsonData.forEach((entry) => {
+  const { metaSuffix, uniqueIdElements } = entry;
+  const metadataType = registryAccess.getTypeBySuffix(metaSuffix);
+
+  // Handle the result
+  if (metadataType) {
+    // console.log(`Metadata Type Name for suffix '${metaSuffix}': ${metadataType.fullName}`);
+    if (uniqueIdElements) {
+      // Append additional field names to the defaultuniqueIdElements string
+      defaultuniqueIdElements += `,${uniqueIdElements}`;
+      // console.log(`Field Names: ${uniqueIdElements}`);
+    }
+  } else {
+    // console.error(`No metadata type found for suffix: ${metaSuffix}`);
+  }
+});
+
+export { jsonData, defaultuniqueIdElements };
