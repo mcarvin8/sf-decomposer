@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-    <quickActions>
-        <label>QuickAction Label!</label>
-        <name>QuickAction</name>
-        <aspect>Master</aspect>
-    </quickActions>

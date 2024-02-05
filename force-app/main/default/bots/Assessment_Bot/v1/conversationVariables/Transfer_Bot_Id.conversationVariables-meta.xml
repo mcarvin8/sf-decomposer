@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-    <conversationVariables>
-        <SObjectType>BotDefinition</SObjectType>
-        <dataType>Id</dataType>
-        <developerName>Transfer_Bot_Id</developerName>
-        <label>Transfer Bot Id</label>
-    </conversationVariables>

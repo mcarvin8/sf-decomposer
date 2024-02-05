@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-    <labels>
-        <fullName>quoteAuto</fullName>
-        <value>This is an automatically generated quote.</value>
-        <language>en_US</language>
-        <protected>false</protected>
-        <shortDescription>Automatic Quote</shortDescription>
-    </labels>

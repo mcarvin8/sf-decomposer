@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-    <variables>
-        <name>contact</name>
-        <dataType>SObject</dataType>
-        <isCollection>false</isCollection>
-        <isInput>false</isInput>
-        <isOutput>false</isOutput>
-        <objectType>Contact</objectType>
-    </variables>

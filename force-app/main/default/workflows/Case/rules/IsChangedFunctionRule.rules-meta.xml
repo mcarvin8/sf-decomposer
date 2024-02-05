@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-    <rules>
-        <fullName>IsChangedFunctionRule</fullName>
-        <active>true</active>
-        <description>IsChangedDesc</description>
-        <formula>ISCHANGED(Name)</formula>
-        <triggerType>onAllChanges</triggerType>
-    </rules>
