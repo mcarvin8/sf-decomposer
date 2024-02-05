@@ -1,7 +1,9 @@
-/* eslint-disable  */
+'use strict';
 
-import crypto from 'node:crypto';
-import * as fs from 'node:fs/promises';
+import * as fs from 'node:fs';
+import * as assert from 'node:assert';
+import * as path from 'node:path';
+import * as fsPromises from 'node:fs/promises';
 import * as fsSync from 'fs-extra';
 
 import { TestContext } from '@salesforce/core/lib/testSetup.js';
@@ -18,13 +20,9 @@ describe('decomposer', () => {
 
   const originalDirectory: string = 'force-app/main/default';
   const mockDirectory: string = 'mock';
-  let originalHashes: string[];
 
   before(async () => {
     sfCommandStubs = stubSfCommandUx($$.SANDBOX);
-
-    // Calculate SHA-256 hashes for all files in the original directory
-    originalHashes = await calculateHashes(originalDirectory);
 
     // Create a mock directory by copying the original directory
     await copyAsync(originalDirectory, mockDirectory);
@@ -69,30 +67,30 @@ describe('decomposer', () => {
     expect(errorOutput).to.not.include('Error');
   });
 
-  it('should confirm the files in the directory match the original files', async () => {
-    const mockHashes = await calculateHashes(mockDirectory);
-    expect(mockHashes).to.deep.equal(originalHashes);
+  it('should confirm the composed files in a mock directory match the reference files (force-app)', async () => {
+    compareDirectories(originalDirectory, mockDirectory);
   });
 });
 
-async function calculateHashes(directoryPath: string): Promise<string[]> {
-  const fileNames: string[] = await fs.readdir(directoryPath);
-  const hashes: string[] = [];
+function compareDirectories(referenceDir: string, mockDir: string): void {
+  const entriesinRef = fs.readdirSync(referenceDir, { withFileTypes: true });
 
-  for (const fileName of fileNames) {
-    const filePath: string = `${directoryPath}/${fileName}`;
+  // Only compare files that are in the reference directory (composed files)
+  // Ignore files only found in the mock directory (decomposed files)
+  for (const entry of entriesinRef) {
+    const refEntryPath = path.join(referenceDir, entry.name);
+    const mockPath = path.join(mockDir, entry.name);
 
-    // Check if the current item is a file
-    const isFile = (await fs.stat(filePath)).isFile();
-
-    if (isFile) {
-      const fileData: Buffer = await fs.readFile(filePath);
-      const hash: string = crypto.createHash('sha256').update(fileData).digest('hex');
-      hashes.push(hash);
+    if (entry.isDirectory()) {
+      // If it's a directory, recursively compare its contents
+      compareDirectories(refEntryPath, mockPath);
+    } else {
+      // If it's a file, compare its content
+      const refContent = fs.readFileSync(refEntryPath, 'utf-8');
+      const mockContent = fs.readFileSync(mockPath, 'utf-8');
+      assert.strictEqual(refContent, mockContent, `File content is different for ${entry.name}`);
     }
   }
-
-  return hashes;
 }
 
 async function copyAsync(source: string, destination: string): Promise<void> {
@@ -101,5 +99,5 @@ async function copyAsync(source: string, destination: string): Promise<void> {
 
 function removeSync(directoryPath: string): void {
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  fs.rm(directoryPath, { recursive: true });
+  fsPromises.rm(directoryPath, { recursive: true });
 }
