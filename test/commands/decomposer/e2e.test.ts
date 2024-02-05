@@ -13,7 +13,7 @@ import DecomposerCompose from '../../../src/commands/decomposer/compose.js';
 import DecomposerDecompose from '../../../src/commands/decomposer/decompose.js';
 import { jsonData } from '../../../src/metadata/metadata.js';
 
-describe('decomposer', () => {
+describe('e2e', () => {
   const $$ = new TestContext();
   let sfCommandStubs: ReturnType<typeof stubSfCommandUx>;
   let testCounter = 0; // Counter to track the test order
