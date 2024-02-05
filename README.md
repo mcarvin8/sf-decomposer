@@ -212,3 +212,7 @@ Salesforce CLI version 2.10.2 correctly handles opt-in style with directories on
 !**/bots/*/*.botVersion-meta.xml
 !**/bots/*/*.bot-meta.xml
 ```
+
+## Contributing
+
+Any contributions you would like to make are appreciated. Please see [CONTRIBUTING](https://github.com/mcarvin8/sfdx-decomposer-plugin/blob/main/CONTRIBUTING.md).
