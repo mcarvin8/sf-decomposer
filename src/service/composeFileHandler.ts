@@ -4,6 +4,7 @@
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 
+import { Logger } from '@salesforce/core';
 import { CUSTOM_LABELS_FILE } from '../helpers/constants.js';
 import { composeAndWriteFile } from '../service/composeAndWriteFile.js';
 const processFilesInDirectory = async (dirPath: string, metaSuffix: string): Promise<string[]> => {
@@ -32,11 +33,14 @@ const processFilesInDirectory = async (dirPath: string, metaSuffix: string): Pro
   return combinedXmlContents;
 };
 
-export async function composeFileHandler(metaAttributes: {
-  metaSuffix: string;
-  xmlElement: string;
-  metadataPath: string;
-}): Promise<void> {
+export async function composeFileHandler(
+  metaAttributes: {
+    metaSuffix: string;
+    xmlElement: string;
+    metadataPath: string;
+  },
+  log: Logger
+): Promise<void> {
   const { metaSuffix, xmlElement, metadataPath } = metaAttributes;
 
   // Process labels in root metadata folder
@@ -45,7 +49,7 @@ export async function composeFileHandler(metaAttributes: {
     const combinedXmlContents: string[] = await processFilesInDirectory(metadataPath, metaSuffix);
     const filePath = path.join(metadataPath, CUSTOM_LABELS_FILE);
 
-    await composeAndWriteFile(combinedXmlContents, filePath, xmlElement);
+    await composeAndWriteFile(combinedXmlContents, filePath, xmlElement, log);
   } else if (metaSuffix === 'bot' || metaSuffix === 'botVersion') {
     const botDirectories = (await fs.readdir(metadataPath)).map((file) => path.join(metadataPath, file));
 
@@ -69,7 +73,7 @@ export async function composeFileHandler(metaAttributes: {
               path.basename(botDirectory),
               `${subdirectoryBasename}.${metaSuffix}-meta.xml`
             );
-            await composeAndWriteFile(combinedXmlContents, filePath, xmlElement);
+            await composeAndWriteFile(combinedXmlContents, filePath, xmlElement, log);
           }
         }
       }
@@ -84,7 +88,7 @@ export async function composeFileHandler(metaAttributes: {
         const subdirectoryBasename = path.basename(subdirectory);
         const filePath = path.join(metadataPath, `${subdirectoryBasename}.${metaSuffix}-meta.xml`);
 
-        await composeAndWriteFile(combinedXmlContents, filePath, xmlElement);
+        await composeAndWriteFile(combinedXmlContents, filePath, xmlElement, log);
       }
     }
   }

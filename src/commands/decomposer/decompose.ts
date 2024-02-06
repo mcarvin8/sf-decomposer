@@ -1,7 +1,7 @@
 'use strict';
 
 import { SfCommand, Flags } from '@salesforce/sf-plugins-core';
-import { Messages } from '@salesforce/core';
+import { Messages, Logger } from '@salesforce/core';
 import { RegistryAccess } from '@salesforce/source-deploy-retrieve';
 import { METADATA_DIR_DEFAULT_VALUE } from '../../helpers/constants.js';
 import { jsonData, defaultuniqueIdElements } from '../../metadata/metadata.js';
@@ -39,7 +39,7 @@ export default class DecomposerDecompose extends SfCommand<DecomposerDecomposeRe
 
   public async run(): Promise<DecomposerDecomposeResult> {
     const { flags } = await this.parse(DecomposerDecompose);
-
+    const log = await Logger.child(this.ctor.name);
     const metadataTypeToRetrieve = flags['metadata-type'];
     const dxDirectory = flags['dx-directory'];
     const metadataTypeEntry = jsonData.find((item) => item.metaSuffix === metadataTypeToRetrieve);
@@ -57,7 +57,7 @@ export default class DecomposerDecompose extends SfCommand<DecomposerDecomposeRe
               : `${dxDirectory}/${metadataType.directoryName}`,
           uniqueIdElements: defaultuniqueIdElements,
         };
-        await decomposeFileHandler(metaAttributes);
+        await decomposeFileHandler(metaAttributes, log);
         this.log(`All metadata files have been decomposed for the metadata type: ${metaSuffix}`);
       } else {
         this.error(`Metadata type definition not found for suffix: ${metadataTypeToRetrieve}`);

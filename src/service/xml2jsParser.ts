@@ -4,6 +4,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { XMLParser } from 'fast-xml-parser';
 
+import { Logger } from '@salesforce/core';
 import { XML_PARSER_OPTION } from '../types/xmlParserOptions.js';
 import { XmlElement } from '../types/xmlElement.js';
 import { XML_HEADER } from '../helpers/constants.js';
@@ -17,7 +18,8 @@ export function xml2jsParser(
   xmlElement: string,
   baseName: string,
   metaSuffix: string,
-  indent: string
+  indent: string,
+  log: Logger
 ): void {
   try {
     const xmlParser = new XMLParser(XML_PARSER_OPTION);
@@ -35,10 +37,10 @@ export function xml2jsParser(
         if (Array.isArray(rootElement[key])) {
           // Iterate through the elements of the array
           for (const element of rootElement[key] as XmlElement[]) {
-            buildNestedFile(element, metadataPath, metaSuffix, uniqueIdElements, key, indent);
+            buildNestedFile(element, metadataPath, metaSuffix, uniqueIdElements, key, indent, log);
           }
         } else if (typeof rootElement[key] === 'object') {
-          buildNestedFile(rootElement[key] as XmlElement, metadataPath, metaSuffix, uniqueIdElements, key, indent);
+          buildNestedFile(rootElement[key] as XmlElement, metadataPath, metaSuffix, uniqueIdElements, key, indent, log);
         } else {
           // Process XML elements that do not have children (e.g., leaf elements)
           const fieldValue = rootElement[key];
@@ -62,10 +64,10 @@ export function xml2jsParser(
       const leafOutputPath = path.join(metadataPath, `${baseName}.${metaSuffix}-meta.xml`);
       fs.writeFileSync(leafOutputPath, leafFile);
 
-      // console.log(`All leaf elements saved to: ${leafOutputPath}`);
+      log.debug(`All leaf elements saved to: ${leafOutputPath}`);
     }
   } catch (err) {
-    // console.error('Error parsing XML:', err);
+    log.error('Error parsing XML:', err);
   }
 }
 
@@ -75,7 +77,8 @@ function buildNestedFile(
   metaSuffix: string,
   uniqueIdElements: string,
   parentKey: string,
-  indent: string
+  indent: string,
+  log: Logger
 ): void {
   let elementContent = '';
   elementContent += `${XML_HEADER}\n`;
@@ -100,5 +103,5 @@ function buildNestedFile(
 
   // Write the XML content to the determined output path
   fs.writeFileSync(outputPath, decomposeFileContents);
-  // console.log(`XML content saved to: ${outputPath}`);
+  log.debug(`XML content saved to: ${outputPath}`);
 }
