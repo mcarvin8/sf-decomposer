@@ -2,7 +2,7 @@
 
 import { SfCommand, Flags } from '@salesforce/sf-plugins-core';
 import { RegistryAccess } from '@salesforce/source-deploy-retrieve';
-import { Messages } from '@salesforce/core';
+import { Messages, Logger } from '@salesforce/core';
 import { METADATA_DIR_DEFAULT_VALUE } from '../../helpers/constants.js';
 import { jsonData } from '../../metadata/metadata.js';
 import { composeFileHandler } from '../../service/composeFileHandler.js';
@@ -39,7 +39,7 @@ export default class DecomposerCompose extends SfCommand<DecomposerComposeResult
 
   public async run(): Promise<DecomposerComposeResult> {
     const { flags } = await this.parse(DecomposerCompose);
-
+    const log = await Logger.child(this.ctor.name);
     const metadataTypeToRetrieve = flags['metadata-type'];
     const dxDirectory = flags['dx-directory'];
     const metadataTypeEntry = jsonData.find((item) => item.metaSuffix === metadataTypeToRetrieve);
@@ -58,7 +58,7 @@ export default class DecomposerCompose extends SfCommand<DecomposerComposeResult
               : `${dxDirectory}/${metadataType.directoryName}`,
         };
 
-        await composeFileHandler(metaAttributes);
+        await composeFileHandler(metaAttributes, log);
         this.log(`All metadata files have been composed for the metadata type: ${metaSuffix}`);
       } else {
         this.error(`Metadata type definition not found for suffix: ${metadataTypeToRetrieve}`);
