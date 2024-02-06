@@ -40,29 +40,42 @@ To add support for a metadata type, follow this process:
 
 1. Fork or clone this repository.
 2. Create a feature branch.
-3. Update `src\metadata\metadata.ts` with the metadata type:
+3. Update the `jsonData` in `src\metadata\metadata.ts` with the metadata type:
+    ```typescript
+    const jsonData = [
+    {
+      metaSuffix: 'labels',
+    },
+    {
+      metaSuffix: 'workflow',
+    },
+    {
+      metaSuffix: 'permissionset',
+      uniqueIdElements: 'application,apexClass,name,externalDataSource,flow,object,apexPage,recordType,tab,field',
+    },
+    ];
+    ```
    - Reference the [Metadata API Developer Guide](https://developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_types_list.htm)
    - The `metaSuffix` is required for the `decomposer` argument parser
    - The `uniqueIdElements` should contain a comma separated list of unique ID elements that will be used to name decomposed files (nested elements)
-     - Unique ID elements are only used to name decomposed files with nested elements. Leaf elements will be added to the same decomposed file which matches the original meta file name.
      - The default unique ID element for all types is `fullName`. Only list `uniqueIdElements` if it requires others besides `fullName`.
-     - Ex: `apexClass` is a unique ID element for permission sets and will be used to name decomposed meta files for apex permissions.
-
-```typescript
-const jsonData = [
-  {
-    metaSuffix: 'labels',
-  },
-  {
-    metaSuffix: 'workflow',
-  },
-  {
-    metaSuffix: 'profile',
-    uniqueIdElements:
-      'application,apexClass,name,externalDataSource,flow,object,apexPage,recordType,tab,field,startAddress,dataCategoryGroup,layout,weekdayStart,friendlyname',
-  },
-];
-```
+     - Unique ID elements are only used to name decomposed files with nested elements as shown below.
+       - Ex: `apexClass` is a unique ID element for permission sets and will be used to name decomposed meta files for apex permissions (`permissionsets/HR_Admin/classAccesses/Send_Email_Confirmation.classAccesses-meta.xml`).
+    ``` xml
+    <classAccesses>
+      <apexClass>Send_Email_Confirmation</apexClass>
+      <enabled>true</enabled>
+    </classAccesses>
+    ```
+     - Leaf elements will be added to the same decomposed file which matches the original meta file name (`permissionsets/HR_Admin/HR_Admin.permissionset-meta.xml`).
+    ``` xml
+    <?xml version="1.0" encoding="UTF-8"?>
+    <PermissionSet>
+      <description>Grants all rights needed for an HR administrator to manage employees.</description>
+      <label>HR Administration</label>
+      <userLicense>Salesforce</userLicense>
+    </PermissionSet>
+    ```
 
 4. Add the directory for the metadata type to `force-app/main/default` and include a sample file.
 5. Run the `decomposer decompose` command on the new metadata type. Confirm the file is decomposed as intended.
