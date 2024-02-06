@@ -1,3 +1,9 @@
+## [1.1.1](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v1.1.0...v1.1.1) (2024-02-06)
+
+### Bug Fixes
+
+- add logging from salesforce core ([3f80ca8](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/3f80ca8f9675f1306d88fbb4ae20ded0d624b5c8))
+
 ## [1.1.1-beta.1](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v1.1.0...v1.1.1-beta.1) (2024-02-06)
 
 ### Bug Fixes
