@@ -6,7 +6,7 @@ import * as path from 'node:path';
 
 import { Logger } from '@salesforce/core';
 import { INDENT } from '../helpers/constants.js';
-import { xml2jsParser } from './xml2jsParser.js';
+import { buildDecomposedFiles } from './buildDecomposedFiles.js';
 
 export async function decomposeFileHandler(
   metaAttributes: {
@@ -60,6 +60,6 @@ async function processFile(
     } else {
       outputPath = path.join(metadataPath, metaSuffix === 'labels' ? '' : baseName);
     }
-    xml2jsParser(xmlContent, outputPath, uniqueIdElements, xmlElement, baseName, metaSuffix, INDENT, log);
+    buildDecomposedFiles(xmlContent, outputPath, uniqueIdElements, xmlElement, baseName, metaSuffix, INDENT, log);
   }
 }

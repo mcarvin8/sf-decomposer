@@ -1,6 +1,6 @@
 'use strict';
 
-import { XmlElement } from '../types/xmlElement.js';
+import { XmlElement } from './types.js';
 
 export function findUniqueIdElement(element: XmlElement, uniqueIdElements: string): string | undefined {
   const uniqueIdElementsArray = uniqueIdElements.split(',');

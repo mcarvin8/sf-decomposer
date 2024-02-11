@@ -6,7 +6,8 @@ import * as path from 'node:path';
 
 import { Logger } from '@salesforce/core';
 import { CUSTOM_LABELS_FILE } from '../helpers/constants.js';
-import { composeAndWriteFile } from '../service/composeAndWriteFile.js';
+import { composeAndWriteFile } from './buildComposedFiles.js';
+
 const processFilesInDirectory = async (dirPath: string, metaSuffix: string): Promise<string[]> => {
   const combinedXmlContents: string[] = [];
   const files = await fs.readdir(dirPath);
