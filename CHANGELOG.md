@@ -1,3 +1,9 @@
+## [1.1.2-beta.2](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v1.1.2-beta.1...v1.1.2-beta.2) (2024-02-11)
+
+### Bug Fixes
+
+- **deps:** bump @salesforce/core from 6.5.1 to 6.5.3 ([0eff76c](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/0eff76c57039b697d9eaf9a482b24f90b8485399))
+
 ## [1.1.2-beta.1](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v1.1.1...v1.1.2-beta.1) (2024-02-11)
 
 ### Bug Fixes
