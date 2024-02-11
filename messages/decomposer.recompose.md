@@ -1,6 +1,6 @@
 # summary
 
-Re-composes the files created by the 'decompose' command into the original directories with the original file-names.
+Recomposes the files created by the 'decompose' command into the original directories with the original file-names.
 
 # description
 
@@ -10,7 +10,7 @@ You should use this before deploying metadata to the target org.
 
 # examples
 
-- `sf decomposer compose -m "flow"`
+- `sf decomposer recompose -m "flow"`
 
 # flags.dx-directory.summary
 

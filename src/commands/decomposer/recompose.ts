@@ -5,18 +5,18 @@ import { RegistryAccess } from '@salesforce/source-deploy-retrieve';
 import { Messages, Logger } from '@salesforce/core';
 import { METADATA_DIR_DEFAULT_VALUE } from '../../helpers/constants.js';
 import { jsonData } from '../../metadata/metadata.js';
-import { composeFileHandler } from '../../service/composeFileHandler.js';
+import { recomposeFileHandler } from '../../service/recomposeFileHandler.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
-const messages = Messages.loadMessages('sfdx-decomposer', 'decomposer.compose');
+const messages = Messages.loadMessages('sfdx-decomposer', 'decomposer.recompose');
 const registryAccess = new RegistryAccess();
 const metaSuffixOptions = jsonData.map((item) => item.metaSuffix);
 
-export type DecomposerComposeResult = {
+export type DecomposerRecomposeResult = {
   path: string;
 };
 
-export default class DecomposerCompose extends SfCommand<DecomposerComposeResult> {
+export default class DecomposerRecompose extends SfCommand<DecomposerRecomposeResult> {
   public static readonly summary = messages.getMessage('summary');
   public static readonly description = messages.getMessage('description');
   public static readonly examples = messages.getMessages('examples');
@@ -37,8 +37,8 @@ export default class DecomposerCompose extends SfCommand<DecomposerComposeResult
     })(),
   };
 
-  public async run(): Promise<DecomposerComposeResult> {
-    const { flags } = await this.parse(DecomposerCompose);
+  public async run(): Promise<DecomposerRecomposeResult> {
+    const { flags } = await this.parse(DecomposerRecompose);
     const log = await Logger.child(this.ctor.name);
     const metadataTypeToRetrieve = flags['metadata-type'];
     const dxDirectory = flags['dx-directory'];
@@ -58,8 +58,8 @@ export default class DecomposerCompose extends SfCommand<DecomposerComposeResult
               : `${dxDirectory}/${metadataType.directoryName}`,
         };
 
-        await composeFileHandler(metaAttributes, log);
-        this.log(`All metadata files have been composed for the metadata type: ${metaSuffix}`);
+        await recomposeFileHandler(metaAttributes, log);
+        this.log(`All metadata files have been recomposed for the metadata type: ${metaSuffix}`);
       } else {
         this.error(`Metadata type definition not found for suffix: ${metadataTypeToRetrieve}`);
       }
@@ -68,7 +68,7 @@ export default class DecomposerCompose extends SfCommand<DecomposerComposeResult
     }
 
     return {
-      path: 'sfdx-decomposer-plugin\\src\\commands\\decomposer\\compose.ts',
+      path: 'sfdx-decomposer-plugin\\src\\commands\\decomposer\\recompose.ts',
     };
   }
 }

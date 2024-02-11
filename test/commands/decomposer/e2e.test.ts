@@ -9,7 +9,7 @@ import * as fsSync from 'fs-extra';
 import { TestContext } from '@salesforce/core/lib/testSetup.js';
 import { expect } from 'chai';
 import { stubSfCommandUx } from '@salesforce/sf-plugins-core';
-import DecomposerCompose from '../../../src/commands/decomposer/compose.js';
+import DecomposerRecompose from '../../../src/commands/decomposer/recompose.js';
 import DecomposerDecompose from '../../../src/commands/decomposer/decompose.js';
 import { jsonData } from '../../../src/metadata/metadata.js';
 
@@ -52,10 +52,10 @@ describe('e2e', () => {
     }
   });
 
-  it('should compose all supported metadata types', async () => {
+  it('should recompose all supported metadata types', async () => {
     for (const metadataType of jsonData) {
       // eslint-disable-next-line no-await-in-loop
-      await DecomposerCompose.run(['--metadata-type', metadataType.metaSuffix, '--dx-directory', mockDirectory]);
+      await DecomposerRecompose.run(['--metadata-type', metadataType.metaSuffix, '--dx-directory', mockDirectory]);
     }
 
     // Check if there are no errors in the log
@@ -67,7 +67,7 @@ describe('e2e', () => {
     expect(errorOutput).to.not.include('Error');
   });
 
-  it('should confirm the composed files in a mock directory match the reference files (force-app)', async () => {
+  it('should confirm the recomposed files in a mock directory match the reference files (force-app)', async () => {
     compareDirectories(originalDirectory, mockDirectory);
   });
 });

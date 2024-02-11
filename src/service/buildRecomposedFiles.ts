@@ -4,7 +4,7 @@ import * as fs from 'node:fs/promises';
 import { Logger } from '@salesforce/core';
 import { XML_HEADER, NAMESPACE, INDENT } from '../helpers/constants.js';
 
-export async function composeAndWriteFile(
+export async function buildRecomposedFile(
   combinedXmlContents: string[],
   filePath: string,
   xmlElement: string,
@@ -24,5 +24,5 @@ export async function composeAndWriteFile(
   finalXmlContent = finalXmlContent.replace(/(\n\s*){2,}/g, `\n${INDENT}`);
 
   await fs.writeFile(filePath, `${XML_HEADER}\n<${xmlElement} ${NAMESPACE}>${finalXmlContent}</${xmlElement}>`);
-  log.debug(`Created composed file: ${filePath}`);
+  log.debug(`Created recomposed file: ${filePath}`);
 }

@@ -2,7 +2,7 @@
 
 [![NPM](https://img.shields.io/npm/v/sfdx-decomposer.svg?label=sfdx-decomposer)](https://www.npmjs.com/package/sfdx-decomposer) [![Downloads/week](https://img.shields.io/npm/dw/sfdx-decomposer.svg)](https://npmjs.org/package/sfdx-decomposer) [![License](https://img.shields.io/badge/License-BSD%203--Clause-brightgreen.svg)](https://raw.githubusercontent.com/salesforcecli/sfdx-decomposer/main/LICENSE.txt)
 
-The `sfdx-decomposer` is a simple plugin to read the original metadata files for certain metadata types and create smaller, more manageable files for version control. When it's time to deploy decomposed metadata to an org, the inverse function (`compose`) will re-create metadata files for CLI deployments.
+The `sfdx-decomposer` is a simple plugin to read the original metadata files for certain metadata types and create smaller, more manageable files for version control. When it's time to deploy decomposed metadata to an org, the inverse function (`recompose`) will re-create metadata files for CLI deployments.
 
 **DISCLAIMERS:**
 
@@ -21,7 +21,7 @@ sf plugins install sfdx-decomposer@x.y.z
 The `sfdx-decomposer` supports 2 commands:
 
 - `sf decomposer decompose`
-- `sf decomposer compose`
+- `sf decomposer recompose`
 
 The same arguments are used for both commands.
 
@@ -66,16 +66,16 @@ EXAMPLES
     $ sf decomposer decompose -m "flow"
 ```
 
-## `sf decomposer compose`
+## `sf decomposer recompose`
 
 Reads all of the files created by the decompose command and re-creates the original meta files suitable for CLI deployments.
 
 ```
 USAGE
-  $ sf decomposer compose -m <value> -d <value> [--json]
+  $ sf decomposer recompose -m <value> -d <value> [--json]
 
 FLAGS
-  -m, --metadata-type=<value> The type of metadata to compose.
+  -m, --metadata-type=<value> The type of metadata to recompose.
   -d, --dx-directory=<value>  [default: force-app/main/default] The root directory containing your Salesforce metadata.
 
 GLOBAL FLAGS
@@ -84,12 +84,12 @@ GLOBAL FLAGS
 DESCRIPTION
   This command will read all of the decomposed files and re-create the original meta files in the original locations.
 
-  You should use this to compile files before you deploy the metadata to your org.
+  You should use this to recompose files before you deploy the metadata to your org.
 
 EXAMPLES
-  Compose all flows:
+  Recompose all flows:
 
-    $ sf decomposer compose -m "flow"
+    $ sf decomposer recompose -m "flow"
 ```
 
 ## Supported Metadata
