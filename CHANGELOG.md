@@ -1,3 +1,13 @@
+# [2.0.0-beta.1](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v1.1.2-beta.2...v2.0.0-beta.1) (2024-02-11)
+
+### Features
+
+- rename compose command ([6a7002e](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/6a7002e44f0b5c4d5cfd137e80673c3423f2fb2d))
+
+### BREAKING CHANGES
+
+- rename 'compose' command to 'recompose'
+
 ## [1.1.2-beta.2](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v1.1.2-beta.1...v1.1.2-beta.2) (2024-02-11)
 
 ### Bug Fixes
