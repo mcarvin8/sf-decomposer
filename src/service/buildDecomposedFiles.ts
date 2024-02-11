@@ -5,13 +5,12 @@ import * as path from 'node:path';
 import { XMLParser } from 'fast-xml-parser';
 
 import { Logger } from '@salesforce/core';
-import { XML_PARSER_OPTION } from '../types/xmlParserOptions.js';
-import { XmlElement } from '../types/xmlElement.js';
 import { XML_HEADER } from '../helpers/constants.js';
+import { XmlElement, XML_PARSER_OPTION } from './types.js';
 import { findUniqueIdElement } from './findUniqueIdElement.js';
-import { printChildElements } from './printChildElements.js';
+import { buildNestedElements } from './buildNestedElements.js';
 
-export function xml2jsParser(
+export function buildDecomposedFiles(
   xmlString: string,
   metadataPath: string,
   uniqueIdElements: string,
@@ -94,8 +93,8 @@ function buildNestedFile(
   // Create the output directory if it doesn't exist
   fs.mkdirSync(outputDirectory, { recursive: true });
 
-  // Call the printChildElements to build the XML content string
-  elementContent = printChildElements(element);
+  // Call the buildNestedElements to build the XML content string
+  elementContent = buildNestedElements(element);
   let decomposeFileContents = `${XML_HEADER}\n`;
   decomposeFileContents += `${indent}<${parentKey}>\n`;
   decomposeFileContents += `${elementContent}\n`;

@@ -1,18 +1,18 @@
 {
   "name": "sfdx-decomposer",
   "description": "Decomposes Salesforce metadata into more manageable files.",
-  "version": "1.1.1",
+  "version": "2.0.0-beta.1",
   "dependencies": {
     "@oclif/core": "^3.18.1",
-    "@salesforce/core": "^6.4.7",
+    "@salesforce/core": "^6.5.3",
     "@salesforce/sf-plugins-core": "^7.1.3",
     "@salesforce/source-deploy-retrieve": "^10.3.1",
-    "fast-xml-parser": "^4.3.3"
+    "fast-xml-parser": "^4.3.4"
   },
   "devDependencies": {
     "@commitlint/cli": "^18.6.0",
     "@commitlint/config-conventional": "^18.6.0",
-    "@oclif/plugin-command-snapshot": "^5.0.2",
+    "@oclif/plugin-command-snapshot": "^5.0.8",
     "@salesforce/cli-plugins-testkit": "^5.1.7",
     "@salesforce/dev-scripts": "^8.3.0",
     "@semantic-release/changelog": "^6.0.3",
@@ -22,9 +22,9 @@
     "@semantic-release/npm": "^11.0.2",
     "@semantic-release/release-notes-generator": "^12.1.0",
     "@types/fs-extra": "^11.0.4",
-    "eslint-plugin-sf-plugin": "^1.17.2",
+    "eslint-plugin-sf-plugin": "^1.17.3",
     "husky": "^9.0.6",
-    "oclif": "^4.3.4",
+    "oclif": "^4.4.10",
     "semantic-release": "^17.4.7",
     "shx": "0.3.4",
     "ts-node": "^10.9.2",
