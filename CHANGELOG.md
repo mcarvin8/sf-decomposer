@@ -1,3 +1,9 @@
+## [1.1.2-beta.1](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v1.1.1...v1.1.2-beta.1) (2024-02-11)
+
+### Bug Fixes
+
+- **deps:** bump fast-xml-parser from 4.3.3 to 4.3.4 ([654d939](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/654d9397d6d1c49557c673151898f0a380676c5c))
+
 ## [1.1.1](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v1.1.0...v1.1.1) (2024-02-06)
 
 ### Bug Fixes
