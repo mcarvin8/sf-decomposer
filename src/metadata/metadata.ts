@@ -5,11 +5,7 @@ import { RegistryAccess } from '@salesforce/source-deploy-retrieve';
 // Create an instance of RegistryAccess
 const registryAccess = new RegistryAccess();
 
-// String to store default unqiue ID element
 let defaultuniqueIdElements: string = 'fullName';
-
-// Define supported metadata and any specific field names for nested elements
-// Default: `fullName` inherited from the Metadata type
 
 const jsonData = [
   {

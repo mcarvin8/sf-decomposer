@@ -5,7 +5,7 @@ import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 
 import { Logger } from '@salesforce/core';
-import { INDENT } from '../helpers/constants.js';
+import { CUSTOM_LABELS_FILE, INDENT } from '../helpers/constants.js';
 import { buildDecomposedFiles } from './buildDecomposedFiles.js';
 
 export async function decomposeFileHandler(
@@ -15,6 +15,7 @@ export async function decomposeFileHandler(
     uniqueIdElements: string;
     xmlElement: string;
   },
+  purge: boolean,
   log: Logger
 ): Promise<void> {
   const { metadataPath, metaSuffix, uniqueIdElements, xmlElement } = metaAttributes;
@@ -27,11 +28,15 @@ export async function decomposeFileHandler(
       const subFiles = await fs.readdir(filePath);
       for (const subFile of subFiles) {
         const subFilePath = path.join(filePath, subFile);
-        await processFile({ metadataPath, filePath: subFilePath, metaSuffix, uniqueIdElements, xmlElement }, log);
+        await processFile(
+          { metadataPath, filePath: subFilePath, metaSuffix, uniqueIdElements, xmlElement },
+          purge,
+          log
+        );
       }
     } else {
       // If not recursing or the current file is not a directory, process the file
-      await processFile({ metadataPath, filePath, metaSuffix, uniqueIdElements, xmlElement }, log);
+      await processFile({ metadataPath, filePath, metaSuffix, uniqueIdElements, xmlElement }, purge, log);
     }
   }
 }
@@ -44,6 +49,7 @@ async function processFile(
     uniqueIdElements: string;
     xmlElement: string;
   },
+  purge: boolean,
   log: Logger
 ): Promise<void> {
   const { metadataPath, filePath, metaSuffix, uniqueIdElements, xmlElement } = metaAttributes;
@@ -60,6 +66,31 @@ async function processFile(
     } else {
       outputPath = path.join(metadataPath, metaSuffix === 'labels' ? '' : baseName);
     }
+
+    // Purge outputPath if purge flag is set to true
+    if (purge) {
+      try {
+        // do not purge CUSTOM_LABELS_FILE
+        if (metaSuffix === 'labels') {
+          const files = await fs.readdir(outputPath);
+          for (const file of files) {
+            if (file !== CUSTOM_LABELS_FILE) {
+              const filePathToRemove = path.join(outputPath, file);
+              await fs.rm(filePathToRemove, { recursive: true });
+              log.debug(`Removed file: ${filePathToRemove}`);
+            }
+          }
+        } else {
+          // Remove directory if it's not the labels directory
+          await fs.rm(outputPath, { recursive: true });
+          log.debug(`Purged directory: ${outputPath}`);
+        }
+      } catch (error) {
+        log.warn(`Failed to purge directory or remove files: ${outputPath}`);
+        log.error(error);
+      }
+    }
+
     buildDecomposedFiles(xmlContent, outputPath, uniqueIdElements, xmlElement, baseName, metaSuffix, INDENT, log);
   }
 }

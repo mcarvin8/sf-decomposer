@@ -35,6 +35,12 @@ export default class DecomposerDecompose extends SfCommand<DecomposerDecomposeRe
       required: true,
       options: metaSuffixOptions,
     })(),
+    purge: Flags.boolean({
+      summary: messages.getMessage('flags.purge.summary'),
+      char: 'p',
+      required: false,
+      default: false,
+    }),
   };
 
   public async run(): Promise<DecomposerDecomposeResult> {
@@ -42,6 +48,7 @@ export default class DecomposerDecompose extends SfCommand<DecomposerDecomposeRe
     const log = await Logger.child(this.ctor.name);
     const metadataTypeToRetrieve = flags['metadata-type'];
     const dxDirectory = flags['dx-directory'];
+    const purge = flags['purge'];
     const metadataTypeEntry = jsonData.find((item) => item.metaSuffix === metadataTypeToRetrieve);
 
     if (metadataTypeEntry) {
@@ -57,7 +64,7 @@ export default class DecomposerDecompose extends SfCommand<DecomposerDecomposeRe
               : `${dxDirectory}/${metadataType.directoryName}`,
           uniqueIdElements: defaultuniqueIdElements,
         };
-        await decomposeFileHandler(metaAttributes, log);
+        await decomposeFileHandler(metaAttributes, purge, log);
         this.log(`All metadata files have been decomposed for the metadata type: ${metaSuffix}`);
       } else {
         this.error(`Metadata type definition not found for suffix: ${metadataTypeToRetrieve}`);
@@ -67,7 +74,7 @@ export default class DecomposerDecompose extends SfCommand<DecomposerDecomposeRe
     }
 
     return {
-      path: 'sfdx-decomposer\\src\\commands\\decomposer\\decompose.ts',
+      path: 'sfdx-decomposer-plugin\\src\\commands\\decomposer\\decompose.ts',
     };
   }
 }

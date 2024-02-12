@@ -2,7 +2,7 @@
 
 [![NPM](https://img.shields.io/npm/v/sfdx-decomposer.svg?label=sfdx-decomposer)](https://www.npmjs.com/package/sfdx-decomposer) [![Downloads/week](https://img.shields.io/npm/dw/sfdx-decomposer.svg)](https://npmjs.org/package/sfdx-decomposer) [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://raw.githubusercontent.com/mcarvin8/sfdx-decomposer-plugin/main/LICENSE.md)
 
-The `sfdx-decomposer` is a simple plugin to read the original metadata files for certain metadata types and create smaller, more manageable files for version control. When it's time to deploy decomposed metadata to an org, the inverse function (`recompose`) will re-create metadata files for CLI deployments.
+The `sfdx-decomposer` is a plugin to read the original metadata files for certain metadata types and create smaller, more manageable files for version control. When it's time to deploy decomposed metadata to an org, the inverse function (`recompose`) will re-create metadata files for CLI deployments.
 
 **DISCLAIMERS:**
 
@@ -22,8 +22,6 @@ The `sfdx-decomposer` supports 2 commands:
 
 - `sf decomposer decompose`
 - `sf decomposer recompose`
-
-The same arguments are used for both commands.
 
 ## `sf decomposer decompose`
 
@@ -46,11 +44,12 @@ Custom Labels will be decomposed directly in the root labels folder and will hav
 
 ```
 USAGE
-  $ sf decomposer decompose -m <value> -d <value> [--json]
+  $ sf decomposer decompose -m <value> -d <value> -p <value> [--json]
 
 FLAGS
   -m, --metadata-type=<value> The type of metadata to decompose.
   -d, --dx-directory=<value>  [default: force-app/main/default] The root directory containing your Salesforce metadata.
+  -p, --purge=<value>  [default: false] If provided, purge directories of pre-existing decomposed files.
 
 GLOBAL FLAGS
   --json  Format output as json.

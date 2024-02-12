@@ -19,3 +19,7 @@ Directory containing Salesforce metadata (default: `force-app/main/default`).
 # flags.metadata-type.summary
 
 Type of metadata to process.
+
+# flags.purge.summary
+
+Boolean - If provided, purge directories of pre-existing decomposed files.
