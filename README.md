@@ -27,20 +27,15 @@ The `sfdx-decomposer` supports 2 commands:
 
 Decomposes the original metadata files into smaller files for version control. Excluding custom labels, the smaller files will be placed into new sub-directories:
 
-- force-app/main/default/workflows
-  - Case
-    - alerts
-    - fieldUpdates
-    - outboundMessages
-    - rules
-    - tasks
-      - User_task_was_completed.tasks-meta.xml
+<img src="./.github/images/decomposed-perm-set.png">
+
+<br>
 
 Custom Labels will be decomposed directly in the root labels folder and will have a different extension compared to the original labels file:
 
-- force-app/main/default/labels
-  - quoteAuto.label-meta.xml
-  - quoteManual.label-meta.xml
+<img src="./.github/images/decomposed-labels.png">
+
+<br>
 
 ```
 USAGE
