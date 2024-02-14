@@ -3,7 +3,7 @@
 import { INDENT } from '../helpers/constants.js';
 
 export const XML_PARSER_OPTION = {
-  commentPropName: '#comment',
+  commentPropName: '!---',
   ignoreAttributes: false,
   ignoreNameSpace: false,
   parseTagValue: false,

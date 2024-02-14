@@ -6,7 +6,9 @@
     </valueTranslation>
     <valueTranslation>
         <masterLabel>Four</masterLabel>
-        <translation>Quatre</translation>
+        <translation>
+            <!-- Four -->
+        </translation>
     </valueTranslation>
     <valueTranslation>
         <masterLabel>Three</masterLabel>

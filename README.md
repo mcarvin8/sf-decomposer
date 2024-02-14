@@ -121,13 +121,13 @@ Per Salesforce documentation for **Standard/Global Value Set Translations**, whe
     </valueTranslation>
 ```
 
-The `decompose` function will not process these comments correctly (see example below). Ensure all meta files have proper translations before decomposing them.
+The `decompose` function will process these comments as shown below:
 
 ```xml
     <valueTranslation>
         <masterLabel>Warm</masterLabel>
         <translation>
-            <#comment> Warm </#comment>
+            <!-- Warm -->
         </translation>
     </valueTranslation>
 ```
