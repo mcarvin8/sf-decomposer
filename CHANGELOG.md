@@ -1,3 +1,9 @@
+## [2.0.1](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v2.0.0...v2.0.1) (2024-02-14)
+
+### Bug Fixes
+
+- **deps:** bump @salesforce/sf-plugins-core from 7.1.3 to 7.1.9 ([7b48afc](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/7b48afc50060449c7ffbc9d02a005ead19df4c69))
+
 # [2.0.0](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v1.1.1...v2.0.0) (2024-02-11)
 
 ### Bug Fixes
