@@ -1,3 +1,9 @@
+## [2.1.1](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v2.1.0...v2.1.1) (2024-02-14)
+
+### Bug Fixes
+
+- adjust comment prop name to allow comments in translations ([e3d9279](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/e3d9279d77757eea630997f113da4042bc68f332))
+
 # [2.1.0](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v2.0.2...v2.1.0) (2024-02-14)
 
 ### Features
