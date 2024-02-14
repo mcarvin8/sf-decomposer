@@ -1,3 +1,9 @@
+## [2.0.2](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v2.0.1...v2.0.2) (2024-02-14)
+
+### Bug Fixes
+
+- links in readme ([e7351d3](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/e7351d32ac1627f7a51b611fd8f4f134fffdb765))
+
 ## [2.0.1](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v2.0.0...v2.0.1) (2024-02-14)
 
 ### Bug Fixes
