@@ -1,3 +1,9 @@
+# [2.1.0](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v2.0.2...v2.1.0) (2024-02-14)
+
+### Features
+
+- add marketing app extensions and CDATA support ([38d6941](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/38d694184054b1caa35d9c9a04fd8448d69258fd))
+
 ## [2.0.2](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v2.0.1...v2.0.2) (2024-02-14)
 
 ### Bug Fixes
