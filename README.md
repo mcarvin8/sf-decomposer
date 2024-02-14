@@ -39,12 +39,12 @@ Custom Labels will be decomposed directly in the root labels folder and will hav
 
 ```
 USAGE
-  $ sf decomposer decompose -m <value> -d <value> -p <value> [--json]
+  $ sf decomposer decompose -m <value> -d <value> -p [--json]
 
 FLAGS
   -m, --metadata-type=<value> The type of metadata to decompose.
   -d, --dx-directory=<value>  [default: force-app/main/default] The root directory containing your Salesforce metadata.
-  -p, --purge=<value>  [default: false] If provided, purge directories of pre-existing decomposed files.
+  -p, --purge  [default: false] If provided, purge directories of pre-existing decomposed files.
 
 GLOBAL FLAGS
   --json  Format output as json.
@@ -109,6 +109,7 @@ The following metadata types are supported:
 - Decision Matrix Definition (`-m "decisionMatrixDefinition"`)
 - Bot (`-m "bot"`)
 - Bot Version (`-m "botVersion"`)
+- Marketing App Extension (`-m "marketingappextension"`)
 
 **NOTE**:
 Per Salesforce documentation for **Standard/Global Value Set Translations**, when a value isn't translated, its translation becomes a comment that's paired with its label.
@@ -160,6 +161,7 @@ Salesforce CLI version 2.10.2 correctly handles opt-in style with directories on
 **/aiScoringModelDefinitions/*.aiScoringModelDefinition-meta.xml
 **/bots/*/*.botVersion-meta.xml
 **/bots/*/*.bot-meta.xml
+**/marketingappextensions/*.marketingappextension-meta.xml
 ```
 
 ### `.forceignore` updates
@@ -184,6 +186,7 @@ Salesforce CLI version 2.10.2 correctly handles opt-in style with directories on
 **/decisionMatrixDefinition/**/*.xml
 **/aiScoringModelDefinitions/**/*.xml
 **/bots/**/*.xml
+**/marketingappextensions/**/*.xml
 
 # Allow the meta files
 !**/permissionsets/*.permissionset-meta.xml
@@ -205,6 +208,7 @@ Salesforce CLI version 2.10.2 correctly handles opt-in style with directories on
 !**/aiScoringModelDefinitions/*.aiScoringModelDefinition-meta.xml
 !**/bots/*/*.botVersion-meta.xml
 !**/bots/*/*.bot-meta.xml
+!**/marketingappextensions/*.marketingappextension-meta.xml
 ```
 
 ## Contributing

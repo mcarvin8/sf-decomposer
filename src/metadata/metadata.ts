@@ -85,6 +85,10 @@ const jsonData = [
     uniqueIdElements:
       'name,developerName,stepIdentifier,invocationActionName,parameterName,nlpProviderType,dialog,chatButtonName',
   },
+  {
+    metaSuffix: 'marketingappextension',
+    uniqueIdElements: 'apiName',
+  },
 ];
 
 // Iterate over jsonData and call getTypeBySuffix for each metaSuffix

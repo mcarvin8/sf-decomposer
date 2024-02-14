@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<MarketingAppExtension xmlns="http://soap.sforce.com/2006/04/metadata">
+    <marketingAppExtActions>
+        <marketingAppExtension>VidLand_US</marketingAppExtension>
+        <apiName>register_user</apiName>
+        <isActive>true</isActive>
+        <description>Register User for VidLand</description>
+        <actionSelector>VidLand_Register_User</actionSelector>
+        <actionSchema>
+            <![CDATA[
+    {
+    "properties": {
+    "UserId": {
+    "type": "string",
+    "title": ""
+    },
+    "WebinarId": {
+    "type": "string",
+    "value": "webinarIdXYZ"
+    }
+    },
+    "view": {
+    "components": [{
+    "definition": "lightning/control",
+    "scope": "#/properties/UserId"
+    }]
+    },
+    "required": [
+    "UserId",
+    "WebinarId",
+    "From",
+    "Body"
+    ]
+    }
+]]>
+        </actionSchema>
+        <actionParams>
+            <![CDATA[
+    {
+    "isStandard": false,
+    "type": "apex"
+    }
+]]>
+        </actionParams>
+        <actionName>Register User</actionName>
+    </marketingAppExtActions>
+    <description>VidLand extension for US region</description>
+    <fullName>VidLand_US</fullName>
+    <isActive>true</isActive>
+    <masterLabel>VidLand US</masterLabel>
+</MarketingAppExtension>

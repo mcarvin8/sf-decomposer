@@ -11,6 +11,7 @@ export const XML_PARSER_OPTION = {
   parseAttributeValue: false,
   trimValues: true,
   processEntities: false,
+  cdataPropName: '![CDATA[',
 };
 
 export const JSON_PARSER_OPTION = {

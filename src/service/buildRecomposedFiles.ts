@@ -20,6 +20,17 @@ export async function buildRecomposedFile(
   finalXmlContent = finalXmlContent.replace(`<${xmlElement}>`, '');
   finalXmlContent = finalXmlContent.replace(`</${xmlElement}>`, '');
 
+  // Remove extra indentation within CDATA sections
+  finalXmlContent = finalXmlContent.replace(
+    /<!\[CDATA\[\s*([\s\S]*?)\s*]]>/g,
+    (match: string, cdataContent: string) => {
+      const trimmedContent = cdataContent.trim();
+      const lines = trimmedContent.split('\n');
+      const indentedLines = lines.map((line) => line.replace(/^\s*/, ''));
+      return `<![CDATA[\n${INDENT}${indentedLines.join(`\n${INDENT}`)}\n]]>`;
+    }
+  );
+
   // Remove extra newlines
   finalXmlContent = finalXmlContent.replace(/(\n\s*){2,}/g, `\n${INDENT}`);
 
