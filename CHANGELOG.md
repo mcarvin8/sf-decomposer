@@ -1,3 +1,9 @@
+## [2.1.2](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v2.1.1...v2.1.2) (2024-02-14)
+
+### Bug Fixes
+
+- resolve lint issues on buildNestedElements ([e1bd33d](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/e1bd33d7e3a2e4c06bc3742faf0c1f56ac9c3f2d))
+
 ## [2.1.1](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v2.1.0...v2.1.1) (2024-02-14)
 
 ### Bug Fixes
