@@ -63,6 +63,8 @@ To add support for a metadata type, follow this process:
      - The default unique ID element for all types is `fullName`. Only list `uniqueIdElements` if it requires others besides `fullName`.
      - Unique ID elements are only used to name decomposed files with nested elements as shown below.
        - Ex: `apexClass` is a unique ID element for permission sets and will be used to name decomposed meta files for apex permissions (`permissionsets/HR_Admin/classAccesses/Send_Email_Confirmation.classAccesses-meta.xml`).
+     - If no unique ID elements are found for a nested element, the short SHA-256 hash of the element contents will be used instead.
+       - To avoid any potential duplicate files, use the `--purge` Boolean flag on the `decompose` command to remove all pre-existing decomposed files
 
    ```xml
    <classAccesses>

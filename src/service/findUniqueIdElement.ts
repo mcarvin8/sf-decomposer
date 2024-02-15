@@ -1,5 +1,6 @@
 'use strict';
 
+import { createHash } from 'node:crypto';
 import { XmlElement } from './types.js';
 
 export function findUniqueIdElement(element: XmlElement, uniqueIdElements: string): string | undefined {
@@ -29,5 +30,13 @@ export function findUniqueIdElement(element: XmlElement, uniqueIdElements: strin
     }
   }
 
-  return undefined;
+  // default to short SHA-256 hash if no unique ID elements are found
+  return getShortHash(element);
+}
+
+function getShortHash(element: XmlElement): string {
+  const hash = createHash('sha256');
+  hash.update(JSON.stringify(element));
+  const fullHash = hash.digest('hex');
+  return fullHash.slice(0, 8);
 }
