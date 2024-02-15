@@ -1,3 +1,9 @@
+## [2.1.3](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v2.1.2...v2.1.3) (2024-02-15)
+
+### Bug Fixes
+
+- use short SHA-256 hash if no unique ID elements are found ([4ac65a0](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/4ac65a04e0f51859e9a7ae93509fe4497d13543b))
+
 ## [2.1.2](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v2.1.1...v2.1.2) (2024-02-14)
 
 ### Bug Fixes
