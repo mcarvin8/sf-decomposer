@@ -52,7 +52,7 @@ export default class DecomposerDecompose extends SfCommand<DecomposerDecomposeRe
     const metadataTypeEntry = jsonData.find((item) => item.metaSuffix === metadataTypeToRetrieve);
 
     if (metadataTypeEntry) {
-      const { metaSuffix } = metadataTypeEntry;
+      const { metaSuffix, uniqueIdElements } = metadataTypeEntry;
       const metadataType = registryAccess.getTypeBySuffix(metaSuffix);
       if (metadataType) {
         const metaAttributes = {
@@ -62,7 +62,9 @@ export default class DecomposerDecompose extends SfCommand<DecomposerDecomposeRe
             metaSuffix === 'botVersion'
               ? `${dxDirectory}/bots` // Change the directoryName to 'bots' until SDR is fixed
               : `${dxDirectory}/${metadataType.directoryName}`,
-          uniqueIdElements: defaultuniqueIdElements,
+          uniqueIdElements: uniqueIdElements
+            ? `${defaultuniqueIdElements},${uniqueIdElements}`
+            : defaultuniqueIdElements,
         };
         await decomposeFileHandler(metaAttributes, purge, log);
         this.log(`All metadata files have been decomposed for the metadata type: ${metaSuffix}`);

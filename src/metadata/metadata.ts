@@ -1,13 +1,8 @@
 'use strict';
 
-import { RegistryAccess } from '@salesforce/source-deploy-retrieve';
+export const defaultuniqueIdElements: string = 'fullName';
 
-// Create an instance of RegistryAccess
-const registryAccess = new RegistryAccess();
-
-let defaultuniqueIdElements: string = 'fullName';
-
-const jsonData = [
+export const jsonData = [
   {
     metaSuffix: 'labels',
   },
@@ -90,23 +85,3 @@ const jsonData = [
     uniqueIdElements: 'apiName',
   },
 ];
-
-// Iterate over jsonData and call getTypeBySuffix for each metaSuffix
-jsonData.forEach((entry) => {
-  const { metaSuffix, uniqueIdElements } = entry;
-  const metadataType = registryAccess.getTypeBySuffix(metaSuffix);
-
-  // Handle the result
-  if (metadataType) {
-    // console.log(`Metadata Type Name for suffix '${metaSuffix}': ${metadataType.fullName}`);
-    if (uniqueIdElements) {
-      // Append additional field names to the defaultuniqueIdElements string
-      defaultuniqueIdElements += `,${uniqueIdElements}`;
-      // console.log(`Field Names: ${uniqueIdElements}`);
-    }
-  } else {
-    // console.error(`No metadata type found for suffix: ${metaSuffix}`);
-  }
-});
-
-export { jsonData, defaultuniqueIdElements };
