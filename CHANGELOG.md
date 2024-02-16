@@ -1,3 +1,9 @@
+## [2.1.4](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v2.1.3...v2.1.4) (2024-02-16)
+
+### Bug Fixes
+
+- fix how decompose sets unique id elements ([2a0d78a](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/2a0d78ab0a066253ae64c46628c1728c4512205d))
+
 ## [2.1.3](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v2.1.2...v2.1.3) (2024-02-15)
 
 ### Bug Fixes
