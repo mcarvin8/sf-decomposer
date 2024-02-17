@@ -1,3 +1,9 @@
+## [2.1.5](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v2.1.4...v2.1.5) (2024-02-17)
+
+### Bug Fixes
+
+- if root element key is an array of leaf elements, add to leaf file ([3259d85](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/3259d855e89d495d34d4847ac21ba6f54f62db82))
+
 ## [2.1.4](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v2.1.3...v2.1.4) (2024-02-16)
 
 ### Bug Fixes
