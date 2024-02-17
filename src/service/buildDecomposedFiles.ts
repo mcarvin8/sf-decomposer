@@ -36,7 +36,13 @@ export function buildDecomposedFiles(
         if (Array.isArray(rootElement[key])) {
           // Iterate through the elements of the array
           for (const element of rootElement[key] as XmlElement[]) {
-            buildNestedFile(element, metadataPath, metaSuffix, uniqueIdElements, key, indent, log);
+            if (typeof element === 'object') {
+              buildNestedFile(element, metadataPath, metaSuffix, uniqueIdElements, key, indent, log);
+            } else {
+              const fieldValue = element;
+              leafContent += `${indent}<${key}>${String(fieldValue)}</${key}>\n`;
+              leafCount++;
+            }
           }
         } else if (typeof rootElement[key] === 'object') {
           buildNestedFile(rootElement[key] as XmlElement, metadataPath, metaSuffix, uniqueIdElements, key, indent, log);
