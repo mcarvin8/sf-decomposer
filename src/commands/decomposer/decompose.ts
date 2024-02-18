@@ -4,13 +4,12 @@ import { SfCommand, Flags } from '@salesforce/sf-plugins-core';
 import { Messages, Logger } from '@salesforce/core';
 import { RegistryAccess } from '@salesforce/source-deploy-retrieve';
 import { METADATA_DIR_DEFAULT_VALUE } from '../../helpers/constants.js';
-import { jsonData, defaultuniqueIdElements } from '../../metadata/metadata.js';
+import { defaultuniqueIdElements, getUniqueIdElements } from '../../metadata/metadata.js';
 import { decomposeFileHandler } from '../../service/decomposeFileHandler.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('sfdx-decomposer', 'decomposer.decompose');
 const registryAccess = new RegistryAccess();
-const metaSuffixOptions = jsonData.map((item) => item.metaSuffix);
 
 export type DecomposerDecomposeResult = {
   path: string;
@@ -29,12 +28,11 @@ export default class DecomposerDecompose extends SfCommand<DecomposerDecomposeRe
       exists: true,
       default: METADATA_DIR_DEFAULT_VALUE,
     }),
-    'metadata-type': Flags.option({
+    'metadata-type': Flags.string({
       summary: messages.getMessage('flags.metadata-type.summary'),
       char: 'm',
       required: true,
-      options: metaSuffixOptions,
-    })(),
+    }),
     purge: Flags.boolean({
       summary: messages.getMessage('flags.purge.summary'),
       char: 'p',
@@ -47,32 +45,41 @@ export default class DecomposerDecompose extends SfCommand<DecomposerDecomposeRe
     const { flags } = await this.parse(DecomposerDecompose);
     const log = await Logger.child(this.ctor.name);
     const metadataTypeToRetrieve = flags['metadata-type'];
+    if (metadataTypeToRetrieve === 'object') {
+      this.error('Custom Objects are not supported by this plugin.');
+    }
     const dxDirectory = flags['dx-directory'];
     const purge = flags['purge'];
-    const metadataTypeEntry = jsonData.find((item) => item.metaSuffix === metadataTypeToRetrieve);
+    const metadataTypeEntry = registryAccess.getTypeBySuffix(metadataTypeToRetrieve);
 
     if (metadataTypeEntry) {
-      const { metaSuffix, uniqueIdElements } = metadataTypeEntry;
-      const metadataType = registryAccess.getTypeBySuffix(metaSuffix);
-      if (metadataType) {
-        const metaAttributes = {
-          metaSuffix,
-          xmlElement: metadataType.name,
-          metadataPath:
-            metaSuffix === 'botVersion'
-              ? `${dxDirectory}/bots` // Change the directoryName to 'bots' until SDR is fixed
-              : `${dxDirectory}/${metadataType.directoryName}`,
-          uniqueIdElements: uniqueIdElements
-            ? `${defaultuniqueIdElements},${uniqueIdElements}`
-            : defaultuniqueIdElements,
-        };
-        await decomposeFileHandler(metaAttributes, purge, log);
-        this.log(`All metadata files have been decomposed for the metadata type: ${metaSuffix}`);
-      } else {
-        this.error(`Metadata type definition not found for suffix: ${metadataTypeToRetrieve}`);
+      if (
+        metadataTypeEntry.strategies?.adapter &&
+        ['matchingContentFile', 'digitalExperience', 'mixedContent', 'bundle'].includes(
+          metadataTypeEntry.strategies.adapter
+        )
+      ) {
+        this.error(
+          `Metadata types with ${metadataTypeEntry.strategies.adapter} strategies are not supported by this plugin.`
+        );
       }
+      const metaAttributes = {
+        metaSuffix: metadataTypeEntry.suffix as string,
+        xmlElement: metadataTypeEntry.name,
+        strictDirectoryName: metadataTypeEntry.strictDirectoryName as boolean,
+        folderType: metadataTypeEntry.folderType as string,
+        metadataPath:
+          metadataTypeToRetrieve === 'botVersion'
+            ? `${dxDirectory}/bots` // Change the directoryName to 'bots' until SDR is fixed
+            : `${dxDirectory}/${metadataTypeEntry.directoryName}`,
+        uniqueIdElements: getUniqueIdElements(metadataTypeToRetrieve)
+          ? `${defaultuniqueIdElements},${getUniqueIdElements(metadataTypeToRetrieve)}`
+          : defaultuniqueIdElements,
+      };
+      await decomposeFileHandler(metaAttributes, purge, log);
+      this.log(`All metadata files have been decomposed for the metadata type: ${metadataTypeToRetrieve}`);
     } else {
-      this.error(`Metadata type ${metadataTypeToRetrieve} not found.`);
+      this.error(`Metadata type not found for the given suffix: ${metadataTypeToRetrieve}.`);
     }
 
     return {

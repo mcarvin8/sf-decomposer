@@ -14,29 +14,43 @@ export async function decomposeFileHandler(
     metaSuffix: string;
     uniqueIdElements: string;
     xmlElement: string;
+    folderType: string;
+    strictDirectoryName: boolean;
   },
   purge: boolean,
   log: Logger
 ): Promise<void> {
-  const { metadataPath, metaSuffix, uniqueIdElements, xmlElement } = metaAttributes;
+  const { metadataPath, metaSuffix, uniqueIdElements, xmlElement, folderType, strictDirectoryName } = metaAttributes;
 
   const files = await fs.readdir(metadataPath);
   for (const file of files) {
     const filePath = path.join(metadataPath, file);
-    if (metaSuffix === 'botVersion' || metaSuffix === 'bot') {
+    if (strictDirectoryName || folderType || metaSuffix === 'botVersion') {
       // If bot or bot version, iterate through the directory
       const subFiles = await fs.readdir(filePath);
       for (const subFile of subFiles) {
         const subFilePath = path.join(filePath, subFile);
         await processFile(
-          { metadataPath, filePath: subFilePath, metaSuffix, uniqueIdElements, xmlElement },
+          {
+            metadataPath,
+            filePath: subFilePath,
+            metaSuffix,
+            uniqueIdElements,
+            xmlElement,
+            folderType,
+            strictDirectoryName,
+          },
           purge,
           log
         );
       }
     } else {
       // If not recursing or the current file is not a directory, process the file
-      await processFile({ metadataPath, filePath, metaSuffix, uniqueIdElements, xmlElement }, purge, log);
+      await processFile(
+        { metadataPath, filePath, metaSuffix, uniqueIdElements, xmlElement, folderType, strictDirectoryName },
+        purge,
+        log
+      );
     }
   }
 }
@@ -48,11 +62,14 @@ async function processFile(
     metaSuffix: string;
     uniqueIdElements: string;
     xmlElement: string;
+    folderType: string;
+    strictDirectoryName: boolean;
   },
   purge: boolean,
   log: Logger
 ): Promise<void> {
-  const { metadataPath, filePath, metaSuffix, uniqueIdElements, xmlElement } = metaAttributes;
+  const { metadataPath, filePath, metaSuffix, uniqueIdElements, xmlElement, folderType, strictDirectoryName } =
+    metaAttributes;
 
   if (filePath.endsWith(`.${metaSuffix}-meta.xml`)) {
     log.debug(`Parsing metadata file: ${filePath}`);
@@ -60,7 +77,7 @@ async function processFile(
     const baseName = path.basename(filePath, `.${metaSuffix}-meta.xml`);
 
     let outputPath;
-    if (metaSuffix === 'botVersion' || metaSuffix === 'bot') {
+    if (strictDirectoryName || folderType || metaSuffix === 'botVersion') {
       const baseDirName = path.basename(path.dirname(filePath));
       outputPath = path.join(metadataPath, baseDirName, baseName);
     } else {

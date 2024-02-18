@@ -13,13 +13,13 @@ yarn
 
 ## Testing
 
-When developing, run the provided end-to-end (E2E) test to confirm all supported metadata types remain functional using the set of baseline `recomposed` files.
+When developing, run the provided end-to-end (E2E) test to confirm the metadata types under test, which test various decompose/recompose functions, remain functional using the set of baseline `recomposed` files.
 
 ```
 yarn test
 ```
 
-The `force-app/main/default` directory in this repository contains all of the baseline `recompose` files for each supported metadata type.
+The `force-app/main/default` directory in this repository contains baseline `recompose` files for the metdata types under test.
 
 NOTE: The `recompose` files are not the exact same as the original metadata files. They have the same contents but will most likely have a different ordering. This plugin's XML file sorting may differ from the Salesforce CLI.
 
@@ -34,59 +34,12 @@ The E2E test will:
 
 The test will fail if the decomposer commands fail or there is any differences found between the `recomposed` files in `mock` against `force-app/main/default`.
 
-## Adding Support for Metadata Types
+## Unique ID Elements
 
-To add support for a metadata type, follow this process:
+Unique ID elements are used to name decomposed files with nested elements. The default unique ID element for all metadata types is `fullName`, but this will not work in all cases.
 
-1. Fork or clone this repository.
-2. Create a feature branch.
-3. Update the `jsonData` in `src\metadata\metadata.ts` with the metadata type:
+If no unique ID elements are found in the nested element, the short SHA-256 hash of the nested element contents will be used instead to name the decomposed file.
 
-   ```typescript
-   const jsonData = [
-     {
-       metaSuffix: 'labels',
-     },
-     {
-       metaSuffix: 'workflow',
-     },
-     {
-       metaSuffix: 'permissionset',
-       uniqueIdElements: 'application,apexClass,name,externalDataSource,flow,object,apexPage,recordType,tab,field',
-     },
-   ];
-   ```
+Unique ID elements for specific metadata types are located in `src\metadata\metadata.ts`.
 
-   - Reference the [Metadata API Developer Guide](https://developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_types_list.htm)
-   - The `metaSuffix` is required for the `decomposer` argument parser
-   - The `uniqueIdElements` should contain a comma separated list of unique ID elements that will be used to name decomposed files (nested elements)
-     - The default unique ID element for all types is `fullName`. Only list `uniqueIdElements` if it requires others besides `fullName`.
-     - Unique ID elements are only used to name decomposed files with nested elements as shown below.
-       - Ex: `apexClass` is a unique ID element for permission sets and will be used to name decomposed meta files for apex permissions (`permissionsets/HR_Admin/classAccesses/Send_Email_Confirmation.classAccesses-meta.xml`).
-     - If no unique ID elements are found for a nested element, the short SHA-256 hash of the element contents will be used instead.
-       - To avoid any potential duplicate files, use the `--purge` Boolean flag on the `decompose` command to remove all pre-existing decomposed files
-
-   ```xml
-   <classAccesses>
-     <apexClass>Send_Email_Confirmation</apexClass>
-     <enabled>true</enabled>
-   </classAccesses>
-   ```
-
-   - Leaf elements will be added to the same decomposed file which matches the original meta file name (`permissionsets/HR_Admin/HR_Admin.permissionset-meta.xml`).
-
-   ```xml
-   <?xml version="1.0" encoding="UTF-8"?>
-   <PermissionSet>
-     <description>Grants all rights needed for an HR administrator to manage employees.</description>
-     <label>HR Administration</label>
-     <userLicense>Salesforce</userLicense>
-   </PermissionSet>
-   ```
-
-4. Add the directory for the metadata type to `force-app/main/default` and include a sample file.
-5. Run the `decomposer decompose` command on the new metadata type. Confirm the file is decomposed as intended.
-6. Run the `decomposer recompose` command on the new metadata type. Confirm the file is recomposed as intended (sorting will be different to original file). Confirm the recomposed file can be deployed to a sandbox.
-7. Once satisfied, delete the `decomposed` files from your feature branch for the metadata type.
-8. Commit changes and confirm the E2E test passes locally before pushing your feature branch.
-9. Open a Pull Request into `main`.
+If you want to add unique ID elements, please create a feature branch and raise a Pull Request.

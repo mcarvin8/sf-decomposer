@@ -11,7 +11,6 @@ import { expect } from 'chai';
 import { stubSfCommandUx } from '@salesforce/sf-plugins-core';
 import DecomposerRecompose from '../../../src/commands/decomposer/recompose.js';
 import DecomposerDecompose from '../../../src/commands/decomposer/decompose.js';
-import { jsonData } from '../../../src/metadata/metadata.js';
 
 describe('e2e', () => {
   const $$ = new TestContext();
@@ -20,6 +19,29 @@ describe('e2e', () => {
 
   const originalDirectory: string = 'force-app/main/default';
   const mockDirectory: string = 'mock';
+  const metadataTypes = [
+    'labels',
+    'workflow',
+    'bot',
+    'botVersion',
+    'profile',
+    'permissionset',
+    'flow',
+    'matchingRule',
+    'assignmentRules',
+    'escalationRules',
+    'sharingRules',
+    'autoResponseRules',
+    'globalValueSetTranslation',
+    'standardValueSetTranslation',
+    'translation',
+    'globalValueSet',
+    'standardValueSet',
+    'decisionMatrixDefinition',
+    'aiScoringModelDefinition',
+    'marketingappextension',
+    'app',
+  ];
 
   before(async () => {
     sfCommandStubs = stubSfCommandUx($$.SANDBOX);
@@ -39,23 +61,21 @@ describe('e2e', () => {
   });
 
   it('should decompose all supported metadata types', async () => {
-    for (const metadataType of jsonData) {
+    for (const metadataType of metadataTypes) {
       // eslint-disable-next-line no-await-in-loop
-      await DecomposerDecompose.run(['--metadata-type', metadataType.metaSuffix, '--dx-directory', mockDirectory]);
+      await DecomposerDecompose.run(['--metadata-type', metadataType, '--dx-directory', mockDirectory]);
       const output = sfCommandStubs.log
         .getCalls()
         .flatMap((c) => c.args)
         .join('\n');
-      expect(output).to.include(
-        `All metadata files have been decomposed for the metadata type: ${metadataType.metaSuffix}`
-      );
+      expect(output).to.include(`All metadata files have been decomposed for the metadata type: ${metadataType}`);
     }
   });
 
   it('should recompose all supported metadata types', async () => {
-    for (const metadataType of jsonData) {
+    for (const metadataType of metadataTypes) {
       // eslint-disable-next-line no-await-in-loop
-      await DecomposerRecompose.run(['--metadata-type', metadataType.metaSuffix, '--dx-directory', mockDirectory]);
+      await DecomposerRecompose.run(['--metadata-type', metadataType, '--dx-directory', mockDirectory]);
     }
 
     // Check if there are no errors in the log

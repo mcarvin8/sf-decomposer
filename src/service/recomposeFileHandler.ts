@@ -39,10 +39,12 @@ export async function recomposeFileHandler(
     metaSuffix: string;
     xmlElement: string;
     metadataPath: string;
+    strictDirectoryName: boolean;
+    folderType: string;
   },
   log: Logger
 ): Promise<void> {
-  const { metaSuffix, xmlElement, metadataPath } = metaAttributes;
+  const { metaSuffix, xmlElement, metadataPath, strictDirectoryName, folderType } = metaAttributes;
 
   // Process labels in root metadata folder
   // Process other metadata files in subdirectories
@@ -51,19 +53,23 @@ export async function recomposeFileHandler(
     const filePath = path.join(metadataPath, CUSTOM_LABELS_FILE);
 
     await buildRecomposedFile(combinedXmlContents, filePath, xmlElement, log);
-  } else if (metaSuffix === 'bot' || metaSuffix === 'botVersion') {
-    const botDirectories = (await fs.readdir(metadataPath)).map((file) => path.join(metadataPath, file));
+  } else if (strictDirectoryName || folderType || metaSuffix === 'botVersion') {
+    const subDirectories = (await fs.readdir(metadataPath)).map((file) => path.join(metadataPath, file));
 
-    for (const botDirectory of botDirectories) {
-      const botDirStat = await fs.stat(botDirectory);
+    for (const subDirectory of subDirectories) {
+      const botDirStat = await fs.stat(subDirectory);
       if (botDirStat.isDirectory()) {
-        const subdirectories = (await fs.readdir(botDirectory)).map((file) => path.join(botDirectory, file));
+        const subdirectories = (await fs.readdir(subDirectory)).map((file) => path.join(subDirectory, file));
 
         for (const subdirectory of subdirectories) {
           const subDirStat = await fs.stat(subdirectory);
           if (
             subDirStat.isDirectory() &&
-            ((metaSuffix === 'botVersion' && /v\d+/.test(path.basename(subdirectory))) ||
+            // Check if metasuffix is neither bot nor botVersion
+            ((metaSuffix !== 'botVersion' && metaSuffix !== 'bot') ||
+              // If botVersion, only process "v#" directories
+              (metaSuffix === 'botVersion' && /v\d+/.test(path.basename(subdirectory))) ||
+              // If bot, do not process "v#" directories
               (metaSuffix === 'bot' && !/v\d+/.test(path.basename(subdirectory))))
           ) {
             // Process each sub-subdirectory
@@ -71,7 +77,7 @@ export async function recomposeFileHandler(
             const subdirectoryBasename = path.basename(subdirectory);
             const filePath = path.join(
               metadataPath,
-              path.basename(botDirectory),
+              path.basename(subDirectory),
               `${subdirectoryBasename}.${metaSuffix}-meta.xml`
             );
             await buildRecomposedFile(combinedXmlContents, filePath, xmlElement, log);
