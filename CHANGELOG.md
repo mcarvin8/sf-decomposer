@@ -1,3 +1,9 @@
+# [2.2.0](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v2.1.5...v2.2.0) (2024-02-18)
+
+### Features
+
+- expand supported metadata types to the majority of metadata types supported by SDR ([02fb119](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/02fb119dae4b1c02a29f92149844368e3f543527))
+
 ## [2.1.5](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v2.1.4...v2.1.5) (2024-02-17)
 
 ### Bug Fixes
