@@ -46,3 +46,5 @@ node_modules
 oclif.manifest.json
 
 oclif.lock
+
+disassemble.log

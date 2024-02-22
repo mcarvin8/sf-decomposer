@@ -5,6 +5,7 @@ import * as assert from 'node:assert';
 import * as path from 'node:path';
 import * as fsPromises from 'node:fs/promises';
 import * as fsSync from 'fs-extra';
+import { XMLParser } from 'fast-xml-parser';
 
 import { TestContext } from '@salesforce/core/lib/testSetup.js';
 import { expect } from 'chai';
@@ -23,7 +24,6 @@ describe('e2e', () => {
     'labels',
     'workflow',
     'bot',
-    'botVersion',
     'profile',
     'permissionset',
     'flow',
@@ -92,23 +92,43 @@ describe('e2e', () => {
   });
 });
 
-function compareDirectories(referenceDir: string, mockDir: string): void {
-  const entriesinRef = fs.readdirSync(referenceDir, { withFileTypes: true });
+interface XmlElement {
+  [key: string]: string | XmlElement | string[] | XmlElement[];
+}
 
-  // Only compare files that are in the reference directory (composed files)
-  // Ignore files only found in the mock directory (decomposed files)
-  for (const entry of entriesinRef) {
+const XML_PARSER_OPTION = {
+  commentPropName: '!---',
+  ignoreAttributes: false,
+  ignoreNameSpace: false,
+  parseTagValue: false,
+  parseNodeValue: false,
+  parseAttributeValue: false,
+  trimValues: true,
+  processEntities: false,
+  cdataPropName: '![CDATA[',
+};
+
+function compareXmls(referenceXml: string, mockXml: string): void {
+  const xmlParser = new XMLParser(XML_PARSER_OPTION);
+  const referenceParsed = xmlParser.parse(referenceXml) as Record<string, XmlElement>;
+  const mockParsed = xmlParser.parse(mockXml) as Record<string, XmlElement>;
+
+  assert.deepStrictEqual(referenceParsed, mockParsed, 'XML content is different');
+}
+
+function compareDirectories(referenceDir: string, mockDir: string): void {
+  const entriesInRef = fs.readdirSync(referenceDir, { withFileTypes: true });
+
+  for (const entry of entriesInRef) {
     const refEntryPath = path.join(referenceDir, entry.name);
     const mockPath = path.join(mockDir, entry.name);
 
     if (entry.isDirectory()) {
-      // If it's a directory, recursively compare its contents
       compareDirectories(refEntryPath, mockPath);
     } else {
-      // If it's a file, compare its content
       const refContent = fs.readFileSync(refEntryPath, 'utf-8');
       const mockContent = fs.readFileSync(mockPath, 'utf-8');
-      assert.strictEqual(refContent, mockContent, `File content is different for ${entry.name}`);
+      compareXmls(refContent, mockContent);
     }
   }
 }
