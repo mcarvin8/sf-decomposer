@@ -1,3 +1,17 @@
+# [3.0.0](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v2.2.0...v3.0.0) (2024-02-24)
+
+### Bug Fixes
+
+- rename bot version meta files and delete recomposed files during test to ensure they are remade ([f6b4675](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/f6b4675a492692037441053ebfc93cc2a834e8d9))
+
+### Features
+
+- add xml-disassembler package ([e5f6173](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/e5f6173ea9dce4600e3544baf523406869486c0e))
+
+### BREAKING CHANGES
+
+- Decompose files will need to be re-generated.
+
 # [2.2.0](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v2.1.5...v2.2.0) (2024-02-18)
 
 ### Features
