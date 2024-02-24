@@ -58,7 +58,7 @@ export async function recomposeFileHandler(
 
     await moveFiles(sourceDirectory, destinationDirectory, () => true);
 
-    await fsextra.remove(path.join(metadataPath, 'CustomLabels', 'labels'));
+    await fsextra.remove(path.join(metadataPath, 'CustomLabels'));
   } else if (strictDirectoryName || folderType) {
     const subDirectories = (await fs.readdir(metadataPath)).map((file) => path.join(metadataPath, file));
 
