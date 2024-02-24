@@ -70,6 +70,36 @@ describe('e2e', () => {
         .join('\n');
       expect(output).to.include(`All metadata files have been decomposed for the metadata type: ${metadataType}`);
     }
+    // delete baseline recomposed files to ensure they are re-made correctly
+    const filesToDelete = [
+      'mock/aiScoringModelDefinitions/Prediction_Scores_for_Accounts.aiScoringModelDefinition-meta.xml',
+      'mock/applications/Dreamhouse.app-meta.xml',
+      'mock/assignmentRules/Case.assignmentRules-meta.xml',
+      'mock/autoResponseRules/Lead.autoResponseRules-meta.xml',
+      'mock/bots/Assessment_Bot/v1.botVersion-meta.xml',
+      'mock/bots/Assessment_Bot/Assessment_Bot.bot-meta.xml',
+      'mock/decisionMatrixDefinition/HealthCloudUM_ValidRegions.decisionMatrixDefinition-meta.xml',
+      'mock/escalationRules/Case.escalationRules-meta.xml',
+      'mock/flows/Get_Info.flow-meta.xml',
+      'mock/globalValueSets/Countries.globalValueSet-meta.xml',
+      'mock/globalValueSetTranslations/Numbers-fr.globalValueSetTranslation-meta.xml',
+      'mock/labels/CustomLabels.labels-meta.xml',
+      'mock/marketingappextensions/VidLand_US.marketingappextension-meta.xml',
+      'mock/matchingRules/Account.matchingRule-meta.xml',
+      'mock/permissionsets/HR_Admin.permissionset-meta.xml',
+      'mock/profiles/SuperUser.profile-meta.xml',
+      'mock/sharingRules/Account.sharingRules-meta.xml',
+      'mock/standardValueSets/CaseType.standardValueSet-meta.xml',
+      'mock/standardValueSetTranslations/AccountRating-fr.standardValueSetTranslation-meta.xml',
+      'mock/translations/sample_de.translation-meta.xml',
+      'mock/workflows/Case.workflow-meta.xml',
+    ];
+
+    filesToDelete.forEach((file) => {
+      fs.unlink(file, (err) => {
+        if (err) throw err;
+      });
+    });
   });
 
   it('should recompose all supported metadata types', async () => {

@@ -5,6 +5,7 @@ import * as path from 'node:path';
 import * as fsextra from 'fs-extra';
 import { ReassembleXMLFileHandler, setLogLevel } from 'xml-disassembler';
 import { CUSTOM_LABELS_FILE } from '../helpers/constants.js';
+import { renameBotVersionFile } from './renameBotVersionFiles.js';
 
 async function moveFiles(
   sourceDirectory: string,
@@ -58,7 +59,7 @@ export async function recomposeFileHandler(
     await moveFiles(sourceDirectory, destinationDirectory, () => true);
 
     await fsextra.remove(path.join(metadataPath, 'CustomLabels', 'labels'));
-  } else if (strictDirectoryName || folderType || metaSuffix === 'botVersion') {
+  } else if (strictDirectoryName || folderType) {
     const subDirectories = (await fs.readdir(metadataPath)).map((file) => path.join(metadataPath, file));
 
     for (const subDirectory of subDirectories) {
@@ -82,5 +83,9 @@ export async function recomposeFileHandler(
         await reassembleHandler(subdirectory, `${metaSuffix}-meta.xml`);
       }
     }
+  }
+
+  if (metaSuffix === 'bot') {
+    await renameBotVersionFile(metadataPath);
   }
 }

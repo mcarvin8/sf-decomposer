@@ -6,6 +6,7 @@ import fs from 'fs-extra';
 
 import { DisassembleXMLFileHandler, setLogLevel } from 'xml-disassembler';
 import { CUSTOM_LABELS_FILE } from '../helpers/constants.js';
+import { renameBotVersionFile } from './renameBotVersionFiles.js';
 
 export async function decomposeFileHandler(
   metaAttributes: {
@@ -35,7 +36,7 @@ export async function decomposeFileHandler(
     }
   }
 
-  if (strictDirectoryName || folderType || metaSuffix === 'botVersion') {
+  if (strictDirectoryName || folderType) {
     // iterate through the directory
     const subFiles = await fs.readdir(metadataPath);
     for (const subFile of subFiles) {
@@ -81,5 +82,8 @@ export async function decomposeFileHandler(
         await fs.remove(subdirectoryPath);
       }
     }
+  }
+  if (metaSuffix === 'bot') {
+    await renameBotVersionFile(metadataPath);
   }
 }

@@ -138,27 +138,34 @@ Here are some examples:
 - AI Scoring Model Definition (`--metadata-type "aiScoringModelDefinition"`)
 - Decision Matrix Definition (`--metadata-type "decisionMatrixDefinition"`)
 - Bot (`--metadata-type "bot"`)
-- Bot Version (`--metadata-type "botVersion"`)
+  - **NOTE**: Running "bot" will also decompose and recompose Bot Version meta files
+  - The `botVersion` meta suffix will be blocked from running directly
 - Marketing App Extension (`--metadata-type "marketingappextension"`)
 
 ### Exceptions
 
+`botVersion` is blocked from being ran directly. Please use the `bot` meta suffix to decompose and recompose bots and bot versions.
+
+```
+Error (1): `botVersion` suffix should not be used. Please use `bot` to recompose bot and bot version files.
+```
+
 Custom Objects are not supported by this plugin.
 
 ```
-Error (2): Custom Objects are not supported by this plugin.
+Error (1): Custom Objects are not supported by this plugin.
 ```
 
 Metadata types such as Apex Classes, Apex Components, Triggers, etc. with certain SDR adapter strategies (`matchingContentFile`, `digitalExperience`, `mixedContent`, `bundle`) are not supported by this plugin.
 
 ```
-Error (2): Metadata types with [matchingContentFile, digitalExperience, mixedContent, bundle] strategies are not supported by this plugin.
+Error (1): Metadata types with [matchingContentFile, digitalExperience, mixedContent, bundle] strategies are not supported by this plugin.
 ```
 
 Children metadata types (ex: custom fields) are not supported and will result in this general error:
 
 ```
-Error (2): Metadata type not found for the given suffix: field.
+Error (1): Metadata type not found for the given suffix: field.
 ```
 
 ### Issues

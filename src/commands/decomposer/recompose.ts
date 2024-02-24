@@ -46,6 +46,9 @@ export default class DecomposerRecompose extends SfCommand<DecomposerRecomposeRe
     if (metadataTypeToRetrieve === 'object') {
       this.error('Custom Objects are not supported by this plugin.');
     }
+    if (metadataTypeToRetrieve === 'botVersion') {
+      this.error('`botVersion` suffix should not be used. Please use `bot` to recompose bot and bot version files.');
+    }
     const dxDirectory = flags['dx-directory'];
     const metadataTypeEntry = registryAccess.getTypeBySuffix(metadataTypeToRetrieve);
 
