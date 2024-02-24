@@ -1,3 +1,9 @@
+## [3.0.1](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.0.0...v3.0.1) (2024-02-24)
+
+### Bug Fixes
+
+- delete empty custom label temp directory created during recompose process ([f27c211](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/f27c211c51c96be4b6b10ff55207ec761ad6c7a2))
+
 # [3.0.0](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v2.2.0...v3.0.0) (2024-02-24)
 
 ### Bug Fixes
