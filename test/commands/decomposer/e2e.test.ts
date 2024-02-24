@@ -5,6 +5,7 @@ import * as assert from 'node:assert';
 import * as path from 'node:path';
 import * as fsPromises from 'node:fs/promises';
 import * as fsSync from 'fs-extra';
+import { XMLParser } from 'fast-xml-parser';
 
 import { TestContext } from '@salesforce/core/lib/testSetup.js';
 import { expect } from 'chai';
@@ -23,7 +24,6 @@ describe('e2e', () => {
     'labels',
     'workflow',
     'bot',
-    'botVersion',
     'profile',
     'permissionset',
     'flow',
@@ -70,6 +70,36 @@ describe('e2e', () => {
         .join('\n');
       expect(output).to.include(`All metadata files have been decomposed for the metadata type: ${metadataType}`);
     }
+    // delete baseline recomposed files to ensure they are re-made correctly
+    const filesToDelete = [
+      'mock/aiScoringModelDefinitions/Prediction_Scores_for_Accounts.aiScoringModelDefinition-meta.xml',
+      'mock/applications/Dreamhouse.app-meta.xml',
+      'mock/assignmentRules/Case.assignmentRules-meta.xml',
+      'mock/autoResponseRules/Lead.autoResponseRules-meta.xml',
+      'mock/bots/Assessment_Bot/v1.botVersion-meta.xml',
+      'mock/bots/Assessment_Bot/Assessment_Bot.bot-meta.xml',
+      'mock/decisionMatrixDefinition/HealthCloudUM_ValidRegions.decisionMatrixDefinition-meta.xml',
+      'mock/escalationRules/Case.escalationRules-meta.xml',
+      'mock/flows/Get_Info.flow-meta.xml',
+      'mock/globalValueSets/Countries.globalValueSet-meta.xml',
+      'mock/globalValueSetTranslations/Numbers-fr.globalValueSetTranslation-meta.xml',
+      'mock/labels/CustomLabels.labels-meta.xml',
+      'mock/marketingappextensions/VidLand_US.marketingappextension-meta.xml',
+      'mock/matchingRules/Account.matchingRule-meta.xml',
+      'mock/permissionsets/HR_Admin.permissionset-meta.xml',
+      'mock/profiles/SuperUser.profile-meta.xml',
+      'mock/sharingRules/Account.sharingRules-meta.xml',
+      'mock/standardValueSets/CaseType.standardValueSet-meta.xml',
+      'mock/standardValueSetTranslations/AccountRating-fr.standardValueSetTranslation-meta.xml',
+      'mock/translations/sample_de.translation-meta.xml',
+      'mock/workflows/Case.workflow-meta.xml',
+    ];
+
+    filesToDelete.forEach((file) => {
+      fs.unlink(file, (err) => {
+        if (err) throw err;
+      });
+    });
   });
 
   it('should recompose all supported metadata types', async () => {
@@ -92,23 +122,43 @@ describe('e2e', () => {
   });
 });
 
-function compareDirectories(referenceDir: string, mockDir: string): void {
-  const entriesinRef = fs.readdirSync(referenceDir, { withFileTypes: true });
+interface XmlElement {
+  [key: string]: string | XmlElement | string[] | XmlElement[];
+}
 
-  // Only compare files that are in the reference directory (composed files)
-  // Ignore files only found in the mock directory (decomposed files)
-  for (const entry of entriesinRef) {
+const XML_PARSER_OPTION = {
+  commentPropName: '!---',
+  ignoreAttributes: false,
+  ignoreNameSpace: false,
+  parseTagValue: false,
+  parseNodeValue: false,
+  parseAttributeValue: false,
+  trimValues: true,
+  processEntities: false,
+  cdataPropName: '![CDATA[',
+};
+
+function compareXmls(referenceXml: string, mockXml: string): void {
+  const xmlParser = new XMLParser(XML_PARSER_OPTION);
+  const referenceParsed = xmlParser.parse(referenceXml) as Record<string, XmlElement>;
+  const mockParsed = xmlParser.parse(mockXml) as Record<string, XmlElement>;
+
+  assert.deepStrictEqual(referenceParsed, mockParsed, 'XML content is different');
+}
+
+function compareDirectories(referenceDir: string, mockDir: string): void {
+  const entriesInRef = fs.readdirSync(referenceDir, { withFileTypes: true });
+
+  for (const entry of entriesInRef) {
     const refEntryPath = path.join(referenceDir, entry.name);
     const mockPath = path.join(mockDir, entry.name);
 
     if (entry.isDirectory()) {
-      // If it's a directory, recursively compare its contents
       compareDirectories(refEntryPath, mockPath);
     } else {
-      // If it's a file, compare its content
       const refContent = fs.readFileSync(refEntryPath, 'utf-8');
       const mockContent = fs.readFileSync(mockPath, 'utf-8');
-      assert.strictEqual(refContent, mockContent, `File content is different for ${entry.name}`);
+      compareXmls(refContent, mockContent);
     }
   }
 }

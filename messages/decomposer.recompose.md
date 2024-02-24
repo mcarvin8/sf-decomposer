@@ -19,3 +19,7 @@ Directory containing Salesforce metadata (default: `force-app/main/default`).
 # flags.metadata-type.summary
 
 This flag allows users to specify a metadata type for processing, such as 'flow', 'labels', etc. The provided input should be the metadata's suffix value.
+
+# flags.debug.summary
+
+If provided, debug to log file.

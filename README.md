@@ -31,7 +31,7 @@ Decomposes the original metadata files into smaller files for version control. E
 
 <br>
 
-Custom Labels will be decomposed directly in the root labels folder and will have a different extension compared to the original labels file:
+Custom Labels will be decomposed directly in the root labels folder:
 
 <img src="https://raw.githubusercontent.com/mcarvin8/sfdx-decomposer-plugin/main/.github/images/decomposed-labels.png">
 
@@ -61,12 +61,13 @@ It's recommended to add the `--purge`/`-p` flag to the `decompose` command to re
 
 ```
 USAGE
-  $ sf decomposer decompose -m <value> -d <value> -p [--json]
+  $ sf decomposer decompose -m <value> -d <value> -p [--debug --json]
 
 FLAGS
   -m, --metadata-type=<value> This flag allows users to specify a metadata type for processing, such as 'flow', 'labels', etc. The provided input should be the metadata's suffix value.
   -d, --dx-directory=<value>  [default: force-app/main/default] The root directory containing your Salesforce metadata.
   -p, --purge  [default: false] If provided, purge directories of pre-existing decomposed files.
+  --debug [default: false] If provided, log debugging results to a text file (disassemble.log).
 
 GLOBAL FLAGS
   --json  Format output as json.
@@ -88,11 +89,12 @@ Reads all of the files created by the decompose command and re-creates the origi
 
 ```
 USAGE
-  $ sf decomposer recompose -m <value> -d <value> [--json]
+  $ sf decomposer recompose -m <value> -d <value> [--debug --json]
 
 FLAGS
   -m, --metadata-type=<value> This flag allows users to specify a metadata type for processing, such as 'flow', 'labels', etc. The provided input should be the metadata's suffix value.
   -d, --dx-directory=<value>  [default: force-app/main/default] The root directory containing your Salesforce metadata.
+  --debug [default: false] If provided, log debugging results to a text file (disassemble.log).
 
 GLOBAL FLAGS
   --json  Format output as json.
@@ -136,27 +138,34 @@ Here are some examples:
 - AI Scoring Model Definition (`--metadata-type "aiScoringModelDefinition"`)
 - Decision Matrix Definition (`--metadata-type "decisionMatrixDefinition"`)
 - Bot (`--metadata-type "bot"`)
-- Bot Version (`--metadata-type "botVersion"`)
+  - **NOTE**: Running "bot" will also decompose and recompose Bot Version meta files
+  - The `botVersion` meta suffix will be blocked from running directly
 - Marketing App Extension (`--metadata-type "marketingappextension"`)
 
 ### Exceptions
 
+`botVersion` is blocked from being ran directly. Please use the `bot` meta suffix to decompose and recompose bots and bot versions.
+
+```
+Error (1): `botVersion` suffix should not be used. Please use `bot` to recompose bot and bot version files.
+```
+
 Custom Objects are not supported by this plugin.
 
 ```
-Error (2): Custom Objects are not supported by this plugin.
+Error (1): Custom Objects are not supported by this plugin.
 ```
 
 Metadata types such as Apex Classes, Apex Components, Triggers, etc. with certain SDR adapter strategies (`matchingContentFile`, `digitalExperience`, `mixedContent`, `bundle`) are not supported by this plugin.
 
 ```
-Error (2): Metadata types with [matchingContentFile, digitalExperience, mixedContent, bundle] strategies are not supported by this plugin.
+Error (1): Metadata types with [matchingContentFile, digitalExperience, mixedContent, bundle] strategies are not supported by this plugin.
 ```
 
 Children metadata types (ex: custom fields) are not supported and will result in this general error:
 
 ```
-Error (2): Metadata type not found for the given suffix: field.
+Error (1): Metadata type not found for the given suffix: field.
 ```
 
 ### Issues
@@ -195,6 +204,12 @@ Git should ignore the recomposed files.
 **/bots/*/*.botVersion-meta.xml
 **/bots/*/*.bot-meta.xml
 **/marketingappextensions/*.marketingappextension-meta.xml
+```
+
+Git should also ignore the log created by the `xml-disassembler` package.
+
+```
+disassemble.log
 ```
 
 ### `.forceignore` updates

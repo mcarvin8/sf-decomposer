@@ -2,7 +2,7 @@
 
 import { SfCommand, Flags } from '@salesforce/sf-plugins-core';
 import { RegistryAccess } from '@salesforce/source-deploy-retrieve';
-import { Messages, Logger } from '@salesforce/core';
+import { Messages } from '@salesforce/core';
 import { METADATA_DIR_DEFAULT_VALUE } from '../../helpers/constants.js';
 import { recomposeFileHandler } from '../../service/recomposeFileHandler.js';
 
@@ -32,14 +32,22 @@ export default class DecomposerRecompose extends SfCommand<DecomposerRecomposeRe
       char: 'm',
       required: true,
     }),
+    debug: Flags.boolean({
+      summary: messages.getMessage('flags.debug.summary'),
+      required: false,
+      default: false,
+    }),
   };
 
   public async run(): Promise<DecomposerRecomposeResult> {
     const { flags } = await this.parse(DecomposerRecompose);
-    const log = await Logger.child(this.ctor.name);
     const metadataTypeToRetrieve = flags['metadata-type'];
+    const debug = flags['debug'];
     if (metadataTypeToRetrieve === 'object') {
       this.error('Custom Objects are not supported by this plugin.');
+    }
+    if (metadataTypeToRetrieve === 'botVersion') {
+      this.error('`botVersion` suffix should not be used. Please use `bot` to recompose bot and bot version files.');
     }
     const dxDirectory = flags['dx-directory'];
     const metadataTypeEntry = registryAccess.getTypeBySuffix(metadataTypeToRetrieve);
@@ -66,7 +74,7 @@ export default class DecomposerRecompose extends SfCommand<DecomposerRecomposeRe
             : `${dxDirectory}/${metadataTypeEntry.directoryName}`,
       };
 
-      await recomposeFileHandler(metaAttributes, log);
+      await recomposeFileHandler(metaAttributes, debug);
       this.log(`All metadata files have been recomposed for the metadata type: ${metadataTypeToRetrieve}`);
     } else {
       this.error(`Metadata type not found for the given suffix: ${metadataTypeToRetrieve}.`);

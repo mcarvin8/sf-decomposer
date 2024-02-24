@@ -23,3 +23,7 @@ This flag allows users to specify a metadata type for processing, such as 'flow'
 # flags.purge.summary
 
 If provided, purge directories of pre-existing decomposed files.
+
+# flags.debug.summary
+
+If provided, debug to log file.
