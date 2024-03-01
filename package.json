@@ -24,7 +24,7 @@
     "@semantic-release/release-notes-generator": "^12.1.0",
     "@types/fs-extra": "^11.0.4",
     "eslint-plugin-sf-plugin": "^1.17.3",
-    "fast-xml-parser": "^4.3.4",
+    "fast-xml-parser": "^4.3.5",
     "husky": "^9.0.6",
     "oclif": "^4.4.10",
     "semantic-release": "^17.4.7",
