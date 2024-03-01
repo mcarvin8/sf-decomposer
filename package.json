@@ -26,7 +26,7 @@
     "eslint-plugin-sf-plugin": "^1.17.3",
     "fast-xml-parser": "^4.3.4",
     "husky": "^9.0.6",
-    "oclif": "^4.4.10",
+    "oclif": "^4.4.19",
     "semantic-release": "^17.4.7",
     "shx": "0.3.4",
     "ts-node": "^10.9.2",
