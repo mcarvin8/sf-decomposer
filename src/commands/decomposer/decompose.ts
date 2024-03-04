@@ -75,10 +75,7 @@ export default class DecomposerDecompose extends SfCommand<DecomposerDecomposeRe
         metaSuffix: metadataTypeEntry.suffix as string,
         strictDirectoryName: metadataTypeEntry.strictDirectoryName as boolean,
         folderType: metadataTypeEntry.folderType as string,
-        metadataPath:
-          metadataTypeToRetrieve === 'botVersion'
-            ? `${dxDirectory}/bots` // Change the directoryName to 'bots' until SDR is fixed
-            : `${dxDirectory}/${metadataTypeEntry.directoryName}`,
+        metadataPath: `${dxDirectory}/${metadataTypeEntry.directoryName}`,
         uniqueIdElements: getUniqueIdElements(metadataTypeToRetrieve)
           ? `${defaultuniqueIdElements},${getUniqueIdElements(metadataTypeToRetrieve)}`
           : defaultuniqueIdElements,
