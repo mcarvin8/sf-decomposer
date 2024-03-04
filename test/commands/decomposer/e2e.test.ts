@@ -10,6 +10,7 @@ import { XMLParser } from 'fast-xml-parser';
 import { TestContext } from '@salesforce/core/lib/testSetup.js';
 import { expect } from 'chai';
 import { stubSfCommandUx } from '@salesforce/sf-plugins-core';
+import { setLogLevel } from 'xml-disassembler';
 import DecomposerRecompose from '../../../src/commands/decomposer/recompose.js';
 import DecomposerDecompose from '../../../src/commands/decomposer/decompose.js';
 
@@ -45,6 +46,7 @@ describe('e2e', () => {
 
   before(async () => {
     sfCommandStubs = stubSfCommandUx($$.SANDBOX);
+    setLogLevel('debug');
 
     // Create a mock directory by copying the original directory
     await copyAsync(originalDirectory, mockDirectory);
