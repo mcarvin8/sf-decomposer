@@ -185,5 +185,12 @@
   },
   "exports": "./lib/index.js",
   "type": "module",
-  "author": "Matt Carvin"
+  "author": "Matt Carvin",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mcarvin8/sfdx-decomposer-plugin.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mcarvin8/sfdx-decomposer-plugin/issues"
+  }
 }
