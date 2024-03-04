@@ -23,7 +23,8 @@ export async function decomposeFileHandler(
   if (debug) {
     setLogLevel('debug');
   }
-  // additional purge for labels
+  // standalone purge is required for labels
+  // do not use the purge flag in the xml-disassembler package for labels due to file moving
   if (metaSuffix === 'labels' && purge) {
     const subFiles = await fs.readdir(metadataPath);
     for (const subFile of subFiles) {
