@@ -65,7 +65,6 @@ export default class DecomposerRecompose extends SfCommand<DecomposerRecomposeRe
       }
       const metaAttributes = {
         metaSuffix: metadataTypeEntry.suffix as string,
-        xmlElement: metadataTypeEntry.name,
         strictDirectoryName: metadataTypeEntry.strictDirectoryName as boolean,
         folderType: metadataTypeEntry.folderType as string,
         metadataPath: `${dxDirectory}/${metadataTypeEntry.directoryName}`,
