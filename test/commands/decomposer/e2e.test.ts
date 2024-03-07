@@ -5,11 +5,11 @@ import * as assert from 'node:assert';
 import * as path from 'node:path';
 import * as fsPromises from 'node:fs/promises';
 import * as fsSync from 'fs-extra';
-import { XMLParser } from 'fast-xml-parser';
 
 import { TestContext } from '@salesforce/core/lib/testSetup.js';
 import { expect } from 'chai';
 import { stubSfCommandUx } from '@salesforce/sf-plugins-core';
+import { setLogLevel } from 'xml-disassembler';
 import DecomposerRecompose from '../../../src/commands/decomposer/recompose.js';
 import DecomposerDecompose from '../../../src/commands/decomposer/decompose.js';
 
@@ -45,6 +45,7 @@ describe('e2e', () => {
 
   before(async () => {
     sfCommandStubs = stubSfCommandUx($$.SANDBOX);
+    setLogLevel('debug');
 
     // Create a mock directory by copying the original directory
     await copyAsync(originalDirectory, mockDirectory);
@@ -122,43 +123,23 @@ describe('e2e', () => {
   });
 });
 
-interface XmlElement {
-  [key: string]: string | XmlElement | string[] | XmlElement[];
-}
-
-const XML_PARSER_OPTION = {
-  commentPropName: '!---',
-  ignoreAttributes: false,
-  ignoreNameSpace: false,
-  parseTagValue: false,
-  parseNodeValue: false,
-  parseAttributeValue: false,
-  trimValues: true,
-  processEntities: false,
-  cdataPropName: '![CDATA[',
-};
-
-function compareXmls(referenceXml: string, mockXml: string): void {
-  const xmlParser = new XMLParser(XML_PARSER_OPTION);
-  const referenceParsed = xmlParser.parse(referenceXml) as Record<string, XmlElement>;
-  const mockParsed = xmlParser.parse(mockXml) as Record<string, XmlElement>;
-
-  assert.deepStrictEqual(referenceParsed, mockParsed, 'XML content is different');
-}
-
 function compareDirectories(referenceDir: string, mockDir: string): void {
-  const entriesInRef = fs.readdirSync(referenceDir, { withFileTypes: true });
+  const entriesinRef = fs.readdirSync(referenceDir, { withFileTypes: true });
 
-  for (const entry of entriesInRef) {
+  // Only compare files that are in the reference directory (composed files)
+  // Ignore files only found in the mock directory (decomposed files)
+  for (const entry of entriesinRef) {
     const refEntryPath = path.join(referenceDir, entry.name);
     const mockPath = path.join(mockDir, entry.name);
 
     if (entry.isDirectory()) {
+      // If it's a directory, recursively compare its contents
       compareDirectories(refEntryPath, mockPath);
     } else {
+      // If it's a file, compare its content
       const refContent = fs.readFileSync(refEntryPath, 'utf-8');
       const mockContent = fs.readFileSync(mockPath, 'utf-8');
-      compareXmls(refContent, mockContent);
+      assert.strictEqual(refContent, mockContent, `File content is different for ${entry.name}`);
     }
   }
 }

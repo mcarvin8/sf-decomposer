@@ -6,22 +6,7 @@ import * as fsextra from 'fs-extra';
 import { ReassembleXMLFileHandler, setLogLevel } from 'xml-disassembler';
 import { CUSTOM_LABELS_FILE } from '../helpers/constants.js';
 import { renameBotVersionFile } from './renameBotVersionFiles.js';
-
-async function moveFiles(
-  sourceDirectory: string,
-  destinationDirectory: string,
-  predicate: (fileName: string) => boolean
-): Promise<void> {
-  const files = await fs.readdir(sourceDirectory);
-  for (const file of files) {
-    const fileStat = await fs.stat(path.join(sourceDirectory, file));
-    if (fileStat.isFile() && predicate(file)) {
-      const sourceFile = path.join(sourceDirectory, file);
-      const destinationFile = path.join(destinationDirectory, file);
-      await fsextra.move(sourceFile, destinationFile, { overwrite: true });
-    }
-  }
-}
+import { moveFiles } from './moveFiles.js';
 
 async function reassembleHandler(xmlPath: string, fileExtension: string): Promise<void> {
   const handler = new ReassembleXMLFileHandler();
