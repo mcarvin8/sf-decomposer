@@ -12,7 +12,7 @@
   },
   "devDependencies": {
     "@commitlint/cli": "^18.6.1",
-    "@commitlint/config-conventional": "^18.6.0",
+    "@commitlint/config-conventional": "^18.6.2",
     "@oclif/plugin-command-snapshot": "^5.0.8",
     "@salesforce/cli-plugins-testkit": "^5.1.7",
     "@salesforce/dev-scripts": "^8.3.0",
