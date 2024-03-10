@@ -46,7 +46,7 @@ export async function decomposeFileHandler(
         await handler.disassemble({
           xmlPath: subFilePath,
           uniqueIdElements,
-          purge,
+          prePurge: purge,
         });
       }
     }
@@ -59,7 +59,7 @@ export async function decomposeFileHandler(
     await handler.disassemble({
       xmlPath: metadataPath,
       uniqueIdElements,
-      purge,
+      prePurge: purge,
     });
   }
   if (metaSuffix === 'labels') {
