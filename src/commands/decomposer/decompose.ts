@@ -33,8 +33,8 @@ export default class DecomposerDecompose extends SfCommand<DecomposerDecomposeRe
       char: 'm',
       required: true,
     }),
-    purge: Flags.boolean({
-      summary: messages.getMessage('flags.purge.summary'),
+    prepurge: Flags.boolean({
+      summary: messages.getMessage('flags.prepurge.summary'),
       char: 'p',
       required: false,
       default: false,
@@ -56,7 +56,7 @@ export default class DecomposerDecompose extends SfCommand<DecomposerDecomposeRe
       this.error('`botVersion` suffix should not be used. Please use `bot` to decompose bot and bot version files.');
     }
     const dxDirectory = flags['dx-directory'];
-    const purge = flags['purge'];
+    const prepurge = flags['prepurge'];
     const debug = flags['debug'];
     const metadataTypeEntry = registryAccess.getTypeBySuffix(metadataTypeToRetrieve);
 
@@ -80,7 +80,7 @@ export default class DecomposerDecompose extends SfCommand<DecomposerDecomposeRe
           ? `${defaultuniqueIdElements},${getUniqueIdElements(metadataTypeToRetrieve)}`
           : defaultuniqueIdElements,
       };
-      await decomposeFileHandler(metaAttributes, purge, debug);
+      await decomposeFileHandler(metaAttributes, prepurge, debug);
       this.log(`All metadata files have been decomposed for the metadata type: ${metadataTypeToRetrieve}`);
     } else {
       this.error(`Metadata type not found for the given suffix: ${metadataTypeToRetrieve}.`);

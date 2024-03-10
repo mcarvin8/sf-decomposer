@@ -16,7 +16,6 @@ import DecomposerDecompose from '../../../src/commands/decomposer/decompose.js';
 describe('e2e', () => {
   const $$ = new TestContext();
   let sfCommandStubs: ReturnType<typeof stubSfCommandUx>;
-  let testCounter = 0; // Counter to track the test order
 
   const originalDirectory: string = 'force-app/main/default';
   const mockDirectory: string = 'mock';
@@ -48,17 +47,19 @@ describe('e2e', () => {
     setLogLevel('debug');
 
     // Create a mock directory by copying the original directory
-    await copyAsync(originalDirectory, mockDirectory);
+    await fsSync.copy(originalDirectory, mockDirectory, { overwrite: true });
   });
 
   afterEach(() => {
     $$.restore();
-    testCounter += 1;
+  });
 
-    // Remove the mock directory only after the last test
-    if (testCounter === 3) {
-      return removeSync(mockDirectory);
-    }
+  after(async () => {
+    sfCommandStubs = stubSfCommandUx($$.SANDBOX);
+    setLogLevel('debug');
+
+    // Create a mock directory by copying the original directory
+    await fsPromises.rm(mockDirectory, { recursive: true });
   });
 
   it('should decompose all supported metadata types', async () => {
@@ -142,13 +143,4 @@ function compareDirectories(referenceDir: string, mockDir: string): void {
       assert.strictEqual(refContent, mockContent, `File content is different for ${entry.name}`);
     }
   }
-}
-
-async function copyAsync(source: string, destination: string): Promise<void> {
-  await fsSync.copy(source, destination, { overwrite: true });
-}
-
-function removeSync(directoryPath: string): void {
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  fsPromises.rm(directoryPath, { recursive: true });
 }
