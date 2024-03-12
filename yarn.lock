@@ -12498,10 +12498,10 @@ write-file-atomic@^5.0.0, write-file-atomic@^5.0.1:
     imurmurhash "^0.1.4"
     signal-exit "^4.0.1"
 
-xml-disassembler@^1.1.4:
-  version "1.1.4"
-  resolved "https://registry.npmjs.org/xml-disassembler/-/xml-disassembler-1.1.4.tgz"
-  integrity sha512-Kl1Z6DwmNlacECoq5g3L6Xgb6+VsJnCpRMSknwaFuVfzBCNHR9z7/mxA36qJ9QGOPzmd5uLhCV12IJ+DDINdfQ==
+xml-disassembler@^1.1.5-beta.1:
+  version "1.1.5-beta.1"
+  resolved "https://registry.npmjs.org/xml-disassembler/-/xml-disassembler-1.1.5-beta.1.tgz"
+  integrity sha512-zPu2ZCtH8xgqOAy8c9enNqU4AUW2arljkSK7X6GaIVNSBEyeO8Kan7IIbtdv4x00eAFHOs/NkWNT37KNoCRDLA==
   dependencies:
     fast-xml-parser "^4.3.4"
     log4js "^6.9.1"
