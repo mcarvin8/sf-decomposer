@@ -61,12 +61,13 @@ It's recommended to add the `--purge`/`-p` flag to the `decompose` command to re
 
 ```
 USAGE
-  $ sf decomposer decompose -m <value> -d <value> -p [--debug --json]
+  $ sf decomposer decompose -m <value> -d <value> [--prepurge --postpurge --debug --json]
 
 FLAGS
   -m, --metadata-type=<value> This flag allows users to specify a metadata type for processing, such as 'flow', 'labels', etc. The provided input should be the metadata's suffix value.
   -d, --dx-directory=<value>  [default: force-app/main/default] The root directory containing your Salesforce metadata.
-  -p, --purge  [default: false] If provided, purge directories of pre-existing decomposed files.
+  --prepurge  [default: false] If provided, purge directories of pre-existing decomposed files.
+  --postpurge  [default: false] If provided, purge the original files after decomposing them.
   --debug [default: false] If provided, log debugging results to a text file (disassemble.log).
 
 GLOBAL FLAGS

@@ -15,7 +15,8 @@ export async function decomposeFileHandler(
     folderType: string;
     uniqueIdElements: string;
   },
-  purge: boolean,
+  prepurge: boolean,
+  postpurge: boolean,
   debug: boolean
 ): Promise<void> {
   const { metadataPath, metaSuffix, strictDirectoryName, folderType, uniqueIdElements } = metaAttributes;
@@ -24,7 +25,7 @@ export async function decomposeFileHandler(
     setLogLevel('debug');
   }
   // standalone pre-purge is required for labels
-  if (metaSuffix === 'labels' && purge) {
+  if (metaSuffix === 'labels' && prepurge) {
     const subFiles = await fs.readdir(metadataPath);
     for (const subFile of subFiles) {
       const subfilePath = path.join(metadataPath, subFile);
@@ -45,7 +46,8 @@ export async function decomposeFileHandler(
         await handler.disassemble({
           xmlPath: subFilePath,
           uniqueIdElements,
-          prePurge: purge,
+          prePurge: prepurge,
+          postPurge: postpurge,
         });
       }
     }
@@ -55,12 +57,14 @@ export async function decomposeFileHandler(
     await handler.disassemble({
       xmlPath: labelFilePath,
       uniqueIdElements,
+      postPurge: postpurge,
     });
   } else {
     await handler.disassemble({
       xmlPath: metadataPath,
       uniqueIdElements,
-      prePurge: purge,
+      prePurge: prepurge,
+      postPurge: postpurge,
     });
   }
   if (metaSuffix === 'labels') {
