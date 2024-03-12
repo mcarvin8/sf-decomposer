@@ -23,8 +23,7 @@ export async function decomposeFileHandler(
   if (debug) {
     setLogLevel('debug');
   }
-  // standalone purge is required for labels
-  // do not use the purge flag in the xml-disassembler package for labels due to file moving
+  // standalone pre-purge is required for labels
   if (metaSuffix === 'labels' && purge) {
     const subFiles = await fs.readdir(metadataPath);
     for (const subFile of subFiles) {
@@ -50,9 +49,11 @@ export async function decomposeFileHandler(
         });
       }
     }
-  } else if (purge && metaSuffix === 'labels') {
+  } else if (metaSuffix === 'labels') {
+    // do not use the prePurge flag in the xml-disassembler package for labels due to file moving
+    const labelFilePath = path.resolve(metadataPath, CUSTOM_LABELS_FILE);
     await handler.disassemble({
-      xmlPath: metadataPath,
+      xmlPath: labelFilePath,
       uniqueIdElements,
     });
   } else {
