@@ -1,3 +1,4 @@
+
 # [3.1.0-beta.1](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.0.2-beta.1...v3.1.0-beta.1) (2024-03-12)
 
 ### Bug Fixes
@@ -7,6 +8,12 @@
 ### Features
 
 - rename `purge` flag to `prepurge` and add `postpurge` flag ([2fd7ff6](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/2fd7ff64c4bb9e261732675fb4b609e13400e830))
+
+## [3.0.2](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.0.1...v3.0.2) (2024-03-07)
+
+### Bug Fixes
+
+- upgrade xml-disassembler to ensure consistent sorting in recomposed files on linux ([4230f95](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/4230f955b18bf5f50d861ade67b82d2e336b0d22))
 
 ## [3.0.2-beta.1](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.0.1...v3.0.2-beta.1) (2024-03-07)
 
