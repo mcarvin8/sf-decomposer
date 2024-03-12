@@ -1,3 +1,13 @@
+# [3.1.0-beta.1](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.0.2-beta.1...v3.1.0-beta.1) (2024-03-12)
+
+### Bug Fixes
+
+- only disassemble the original custom labels file ([1d6d502](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/1d6d502767331a15d0dd89e1daef8081c21f55bd))
+
+### Features
+
+- rename `purge` flag to `prepurge` and add `postpurge` flag ([2fd7ff6](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/2fd7ff64c4bb9e261732675fb4b609e13400e830))
+
 ## [3.0.2-beta.1](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.0.1...v3.0.2-beta.1) (2024-03-07)
 
 ### Bug Fixes
