@@ -16,7 +16,6 @@ import DecomposerDecompose from '../../../src/commands/decomposer/decompose.js';
 describe('e2e', () => {
   const $$ = new TestContext();
   let sfCommandStubs: ReturnType<typeof stubSfCommandUx>;
-  let testCounter = 0; // Counter to track the test order
 
   const originalDirectory: string = 'force-app/main/default';
   const mockDirectory: string = 'mock';
@@ -48,59 +47,38 @@ describe('e2e', () => {
     setLogLevel('debug');
 
     // Create a mock directory by copying the original directory
-    await copyAsync(originalDirectory, mockDirectory);
+    await fsSync.copy(originalDirectory, mockDirectory, { overwrite: true });
   });
 
   afterEach(() => {
     $$.restore();
-    testCounter += 1;
-
-    // Remove the mock directory only after the last test
-    if (testCounter === 3) {
-      return removeSync(mockDirectory);
-    }
   });
 
-  it('should decompose all supported metadata types', async () => {
+  after(async () => {
+    sfCommandStubs = stubSfCommandUx($$.SANDBOX);
+    setLogLevel('debug');
+
+    // Create a mock directory by copying the original directory
+    await fsPromises.rm(mockDirectory, { recursive: true });
+  });
+
+  it('should decompose all supported metadata types, then delete the original files', async () => {
     for (const metadataType of metadataTypes) {
       // eslint-disable-next-line no-await-in-loop
-      await DecomposerDecompose.run(['--metadata-type', metadataType, '--dx-directory', mockDirectory]);
+      await DecomposerDecompose.run([
+        '--metadata-type',
+        metadataType,
+        '--dx-directory',
+        mockDirectory,
+        '--postpurge',
+        '--prepurge',
+      ]);
       const output = sfCommandStubs.log
         .getCalls()
         .flatMap((c) => c.args)
         .join('\n');
       expect(output).to.include(`All metadata files have been decomposed for the metadata type: ${metadataType}`);
     }
-    // delete baseline recomposed files to ensure they are re-made correctly
-    const filesToDelete = [
-      'mock/aiScoringModelDefinitions/Prediction_Scores_for_Accounts.aiScoringModelDefinition-meta.xml',
-      'mock/applications/Dreamhouse.app-meta.xml',
-      'mock/assignmentRules/Case.assignmentRules-meta.xml',
-      'mock/autoResponseRules/Lead.autoResponseRules-meta.xml',
-      'mock/bots/Assessment_Bot/v1.botVersion-meta.xml',
-      'mock/bots/Assessment_Bot/Assessment_Bot.bot-meta.xml',
-      'mock/decisionMatrixDefinition/HealthCloudUM_ValidRegions.decisionMatrixDefinition-meta.xml',
-      'mock/escalationRules/Case.escalationRules-meta.xml',
-      'mock/flows/Get_Info.flow-meta.xml',
-      'mock/globalValueSets/Countries.globalValueSet-meta.xml',
-      'mock/globalValueSetTranslations/Numbers-fr.globalValueSetTranslation-meta.xml',
-      'mock/labels/CustomLabels.labels-meta.xml',
-      'mock/marketingappextensions/VidLand_US.marketingappextension-meta.xml',
-      'mock/matchingRules/Account.matchingRule-meta.xml',
-      'mock/permissionsets/HR_Admin.permissionset-meta.xml',
-      'mock/profiles/SuperUser.profile-meta.xml',
-      'mock/sharingRules/Account.sharingRules-meta.xml',
-      'mock/standardValueSets/CaseType.standardValueSet-meta.xml',
-      'mock/standardValueSetTranslations/AccountRating-fr.standardValueSetTranslation-meta.xml',
-      'mock/translations/sample_de.translation-meta.xml',
-      'mock/workflows/Case.workflow-meta.xml',
-    ];
-
-    filesToDelete.forEach((file) => {
-      fs.unlink(file, (err) => {
-        if (err) throw err;
-      });
-    });
   });
 
   it('should recompose all supported metadata types', async () => {
@@ -142,13 +120,4 @@ function compareDirectories(referenceDir: string, mockDir: string): void {
       assert.strictEqual(refContent, mockContent, `File content is different for ${entry.name}`);
     }
   }
-}
-
-async function copyAsync(source: string, destination: string): Promise<void> {
-  await fsSync.copy(source, destination, { overwrite: true });
-}
-
-function removeSync(directoryPath: string): void {
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  fsPromises.rm(directoryPath, { recursive: true });
 }
