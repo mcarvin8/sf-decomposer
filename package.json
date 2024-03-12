@@ -3,7 +3,7 @@
   "description": "Decomposes Salesforce metadata into more manageable files.",
   "version": "3.1.0-beta.1",
   "dependencies": {
-    "@oclif/core": "^3.18.1",
+    "@oclif/core": "^3.24.0",
     "@salesforce/core": "^6.5.3",
     "@salesforce/sf-plugins-core": "^7.1.9",
     "@salesforce/source-deploy-retrieve": "^10.3.1",
