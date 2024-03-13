@@ -3,8 +3,8 @@
 import { SfCommand, Flags } from '@salesforce/sf-plugins-core';
 import { Messages } from '@salesforce/core';
 import { RegistryAccess } from '@salesforce/source-deploy-retrieve';
-import { METADATA_DIR_DEFAULT_VALUE } from '../../helpers/constants.js';
-import { defaultuniqueIdElements, getUniqueIdElements } from '../../metadata/metadata.js';
+import { METADATA_DIR_DEFAULT_VALUE, DEFAULT_UNIQUE_ID_ELEMENT } from '../../helpers/constants.js';
+import { getUniqueIdElements } from '../../metadata/getUniqueIdElements.js';
 import { decomposeFileHandler } from '../../service/decomposeFileHandler.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
@@ -82,8 +82,8 @@ export default class DecomposerDecompose extends SfCommand<DecomposerDecomposeRe
         folderType: metadataTypeEntry.folderType as string,
         metadataPath: `${dxDirectory}/${metadataTypeEntry.directoryName}`,
         uniqueIdElements: getUniqueIdElements(metadataTypeToRetrieve)
-          ? `${defaultuniqueIdElements},${getUniqueIdElements(metadataTypeToRetrieve)}`
-          : defaultuniqueIdElements,
+          ? `${DEFAULT_UNIQUE_ID_ELEMENT},${getUniqueIdElements(metadataTypeToRetrieve)}`
+          : DEFAULT_UNIQUE_ID_ELEMENT,
       };
       await decomposeFileHandler(metaAttributes, prepurge, postpurge, debug);
       this.log(`All metadata files have been decomposed for the metadata type: ${metadataTypeToRetrieve}`);
