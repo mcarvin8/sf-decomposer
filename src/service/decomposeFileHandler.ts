@@ -36,28 +36,17 @@ export async function decomposeFileHandler(
   debug: boolean
 ): Promise<void> {
   const { metadataPath, metaSuffix, strictDirectoryName, folderType, uniqueIdElements } = metaAttributes;
-  if (debug) {
-    setLogLevel('debug');
-  }
+  if (debug) setLogLevel('debug');
+
   // standalone pre-purge is required for labels
-  if (metaSuffix === 'labels' && prepurge) {
-    const subFiles = await fs.readdir(metadataPath);
-    for (const subFile of subFiles) {
-      const subfilePath = path.join(metadataPath, subFile);
-      const stats = await fs.lstat(subfilePath);
-      if (stats.isFile() && subFile !== CUSTOM_LABELS_FILE) {
-        await fs.remove(subfilePath);
-      }
-    }
-  }
+  if (metaSuffix === 'labels' && prepurge) await prePurgeLabels(metadataPath);
 
   if (strictDirectoryName || folderType) {
     // iterate through the directory
     const subFiles = await fs.readdir(metadataPath);
     for (const subFile of subFiles) {
       const subFilePath = path.join(metadataPath, subFile);
-      const subFileStat = await fs.stat(subFilePath);
-      if (subFileStat.isDirectory()) {
+      if ((await fs.stat(subFilePath)).isDirectory()) {
         await disassembleHandler(subFilePath, uniqueIdElements, prepurge, postpurge);
       }
     }
@@ -68,10 +57,22 @@ export async function decomposeFileHandler(
   } else {
     await disassembleHandler(metadataPath, uniqueIdElements, prepurge, postpurge);
   }
-  if (metaSuffix === 'labels') {
-    const sourceDirectory = path.join(metadataPath, 'CustomLabels', 'labels');
-    const destinationDirectory = metadataPath;
-    await moveFiles(sourceDirectory, destinationDirectory, () => true);
-    await fs.remove(path.join(metadataPath, 'CustomLabels'));
+  if (metaSuffix === 'labels') await moveLabels(metadataPath);
+}
+
+async function prePurgeLabels(metadataPath: string): Promise<void> {
+  const subFiles = await fs.readdir(metadataPath);
+  for (const subFile of subFiles) {
+    const subfilePath = path.join(metadataPath, subFile);
+    if ((await fs.stat(subfilePath)).isFile() && subFile !== CUSTOM_LABELS_FILE) {
+      await fs.remove(subfilePath);
+    }
   }
+}
+
+async function moveLabels(metadataPath: string): Promise<void> {
+  const sourceDirectory = path.join(metadataPath, 'CustomLabels', 'labels');
+  const destinationDirectory = metadataPath;
+  await moveFiles(sourceDirectory, destinationDirectory, () => true);
+  await fs.remove(path.join(metadataPath, 'CustomLabels'));
 }
