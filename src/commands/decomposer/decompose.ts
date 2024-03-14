@@ -51,12 +51,6 @@ export default class DecomposerDecompose extends SfCommand<DecomposerDecomposeRe
   public async run(): Promise<DecomposerDecomposeResult> {
     const { flags } = await this.parse(DecomposerDecompose);
     const metadataTypeToRetrieve = flags['metadata-type'];
-    if (metadataTypeToRetrieve === 'object') {
-      this.error('Custom Objects are not supported by this plugin.');
-    }
-    if (metadataTypeToRetrieve === 'botVersion') {
-      this.error('`botVersion` suffix should not be used. Please use `bot` to decompose bot and bot version files.');
-    }
     const dxDirectory = flags['dx-directory'];
     const prepurge = flags['prepurge'];
     const postpurge = flags['postpurge'];
