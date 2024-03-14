@@ -1,14 +1,13 @@
 'use strict';
 
 import { SfCommand, Flags } from '@salesforce/sf-plugins-core';
-import { RegistryAccess } from '@salesforce/source-deploy-retrieve';
 import { Messages } from '@salesforce/core';
 import { METADATA_DIR_DEFAULT_VALUE } from '../../helpers/constants.js';
 import { recomposeFileHandler } from '../../service/recomposeFileHandler.js';
+import { getRegistryValuesBySuffix } from '../../metadata/getRegistryValuesBySuffix.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('sfdx-decomposer', 'decomposer.recompose');
-const registryAccess = new RegistryAccess();
 
 export type DecomposerRecomposeResult = {
   path: string;
@@ -43,38 +42,11 @@ export default class DecomposerRecompose extends SfCommand<DecomposerRecomposeRe
     const { flags } = await this.parse(DecomposerRecompose);
     const metadataTypeToRetrieve = flags['metadata-type'];
     const debug = flags['debug'];
-    if (metadataTypeToRetrieve === 'object') {
-      this.error('Custom Objects are not supported by this plugin.');
-    }
-    if (metadataTypeToRetrieve === 'botVersion') {
-      this.error('`botVersion` suffix should not be used. Please use `bot` to recompose bot and bot version files.');
-    }
     const dxDirectory = flags['dx-directory'];
-    const metadataTypeEntry = registryAccess.getTypeBySuffix(metadataTypeToRetrieve);
+    const metaAttributes = getRegistryValuesBySuffix(metadataTypeToRetrieve, dxDirectory);
 
-    if (metadataTypeEntry) {
-      if (
-        metadataTypeEntry.strategies?.adapter &&
-        ['matchingContentFile', 'digitalExperience', 'mixedContent', 'bundle'].includes(
-          metadataTypeEntry.strategies.adapter
-        )
-      ) {
-        this.error(
-          `Metadata types with ${metadataTypeEntry.strategies.adapter} strategies are not supported by this plugin.`
-        );
-      }
-      const metaAttributes = {
-        metaSuffix: metadataTypeEntry.suffix as string,
-        strictDirectoryName: metadataTypeEntry.strictDirectoryName as boolean,
-        folderType: metadataTypeEntry.folderType as string,
-        metadataPath: `${dxDirectory}/${metadataTypeEntry.directoryName}`,
-      };
-
-      await recomposeFileHandler(metaAttributes, debug);
-      this.log(`All metadata files have been recomposed for the metadata type: ${metadataTypeToRetrieve}`);
-    } else {
-      this.error(`Metadata type not found for the given suffix: ${metadataTypeToRetrieve}.`);
-    }
+    await recomposeFileHandler(metaAttributes, debug);
+    this.log(`All metadata files have been recomposed for the metadata type: ${metadataTypeToRetrieve}`);
 
     return {
       path: 'sfdx-decomposer-plugin\\src\\commands\\decomposer\\recompose.ts',

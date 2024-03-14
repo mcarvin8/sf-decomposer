@@ -2,14 +2,12 @@
 
 import { SfCommand, Flags } from '@salesforce/sf-plugins-core';
 import { Messages } from '@salesforce/core';
-import { RegistryAccess } from '@salesforce/source-deploy-retrieve';
-import { METADATA_DIR_DEFAULT_VALUE, DEFAULT_UNIQUE_ID_ELEMENT } from '../../helpers/constants.js';
-import { getUniqueIdElements } from '../../metadata/getUniqueIdElements.js';
+import { METADATA_DIR_DEFAULT_VALUE } from '../../helpers/constants.js';
 import { decomposeFileHandler } from '../../service/decomposeFileHandler.js';
+import { getRegistryValuesBySuffix } from '../../metadata/getRegistryValuesBySuffix.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('sfdx-decomposer', 'decomposer.decompose');
-const registryAccess = new RegistryAccess();
 
 export type DecomposerDecomposeResult = {
   path: string;
@@ -63,33 +61,10 @@ export default class DecomposerDecompose extends SfCommand<DecomposerDecomposeRe
     const prepurge = flags['prepurge'];
     const postpurge = flags['postpurge'];
     const debug = flags['debug'];
-    const metadataTypeEntry = registryAccess.getTypeBySuffix(metadataTypeToRetrieve);
+    const metaAttributes = getRegistryValuesBySuffix(metadataTypeToRetrieve, dxDirectory);
 
-    if (metadataTypeEntry) {
-      if (
-        metadataTypeEntry.strategies?.adapter &&
-        ['matchingContentFile', 'digitalExperience', 'mixedContent', 'bundle'].includes(
-          metadataTypeEntry.strategies.adapter
-        )
-      ) {
-        this.error(
-          `Metadata types with ${metadataTypeEntry.strategies.adapter} strategies are not supported by this plugin.`
-        );
-      }
-      const metaAttributes = {
-        metaSuffix: metadataTypeEntry.suffix as string,
-        strictDirectoryName: metadataTypeEntry.strictDirectoryName as boolean,
-        folderType: metadataTypeEntry.folderType as string,
-        metadataPath: `${dxDirectory}/${metadataTypeEntry.directoryName}`,
-        uniqueIdElements: getUniqueIdElements(metadataTypeToRetrieve)
-          ? `${DEFAULT_UNIQUE_ID_ELEMENT},${getUniqueIdElements(metadataTypeToRetrieve)}`
-          : DEFAULT_UNIQUE_ID_ELEMENT,
-      };
-      await decomposeFileHandler(metaAttributes, prepurge, postpurge, debug);
-      this.log(`All metadata files have been decomposed for the metadata type: ${metadataTypeToRetrieve}`);
-    } else {
-      this.error(`Metadata type not found for the given suffix: ${metadataTypeToRetrieve}.`);
-    }
+    await decomposeFileHandler(metaAttributes, prepurge, postpurge, debug);
+    this.log(`All metadata files have been decomposed for the metadata type: ${metadataTypeToRetrieve}`);
 
     return {
       path: 'sfdx-decomposer-plugin\\src\\commands\\decomposer\\decompose.ts',
