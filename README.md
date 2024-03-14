@@ -148,7 +148,7 @@ Here are some examples:
 `botVersion` is blocked from being ran directly. Please use the `bot` meta suffix to decompose and recompose bots and bot versions.
 
 ```
-Error (1): `botVersion` suffix should not be used. Please use `bot` to recompose bot and bot version files.
+Error (1): `botVersion` suffix should not be used. Please use `bot` to decompose/recompose bot and bot version files.
 ```
 
 Custom Objects are not supported by this plugin.

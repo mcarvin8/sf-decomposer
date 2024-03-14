@@ -17,7 +17,9 @@ export function getRegistryValuesBySuffix(metaSuffix: string, dxDirectory: strin
     throw Error('Custom Objects are not supported by this plugin.');
   }
   if (metaSuffix === 'botVersion') {
-    throw Error('`botVersion` suffix should not be used. Please use `bot` to recompose bot and bot version files.');
+    throw Error(
+      '`botVersion` suffix should not be used. Please use `bot` to decompose/recompose bot and bot version files.'
+    );
   }
   const registryAccess = new RegistryAccess();
   const metadataTypeEntry: MetadataType | undefined = registryAccess.getTypeBySuffix(metaSuffix);
