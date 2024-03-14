@@ -1,6 +1,6 @@
 'use strict';
 /* eslint-disable no-await-in-loop */
-import * as fs from 'node:fs/promises';
+import * as promises from 'node:fs/promises';
 import * as path from 'node:path';
 import * as fsextra from 'fs-extra';
 import { ReassembleXMLFileHandler, setLogLevel } from 'xml-disassembler';
@@ -45,15 +45,15 @@ export async function recomposeFileHandler(
 
     await fsextra.remove(path.join(metadataPath, 'CustomLabels'));
   } else if (strictDirectoryName || folderType) {
-    const subDirectories = (await fs.readdir(metadataPath)).map((file) => path.join(metadataPath, file));
+    const subDirectories = (await promises.readdir(metadataPath)).map((file) => path.join(metadataPath, file));
 
     for (const subDirectory of subDirectories) {
-      const botDirStat = await fs.stat(subDirectory);
+      const botDirStat = await promises.stat(subDirectory);
       if (botDirStat.isDirectory()) {
-        const subdirectories = (await fs.readdir(subDirectory)).map((file) => path.join(subDirectory, file));
+        const subdirectories = (await promises.readdir(subDirectory)).map((file) => path.join(subDirectory, file));
 
         for (const subdirectory of subdirectories) {
-          const subDirStat = await fs.stat(subdirectory);
+          const subDirStat = await promises.stat(subdirectory);
           if (subDirStat.isDirectory()) {
             await reassembleHandler(subdirectory, `${metaSuffix}-meta.xml`);
           }
@@ -61,9 +61,9 @@ export async function recomposeFileHandler(
       }
     }
   } else {
-    const subdirectories = (await fs.readdir(metadataPath)).map((file) => path.join(metadataPath, file));
+    const subdirectories = (await promises.readdir(metadataPath)).map((file) => path.join(metadataPath, file));
     for (const subdirectory of subdirectories) {
-      const subDirStat = await fs.stat(subdirectory);
+      const subDirStat = await promises.stat(subdirectory);
       if (subDirStat.isDirectory()) {
         await reassembleHandler(subdirectory, `${metaSuffix}-meta.xml`);
       }

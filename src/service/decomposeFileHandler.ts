@@ -1,9 +1,7 @@
 'use strict';
 /* eslint-disable no-await-in-loop */
-
-import path from 'node:path';
-import fs from 'fs-extra';
-
+import * as path from 'node:path';
+import * as fsextra from 'fs-extra';
 import { DisassembleXMLFileHandler, setLogLevel } from 'xml-disassembler';
 import { CUSTOM_LABELS_FILE } from '../helpers/constants.js';
 import { moveFiles } from './moveFiles.js';
@@ -43,10 +41,10 @@ export async function decomposeFileHandler(
 
   if (strictDirectoryName || folderType) {
     // iterate through the directory
-    const subFiles = await fs.readdir(metadataPath);
+    const subFiles = await fsextra.readdir(metadataPath);
     for (const subFile of subFiles) {
       const subFilePath = path.join(metadataPath, subFile);
-      if ((await fs.stat(subFilePath)).isDirectory()) {
+      if ((await fsextra.stat(subFilePath)).isDirectory()) {
         await disassembleHandler(subFilePath, uniqueIdElements, prepurge, postpurge);
       }
     }
@@ -61,11 +59,11 @@ export async function decomposeFileHandler(
 }
 
 async function prePurgeLabels(metadataPath: string): Promise<void> {
-  const subFiles = await fs.readdir(metadataPath);
+  const subFiles = await fsextra.readdir(metadataPath);
   for (const subFile of subFiles) {
     const subfilePath = path.join(metadataPath, subFile);
-    if ((await fs.stat(subfilePath)).isFile() && subFile !== CUSTOM_LABELS_FILE) {
-      await fs.remove(subfilePath);
+    if ((await fsextra.stat(subfilePath)).isFile() && subFile !== CUSTOM_LABELS_FILE) {
+      await fsextra.remove(subfilePath);
     }
   }
 }
@@ -74,5 +72,5 @@ async function moveLabels(metadataPath: string): Promise<void> {
   const sourceDirectory = path.join(metadataPath, 'CustomLabels', 'labels');
   const destinationDirectory = metadataPath;
   await moveFiles(sourceDirectory, destinationDirectory, () => true);
-  await fs.remove(path.join(metadataPath, 'CustomLabels'));
+  await fsextra.remove(path.join(metadataPath, 'CustomLabels'));
 }

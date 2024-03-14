@@ -1,6 +1,6 @@
 'use strict';
 /* eslint-disable no-await-in-loop */
-import * as fs from 'node:fs/promises';
+import * as promises from 'node:fs/promises';
 import * as path from 'node:path';
 import * as fsextra from 'fs-extra';
 
@@ -9,9 +9,9 @@ export async function moveFiles(
   destinationDirectory: string,
   predicate: (fileName: string) => boolean
 ): Promise<void> {
-  const files = await fs.readdir(sourceDirectory);
+  const files = await promises.readdir(sourceDirectory);
   for (const file of files) {
-    const fileStat = await fs.stat(path.join(sourceDirectory, file));
+    const fileStat = await promises.stat(path.join(sourceDirectory, file));
     if (fileStat.isFile() && predicate(file)) {
       const sourceFile = path.join(sourceDirectory, file);
       const destinationFile = path.join(destinationDirectory, file);
