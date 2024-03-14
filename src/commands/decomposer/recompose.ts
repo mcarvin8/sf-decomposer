@@ -41,8 +41,8 @@ export default class DecomposerRecompose extends SfCommand<DecomposerRecomposeRe
   public async run(): Promise<DecomposerRecomposeResult> {
     const { flags } = await this.parse(DecomposerRecompose);
     const metadataTypeToRetrieve = flags['metadata-type'];
-    const debug = flags['debug'];
     const dxDirectory = flags['dx-directory'];
+    const debug = flags['debug'];
     const metaAttributes = getRegistryValuesBySuffix(metadataTypeToRetrieve, dxDirectory);
 
     await recomposeFileHandler(metaAttributes, debug);
