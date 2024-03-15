@@ -2,9 +2,7 @@
   "extends": "@salesforce/dev-config/tsconfig-strict-esm",
   "compilerOptions": {
     "outDir": "lib",
-    "rootDir": "src",
-    "resolveJsonModule": true,
-    "module": "nodenext"
+    "rootDir": "src"
   },
   "include": ["./src/**/*.ts", "./src/**/*.json"],
   "exclude": ["node_modules"]

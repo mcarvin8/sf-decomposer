@@ -55,7 +55,7 @@ export default class DecomposerDecompose extends SfCommand<DecomposerDecomposeRe
     const prepurge = flags['prepurge'];
     const postpurge = flags['postpurge'];
     const debug = flags['debug'];
-    const metaAttributes = getRegistryValuesBySuffix(metadataTypeToRetrieve, dxDirectory);
+    const metaAttributes = await getRegistryValuesBySuffix(metadataTypeToRetrieve, dxDirectory);
 
     await decomposeFileHandler(metaAttributes, prepurge, postpurge, debug);
     this.log(`All metadata files have been decomposed for the metadata type: ${metadataTypeToRetrieve}`);

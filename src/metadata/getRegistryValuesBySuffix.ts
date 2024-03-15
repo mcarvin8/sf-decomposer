@@ -12,7 +12,7 @@ interface MetaAttributes {
   uniqueIdElements: string;
 }
 
-export function getRegistryValuesBySuffix(metaSuffix: string, dxDirectory: string): MetaAttributes {
+export async function getRegistryValuesBySuffix(metaSuffix: string, dxDirectory: string): Promise<MetaAttributes> {
   if (metaSuffix === 'object') {
     throw Error('Custom Objects are not supported by this plugin.');
   }
@@ -36,14 +36,14 @@ export function getRegistryValuesBySuffix(metaSuffix: string, dxDirectory: strin
     );
   }
 
+  const uniqueIdElements: string | undefined = await getUniqueIdElements(metaSuffix);
+
   const metaAttributes = {
     metaSuffix: metadataTypeEntry.suffix as string,
     strictDirectoryName: metadataTypeEntry.strictDirectoryName as boolean,
     folderType: metadataTypeEntry.folderType as string,
     metadataPath: `${dxDirectory}/${metadataTypeEntry.directoryName}`,
-    uniqueIdElements: getUniqueIdElements(metaSuffix)
-      ? `${DEFAULT_UNIQUE_ID_ELEMENT},${getUniqueIdElements(metaSuffix)}`
-      : DEFAULT_UNIQUE_ID_ELEMENT,
+    uniqueIdElements: uniqueIdElements ? `${DEFAULT_UNIQUE_ID_ELEMENT},${uniqueIdElements}` : DEFAULT_UNIQUE_ID_ELEMENT,
   };
   return metaAttributes;
 }
