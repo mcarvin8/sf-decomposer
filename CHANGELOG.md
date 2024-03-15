@@ -1,3 +1,11 @@
+## [3.1.1](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.1.0...v3.1.1) (2024-03-15)
+
+### Bug Fixes
+
+- load json using fs ([54f4853](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/54f4853375861dfa26a07f6c7aed7a8ebde688f3))
+- readd `resolveJsonModule` to tsconfig.json ([9532e2f](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/9532e2f8d3c862811e753ccaaec1d9a1f084c499))
+- update @salesforce/source-deploy-retrieve ([d48871d](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/d48871d37c57f1fa017b7a9fed11e914018e1ba1))
+
 ## [3.1.1-beta.3](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.1.1-beta.2...v3.1.1-beta.3) (2024-03-15)
 
 ### Bug Fixes
