@@ -40,6 +40,6 @@ Unique ID elements are used to name decomposed files with nested elements. The d
 
 If no unique ID elements are found in the nested element, the short SHA-256 hash of the nested element contents will be used instead to name the decomposed file.
 
-Unique ID elements for specific metadata types are located in `src\metadata\metadata.ts`.
+Unique ID elements for specific metadata types are located in `src\metadata\uniqueIdElements.json`.
 
 If you want to add unique ID elements, please create a feature branch and raise a Pull Request.

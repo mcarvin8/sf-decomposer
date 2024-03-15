@@ -1,0 +1,100 @@
+{
+  "profile": {
+    "uniqueIdElements": [
+      "application",
+      "apexClass",
+      "name",
+      "externalDataSource",
+      "flow",
+      "object",
+      "apexPage",
+      "recordType",
+      "tab",
+      "field",
+      "startAddress",
+      "dataCategoryGroup",
+      "layout",
+      "weekdayStart",
+      "friendlyname"
+    ]
+  },
+  "permissionset": {
+    "uniqueIdElements": [
+      "application",
+      "apexClass",
+      "name",
+      "externalDataSource",
+      "flow",
+      "object",
+      "apexPage",
+      "recordType",
+      "tab",
+      "field"
+    ]
+  },
+  "matchingRule": {
+    "uniqueIdElements": ["name"]
+  },
+  "assignmentRules": {
+    "uniqueIdElements": ["name"]
+  },
+  "flow": {
+    "uniqueIdElements": [
+      "apexClass",
+      "name",
+      "object",
+      "field",
+      "layout",
+      "actionName",
+      "targetReference",
+      "assignToReference",
+      "choiceText",
+      "promptText"
+    ]
+  },
+  "escalationRules": {
+    "uniqueIdElements": ["name"]
+  },
+  "sharingRules": {
+    "uniqueIdElements": ["name"]
+  },
+  "autoResponseRules": {
+    "uniqueIdElements": ["name"]
+  },
+  "globalValueSetTranslation": {
+    "uniqueIdElements": ["masterLabel"]
+  },
+  "standardValueSetTranslation": {
+    "uniqueIdElements": ["masterLabel"]
+  },
+  "translation": {
+    "uniqueIdElements": ["name"]
+  },
+  "globalValueSet": {
+    "uniqueIdElements": ["name"]
+  },
+  "standardValueSet": {
+    "uniqueIdElements": ["name"]
+  },
+  "decisionMatrixDefinition": {
+    "uniqueIdElements": ["name"]
+  },
+  "aiScoringModelDefinition": {
+    "uniqueIdElements": ["name"]
+  },
+  "bot": {
+    "uniqueIdElements": [
+      "name",
+      "developerName",
+      "stepIdentifier",
+      "invocationActionName",
+      "parameterName",
+      "nlpProviderType",
+      "dialog",
+      "chatButtonName"
+    ]
+  },
+  "marketingappextension": {
+    "uniqueIdElements": ["apiName"]
+  }
+}
