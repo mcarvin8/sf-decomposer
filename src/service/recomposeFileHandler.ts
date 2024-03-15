@@ -27,9 +27,8 @@ export async function recomposeFileHandler(
 ): Promise<void> {
   const { metaSuffix, strictDirectoryName, folderType, metadataPath } = metaAttributes;
   let destinationDirectory = '';
-  if (debug) {
-    setLogLevel('debug');
-  }
+  if (debug) setLogLevel('debug');
+
   if (metaSuffix === 'labels') {
     let sourceDirectory = metadataPath;
     destinationDirectory = path.join(metadataPath, 'CustomLabels', 'labels');
@@ -70,7 +69,5 @@ export async function recomposeFileHandler(
     }
   }
 
-  if (metaSuffix === 'bot') {
-    await renameBotVersionFile(metadataPath);
-  }
+  if (metaSuffix === 'bot') await renameBotVersionFile(metadataPath);
 }
