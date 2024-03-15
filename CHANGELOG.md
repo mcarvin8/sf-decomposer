@@ -1,3 +1,9 @@
+## [3.1.1-beta.2](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.1.1-beta.1...v3.1.1-beta.2) (2024-03-15)
+
+### Bug Fixes
+
+- load json using fs ([54f4853](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/54f4853375861dfa26a07f6c7aed7a8ebde688f3))
+
 ## [3.1.1-beta.1](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.1.0...v3.1.1-beta.1) (2024-03-14)
 
 ### Bug Fixes
