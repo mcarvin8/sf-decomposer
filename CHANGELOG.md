@@ -1,3 +1,9 @@
+## [3.1.1-beta.3](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.1.1-beta.2...v3.1.1-beta.3) (2024-03-15)
+
+### Bug Fixes
+
+- readd `resolveJsonModule` to tsconfig.json ([9532e2f](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/9532e2f8d3c862811e753ccaaec1d9a1f084c499))
+
 ## [3.1.1-beta.2](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.1.1-beta.1...v3.1.1-beta.2) (2024-03-15)
 
 ### Bug Fixes
