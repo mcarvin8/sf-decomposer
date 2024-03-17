@@ -6,21 +6,6 @@ import { DisassembleXMLFileHandler, setLogLevel } from 'xml-disassembler';
 import { CUSTOM_LABELS_FILE } from '../helpers/constants.js';
 import { moveFiles } from './moveFiles.js';
 
-async function disassembleHandler(
-  xmlPath: string,
-  uniqueIdElements: string,
-  prepurge: boolean,
-  postpurge: boolean
-): Promise<void> {
-  const handler = new DisassembleXMLFileHandler();
-  await handler.disassemble({
-    xmlPath,
-    uniqueIdElements,
-    prePurge: prepurge,
-    postPurge: postpurge,
-  });
-}
-
 export async function decomposeFileHandler(
   metaAttributes: {
     metadataPath: string;
@@ -56,6 +41,21 @@ export async function decomposeFileHandler(
     await disassembleHandler(metadataPath, uniqueIdElements, prepurge, postpurge);
   }
   if (metaSuffix === 'labels') await moveLabels(metadataPath);
+}
+
+async function disassembleHandler(
+  xmlPath: string,
+  uniqueIdElements: string,
+  prepurge: boolean,
+  postpurge: boolean
+): Promise<void> {
+  const handler = new DisassembleXMLFileHandler();
+  await handler.disassemble({
+    xmlPath,
+    uniqueIdElements,
+    prePurge: prepurge,
+    postPurge: postpurge,
+  });
 }
 
 async function prePurgeLabels(metadataPath: string): Promise<void> {
