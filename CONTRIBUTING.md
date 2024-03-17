@@ -36,7 +36,7 @@ The test will fail if the decomposer commands fail or there is any differences f
 
 ## Unique ID Elements
 
-Unique ID elements are used to name decomposed files with nested elements. The default unique ID element for all metadata types is `fullName`, but this will not work in all cases.
+Unique ID elements are used to name decomposed files with nested elements. The default unique ID elements for all metadata types are `fullName` and `name`, but these will not work in all cases.
 
 If no unique ID elements are found in the nested element, the short SHA-256 hash of the nested element contents will be used instead to name the decomposed file.
 

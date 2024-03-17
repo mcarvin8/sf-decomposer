@@ -1,7 +1,7 @@
 'use strict';
 
 import { RegistryAccess, MetadataType } from '@salesforce/source-deploy-retrieve';
-import { DEFAULT_UNIQUE_ID_ELEMENT } from '../helpers/constants.js';
+import { DEFAULT_UNIQUE_ID_ELEMENTS } from '../helpers/constants.js';
 import { getUniqueIdElements } from './getUniqueIdElements.js';
 
 interface MetaAttributes {
@@ -43,7 +43,9 @@ export async function getRegistryValuesBySuffix(metaSuffix: string, dxDirectory:
     strictDirectoryName: metadataTypeEntry.strictDirectoryName as boolean,
     folderType: metadataTypeEntry.folderType as string,
     metadataPath: `${dxDirectory}/${metadataTypeEntry.directoryName}`,
-    uniqueIdElements: uniqueIdElements ? `${DEFAULT_UNIQUE_ID_ELEMENT},${uniqueIdElements}` : DEFAULT_UNIQUE_ID_ELEMENT,
+    uniqueIdElements: uniqueIdElements
+      ? `${DEFAULT_UNIQUE_ID_ELEMENTS},${uniqueIdElements}`
+      : DEFAULT_UNIQUE_ID_ELEMENTS,
   };
   return metaAttributes;
 }

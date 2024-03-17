@@ -37,7 +37,7 @@ Custom Labels will be decomposed directly in the root labels folder:
 
 <br>
 
-Unique ID elements are used to name decomposed files for nested elements. The default unique ID element for all metadata types is `<fullName>`. In this example XML below, the `<fullName>` tag is included in the nested element and its contents (`quoteAuto`) will be used to name the decomposed file.
+Unique ID elements are used to name decomposed files for nested elements. The default unique ID elements for all metadata types are `<fullName>` and `<name>`. In this example XML below, the `<fullName>` tag is included in the nested element and its contents (`quoteAuto`) will be used to name the decomposed file.
 
 ```xml
     <labels>
@@ -49,7 +49,7 @@ Unique ID elements are used to name decomposed files for nested elements. The de
     </labels>
 ```
 
-If `<fullName>` isn't found in the nested element, the plugin will look for any other potential unique ID elements for the provided metadata suffixes (see `CONTRIBUTING` section for more information).
+If the default unique ID elements are not found in the nested element, the plugin will look for any other metadata specific unique ID elements (see `CONTRIBUTING` section for more information).
 
 If a unique ID element is not found in the nested element, the short SHA-256 hash of the element contents will be used to name the decomposed file, as shown below.
 
