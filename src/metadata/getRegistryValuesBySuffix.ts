@@ -12,7 +12,11 @@ interface MetaAttributes {
   uniqueIdElements: string;
 }
 
-export async function getRegistryValuesBySuffix(metaSuffix: string, dxDirectory: string): Promise<MetaAttributes> {
+export async function getRegistryValuesBySuffix(
+  metaSuffix: string,
+  dxDirectory: string,
+  command: string
+): Promise<MetaAttributes> {
   if (metaSuffix === 'object') {
     throw Error('Custom Objects are not supported by this plugin.');
   }
@@ -36,7 +40,8 @@ export async function getRegistryValuesBySuffix(metaSuffix: string, dxDirectory:
     );
   }
 
-  const uniqueIdElements: string | undefined = await getUniqueIdElements(metaSuffix);
+  let uniqueIdElements: string | undefined;
+  if (command === 'decompose') uniqueIdElements = await getUniqueIdElements(metaSuffix);
 
   const metaAttributes = {
     metaSuffix: metadataTypeEntry.suffix as string,

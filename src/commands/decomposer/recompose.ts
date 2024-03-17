@@ -43,7 +43,7 @@ export default class DecomposerRecompose extends SfCommand<DecomposerRecomposeRe
     const metadataTypeToRetrieve = flags['metadata-type'];
     const dxDirectory = flags['dx-directory'];
     const debug = flags['debug'];
-    const metaAttributes = await getRegistryValuesBySuffix(metadataTypeToRetrieve, dxDirectory);
+    const metaAttributes = await getRegistryValuesBySuffix(metadataTypeToRetrieve, dxDirectory, 'recompose');
 
     await recomposeFileHandler(metaAttributes, debug);
     this.log(`All metadata files have been recomposed for the metadata type: ${metadataTypeToRetrieve}`);
