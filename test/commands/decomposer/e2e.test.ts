@@ -55,10 +55,6 @@ describe('e2e', () => {
   });
 
   after(async () => {
-    sfCommandStubs = stubSfCommandUx($$.SANDBOX);
-    setLogLevel('debug');
-
-    // Create a mock directory by copying the original directory
     await fsPromises.rm(mockDirectory, { recursive: true });
   });
 
