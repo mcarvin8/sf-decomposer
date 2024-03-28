@@ -17,7 +17,7 @@ describe('e2e', () => {
   const $$ = new TestContext();
   let sfCommandStubs: ReturnType<typeof stubSfCommandUx>;
 
-  const originalDirectory: string = 'force-app/main/default';
+  const originalDirectory: string = 'test/baselines';
   const mockDirectory: string = 'mock';
   const metadataTypes = [
     'labels',
