@@ -2,7 +2,7 @@
 
 import { SfCommand, Flags } from '@salesforce/sf-plugins-core';
 import { Messages } from '@salesforce/core';
-import { METADATA_DIR_DEFAULT_VALUE } from '../../helpers/constants.js';
+import { SFDX_PROJECT_FILE_NAME } from '../../helpers/constants.js';
 import { decomposeFileHandler } from '../../service/decomposeFileHandler.js';
 import { getRegistryValuesBySuffix } from '../../metadata/getRegistryValuesBySuffix.js';
 
@@ -19,12 +19,12 @@ export default class DecomposerDecompose extends SfCommand<DecomposerDecomposeRe
   public static readonly examples = messages.getMessages('examples');
 
   public static readonly flags = {
-    'dx-directory': Flags.directory({
-      summary: messages.getMessage('flags.dx-directory.summary'),
-      char: 'd',
+    'sfdx-configuration': Flags.file({
+      summary: messages.getMessage('flags.sfdx-configuration.summary'),
+      char: 'c',
       required: true,
       exists: true,
-      default: METADATA_DIR_DEFAULT_VALUE,
+      default: SFDX_PROJECT_FILE_NAME,
     }),
     'metadata-type': Flags.string({
       summary: messages.getMessage('flags.metadata-type.summary'),
@@ -50,12 +50,12 @@ export default class DecomposerDecompose extends SfCommand<DecomposerDecomposeRe
 
   public async run(): Promise<DecomposerDecomposeResult> {
     const { flags } = await this.parse(DecomposerDecompose);
+    const sfdxConfigFile = flags['sfdx-configuration'];
     const metadataTypeToRetrieve = flags['metadata-type'];
-    const dxDirectory = flags['dx-directory'];
     const prepurge = flags['prepurge'];
     const postpurge = flags['postpurge'];
     const debug = flags['debug'];
-    const metaAttributes = await getRegistryValuesBySuffix(metadataTypeToRetrieve, dxDirectory, 'decompose');
+    const metaAttributes = await getRegistryValuesBySuffix(metadataTypeToRetrieve, sfdxConfigFile, 'decompose');
 
     await decomposeFileHandler(metaAttributes, prepurge, postpurge, debug);
     this.log(`All metadata files have been decomposed for the metadata type: ${metadataTypeToRetrieve}`);

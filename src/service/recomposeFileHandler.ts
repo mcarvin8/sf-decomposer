@@ -13,22 +13,23 @@ export async function recomposeFileHandler(
     metaSuffix: string;
     strictDirectoryName: boolean;
     folderType: string;
-    metadataPath: string;
+    metadataPaths: string[];
   },
   debug: boolean
 ): Promise<void> {
-  const { metaSuffix, strictDirectoryName, folderType, metadataPath } = metaAttributes;
+  const { metaSuffix, strictDirectoryName, folderType, metadataPaths } = metaAttributes;
   if (debug) setLogLevel('debug');
+  for (const metadataPath of metadataPaths) {
+    if (metaSuffix === 'labels') {
+      await reassembleLabels(metadataPath, metaSuffix);
+    } else {
+      let recurse: boolean = false;
+      if (strictDirectoryName || folderType) recurse = true;
+      await reassembleDirectories(metadataPath, metaSuffix, recurse);
+    }
 
-  if (metaSuffix === 'labels') {
-    await reassembleLabels(metadataPath, metaSuffix);
-  } else {
-    let recurse: boolean = false;
-    if (strictDirectoryName || folderType) recurse = true;
-    await reassembleDirectories(metadataPath, metaSuffix, recurse);
+    if (metaSuffix === 'bot') await renameBotVersionFile(metadataPath);
   }
-
-  if (metaSuffix === 'bot') await renameBotVersionFile(metadataPath);
 }
 
 async function reassembleHandler(xmlPath: string, fileExtension: string): Promise<void> {

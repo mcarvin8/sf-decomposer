@@ -3,18 +3,19 @@
 import { RegistryAccess, MetadataType } from '@salesforce/source-deploy-retrieve';
 import { DEFAULT_UNIQUE_ID_ELEMENTS } from '../helpers/constants.js';
 import { getUniqueIdElements } from './getUniqueIdElements.js';
+import { getPackageDirectories } from './getPackageDirectories.js';
 
 interface MetaAttributes {
   metaSuffix: string;
   strictDirectoryName: boolean;
   folderType: string;
-  metadataPath: string;
+  metadataPaths: string[];
   uniqueIdElements: string;
 }
 
 export async function getRegistryValuesBySuffix(
   metaSuffix: string,
-  dxDirectory: string,
+  sfdxConfigFile: string,
   command: string
 ): Promise<MetaAttributes> {
   if (metaSuffix === 'object') {
@@ -42,12 +43,15 @@ export async function getRegistryValuesBySuffix(
 
   let uniqueIdElements: string | undefined;
   if (command === 'decompose') uniqueIdElements = await getUniqueIdElements(metaSuffix);
+  const metadataPaths: string[] = await getPackageDirectories(sfdxConfigFile, `${metadataTypeEntry.directoryName}`);
+  if (metadataPaths.length === 0)
+    throw Error(`No directories named ${metadataTypeEntry.directoryName} were found in any package directory.`);
 
   const metaAttributes = {
     metaSuffix: metadataTypeEntry.suffix as string,
     strictDirectoryName: metadataTypeEntry.strictDirectoryName as boolean,
     folderType: metadataTypeEntry.folderType as string,
-    metadataPath: `${dxDirectory}/${metadataTypeEntry.directoryName}`,
+    metadataPaths,
     uniqueIdElements: uniqueIdElements
       ? `${DEFAULT_UNIQUE_ID_ELEMENTS},${uniqueIdElements}`
       : DEFAULT_UNIQUE_ID_ELEMENTS,

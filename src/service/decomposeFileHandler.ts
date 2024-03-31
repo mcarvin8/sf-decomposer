@@ -8,7 +8,7 @@ import { moveFiles } from './moveFiles.js';
 
 export async function decomposeFileHandler(
   metaAttributes: {
-    metadataPath: string;
+    metadataPaths: string[];
     metaSuffix: string;
     strictDirectoryName: boolean;
     folderType: string;
@@ -18,29 +18,24 @@ export async function decomposeFileHandler(
   postpurge: boolean,
   debug: boolean
 ): Promise<void> {
-  const { metadataPath, metaSuffix, strictDirectoryName, folderType, uniqueIdElements } = metaAttributes;
+  const { metadataPaths, metaSuffix, strictDirectoryName, folderType, uniqueIdElements } = metaAttributes;
   if (debug) setLogLevel('debug');
 
-  // standalone pre-purge is required for labels
-  if (metaSuffix === 'labels' && prepurge) await prePurgeLabels(metadataPath);
+  for (const metadataPath of metadataPaths) {
+    if (strictDirectoryName || folderType) {
+      await subDirectoryHandler(metadataPath, uniqueIdElements, prepurge, postpurge);
+    } else if (metaSuffix === 'labels') {
+      // do not use the prePurge flag in the xml-disassembler package for labels due to file moving
+      if (prepurge) await prePurgeLabels(metadataPath);
+      const labelFilePath = path.resolve(metadataPath, CUSTOM_LABELS_FILE);
 
-  if (strictDirectoryName || folderType) {
-    // iterate through the directory
-    const subFiles = await fs.readdir(metadataPath);
-    for (const subFile of subFiles) {
-      const subFilePath = path.join(metadataPath, subFile);
-      if ((await fs.stat(subFilePath)).isDirectory()) {
-        await disassembleHandler(subFilePath, uniqueIdElements, prepurge, postpurge);
-      }
+      await disassembleHandler(labelFilePath, uniqueIdElements, false, postpurge);
+      // move labels from the directory they are created in
+      await moveLabels(metadataPath);
+    } else {
+      await disassembleHandler(metadataPath, uniqueIdElements, prepurge, postpurge);
     }
-  } else if (metaSuffix === 'labels') {
-    // do not use the prePurge flag in the xml-disassembler package for labels due to file moving
-    const labelFilePath = path.resolve(metadataPath, CUSTOM_LABELS_FILE);
-    await disassembleHandler(labelFilePath, uniqueIdElements, false, postpurge);
-  } else {
-    await disassembleHandler(metadataPath, uniqueIdElements, prepurge, postpurge);
   }
-  if (metaSuffix === 'labels') await moveLabels(metadataPath);
 }
 
 async function disassembleHandler(
@@ -73,4 +68,19 @@ async function moveLabels(metadataPath: string): Promise<void> {
   const destinationDirectory = metadataPath;
   await moveFiles(sourceDirectory, destinationDirectory, () => true);
   await fs.remove(path.join(metadataPath, 'CustomLabels'));
+}
+
+async function subDirectoryHandler(
+  metadataPath: string,
+  uniqueIdElements: string,
+  prepurge: boolean,
+  postpurge: boolean
+): Promise<void> {
+  const subFiles = await fs.readdir(metadataPath);
+  for (const subFile of subFiles) {
+    const subFilePath = path.join(metadataPath, subFile);
+    if ((await fs.stat(subFilePath)).isDirectory()) {
+      await disassembleHandler(subFilePath, uniqueIdElements, prepurge, postpurge);
+    }
+  }
 }

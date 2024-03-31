@@ -2,7 +2,7 @@
 
 [![NPM](https://img.shields.io/npm/v/sfdx-decomposer.svg?label=sfdx-decomposer)](https://www.npmjs.com/package/sfdx-decomposer) [![Downloads/week](https://img.shields.io/npm/dw/sfdx-decomposer.svg)](https://npmjs.org/package/sfdx-decomposer) [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://raw.githubusercontent.com/mcarvin8/sfdx-decomposer-plugin/main/LICENSE.md)
 
-The `sfdx-decomposer` is a plugin to read the original metadata files (XML) and create smaller, more manageable files for version control. The inverse function (`recompose`) will recompose metadata files for deployments.
+The `sfdx-decomposer` is a plugin to read the original metadata files (XML) and create smaller, more manageable files for version control. The inverse function (`recompose`) will recreate metadata files for deployments.
 
 **DISCLAIMERS:**
 
@@ -22,6 +22,10 @@ The `sfdx-decomposer` supports 2 commands:
 
 - `sf decomposer decompose`
 - `sf decomposer recompose`
+
+Each command will process all applicable metadata files found in all package directories listed in your `sfdx-project.json` file.
+
+Recommend running both commands in your project's root directory.
 
 ## `sf decomposer decompose`
 
@@ -61,11 +65,11 @@ It's recommended to add the `--purge`/`-p` flag to the `decompose` command to re
 
 ```
 USAGE
-  $ sf decomposer decompose -m <value> -d <value> [--prepurge --postpurge --debug --json]
+  $ sf decomposer decompose -m <value> -c <value> [--prepurge --postpurge --debug --json]
 
 FLAGS
   -m, --metadata-type=<value> This flag allows users to specify a metadata type for processing, such as 'flow', 'labels', etc. The provided input should be the metadata's suffix value.
-  -d, --dx-directory=<value>  [default: force-app/main/default] The root directory containing your Salesforce metadata.
+  -c, --sfdx-configuration=<value> [default: 'sfdx-project.json' in the current working directory] The path to your Salesforce DX configuration file, 'sfdx-project.json'.
   --prepurge  [default: false] If provided, purge directories of pre-existing decomposed files.
   --postpurge  [default: false] If provided, purge the original files after decomposing them.
   --debug [default: false] If provided, log debugging results to a text file (disassemble.log).
@@ -74,9 +78,9 @@ GLOBAL FLAGS
   --json  Format output as json.
 
 DESCRIPTION
-  This command will read all of the original metadata files and separate them into smaller XML files.
+  This command will read all of the original metadata files and separate them into smaller XML files in each package directory.
 
-  You should use this to create files for version control after retrieving metadata from an org.
+  You should run this after retrieving metadata from an org.
 
 EXAMPLES
   Decompose all flows:
@@ -86,24 +90,24 @@ EXAMPLES
 
 ## `sf decomposer recompose`
 
-Reads all of the files created by the decompose command and re-creates the original meta files suitable for CLI deployments.
+Reads all of the files created by the decompose command and recreates metadata files suitable for deployments.
 
 ```
 USAGE
-  $ sf decomposer recompose -m <value> -d <value> [--debug --json]
+  $ sf decomposer recompose -m <value> -c <value> [--debug --json]
 
 FLAGS
   -m, --metadata-type=<value> This flag allows users to specify a metadata type for processing, such as 'flow', 'labels', etc. The provided input should be the metadata's suffix value.
-  -d, --dx-directory=<value>  [default: force-app/main/default] The root directory containing your Salesforce metadata.
+  -c, --sfdx-configuration=<value> [default: 'sfdx-project.json' in the current working directory] The path to your Salesforce DX configuration file, 'sfdx-project.json'.
   --debug [default: false] If provided, log debugging results to a text file (disassemble.log).
 
 GLOBAL FLAGS
   --json  Format output as json.
 
 DESCRIPTION
-  This command will read all of the decomposed files and re-create the original meta files in the original locations.
+  This command will read all of the decomposed files and recreate deployment compatible metadata files in each package directory.
 
-  You should use this to recompose files before you deploy the metadata to an org.
+  You should run this before you deploy the metadata to an org.
 
 EXAMPLES
   Recompose all flows:
