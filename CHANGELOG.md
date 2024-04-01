@@ -1,3 +1,9 @@
+## [3.1.2-beta.1](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.1.1...v3.1.2-beta.1) (2024-04-01)
+
+### Bug Fixes
+
+- **deps:** bump @salesforce/source-deploy-retrieve from 10.5.2 to 10.7.1 ([8b26d08](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/8b26d08d015d7bd6f7bd0eba9ee5fc0272b25ede))
+
 ## [3.1.1](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.1.0...v3.1.1) (2024-03-15)
 
 ### Bug Fixes
