@@ -23,7 +23,7 @@
     "@semantic-release/npm": "^11.0.2",
     "@semantic-release/release-notes-generator": "^12.1.0",
     "@types/fs-extra": "^11.0.4",
-    "eslint-plugin-sf-plugin": "^1.17.4",
+    "eslint-plugin-sf-plugin": "^1.17.5",
     "husky": "^9.0.11",
     "oclif": "^4.4.10",
     "semantic-release": "^17.4.7",
