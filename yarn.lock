@@ -12084,10 +12084,10 @@ write-file-atomic@^5.0.0, write-file-atomic@^5.0.1:
     imurmurhash "^0.1.4"
     signal-exit "^4.0.1"
 
-xml-disassembler@^1.2.3:
-  version "1.2.3"
-  resolved "https://registry.yarnpkg.com/xml-disassembler/-/xml-disassembler-1.2.3.tgz#c88fe93c6751795a6a3db559c74797cb6b33afcc"
-  integrity sha512-XTy/Cf2gQextWQXr14KXg9CXZUH9lBBwNiQcuqY1sU89gQavDsIjhKcqA44KYHetYRbCNn8HqbwMs7qwJHeQ9w==
+xml-disassembler@^1.2.4:
+  version "1.2.4"
+  resolved "https://registry.yarnpkg.com/xml-disassembler/-/xml-disassembler-1.2.4.tgz#2ea05bd8a38928fb2ed00e90782e3d53c188b699"
+  integrity sha512-6Qffh0XiH1JqvyFLJd+Xw3yKt75a1sPFiKIslTsMBhvAybU2gDHVIPhUME9zreOOC6fKlnc3tY7C49iu+lr86w==
   dependencies:
     fast-xml-parser "^4.3.4"
     log4js "^6.9.1"
