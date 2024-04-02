@@ -1,3 +1,14 @@
+# [3.2.0](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.1.1...v3.2.0) (2024-04-02)
+
+### Bug Fixes
+
+- **deps:** bump @oclif/core from 3.19.4 to 3.26.0 ([437a306](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/437a3060fb583f71a83a69d3695bc589bee19f3c))
+- **deps:** bump @salesforce/source-deploy-retrieve from 10.5.2 to 10.7.1 ([8b26d08](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/8b26d08d015d7bd6f7bd0eba9ee5fc0272b25ede))
+
+### Features
+
+- read `sfdx-project.json` for directories and process multiple directories in a command ([518243d](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/518243d19b833f71127fa956487b5a208983897d))
+
 # [3.2.0-beta.1](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.1.2-beta.2...v3.2.0-beta.1) (2024-04-02)
 
 ### Features
