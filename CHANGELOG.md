@@ -1,3 +1,9 @@
+## [3.1.2-beta.2](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.1.2-beta.1...v3.1.2-beta.2) (2024-04-02)
+
+### Bug Fixes
+
+- **deps:** bump @oclif/core from 3.19.4 to 3.26.0 ([437a306](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/437a3060fb583f71a83a69d3695bc589bee19f3c))
+
 ## [3.1.2-beta.1](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.1.1...v3.1.2-beta.1) (2024-04-01)
 
 ### Bug Fixes
