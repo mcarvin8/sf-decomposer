@@ -1,3 +1,9 @@
+# [3.2.0-beta.1](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.1.2-beta.2...v3.2.0-beta.1) (2024-04-02)
+
+### Features
+
+- read `sfdx-project.json` for directories and process multiple directories in a command ([518243d](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/518243d19b833f71127fa956487b5a208983897d))
+
 ## [3.1.2-beta.2](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.1.2-beta.1...v3.1.2-beta.2) (2024-04-02)
 
 ### Bug Fixes
