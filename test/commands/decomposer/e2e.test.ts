@@ -3,7 +3,7 @@
 import * as fs from 'node:fs';
 import * as assert from 'node:assert';
 import * as path from 'node:path';
-import * as fsPromises from 'node:fs/promises';
+import * as promises from 'node:fs/promises';
 import * as fsSync from 'fs-extra';
 
 import { TestContext } from '@salesforce/core/lib/testSetup.js';
@@ -17,7 +17,7 @@ describe('e2e', () => {
   const $$ = new TestContext();
   let sfCommandStubs: ReturnType<typeof stubSfCommandUx>;
 
-  const originalDirectory: string = 'force-app/main/default';
+  const originalDirectory: string = 'test/baselines';
   const mockDirectory: string = 'mock';
   const metadataTypes = [
     'labels',
@@ -41,13 +41,22 @@ describe('e2e', () => {
     'marketingappextension',
     'app',
   ];
+  let sfdxConfigFile = 'sfdx-project.json';
+  sfdxConfigFile = path.resolve(sfdxConfigFile);
+  const configFile = {
+    packageDirectories: [{ path: 'mock', default: true }],
+    namespace: '',
+    sfdcLoginUrl: 'https://login.salesforce.com',
+    sourceApiVersion: '58.0',
+  };
+  const configJsonString = JSON.stringify(configFile, null, 2);
 
   before(async () => {
     sfCommandStubs = stubSfCommandUx($$.SANDBOX);
     setLogLevel('debug');
 
-    // Create a mock directory by copying the original directory
     await fsSync.copy(originalDirectory, mockDirectory, { overwrite: true });
+    fs.writeFileSync(sfdxConfigFile, configJsonString);
   });
 
   afterEach(() => {
@@ -55,24 +64,14 @@ describe('e2e', () => {
   });
 
   after(async () => {
-    sfCommandStubs = stubSfCommandUx($$.SANDBOX);
-    setLogLevel('debug');
-
-    // Create a mock directory by copying the original directory
-    await fsPromises.rm(mockDirectory, { recursive: true });
+    await promises.rm(mockDirectory, { recursive: true });
+    await promises.rm(sfdxConfigFile);
   });
 
   it('should decompose all supported metadata types, then delete the original files', async () => {
     for (const metadataType of metadataTypes) {
       // eslint-disable-next-line no-await-in-loop
-      await DecomposerDecompose.run([
-        '--metadata-type',
-        metadataType,
-        '--dx-directory',
-        mockDirectory,
-        '--postpurge',
-        '--prepurge',
-      ]);
+      await DecomposerDecompose.run(['--metadata-type', metadataType, '--postpurge', '--prepurge']);
       const output = sfCommandStubs.log
         .getCalls()
         .flatMap((c) => c.args)
@@ -84,7 +83,7 @@ describe('e2e', () => {
   it('should recompose all supported metadata types', async () => {
     for (const metadataType of metadataTypes) {
       // eslint-disable-next-line no-await-in-loop
-      await DecomposerRecompose.run(['--metadata-type', metadataType, '--dx-directory', mockDirectory]);
+      await DecomposerRecompose.run(['--metadata-type', metadataType]);
     }
 
     // Check if there are no errors in the log
@@ -111,10 +110,8 @@ function compareDirectories(referenceDir: string, mockDir: string): void {
     const mockPath = path.join(mockDir, entry.name);
 
     if (entry.isDirectory()) {
-      // If it's a directory, recursively compare its contents
       compareDirectories(refEntryPath, mockPath);
     } else {
-      // If it's a file, compare its content
       const refContent = fs.readFileSync(refEntryPath, 'utf-8');
       const mockContent = fs.readFileSync(mockPath, 'utf-8');
       assert.strictEqual(refContent, mockContent, `File content is different for ${entry.name}`);

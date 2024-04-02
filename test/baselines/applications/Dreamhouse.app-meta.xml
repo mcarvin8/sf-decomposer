@@ -49,9 +49,9 @@
     <navType>Standard</navType>
     <setupExperience>all</setupExperience>
     <tabs>Broker__c</tabs>
+    <tabs>Property__c</tabs>
     <tabs>Property_Explorer</tabs>
     <tabs>Property_Finder</tabs>
-    <tabs>Property__c</tabs>
     <tabs>Settings</tabs>
     <tabs>standard-Contact</tabs>
     <tabs>standard-File</tabs>

@@ -1,6 +1,6 @@
 # summary
 
-Decomposes the original metadata files created by retrievals.
+Decomposes the metadata files created by retrievals.
 
 # description
 
@@ -12,9 +12,9 @@ You should use this to create files for version control after retrieving metadat
 
 - `sf decomposer decompose -m "flow"`
 
-# flags.dx-directory.summary
+# flags.sfdx-configuration.summary
 
-Directory containing Salesforce metadata (default: `force-app/main/default`).
+Path to your project's Salesforce DX configuration file (`sfdx-project.json`). By default, it will look for `sfdx-project.json` in the same directory you're running this plugin in.
 
 # flags.metadata-type.summary
 

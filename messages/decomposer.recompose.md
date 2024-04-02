@@ -1,20 +1,20 @@
 # summary
 
-Recomposes the files created by the 'decompose' command into the original directories with the original file-names.
+Recomposes the files created by the `decompose` command.
 
 # description
 
-This command will read all of the decomposed XML files by sub-directories and add them to the same file.
+This command will read all of the decomposed files and recreate deployment compatible metadata files in each package directory.
 
-You should use this before deploying metadata to the target org.
+You should run this before you deploy the metadata to an org.
 
 # examples
 
 - `sf decomposer recompose -m "flow"`
 
-# flags.dx-directory.summary
+# flags.sfdx-configuration.summary
 
-Directory containing Salesforce metadata (default: `force-app/main/default`).
+Path to your project's Salesforce DX configuration file (`sfdx-project.json`). By default, it will look for `sfdx-project.json` in the same directory you're running this plugin in.
 
 # flags.metadata-type.summary
 
