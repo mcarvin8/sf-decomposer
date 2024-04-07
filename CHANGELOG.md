@@ -1,3 +1,9 @@
+## [3.2.1](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.2.0...v3.2.1) (2024-04-07)
+
+### Bug Fixes
+
+- fix leaf file indenting by upgrading xml disassembler ([ed170f8](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/ed170f8df1aad761981107c4ddad130ec7fe2caa))
+
 # [3.2.0](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.1.1...v3.2.0) (2024-04-02)
 
 ### Bug Fixes
