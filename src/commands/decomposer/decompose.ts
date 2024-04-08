@@ -3,9 +3,10 @@
 import { SfCommand, Flags } from '@salesforce/sf-plugins-core';
 import { Messages } from '@salesforce/core';
 
-import { SFDX_PROJECT_FILE_NAME } from '../../helpers/constants.js';
+import { SFDX_PROJECT_FILE_NAME, LOG_FILE } from '../../helpers/constants.js';
 import { decomposeFileHandler } from '../../service/decomposeFileHandler.js';
 import { getRegistryValuesBySuffix } from '../../metadata/getRegistryValuesBySuffix.js';
+import { readOriginalLogFile, checkLogForErrors } from '../../service/checkLogforErrors.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('sfdx-decomposer', 'decomposer.decompose');
@@ -58,7 +59,14 @@ export default class DecomposerDecompose extends SfCommand<DecomposerDecomposeRe
     const debug = flags['debug'];
     const metaAttributes = await getRegistryValuesBySuffix(metadataTypeToRetrieve, sfdxConfigFile, 'decompose');
 
+    const currentLogFile = await readOriginalLogFile(LOG_FILE);
     await decomposeFileHandler(metaAttributes, prepurge, postpurge, debug);
+    const decomposeErrors = await checkLogForErrors(LOG_FILE, currentLogFile);
+    if (decomposeErrors.length > 0) {
+      decomposeErrors.forEach((error) => {
+        this.warn(error);
+      });
+    }
     this.log(`All metadata files have been decomposed for the metadata type: ${metadataTypeToRetrieve}`);
 
     return {

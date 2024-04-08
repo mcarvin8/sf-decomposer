@@ -178,6 +178,28 @@ Error (1): Metadata type not found for the given suffix: field.
 
 Please create "Issues" in this repository if you experience problems decomposing and recomposing specific metadata types or if this plugin's version of SDR needs to be updated to account for new metadata types.
 
+## Warnings and Logging
+
+The package used to decompose and recompose XMLs, `xml-disassembler`, will log errors, and optionally debugging statements, to a log file, `diassemble.log`. This log will be created in the working directory and will be created when runnign this plugin at all times. If there were no XML decomposing/recomposing errors, this log will simply be empty.
+
+By default, this package will only log errors to the file. This plugin will print `xml-disassembler` errors as warnings in the command terminal to allow all other files to be processed.
+
+These warnings when running `decompose` and `recompose` commands will look as such:
+
+```
+Warning: [2024-04-08T19:27:43.622] [ERROR] default - C:\Users\matth\Documents\sfdx-decomposer-plugin\test\baselines\flows\Get_Info\actionCalls\Get_Info.actionCalls-meta.xml was unabled to be parsed and will not be processed. Confirm formatting and try again.
+```
+
+To add additional debugging statements to the log file, provide the `--debug` flag to either command to generate additional logging statements to `disassemble.log`.
+
+General debugging statements in the log file will look like:
+
+```
+[2024-03-30T14:28:37.959] [DEBUG] default - Created disassembled file: mock\no-nested-elements\HR_Admin\HR_Admin.permissionset-meta.xml
+```
+
+Recommend adding the `diassemble.log` to your `.gitignore` file.
+
 ## Ignore Files
 
 The `.gitignore` and `.forceignore` files in your repository should be updated based on the metadata types you wish to decompose.
@@ -212,7 +234,7 @@ Git should ignore the recomposed files.
 **/marketingappextensions/*.marketingappextension-meta.xml
 ```
 
-Git should also ignore the log created by the `xml-disassembler` package.
+Git should also ignore the log created by the `xml-disassembler` package (see previous section).
 
 ```
 disassemble.log

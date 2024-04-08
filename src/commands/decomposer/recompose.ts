@@ -3,9 +3,10 @@
 import { SfCommand, Flags } from '@salesforce/sf-plugins-core';
 import { Messages } from '@salesforce/core';
 
-import { SFDX_PROJECT_FILE_NAME } from '../../helpers/constants.js';
+import { SFDX_PROJECT_FILE_NAME, LOG_FILE } from '../../helpers/constants.js';
 import { recomposeFileHandler } from '../../service/recomposeFileHandler.js';
 import { getRegistryValuesBySuffix } from '../../metadata/getRegistryValuesBySuffix.js';
+import { readOriginalLogFile, checkLogForErrors } from '../../service/checkLogforErrors.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('sfdx-decomposer', 'decomposer.recompose');
@@ -32,13 +33,13 @@ export default class DecomposerRecompose extends SfCommand<DecomposerRecomposeRe
       char: 'm',
       required: true,
     }),
-    debug: Flags.boolean({
-      summary: messages.getMessage('flags.debug.summary'),
+    postpurge: Flags.boolean({
+      summary: messages.getMessage('flags.postpurge.summary'),
       required: false,
       default: false,
     }),
-    postpurge: Flags.boolean({
-      summary: messages.getMessage('flags.postpurge.summary'),
+    debug: Flags.boolean({
+      summary: messages.getMessage('flags.debug.summary'),
       required: false,
       default: false,
     }),
@@ -52,7 +53,14 @@ export default class DecomposerRecompose extends SfCommand<DecomposerRecomposeRe
     const debug = flags['debug'];
     const metaAttributes = await getRegistryValuesBySuffix(metadataTypeToRetrieve, sfdxConfigFile, 'recompose');
 
+    const currentLogFile = await readOriginalLogFile(LOG_FILE);
     await recomposeFileHandler(metaAttributes, postpurge, debug);
+    const recomposeErrors = await checkLogForErrors(LOG_FILE, currentLogFile);
+    if (recomposeErrors.length > 0) {
+      recomposeErrors.forEach((error) => {
+        this.warn(error);
+      });
+    }
     this.log(`All metadata files have been recomposed for the metadata type: ${metadataTypeToRetrieve}`);
 
     return {
