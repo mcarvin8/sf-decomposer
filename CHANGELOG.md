@@ -1,3 +1,9 @@
+## [3.2.2](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.2.1...v3.2.2) (2024-04-08)
+
+### Bug Fixes
+
+- add `--postpurge` flag to recompose, refactor imports, upgrade disassembler ([ee8a52b](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/ee8a52bcf3368737406a7fb60db09180b5e4da9a))
+
 ## [3.2.1](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.2.0...v3.2.1) (2024-04-07)
 
 ### Bug Fixes
