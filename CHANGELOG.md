@@ -1,3 +1,9 @@
+## [3.2.3](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.2.2...v3.2.3) (2024-04-08)
+
+### Bug Fixes
+
+- log xml disassembler errors as warnings when running both commands ([117cf60](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/117cf606683f2e96fe22d7c6170b5ac170070402))
+
 ## [3.2.2](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.2.1...v3.2.2) (2024-04-08)
 
 ### Bug Fixes
