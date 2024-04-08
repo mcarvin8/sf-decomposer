@@ -2,6 +2,7 @@
 
 import { SfCommand, Flags } from '@salesforce/sf-plugins-core';
 import { Messages } from '@salesforce/core';
+
 import { SFDX_PROJECT_FILE_NAME } from '../../helpers/constants.js';
 import { recomposeFileHandler } from '../../service/recomposeFileHandler.js';
 import { getRegistryValuesBySuffix } from '../../metadata/getRegistryValuesBySuffix.js';
@@ -10,7 +11,7 @@ Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('sfdx-decomposer', 'decomposer.recompose');
 
 export type DecomposerRecomposeResult = {
-  path: string;
+  metadata: string;
 };
 
 export default class DecomposerRecompose extends SfCommand<DecomposerRecomposeResult> {
@@ -36,20 +37,26 @@ export default class DecomposerRecompose extends SfCommand<DecomposerRecomposeRe
       required: false,
       default: false,
     }),
+    postpurge: Flags.boolean({
+      summary: messages.getMessage('flags.postpurge.summary'),
+      required: false,
+      default: false,
+    }),
   };
 
   public async run(): Promise<DecomposerRecomposeResult> {
     const { flags } = await this.parse(DecomposerRecompose);
     const sfdxConfigFile = flags['sfdx-configuration'];
     const metadataTypeToRetrieve = flags['metadata-type'];
+    const postpurge = flags['postpurge'];
     const debug = flags['debug'];
     const metaAttributes = await getRegistryValuesBySuffix(metadataTypeToRetrieve, sfdxConfigFile, 'recompose');
 
-    await recomposeFileHandler(metaAttributes, debug);
+    await recomposeFileHandler(metaAttributes, postpurge, debug);
     this.log(`All metadata files have been recomposed for the metadata type: ${metadataTypeToRetrieve}`);
 
     return {
-      path: 'sfdx-decomposer-plugin\\src\\commands\\decomposer\\recompose.ts',
+      metadata: metadataTypeToRetrieve,
     };
   }
 }

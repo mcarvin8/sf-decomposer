@@ -2,6 +2,7 @@
 
 import { SfCommand, Flags } from '@salesforce/sf-plugins-core';
 import { Messages } from '@salesforce/core';
+
 import { SFDX_PROJECT_FILE_NAME } from '../../helpers/constants.js';
 import { decomposeFileHandler } from '../../service/decomposeFileHandler.js';
 import { getRegistryValuesBySuffix } from '../../metadata/getRegistryValuesBySuffix.js';
@@ -10,7 +11,7 @@ Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('sfdx-decomposer', 'decomposer.decompose');
 
 export type DecomposerDecomposeResult = {
-  path: string;
+  metadata: string;
 };
 
 export default class DecomposerDecompose extends SfCommand<DecomposerDecomposeResult> {
@@ -61,7 +62,7 @@ export default class DecomposerDecompose extends SfCommand<DecomposerDecomposeRe
     this.log(`All metadata files have been decomposed for the metadata type: ${metadataTypeToRetrieve}`);
 
     return {
-      path: 'sfdx-decomposer-plugin\\src\\commands\\decomposer\\decompose.ts',
+      metadata: metadataTypeToRetrieve,
     };
   }
 }

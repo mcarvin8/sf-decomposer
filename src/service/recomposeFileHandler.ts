@@ -1,9 +1,9 @@
 'use strict';
 /* eslint-disable no-await-in-loop */
-import * as promises from 'node:fs/promises';
-import * as path from 'node:path';
-import * as fsextra from 'fs-extra';
+import { readdir, stat, rm } from 'node:fs/promises';
+import { join } from 'node:path';
 import { ReassembleXMLFileHandler, setLogLevel } from 'xml-disassembler';
+
 import { CUSTOM_LABELS_FILE } from '../helpers/constants.js';
 import { renameBotVersionFile } from './renameBotVersionFiles.js';
 import { moveFiles } from './moveFiles.js';
@@ -15,56 +15,76 @@ export async function recomposeFileHandler(
     folderType: string;
     metadataPaths: string[];
   },
+  postpurge: boolean,
   debug: boolean
 ): Promise<void> {
   const { metaSuffix, strictDirectoryName, folderType, metadataPaths } = metaAttributes;
   if (debug) setLogLevel('debug');
   for (const metadataPath of metadataPaths) {
     if (metaSuffix === 'labels') {
-      await reassembleLabels(metadataPath, metaSuffix);
+      await reassembleLabels(metadataPath, metaSuffix, postpurge);
     } else {
       let recurse: boolean = false;
       if (strictDirectoryName || folderType) recurse = true;
-      await reassembleDirectories(metadataPath, metaSuffix, recurse);
+      await reassembleDirectories(metadataPath, metaSuffix, recurse, postpurge);
     }
 
     if (metaSuffix === 'bot') await renameBotVersionFile(metadataPath);
   }
 }
 
-async function reassembleHandler(xmlPath: string, fileExtension: string): Promise<void> {
+async function reassembleHandler(xmlPath: string, fileExtension: string, postpurge: boolean): Promise<void> {
   const handler = new ReassembleXMLFileHandler();
   await handler.reassemble({
     xmlPath,
     fileExtension,
+    postPurge: postpurge,
   });
 }
 
-async function reassembleLabels(metadataPath: string, metaSuffix: string): Promise<void> {
+async function reassembleLabels(metadataPath: string, metaSuffix: string, postpurge: boolean): Promise<void> {
   let sourceDirectory = metadataPath;
-  let destinationDirectory = path.join(metadataPath, 'CustomLabels', 'labels');
+  let destinationDirectory = join(metadataPath, 'CustomLabels', 'labels');
 
   await moveFiles(sourceDirectory, destinationDirectory, (fileName) => fileName !== CUSTOM_LABELS_FILE);
 
-  await reassembleHandler(path.join(metadataPath, 'CustomLabels'), `${metaSuffix}-meta.xml`);
+  // do not use postpurge flag due to file moving
+  await reassembleHandler(join(metadataPath, 'CustomLabels'), `${metaSuffix}-meta.xml`, false);
 
-  sourceDirectory = path.join(metadataPath, 'CustomLabels', 'labels');
+  sourceDirectory = join(metadataPath, 'CustomLabels', 'labels');
   destinationDirectory = metadataPath;
 
   await moveFiles(sourceDirectory, destinationDirectory, () => true);
 
-  await fsextra.remove(path.join(metadataPath, 'CustomLabels'));
+  await rm(join(metadataPath, 'CustomLabels'), { recursive: true });
+  if (postpurge) await deleteFilesInDirectory(destinationDirectory);
 }
 
-async function reassembleDirectories(metadataPath: string, metaSuffix: string, recurse: boolean): Promise<void> {
-  const subdirectories = (await promises.readdir(metadataPath)).map((file) => path.join(metadataPath, file));
+async function deleteFilesInDirectory(directory: string): Promise<void> {
+  const files = await readdir(directory);
+  for (const file of files) {
+    const filePath = join(directory, file);
+    const fileStat = await stat(filePath);
+    if (fileStat.isFile() && file !== CUSTOM_LABELS_FILE) {
+      await rm(filePath);
+    }
+  }
+}
+
+async function reassembleDirectories(
+  metadataPath: string,
+  metaSuffix: string,
+  recurse: boolean,
+  postpurge: boolean
+): Promise<void> {
+  const subdirectories = (await readdir(metadataPath)).map((file) => join(metadataPath, file));
   for (const subdirectory of subdirectories) {
-    const subDirStat = await promises.stat(subdirectory);
+    const subDirStat = await stat(subdirectory);
     if (subDirStat.isDirectory() && recurse) {
       // recursively call this function and set recurse to false
-      await reassembleDirectories(subdirectory, metaSuffix, false);
+      await reassembleDirectories(subdirectory, metaSuffix, false, postpurge);
     } else if (subDirStat.isDirectory()) {
-      await reassembleHandler(subdirectory, `${metaSuffix}-meta.xml`);
+      await reassembleHandler(subdirectory, `${metaSuffix}-meta.xml`, postpurge);
     }
   }
 }

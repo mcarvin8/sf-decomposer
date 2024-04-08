@@ -1,8 +1,9 @@
 'use strict';
 /* eslint-disable no-await-in-loop */
-import path from 'node:path';
-import fs from 'fs-extra';
+import { resolve, join } from 'node:path';
+import { readdir, stat, rm } from 'node:fs/promises';
 import { DisassembleXMLFileHandler, setLogLevel } from 'xml-disassembler';
+
 import { CUSTOM_LABELS_FILE } from '../helpers/constants.js';
 import { moveFiles } from './moveFiles.js';
 
@@ -27,7 +28,7 @@ export async function decomposeFileHandler(
     } else if (metaSuffix === 'labels') {
       // do not use the prePurge flag in the xml-disassembler package for labels due to file moving
       if (prepurge) await prePurgeLabels(metadataPath);
-      const labelFilePath = path.resolve(metadataPath, CUSTOM_LABELS_FILE);
+      const labelFilePath = resolve(metadataPath, CUSTOM_LABELS_FILE);
 
       await disassembleHandler(labelFilePath, uniqueIdElements, false, postpurge);
       // move labels from the directory they are created in
@@ -54,20 +55,20 @@ async function disassembleHandler(
 }
 
 async function prePurgeLabels(metadataPath: string): Promise<void> {
-  const subFiles = await fs.readdir(metadataPath);
+  const subFiles = await readdir(metadataPath);
   for (const subFile of subFiles) {
-    const subfilePath = path.join(metadataPath, subFile);
-    if ((await fs.stat(subfilePath)).isFile() && subFile !== CUSTOM_LABELS_FILE) {
-      await fs.remove(subfilePath);
+    const subfilePath = join(metadataPath, subFile);
+    if ((await stat(subfilePath)).isFile() && subFile !== CUSTOM_LABELS_FILE) {
+      await rm(subfilePath, { recursive: true });
     }
   }
 }
 
 async function moveLabels(metadataPath: string): Promise<void> {
-  const sourceDirectory = path.join(metadataPath, 'CustomLabels', 'labels');
+  const sourceDirectory = join(metadataPath, 'CustomLabels', 'labels');
   const destinationDirectory = metadataPath;
   await moveFiles(sourceDirectory, destinationDirectory, () => true);
-  await fs.remove(path.join(metadataPath, 'CustomLabels'));
+  await rm(join(metadataPath, 'CustomLabels'), { recursive: true });
 }
 
 async function subDirectoryHandler(
@@ -76,10 +77,10 @@ async function subDirectoryHandler(
   prepurge: boolean,
   postpurge: boolean
 ): Promise<void> {
-  const subFiles = await fs.readdir(metadataPath);
+  const subFiles = await readdir(metadataPath);
   for (const subFile of subFiles) {
-    const subFilePath = path.join(metadataPath, subFile);
-    if ((await fs.stat(subFilePath)).isDirectory()) {
+    const subFilePath = join(metadataPath, subFile);
+    if ((await stat(subFilePath)).isDirectory()) {
       await disassembleHandler(subFilePath, uniqueIdElements, prepurge, postpurge);
     }
   }

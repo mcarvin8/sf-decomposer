@@ -20,6 +20,10 @@ Path to your project's Salesforce DX configuration file (`sfdx-project.json`). B
 
 This flag allows users to specify a metadata type for processing, such as 'flow', 'labels', etc. The provided input should be the metadata's suffix value.
 
+# flags.postpurge.summary
+
+If provided, purge the decomposed files after recomposing them.
+
 # flags.debug.summary
 
 If provided, debug to log file.

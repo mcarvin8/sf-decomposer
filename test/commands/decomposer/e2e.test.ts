@@ -1,10 +1,10 @@
 'use strict';
+/* eslint-disable no-await-in-loop */
 
-import * as fs from 'node:fs';
-import * as assert from 'node:assert';
-import * as path from 'node:path';
-import * as promises from 'node:fs/promises';
-import * as fsSync from 'fs-extra';
+import { strictEqual } from 'node:assert';
+import { join, resolve } from 'node:path';
+import { rm, writeFile, readdir, readFile } from 'node:fs/promises';
+import { copy } from 'fs-extra';
 
 import { TestContext } from '@salesforce/core/lib/testSetup.js';
 import { expect } from 'chai';
@@ -42,7 +42,7 @@ describe('e2e', () => {
     'app',
   ];
   let sfdxConfigFile = 'sfdx-project.json';
-  sfdxConfigFile = path.resolve(sfdxConfigFile);
+  sfdxConfigFile = resolve(sfdxConfigFile);
   const configFile = {
     packageDirectories: [{ path: 'mock', default: true }],
     namespace: '',
@@ -55,8 +55,8 @@ describe('e2e', () => {
     sfCommandStubs = stubSfCommandUx($$.SANDBOX);
     setLogLevel('debug');
 
-    await fsSync.copy(originalDirectory, mockDirectory, { overwrite: true });
-    fs.writeFileSync(sfdxConfigFile, configJsonString);
+    await copy(originalDirectory, mockDirectory, { overwrite: true });
+    await writeFile(sfdxConfigFile, configJsonString);
   });
 
   afterEach(() => {
@@ -64,8 +64,8 @@ describe('e2e', () => {
   });
 
   after(async () => {
-    await promises.rm(mockDirectory, { recursive: true });
-    await promises.rm(sfdxConfigFile);
+    await rm(mockDirectory, { recursive: true });
+    await rm(sfdxConfigFile);
   });
 
   it('should decompose all supported metadata types, then delete the original files', async () => {
@@ -80,10 +80,10 @@ describe('e2e', () => {
     }
   });
 
-  it('should recompose all supported metadata types', async () => {
+  it('should recompose all supported metadata types, then delete the decomposed files', async () => {
     for (const metadataType of metadataTypes) {
       // eslint-disable-next-line no-await-in-loop
-      await DecomposerRecompose.run(['--metadata-type', metadataType]);
+      await DecomposerRecompose.run(['--metadata-type', metadataType, '--postpurge']);
     }
 
     // Check if there are no errors in the log
@@ -96,25 +96,25 @@ describe('e2e', () => {
   });
 
   it('should confirm the recomposed files in a mock directory match the reference files (force-app)', async () => {
-    compareDirectories(originalDirectory, mockDirectory);
+    await compareDirectories(originalDirectory, mockDirectory);
   });
 });
 
-function compareDirectories(referenceDir: string, mockDir: string): void {
-  const entriesinRef = fs.readdirSync(referenceDir, { withFileTypes: true });
+async function compareDirectories(referenceDir: string, mockDir: string): Promise<void> {
+  const entriesinRef = await readdir(referenceDir, { withFileTypes: true });
 
   // Only compare files that are in the reference directory (composed files)
   // Ignore files only found in the mock directory (decomposed files)
   for (const entry of entriesinRef) {
-    const refEntryPath = path.join(referenceDir, entry.name);
-    const mockPath = path.join(mockDir, entry.name);
+    const refEntryPath = join(referenceDir, entry.name);
+    const mockPath = join(mockDir, entry.name);
 
     if (entry.isDirectory()) {
-      compareDirectories(refEntryPath, mockPath);
+      await compareDirectories(refEntryPath, mockPath);
     } else {
-      const refContent = fs.readFileSync(refEntryPath, 'utf-8');
-      const mockContent = fs.readFileSync(mockPath, 'utf-8');
-      assert.strictEqual(refContent, mockContent, `File content is different for ${entry.name}`);
+      const refContent = await readFile(refEntryPath, 'utf-8');
+      const mockContent = await readFile(mockPath, 'utf-8');
+      strictEqual(refContent, mockContent, `File content is different for ${entry.name}`);
     }
   }
 }

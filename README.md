@@ -94,11 +94,12 @@ Reads all of the files created by the decompose command and recreates metadata f
 
 ```
 USAGE
-  $ sf decomposer recompose -m <value> -c <value> [--debug --json]
+  $ sf decomposer recompose -m <value> -c <value> [--postpurge --debug --json]
 
 FLAGS
   -m, --metadata-type=<value> This flag allows users to specify a metadata type for processing, such as 'flow', 'labels', etc. The provided input should be the metadata's suffix value.
   -c, --sfdx-configuration=<value> [default: 'sfdx-project.json' in the current working directory] The path to your Salesforce DX configuration file, 'sfdx-project.json'.
+  --postpurge  [default: false] If provided, purge the decomposed files after recomposing them.
   --debug [default: false] If provided, log debugging results to a text file (disassemble.log).
 
 GLOBAL FLAGS
