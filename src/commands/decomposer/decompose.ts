@@ -3,7 +3,7 @@
 import { SfCommand, Flags } from '@salesforce/sf-plugins-core';
 import { Messages } from '@salesforce/core';
 
-import { SFDX_PROJECT_FILE_NAME, LOG_FILE } from '../../helpers/constants.js';
+import { SFDX_PROJECT_FILE_NAME, LOG_FILE, DECOMPOSED_FILE_TYPES } from '../../helpers/constants.js';
 import { decomposeFileHandler } from '../../service/decomposeFileHandler.js';
 import { getRegistryValuesBySuffix } from '../../metadata/getRegistryValuesBySuffix.js';
 import { readOriginalLogFile, checkLogForErrors } from '../../service/checkLogforErrors.js';
@@ -48,6 +48,14 @@ export default class DecomposerDecompose extends SfCommand<DecomposerDecomposeRe
       required: false,
       default: false,
     }),
+    format: Flags.string({
+      summary: messages.getMessage('flags.format.summary'),
+      char: 'f',
+      required: true,
+      multiple: false,
+      default: 'xml',
+      options: DECOMPOSED_FILE_TYPES,
+    }),
   };
 
   public async run(): Promise<DecomposerDecomposeResult> {
@@ -57,10 +65,11 @@ export default class DecomposerDecompose extends SfCommand<DecomposerDecomposeRe
     const prepurge = flags['prepurge'];
     const postpurge = flags['postpurge'];
     const debug = flags['debug'];
+    const format = flags['format'];
     const metaAttributes = await getRegistryValuesBySuffix(metadataTypeToRetrieve, sfdxConfigFile, 'decompose');
 
     const currentLogFile = await readOriginalLogFile(LOG_FILE);
-    await decomposeFileHandler(metaAttributes, prepurge, postpurge, debug);
+    await decomposeFileHandler(metaAttributes, prepurge, postpurge, debug, format);
     const decomposeErrors = await checkLogForErrors(LOG_FILE, currentLogFile);
     if (decomposeErrors.length > 0) {
       decomposeErrors.forEach((error) => {

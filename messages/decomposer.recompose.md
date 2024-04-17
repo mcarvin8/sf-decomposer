@@ -1,6 +1,6 @@
 # summary
 
-Recomposes the files created by the `decompose` command.
+Recomposes the files created by the `decompose` command prior to deployments.
 
 # description
 
@@ -10,15 +10,15 @@ You should run this before you deploy the metadata to an org.
 
 # examples
 
-- `sf decomposer recompose -m "flow"`
+- `sf decomposer recompose -m "flow" -c "sfdx-project.json" -f "xml" --postpurge --debug`
 
 # flags.sfdx-configuration.summary
 
-Path to your project's Salesforce DX configuration file (`sfdx-project.json`). By default, it will look for `sfdx-project.json` in the same directory you're running this plugin in.
+Path to your project's Salesforce DX configuration file.
 
 # flags.metadata-type.summary
 
-This flag allows users to specify a metadata type for processing, such as 'flow', 'labels', etc. The provided input should be the metadata's suffix value.
+The metadata suffix to process, such as 'flow', 'labels', etc.
 
 # flags.postpurge.summary
 
@@ -27,3 +27,7 @@ If provided, purge the decomposed files after recomposing them.
 # flags.debug.summary
 
 If provided, debug to log file.
+
+# flags.format.summary
+
+File format for the decomposed files.

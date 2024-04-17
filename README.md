@@ -4,6 +4,14 @@
 
 The `sfdx-decomposer` is a plugin to read the original metadata files (XML) and create smaller, more manageable files for version control. The inverse function (`recompose`) will recreate metadata files for deployments.
 
+This will parse and retain the following in the original XMLs:
+
+- Character Data (CDATA)
+- Comments
+- Attributes
+
+The decomposed file format can be XML, JSON, or YAML. Based on testing, XML and YAML handles CDATA formatting nicer than JSON.
+
 **DISCLAIMERS:**
 
 - It is highly recommended that you extensively test this plugin in a sandbox environment on the metadata types you wish to use this tool for.
@@ -59,17 +67,20 @@ If a unique ID element is not found in the nested element, the short SHA-256 has
 
 It's recommended to add the `--purge`/`-p` flag to the `decompose` command to remove pre-existing decomposed files that may conflict with newer decomposed files due to different SHA hashes.
 
+Using the `--format` flag, you can set the desired file type for the decomposed files to XML (default), YAML, or JSON. **Note**: The `--format` flag for the recompose command must match what you selected for the decompose `--format`.
+
 <img src="https://raw.githubusercontent.com/mcarvin8/sfdx-decomposer-plugin/main/.github/images/decomposed-apps-hashes.png">
 
 <br>
 
 ```
 USAGE
-  $ sf decomposer decompose -m <value> -c <value> [--prepurge --postpurge --debug --json]
+  $ sf decomposer decompose -m <value> -c <value> -f <value> [--prepurge --postpurge --debug --json]
 
 FLAGS
-  -m, --metadata-type=<value> This flag allows users to specify a metadata type for processing, such as 'flow', 'labels', etc. The provided input should be the metadata's suffix value.
-  -c, --sfdx-configuration=<value> [default: 'sfdx-project.json' in the current working directory] The path to your Salesforce DX configuration file, 'sfdx-project.json'.
+  -m, --metadata-type=<value> The metadata suffix to process, such as 'flow', 'labels', etc.
+  -c, --sfdx-configuration=<value> [default: 'sfdx-project.json'] The path to your Salesforce DX configuration file.
+  -f, --format=<value> [default: 'xml'] The file type for the decomposed files.
   --prepurge  [default: false] If provided, purge directories of pre-existing decomposed files.
   --postpurge  [default: false] If provided, purge the original files after decomposing them.
   --debug [default: false] If provided, log debugging results to a text file (disassemble.log).
@@ -78,27 +89,34 @@ GLOBAL FLAGS
   --json  Format output as json.
 
 DESCRIPTION
-  This command will read all of the original metadata files and separate them into smaller XML files in each package directory.
+  This command will read all of the original metadata files and separate them into smaller files in each package directory.
+
+  These smaller decomposed files can be XMLs, YAMLs, or JSONs.
 
   You should run this after retrieving metadata from an org.
 
 EXAMPLES
   Decompose all flows:
 
-    $ sf decomposer decompose -m "flow"
+    $ sf decomposer decompose -m "flow" -c "sfdx-project.json" -f "xml" --prepurge --postpurge --debug
 ```
 
 ## `sf decomposer recompose`
 
 Reads all of the files created by the decompose command and recreates metadata files suitable for deployments.
 
+Ensure the `--format` flag of the recompose command matches the file format selected for the `--format` flag in the decompose command. File formats for the decomposed files can be XML (default), YAML, or JSON.
+
+This command will always create XMLs as its output format.
+
 ```
 USAGE
-  $ sf decomposer recompose -m <value> -c <value> [--postpurge --debug --json]
+  $ sf decomposer recompose -m <value> -c <value> -f <value> [--postpurge --debug --json]
 
 FLAGS
-  -m, --metadata-type=<value> This flag allows users to specify a metadata type for processing, such as 'flow', 'labels', etc. The provided input should be the metadata's suffix value.
-  -c, --sfdx-configuration=<value> [default: 'sfdx-project.json' in the current working directory] The path to your Salesforce DX configuration file, 'sfdx-project.json'.
+  -m, --metadata-type=<value> The metadata suffix to process, such as 'flow', 'labels', etc.
+  -c, --sfdx-configuration=<value> [default: 'sfdx-project.json'] The path to your Salesforce DX configuration file.
+  -f, --format=<value> [default: 'xml'] The file format for the decomposed files.
   --postpurge  [default: false] If provided, purge the decomposed files after recomposing them.
   --debug [default: false] If provided, log debugging results to a text file (disassemble.log).
 
@@ -113,7 +131,7 @@ DESCRIPTION
 EXAMPLES
   Recompose all flows:
 
-    $ sf decomposer recompose -m "flow"
+    $ sf decomposer recompose -m "flow" -c "sfdx-project.json" -f "xml" --postpurge --debug
 ```
 
 ## Supported Metadata
@@ -180,7 +198,7 @@ Please create "Issues" in this repository if you experience problems decomposing
 
 ## Warnings and Logging
 
-The package used to decompose and recompose XMLs, `xml-disassembler`, will log errors, and optionally debugging statements, to a log file, `diassemble.log`. This log will be created in the working directory and will be created when runnign this plugin at all times. If there were no XML decomposing/recomposing errors, this log will simply be empty.
+The package used to decompose and recompose XMLs, `xml-disassembler`, will log errors, and optionally debugging statements, to a log file, `disassemble.log`. This log will be created in the working directory and will be created when runnign this plugin at all times. If there were no XML decomposing/recomposing errors, this log will simply be empty.
 
 By default, this package will only log errors to the file. This plugin will print `xml-disassembler` errors as warnings in the command terminal to allow all other files to be processed.
 
@@ -198,7 +216,7 @@ General debugging statements in the log file will look like:
 [2024-03-30T14:28:37.959] [DEBUG] default - Created disassembled file: mock\no-nested-elements\HR_Admin\HR_Admin.permissionset-meta.xml
 ```
 
-Recommend adding the `diassemble.log` to your `.gitignore` file.
+Recommend adding the `disassemble.log` to your `.gitignore` file.
 
 ## Ignore Files
 
@@ -242,10 +260,10 @@ disassemble.log
 
 ### `.forceignore` updates
 
-The Salesforce CLI should ignore the decomposed files and should allow the recomposed files.
+The Salesforce CLI should ignore the decomposed files and should allow the recomposed files. Update based on the decomposed file format you are using (`.xml`, `.json`, or `.yaml`).
 
 ```
-# Ignore all XMLs by default
+# Ignore decomposed files
 **/profiles/**/*.xml
 **/permissionsets/**/*.xml
 **/labels/*.xml

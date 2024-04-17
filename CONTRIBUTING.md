@@ -26,7 +26,7 @@ This repository uses Commitlint to enforce the commit message standard. Commit m
 
 ## Testing
 
-When developing, run the provided end-to-end (E2E) test to confirm the metadata types under test, which test various decompose/recompose functions, remain functional using the set of baseline `recomposed` files.
+When developing, run the provided test suites to confirm the metadata types under test, which test various decompose/recompose functions, remain functional using the set of baseline `recomposed` files. Each test suite will test a different decomposed file type (XML, JSON, YAML).
 
 ```
 yarn test
@@ -38,14 +38,14 @@ NOTE: The baseline files are not the exact same as the original metadata files. 
 
 Ensure the `test/baselines` in this repository contains files created by this plugin's `recompose` command to ensure consistent results. This directory should not contain any decomposed files.
 
-The E2E test will:
+Each test suite will:
 
 1. Copy `test/baselines` into a temporary `mock` directory.
 2. Run the `decomposer decompose` command for all metadata types in the `mock` directory.
 3. Run the `decomposer recompose` command for all metadata types in the `mock` directory.
 4. Compare the recomposed files in the `mock` directory against the baselines in `test/baselines` (the test will ignore the decomposed files in `mock`).
 
-The test will fail if any of the plugin commands fail or if there is any differences found between the recomposed files in `mock` against `test/baselines`.
+The test suites will fail if any of the plugin commands fail or if there is any differences found between the recomposed files in `mock` against `test/baselines`.
 
 ## Unique ID Elements
 
