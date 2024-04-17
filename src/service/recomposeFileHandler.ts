@@ -3,6 +3,8 @@
 import { readdir, stat, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { ReassembleXMLFileHandler, setLogLevel } from 'xml-disassembler';
+import { YamlToXmlReassembler } from 'xml2yaml-disassembler';
+import { JsonToXmlReassembler } from 'xml2json-disassembler';
 
 import { CUSTOM_LABELS_FILE } from '../helpers/constants.js';
 import { renameBotVersionFile } from './renameBotVersionFiles.js';
@@ -16,40 +18,67 @@ export async function recomposeFileHandler(
     metadataPaths: string[];
   },
   postpurge: boolean,
-  debug: boolean
+  debug: boolean,
+  format: string
 ): Promise<void> {
   const { metaSuffix, strictDirectoryName, folderType, metadataPaths } = metaAttributes;
   if (debug) setLogLevel('debug');
   for (const metadataPath of metadataPaths) {
     if (metaSuffix === 'labels') {
-      await reassembleLabels(metadataPath, metaSuffix, postpurge);
+      await reassembleLabels(metadataPath, metaSuffix, postpurge, format);
     } else {
       let recurse: boolean = false;
       if (strictDirectoryName || folderType) recurse = true;
-      await reassembleDirectories(metadataPath, metaSuffix, recurse, postpurge);
+      await reassembleDirectories(metadataPath, metaSuffix, recurse, postpurge, format);
     }
 
     if (metaSuffix === 'bot') await renameBotVersionFile(metadataPath);
   }
 }
 
-async function reassembleHandler(xmlPath: string, fileExtension: string, postpurge: boolean): Promise<void> {
-  const handler = new ReassembleXMLFileHandler();
-  await handler.reassemble({
-    xmlPath,
-    fileExtension,
-    postPurge: postpurge,
-  });
+async function reassembleHandler(
+  xmlPath: string,
+  fileExtension: string,
+  postpurge: boolean,
+  format: string
+): Promise<void> {
+  if (format === 'xml') {
+    const handler = new ReassembleXMLFileHandler();
+    await handler.reassemble({
+      xmlPath,
+      fileExtension,
+      postPurge: postpurge,
+    });
+  } else if (format === 'yaml') {
+    const handler = new YamlToXmlReassembler();
+    await handler.reassemble({
+      yamlPath: xmlPath,
+      fileExtension,
+      postPurge: postpurge,
+    });
+  } else if (format === 'json') {
+    const handler = new JsonToXmlReassembler();
+    await handler.reassemble({
+      jsonPath: xmlPath,
+      fileExtension,
+      postPurge: postpurge,
+    });
+  }
 }
 
-async function reassembleLabels(metadataPath: string, metaSuffix: string, postpurge: boolean): Promise<void> {
+async function reassembleLabels(
+  metadataPath: string,
+  metaSuffix: string,
+  postpurge: boolean,
+  format: string
+): Promise<void> {
   let sourceDirectory = metadataPath;
   let destinationDirectory = join(metadataPath, 'CustomLabels', 'labels');
 
   await moveFiles(sourceDirectory, destinationDirectory, (fileName) => fileName !== CUSTOM_LABELS_FILE);
 
   // do not use postpurge flag due to file moving
-  await reassembleHandler(join(metadataPath, 'CustomLabels'), `${metaSuffix}-meta.xml`, false);
+  await reassembleHandler(join(metadataPath, 'CustomLabels'), `${metaSuffix}-meta.xml`, false, format);
 
   sourceDirectory = join(metadataPath, 'CustomLabels', 'labels');
   destinationDirectory = metadataPath;
@@ -75,16 +104,17 @@ async function reassembleDirectories(
   metadataPath: string,
   metaSuffix: string,
   recurse: boolean,
-  postpurge: boolean
+  postpurge: boolean,
+  format: string
 ): Promise<void> {
   const subdirectories = (await readdir(metadataPath)).map((file) => join(metadataPath, file));
   for (const subdirectory of subdirectories) {
     const subDirStat = await stat(subdirectory);
     if (subDirStat.isDirectory() && recurse) {
       // recursively call this function and set recurse to false
-      await reassembleDirectories(subdirectory, metaSuffix, false, postpurge);
+      await reassembleDirectories(subdirectory, metaSuffix, false, postpurge, format);
     } else if (subDirStat.isDirectory()) {
-      await reassembleHandler(subdirectory, `${metaSuffix}-meta.xml`, postpurge);
+      await reassembleHandler(subdirectory, `${metaSuffix}-meta.xml`, postpurge, format);
     }
   }
 }
