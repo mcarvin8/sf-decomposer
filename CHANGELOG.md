@@ -1,3 +1,9 @@
+# [3.3.0](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.2.3...v3.3.0) (2024-04-17)
+
+### Features
+
+- allow decomposed files to be XMLs, JSONs, or YAMLs ([0256e68](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/0256e68b82bd2aae36f5ac64aeb405f9dabb3d68))
+
 ## [3.2.3](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.2.2...v3.2.3) (2024-04-08)
 
 ### Bug Fixes
