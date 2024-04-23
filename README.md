@@ -4,6 +4,8 @@
 
 The `sfdx-decomposer` is a plugin to read the original metadata files (XML) and create smaller, more manageable files for version control. The inverse function (`recompose`) will recreate metadata files for deployments.
 
+This plugin requires [git](https://git-scm.com/downloads) to be installed and that it can be called using the command `git`.
+
 This will parse and retain the following in the original XMLs:
 
 - Character Data (CDATA)
@@ -31,9 +33,7 @@ The `sfdx-decomposer` supports 2 commands:
 - `sf decomposer decompose`
 - `sf decomposer recompose`
 
-Each command will process all applicable metadata files found in all package directories listed in your `sfdx-project.json` file.
-
-Recommend running both commands in your project's root directory.
+Both commands need to be ran somewhere inside your Salesforce DX git repository, whether in the root folder (recommended) or in a subfolder. This plugin will determine the root folder of this repository and read the `sfdx-project.json` file in the root folder. All package directories listed in the `sfdx-project.json` file will be processed when running this plugin.
 
 ## `sf decomposer decompose`
 
@@ -65,7 +65,7 @@ If the default unique ID elements are not found in the nested element, the plugi
 
 If a unique ID element is not found in the nested element, the short SHA-256 hash of the element contents will be used to name the decomposed file, as shown below.
 
-It's recommended to add the `--purge`/`-p` flag to the `decompose` command to remove pre-existing decomposed files that may conflict with newer decomposed files due to different SHA hashes.
+It's recommended to add the `--prepurge` flag to the `decompose` command to remove pre-existing decomposed files that may conflict with newer decomposed files due to different SHA hashes.
 
 Using the `--format` flag, you can set the desired file type for the decomposed files to XML (default), YAML, or JSON. **Note**: The `--format` flag for the recompose command must match what you selected for the decompose `--format`.
 
@@ -75,11 +75,10 @@ Using the `--format` flag, you can set the desired file type for the decomposed 
 
 ```
 USAGE
-  $ sf decomposer decompose -m <value> -c <value> -f <value> [--prepurge --postpurge --debug --json]
+  $ sf decomposer decompose -m <value> -f <value> [--prepurge --postpurge --debug --json]
 
 FLAGS
   -m, --metadata-type=<value> The metadata suffix to process, such as 'flow', 'labels', etc.
-  -c, --sfdx-configuration=<value> [default: 'sfdx-project.json'] The path to your Salesforce DX configuration file.
   -f, --format=<value> [default: 'xml'] The file type for the decomposed files.
   --prepurge  [default: false] If provided, purge directories of pre-existing decomposed files.
   --postpurge  [default: false] If provided, purge the original files after decomposing them.
@@ -98,7 +97,7 @@ DESCRIPTION
 EXAMPLES
   Decompose all flows:
 
-    $ sf decomposer decompose -m "flow" -c "sfdx-project.json" -f "xml" --prepurge --postpurge --debug
+    $ sf decomposer decompose -m "flow" -f "xml" --prepurge --postpurge --debug
 ```
 
 ## `sf decomposer recompose`
@@ -111,11 +110,10 @@ This command will always create XMLs as its output format.
 
 ```
 USAGE
-  $ sf decomposer recompose -m <value> -c <value> -f <value> [--postpurge --debug --json]
+  $ sf decomposer recompose -m <value> -f <value> [--postpurge --debug --json]
 
 FLAGS
   -m, --metadata-type=<value> The metadata suffix to process, such as 'flow', 'labels', etc.
-  -c, --sfdx-configuration=<value> [default: 'sfdx-project.json'] The path to your Salesforce DX configuration file.
   -f, --format=<value> [default: 'xml'] The file format for the decomposed files.
   --postpurge  [default: false] If provided, purge the decomposed files after recomposing them.
   --debug [default: false] If provided, log debugging results to a text file (disassemble.log).
@@ -131,7 +129,7 @@ DESCRIPTION
 EXAMPLES
   Recompose all flows:
 
-    $ sf decomposer recompose -m "flow" -c "sfdx-project.json" -f "xml" --postpurge --debug
+    $ sf decomposer recompose -m "flow" -f "xml" --postpurge --debug
 ```
 
 ## Supported Metadata

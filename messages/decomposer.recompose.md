@@ -10,11 +10,7 @@ You should run this before you deploy the metadata to an org.
 
 # examples
 
-- `sf decomposer recompose -m "flow" -c "sfdx-project.json" -f "xml" --postpurge --debug`
-
-# flags.sfdx-configuration.summary
-
-Path to your project's Salesforce DX configuration file.
+- `sf decomposer recompose -m "flow" -f "xml" --postpurge --debug`
 
 # flags.metadata-type.summary
 

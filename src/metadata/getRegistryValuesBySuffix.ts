@@ -14,11 +14,7 @@ interface MetaAttributes {
   uniqueIdElements: string;
 }
 
-export async function getRegistryValuesBySuffix(
-  metaSuffix: string,
-  sfdxConfigFile: string,
-  command: string
-): Promise<MetaAttributes> {
+export async function getRegistryValuesBySuffix(metaSuffix: string, command: string): Promise<MetaAttributes> {
   if (metaSuffix === 'object') {
     throw Error('Custom Objects are not supported by this plugin.');
   }
@@ -44,7 +40,7 @@ export async function getRegistryValuesBySuffix(
 
   let uniqueIdElements: string | undefined;
   if (command === 'decompose') uniqueIdElements = await getUniqueIdElements(metaSuffix);
-  const metadataPaths: string[] = await getPackageDirectories(sfdxConfigFile, `${metadataTypeEntry.directoryName}`);
+  const metadataPaths: string[] = await getPackageDirectories(`${metadataTypeEntry.directoryName}`);
   if (metadataPaths.length === 0)
     throw Error(`No directories named ${metadataTypeEntry.directoryName} were found in any package directory.`);
 

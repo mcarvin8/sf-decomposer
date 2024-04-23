@@ -3,7 +3,7 @@
 import { SfCommand, Flags } from '@salesforce/sf-plugins-core';
 import { Messages } from '@salesforce/core';
 
-import { SFDX_PROJECT_FILE_NAME, LOG_FILE, DECOMPOSED_FILE_TYPES } from '../../helpers/constants.js';
+import { LOG_FILE, DECOMPOSED_FILE_TYPES } from '../../helpers/constants.js';
 import { recomposeFileHandler } from '../../service/recomposeFileHandler.js';
 import { getRegistryValuesBySuffix } from '../../metadata/getRegistryValuesBySuffix.js';
 import { readOriginalLogFile, checkLogForErrors } from '../../service/checkLogforErrors.js';
@@ -21,13 +21,6 @@ export default class DecomposerRecompose extends SfCommand<DecomposerRecomposeRe
   public static readonly examples = messages.getMessages('examples');
 
   public static readonly flags = {
-    'sfdx-configuration': Flags.file({
-      summary: messages.getMessage('flags.sfdx-configuration.summary'),
-      char: 'c',
-      required: true,
-      exists: true,
-      default: SFDX_PROJECT_FILE_NAME,
-    }),
     'metadata-type': Flags.string({
       summary: messages.getMessage('flags.metadata-type.summary'),
       char: 'm',
@@ -55,12 +48,11 @@ export default class DecomposerRecompose extends SfCommand<DecomposerRecomposeRe
 
   public async run(): Promise<DecomposerRecomposeResult> {
     const { flags } = await this.parse(DecomposerRecompose);
-    const sfdxConfigFile = flags['sfdx-configuration'];
     const metadataTypeToRetrieve = flags['metadata-type'];
     const postpurge = flags['postpurge'];
     const debug = flags['debug'];
     const format = flags['format'];
-    const metaAttributes = await getRegistryValuesBySuffix(metadataTypeToRetrieve, sfdxConfigFile, 'recompose');
+    const metaAttributes = await getRegistryValuesBySuffix(metadataTypeToRetrieve, 'recompose');
 
     const currentLogFile = await readOriginalLogFile(LOG_FILE);
     await recomposeFileHandler(metaAttributes, postpurge, debug, format);

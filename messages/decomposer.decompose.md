@@ -12,11 +12,7 @@ You should use this to create files for version control after retrieving metadat
 
 # examples
 
-- `sf decomposer decompose -m "flow" -c "sfdx-project.json" -f "xml" --prepurge --postpurge --debug`
-
-# flags.sfdx-configuration.summary
-
-Path to your project's Salesforce DX configuration file.
+- `sf decomposer decompose -m "flow" -f "xml" --prepurge --postpurge --debug`
 
 # flags.metadata-type.summary
 

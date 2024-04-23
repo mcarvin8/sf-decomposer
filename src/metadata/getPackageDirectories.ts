@@ -4,20 +4,31 @@
 import { existsSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 import { readFile, readdir, stat } from 'node:fs/promises';
+import { simpleGit, SimpleGit, SimpleGitOptions } from 'simple-git';
+
+import { SFDX_PROJECT_FILE_NAME } from '../helpers/constants.js';
 
 interface SfdxProject {
   packageDirectories: Array<{ path: string }>;
 }
 
-export async function getPackageDirectories(dxConfigFile: string, metaDirectory: string): Promise<string[]> {
-  const dxConfigPath = resolve(dxConfigFile);
+export async function getPackageDirectories(metaDirectory: string): Promise<string[]> {
+  const options: Partial<SimpleGitOptions> = {
+    baseDir: process.cwd(),
+    binary: 'git',
+    maxConcurrentProcesses: 6,
+    trimmed: true,
+  };
+  const git: SimpleGit = simpleGit(options);
+  const repoRoot = (await git.revparse('--show-toplevel')).trim();
+  const dxConfigPath = resolve(repoRoot, SFDX_PROJECT_FILE_NAME);
   if (!existsSync(dxConfigPath)) {
     throw Error(`Salesforce DX Config File does not exist in this path: ${dxConfigPath}`);
   }
 
   const sfdxProjectRaw: string = await readFile(dxConfigPath, 'utf-8');
   const sfdxProject: SfdxProject = JSON.parse(sfdxProjectRaw) as SfdxProject;
-  const packageDirectories = sfdxProject.packageDirectories.map((directory) => directory.path);
+  const packageDirectories = sfdxProject.packageDirectories.map((directory) => resolve(repoRoot, directory.path));
   const metadataPaths: string[] = [];
   for (const directory of packageDirectories) {
     const filePath: string | undefined = await searchRecursively(directory, metaDirectory);
