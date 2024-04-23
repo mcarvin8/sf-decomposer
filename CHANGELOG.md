@@ -1,3 +1,9 @@
+## [3.3.1](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.3.0...v3.3.1) (2024-04-23)
+
+### Bug Fixes
+
+- use `simple-git` to get `sfdx-project.json` path, remove `--sfdx-configuration` flag ([9bfe341](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/9bfe3410da98db1316211eb5acde920fac569981))
+
 # [3.3.0](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.2.3...v3.3.0) (2024-04-17)
 
 ### Features
