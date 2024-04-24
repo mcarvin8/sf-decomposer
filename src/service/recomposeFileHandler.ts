@@ -42,14 +42,7 @@ async function reassembleHandler(
   postpurge: boolean,
   format: string
 ): Promise<void> {
-  if (format === 'xml') {
-    const handler = new ReassembleXMLFileHandler();
-    await handler.reassemble({
-      xmlPath,
-      fileExtension,
-      postPurge: postpurge,
-    });
-  } else if (format === 'yaml') {
+  if (format === 'yaml') {
     const handler = new YamlToXmlReassembler();
     await handler.reassemble({
       yamlPath: xmlPath,
@@ -60,6 +53,13 @@ async function reassembleHandler(
     const handler = new JsonToXmlReassembler();
     await handler.reassemble({
       jsonPath: xmlPath,
+      fileExtension,
+      postPurge: postpurge,
+    });
+  } else {
+    const handler = new ReassembleXMLFileHandler();
+    await handler.reassemble({
+      xmlPath,
       fileExtension,
       postPurge: postpurge,
     });

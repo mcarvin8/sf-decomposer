@@ -49,31 +49,20 @@ async function disassembleHandler(
   postpurge: boolean,
   format: string
 ): Promise<void> {
-  if (format === 'xml') {
-    const handler = new DisassembleXMLFileHandler();
-    await handler.disassemble({
-      xmlPath,
-      uniqueIdElements,
-      prePurge: prepurge,
-      postPurge: postpurge,
-    });
-  } else if (format === 'yaml') {
-    const handler = new XmlToYamlDisassembler();
-    await handler.transform({
-      xmlPath,
-      uniqueIdElements,
-      prePurge: prepurge,
-      postPurge: postpurge,
-    });
+  let handler: DisassembleXMLFileHandler | XmlToJsonDisassembler | XmlToYamlDisassembler;
+  if (format === 'yaml') {
+    handler = new XmlToYamlDisassembler();
   } else if (format === 'json') {
-    const handler = new XmlToJsonDisassembler();
-    await handler.transform({
-      xmlPath,
-      uniqueIdElements,
-      prePurge: prepurge,
-      postPurge: postpurge,
-    });
+    handler = new XmlToJsonDisassembler();
+  } else {
+    handler = new DisassembleXMLFileHandler();
   }
+  await handler.disassemble({
+    xmlPath,
+    uniqueIdElements,
+    prePurge: prepurge,
+    postPurge: postpurge,
+  });
 }
 
 async function prePurgeLabels(metadataPath: string): Promise<void> {
