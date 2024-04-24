@@ -1,7 +1,7 @@
 {
   "name": "sfdx-decomposer",
   "description": "Decomposes Salesforce metadata into more manageable files.",
-  "version": "3.3.1",
+  "version": "3.3.2",
   "dependencies": {
     "@oclif/core": "^3.26.0",
     "@salesforce/core": "^6.5.3",

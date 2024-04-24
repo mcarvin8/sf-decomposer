@@ -1,3 +1,9 @@
+## [3.3.2](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.3.1...v3.3.2) (2024-04-24)
+
+### Bug Fixes
+
+- upgrade disassemblers to fix multi-line leaf content sorting ([d9e4672](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/d9e46729186d5f33c97e89972306413f6d52a224))
+
 ## [3.3.1](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.3.0...v3.3.1) (2024-04-23)
 
 ### Bug Fixes
