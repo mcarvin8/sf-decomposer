@@ -12,7 +12,7 @@ Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('sfdx-decomposer', 'decomposer.recompose');
 
 export type DecomposerRecomposeResult = {
-  metadata: string;
+  metadata: string[];
 };
 
 export default class DecomposerRecompose extends SfCommand<DecomposerRecomposeResult> {
@@ -24,6 +24,7 @@ export default class DecomposerRecompose extends SfCommand<DecomposerRecomposeRe
     'metadata-type': Flags.string({
       summary: messages.getMessage('flags.metadata-type.summary'),
       char: 'm',
+      multiple: true,
       required: true,
     }),
     postpurge: Flags.boolean({
@@ -48,24 +49,27 @@ export default class DecomposerRecompose extends SfCommand<DecomposerRecomposeRe
 
   public async run(): Promise<DecomposerRecomposeResult> {
     const { flags } = await this.parse(DecomposerRecompose);
-    const metadataTypeToRetrieve = flags['metadata-type'];
+    const metadataTypes = flags['metadata-type'];
     const postpurge = flags['postpurge'];
     const debug = flags['debug'];
     const format = flags['format'];
-    const metaAttributes = await getRegistryValuesBySuffix(metadataTypeToRetrieve, 'recompose');
+    await Promise.all(
+      metadataTypes.map(async (metadataType) => {
+        const metaAttributes = await getRegistryValuesBySuffix(metadataType, 'recompose');
 
-    const currentLogFile = await readOriginalLogFile(LOG_FILE);
-    await recomposeFileHandler(metaAttributes, postpurge, debug, format);
-    const recomposeErrors = await checkLogForErrors(LOG_FILE, currentLogFile);
-    if (recomposeErrors.length > 0) {
-      recomposeErrors.forEach((error) => {
-        this.warn(error);
-      });
-    }
-    this.log(`All metadata files have been recomposed for the metadata type: ${metadataTypeToRetrieve}`);
-
+        const currentLogFile = await readOriginalLogFile(LOG_FILE);
+        await recomposeFileHandler(metaAttributes, postpurge, debug, format);
+        const recomposeErrors = await checkLogForErrors(LOG_FILE, currentLogFile);
+        if (recomposeErrors.length > 0) {
+          recomposeErrors.forEach((error) => {
+            this.warn(error);
+          });
+        }
+        this.log(`All metadata files have been recomposed for the metadata type: ${metadataType}`);
+      })
+    );
     return {
-      metadata: metadataTypeToRetrieve,
+      metadata: metadataTypes,
     };
   }
 }

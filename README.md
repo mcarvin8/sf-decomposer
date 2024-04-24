@@ -78,7 +78,7 @@ USAGE
   $ sf decomposer decompose -m <value> -f <value> [--prepurge --postpurge --debug --json]
 
 FLAGS
-  -m, --metadata-type=<value> The metadata suffix to process, such as 'flow', 'labels', etc.
+  -m, --metadata-type=<value> The metadata suffix to process, such as 'flow', 'labels', etc. You can provide this flag multiple times to process multiple metadata types at once.
   -f, --format=<value> [default: 'xml'] The file type for the decomposed files.
   --prepurge  [default: false] If provided, purge directories of pre-existing decomposed files.
   --postpurge  [default: false] If provided, purge the original files after decomposing them.
@@ -98,6 +98,11 @@ EXAMPLES
   Decompose all flows:
 
     $ sf decomposer decompose -m "flow" -f "xml" --prepurge --postpurge --debug
+
+  Decompose all flows and custom labels:
+
+    $ sf decomposer decompose -m "flow" -m "labels" -f "xml" --prepurge --postpurge --debug
+
 ```
 
 ## `sf decomposer recompose`
@@ -113,7 +118,7 @@ USAGE
   $ sf decomposer recompose -m <value> -f <value> [--postpurge --debug --json]
 
 FLAGS
-  -m, --metadata-type=<value> The metadata suffix to process, such as 'flow', 'labels', etc.
+  -m, --metadata-type=<value> The metadata suffix to process, such as 'flow', 'labels', etc. You can provide this flag multiple times to process multiple metadata types at once.
   -f, --format=<value> [default: 'xml'] The file format for the decomposed files.
   --postpurge  [default: false] If provided, purge the decomposed files after recomposing them.
   --debug [default: false] If provided, log debugging results to a text file (disassemble.log).
@@ -130,13 +135,18 @@ EXAMPLES
   Recompose all flows:
 
     $ sf decomposer recompose -m "flow" -f "xml" --postpurge --debug
+
+  Recompose all flows and custom labels:
+
+    $ sf decomposer recompose -m "flow" -m "labels" -f "xml" --postpurge --debug
+
 ```
 
 ## Supported Metadata
 
 All parent metadata types imported from this plugin's version of @salesforce/source-deploy-retrieve (SDR) toolkit are supported except for certain types.
 
-The `--metadata-type` flag should be the metadata's `"suffix"` value as listed in the [metadataRegistry.json](https://github.com/forcedotcom/source-deploy-retrieve/blob/main/src/registry/metadataRegistry.json).
+The `--metadata-type`/`-m` flag should be the metadata's `"suffix"` value as listed in the [metadataRegistry.json](https://github.com/forcedotcom/source-deploy-retrieve/blob/main/src/registry/metadataRegistry.json).
 
 The suffix is this part of the original meta file name - `labels` is the suffix in `*.labels-meta.xml`.
 

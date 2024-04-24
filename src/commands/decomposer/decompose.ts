@@ -12,7 +12,7 @@ Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('sfdx-decomposer', 'decomposer.decompose');
 
 export type DecomposerDecomposeResult = {
-  metadata: string;
+  metadata: string[];
 };
 
 export default class DecomposerDecompose extends SfCommand<DecomposerDecomposeResult> {
@@ -24,6 +24,7 @@ export default class DecomposerDecompose extends SfCommand<DecomposerDecomposeRe
     'metadata-type': Flags.string({
       summary: messages.getMessage('flags.metadata-type.summary'),
       char: 'm',
+      multiple: true,
       required: true,
     }),
     prepurge: Flags.boolean({
@@ -53,25 +54,28 @@ export default class DecomposerDecompose extends SfCommand<DecomposerDecomposeRe
 
   public async run(): Promise<DecomposerDecomposeResult> {
     const { flags } = await this.parse(DecomposerDecompose);
-    const metadataTypeToRetrieve = flags['metadata-type'];
+    const metadataTypes = flags['metadata-type'];
     const prepurge = flags['prepurge'];
     const postpurge = flags['postpurge'];
     const debug = flags['debug'];
     const format = flags['format'];
-    const metaAttributes = await getRegistryValuesBySuffix(metadataTypeToRetrieve, 'decompose');
+    await Promise.all(
+      metadataTypes.map(async (metadataType) => {
+        const metaAttributes = await getRegistryValuesBySuffix(metadataType, 'decompose');
 
-    const currentLogFile = await readOriginalLogFile(LOG_FILE);
-    await decomposeFileHandler(metaAttributes, prepurge, postpurge, debug, format);
-    const decomposeErrors = await checkLogForErrors(LOG_FILE, currentLogFile);
-    if (decomposeErrors.length > 0) {
-      decomposeErrors.forEach((error) => {
-        this.warn(error);
-      });
-    }
-    this.log(`All metadata files have been decomposed for the metadata type: ${metadataTypeToRetrieve}`);
-
+        const currentLogFile = await readOriginalLogFile(LOG_FILE);
+        await decomposeFileHandler(metaAttributes, prepurge, postpurge, debug, format);
+        const decomposeErrors = await checkLogForErrors(LOG_FILE, currentLogFile);
+        if (decomposeErrors.length > 0) {
+          decomposeErrors.forEach((error) => {
+            this.warn(error);
+          });
+        }
+        this.log(`All metadata files have been decomposed for the metadata type: ${metadataType}`);
+      })
+    );
     return {
-      metadata: metadataTypeToRetrieve,
+      metadata: metadataTypes,
     };
   }
 }

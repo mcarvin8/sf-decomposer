@@ -13,10 +13,11 @@ You should use this to create files for version control after retrieving metadat
 # examples
 
 - `sf decomposer decompose -m "flow" -f "xml" --prepurge --postpurge --debug`
+- `sf decomposer decompose -m "flow" -m "labels" -f "xml" --prepurge --postpurge --debug`
 
 # flags.metadata-type.summary
 
-The metadata suffix to process, such as 'flow', 'labels', etc.
+The metadata suffix to process, such as 'flow', 'labels', etc. You can provide this flag multiple times to process multiple metadata types at once.
 
 # flags.prepurge.summary
 

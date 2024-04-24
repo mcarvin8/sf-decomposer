@@ -11,10 +11,11 @@ You should run this before you deploy the metadata to an org.
 # examples
 
 - `sf decomposer recompose -m "flow" -f "xml" --postpurge --debug`
+- `sf decomposer recompose -m "flow" -m "labels" -f "xml" --postpurge --debug`
 
 # flags.metadata-type.summary
 
-The metadata suffix to process, such as 'flow', 'labels', etc.
+The metadata suffix to process, such as 'flow', 'labels', etc. You can provide this flag multiple times to process multiple metadata types at once.
 
 # flags.postpurge.summary
 
