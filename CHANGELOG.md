@@ -1,3 +1,10 @@
+## [3.3.3](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.3.2...v3.3.3) (2024-04-24)
+
+### Bug Fixes
+
+- allow `--metadata-type` to be declared multiple times in a command ([e4d489a](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/e4d489a7e6d12b7f9ff1bc1d335c0fe0ef3cda8f))
+- upgrade disassemblers ([d1cc730](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/d1cc7306e4dd30f10976a1ac8982cdbda739659c))
+
 ## [3.3.2](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.3.1...v3.3.2) (2024-04-24)
 
 ### Bug Fixes
