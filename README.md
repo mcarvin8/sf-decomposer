@@ -2,7 +2,7 @@
 
 [![NPM](https://img.shields.io/npm/v/sfdx-decomposer.svg?label=sfdx-decomposer)](https://www.npmjs.com/package/sfdx-decomposer) [![Downloads/week](https://img.shields.io/npm/dw/sfdx-decomposer.svg)](https://npmjs.org/package/sfdx-decomposer) [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://raw.githubusercontent.com/mcarvin8/sfdx-decomposer-plugin/main/LICENSE.md)
 
-The `sfdx-decomposer` is a plugin to read the original metadata files (XML) and create smaller, more manageable files for version control. The inverse function (`recompose`) will recreate metadata files for deployments.
+The `sfdx-decomposer` is a Salesforce plugin to read the original metadata files (XML) and create smaller, more manageable files for version control. The inverse function (`recompose`) will recreate metadata files for deployments.
 
 This plugin requires [git](https://git-scm.com/downloads) to be installed and that it can be called using the command `git`.
 
@@ -304,7 +304,3 @@ The Salesforce CLI should ignore the decomposed files and should allow the recom
 !**/bots/*/*.bot-meta.xml
 !**/marketingappextensions/*.marketingappextension-meta.xml
 ```
-
-## Contributing
-
-Any contributions you would like to make are appreciated. Please see [CONTRIBUTING](https://github.com/mcarvin8/sfdx-decomposer-plugin/blob/main/CONTRIBUTING.md).

@@ -12245,10 +12245,10 @@ write-file-atomic@^5.0.0, write-file-atomic@^5.0.1:
     imurmurhash "^0.1.4"
     signal-exit "^4.0.1"
 
-xml-disassembler@^1.2.9:
-  version "1.2.9"
-  resolved "https://registry.yarnpkg.com/xml-disassembler/-/xml-disassembler-1.2.9.tgz#a3644871159c2c5ffad3933bfe46f93c7db6cbf3"
-  integrity sha512-6D6LFs1w3stBaxhJhE3msqqTV57+gDVJj0UT2WEiy31pLXs2v+IIhXCjspEjV6Ug/1Rn/Ki1xt9mc0TO54Sf/w==
+xml-disassembler@^1.2.10:
+  version "1.2.10"
+  resolved "https://registry.yarnpkg.com/xml-disassembler/-/xml-disassembler-1.2.10.tgz#522cf792f61b2cc408addcafc96a7581a3902f80"
+  integrity sha512-mcHh0CQRxjMC9NIZVZ/YCyREC2vX3HQWa5SS4/QlfWtl8rHZSAXWb38a4cvOJG44q55VvJkuhW8EOKh123xNgw==
   dependencies:
     fast-xml-parser "^4.3.4"
     log4js "^6.9.1"
@@ -12270,25 +12270,25 @@ xml2js@^0.6.2:
     sax ">=0.6.0"
     xmlbuilder "~11.0.0"
 
-xml2json-disassembler@^1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/xml2json-disassembler/-/xml2json-disassembler-1.0.3.tgz#3322f3b2f5f66f842701082ad24ea41441598d8b"
-  integrity sha512-bPY1XTIq5CLNF+Uyjfk3PhQWxVZHDY4tiEy9l92LQoW5nDGCDfTD7zFJixFguQuj+2MNE5XIf7wJDf+DW0li2Q==
+xml2json-disassembler@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/xml2json-disassembler/-/xml2json-disassembler-1.0.4.tgz#e3faf68fa1339f562cd48f8b65e1da91cc574402"
+  integrity sha512-/O5LTRlj/We66aKJZ9ZIt9GmeZnbQ4karSDArS9th6Teuh2rr5NrnwOgkfCO/7RGTMl/sRk92ZTgBqlfHzwomg==
   dependencies:
     fast-xml-parser "^4.3.4"
     log4js "^6.9.1"
     tslib "^2.6.2"
-    xml-disassembler "^1.2.9"
+    xml-disassembler "^1.2.10"
 
-xml2yaml-disassembler@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/xml2yaml-disassembler/-/xml2yaml-disassembler-1.0.1.tgz#cbf7f331e55ff2da733982ebe89e622bcbfc1572"
-  integrity sha512-16j95sNbUmIMYupkiuObrcisYl1AoiFAsGubbcQ+7xXFPIi3M1rc7814WLD+WnHviMxpdFiDYTXnOHiBNXLM0w==
+xml2yaml-disassembler@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/xml2yaml-disassembler/-/xml2yaml-disassembler-1.0.2.tgz#1e92ff5cb240f6c7346e304921bb3ae702ff9e28"
+  integrity sha512-YlgB65JKpvOJpdH7KnTSFNs9oxUjCF8PSYFmhUdApSZyAQYVrI6QD0W1lM6pEY9Nv6FVvw7SFjkTjUQil8dGvg==
   dependencies:
     fast-xml-parser "^4.3.4"
     log4js "^6.9.1"
     tslib "^2.6.2"
-    xml-disassembler "^1.2.9"
+    xml-disassembler "^1.2.10"
     yaml "^2.4.1"
 
 xmlbuilder@~11.0.0:

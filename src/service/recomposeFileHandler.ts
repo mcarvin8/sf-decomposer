@@ -37,33 +37,24 @@ export async function recomposeFileHandler(
 }
 
 async function reassembleHandler(
-  xmlPath: string,
+  filePath: string,
   fileExtension: string,
-  postpurge: boolean,
+  postPurge: boolean,
   format: string
 ): Promise<void> {
+  let handler: ReassembleXMLFileHandler | JsonToXmlReassembler | YamlToXmlReassembler;
   if (format === 'yaml') {
-    const handler = new YamlToXmlReassembler();
-    await handler.reassemble({
-      yamlPath: xmlPath,
-      fileExtension,
-      postPurge: postpurge,
-    });
+    handler = new YamlToXmlReassembler();
   } else if (format === 'json') {
-    const handler = new JsonToXmlReassembler();
-    await handler.reassemble({
-      jsonPath: xmlPath,
-      fileExtension,
-      postPurge: postpurge,
-    });
+    handler = new JsonToXmlReassembler();
   } else {
-    const handler = new ReassembleXMLFileHandler();
-    await handler.reassemble({
-      xmlPath,
-      fileExtension,
-      postPurge: postpurge,
-    });
+    handler = new ReassembleXMLFileHandler();
   }
+  await handler.reassemble({
+    filePath,
+    fileExtension,
+    postPurge,
+  });
 }
 
 async function reassembleLabels(

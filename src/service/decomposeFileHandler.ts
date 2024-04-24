@@ -43,7 +43,7 @@ export async function decomposeFileHandler(
 }
 
 async function disassembleHandler(
-  xmlPath: string,
+  filePath: string,
   uniqueIdElements: string,
   prepurge: boolean,
   postpurge: boolean,
@@ -58,7 +58,7 @@ async function disassembleHandler(
     handler = new DisassembleXMLFileHandler();
   }
   await handler.disassemble({
-    xmlPath,
+    filePath,
     uniqueIdElements,
     prePurge: prepurge,
     postPurge: postpurge,
