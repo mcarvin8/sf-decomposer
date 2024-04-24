@@ -1,3 +1,9 @@
+## [3.3.4](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.3.3...v3.3.4) (2024-04-24)
+
+### Bug Fixes
+
+- fix promises in commands ([02f1470](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/02f14709445ff7abb4d21318cfe66228f5a02946))
+
 ## [3.3.3](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.3.2...v3.3.3) (2024-04-24)
 
 ### Bug Fixes
