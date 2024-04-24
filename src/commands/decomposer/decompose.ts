@@ -1,4 +1,5 @@
 'use strict';
+/* eslint-disable no-await-in-loop */
 
 import { SfCommand, Flags } from '@salesforce/sf-plugins-core';
 import { Messages } from '@salesforce/core';
@@ -59,21 +60,19 @@ export default class DecomposerDecompose extends SfCommand<DecomposerDecomposeRe
     const postpurge = flags['postpurge'];
     const debug = flags['debug'];
     const format = flags['format'];
-    await Promise.all(
-      metadataTypes.map(async (metadataType) => {
-        const metaAttributes = await getRegistryValuesBySuffix(metadataType, 'decompose');
+    for (const metadataType of metadataTypes) {
+      const metaAttributes = await getRegistryValuesBySuffix(metadataType, 'decompose');
 
-        const currentLogFile = await readOriginalLogFile(LOG_FILE);
-        await decomposeFileHandler(metaAttributes, prepurge, postpurge, debug, format);
-        const decomposeErrors = await checkLogForErrors(LOG_FILE, currentLogFile);
-        if (decomposeErrors.length > 0) {
-          decomposeErrors.forEach((error) => {
-            this.warn(error);
-          });
-        }
-        this.log(`All metadata files have been decomposed for the metadata type: ${metadataType}`);
-      })
-    );
+      const currentLogFile = await readOriginalLogFile(LOG_FILE);
+      await decomposeFileHandler(metaAttributes, prepurge, postpurge, debug, format);
+      const decomposeErrors = await checkLogForErrors(LOG_FILE, currentLogFile);
+      if (decomposeErrors.length > 0) {
+        decomposeErrors.forEach((error) => {
+          this.warn(error);
+        });
+      }
+      this.log(`All metadata files have been decomposed for the metadata type: ${metadataType}`);
+    }
     return {
       metadata: metadataTypes,
     };
