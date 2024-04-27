@@ -226,6 +226,31 @@ General debugging statements in the log file will look like:
 
 Recommend adding the `disassemble.log` to your `.gitignore` file.
 
+## Hook
+
+A post-retrieve hook has been configured if you elect to use it. The post-retrieve hook will automatically decompose the desired metadata types after every Salesforce CLI retrieval if you set this environment variable: `SFDX_DECOMPOSER_METADATA_TYPES`
+
+The value for the `SFDX_DECOMPOSER_METADATA_TYPES` variable should look like:
+
+```
+# To decompose 1 type of metadata, just provide the metadata's suffix
+SFDX_DECOMPOSER_METADATA_TYPES=labels
+
+# To decompose multiple metadata types, provide a comma-separated list of metadata suffixes
+SFDX_DECOMPOSER_METADATA_TYPES=labels,workflow,profile
+```
+
+If you do not want to use the hook, do not set the `SFDX_DECOMPOSER_METADATA_TYPES` variable. The hook will be skipped if this variable isn't found.
+
+Optionally, you can set these boolean environment variables for the `--prepurge` and `--postpurge` flags. If these variables aren't set, the decompose command will not prepurge or postpurge files.
+
+```
+SFDX_DECOMPOSER_PREPURGE=true
+SFDX_DECOMPOSER_PREPURGE=true
+```
+
+**NOTE:** In order to avoid errors during the retrieval, you must configure your `.forceignore` file to have the Salesforce CLI ignore the decomposed files. See section below.
+
 ## Ignore Files
 
 The `.gitignore` and `.forceignore` files in your repository should be updated based on the metadata types you wish to decompose.
