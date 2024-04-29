@@ -246,7 +246,7 @@ Optionally, you can set these boolean environment variables for the `--prepurge`
 
 ```
 SFDX_DECOMPOSER_PREPURGE=true
-SFDX_DECOMPOSER_PREPURGE=true
+SFDX_DECOMPOSER_POSTPURGE=true
 ```
 
 **NOTE:** In order to avoid errors during the retrieval, you must configure your `.forceignore` file to have the Salesforce CLI ignore the decomposed files. See section below.
