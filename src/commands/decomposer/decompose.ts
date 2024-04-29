@@ -10,7 +10,7 @@ import { getRegistryValuesBySuffix } from '../../metadata/getRegistryValuesBySuf
 import { readOriginalLogFile, checkLogForErrors } from '../../service/checkLogforErrors.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
-const messages = Messages.loadMessages('sfdx-decomposer', 'decomposer.decompose');
+const messages = Messages.loadMessages('sf-decomposer', 'decomposer.decompose');
 
 export type DecomposerDecomposeResult = {
   metadata: string[];

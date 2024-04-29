@@ -1,5 +1,5 @@
 {
-  "name": "sfdx-decomposer",
+  "name": "sf-decomposer",
   "description": "Decomposes Salesforce metadata into more manageable files.",
   "version": "3.3.10",
   "dependencies": {
@@ -50,7 +50,8 @@
     "sf",
     "sf-plugin",
     "sfdx",
-    "sfdx-plugin"
+    "sfdx-plugin",
+    "git"
   ],
   "license": "MIT",
   "oclif": {
@@ -193,9 +194,9 @@
   "author": "Matt Carvin",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mcarvin8/sfdx-decomposer-plugin.git"
+    "url": "git+https://github.com/mcarvin8/sf-decomposer.git"
   },
   "bugs": {
-    "url": "https://github.com/mcarvin8/sfdx-decomposer-plugin/issues"
+    "url": "https://github.com/mcarvin8/sf-decomposer/issues"
   }
 }

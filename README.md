@@ -1,10 +1,8 @@
-# sfdx-decomposer
+# sf-decomposer
 
-[![NPM](https://img.shields.io/npm/v/sfdx-decomposer.svg?label=sfdx-decomposer)](https://www.npmjs.com/package/sfdx-decomposer) [![Downloads/week](https://img.shields.io/npm/dw/sfdx-decomposer.svg)](https://npmjs.org/package/sfdx-decomposer) [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://raw.githubusercontent.com/mcarvin8/sfdx-decomposer-plugin/main/LICENSE.md)
+[![NPM](https://img.shields.io/npm/v/sf-decomposer.svg?label=sf-decomposer)](https://www.npmjs.com/package/sf-decomposer) [![Downloads/week](https://img.shields.io/npm/dw/sf-decomposer.svg)](https://npmjs.org/package/sf-decomposer) [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/LICENSE.md)
 
-**DEPRECATION**: The current version of this plugin, `sfdx-decomposer`, will be deprecated and renamed to `sf-decomposer`. Please download the plugin under [sf-decomposer](https://npmjs.org/package/sf-decomposer).
-
-The `sfdx-decomposer` is a Salesforce plugin to read the original metadata files (XML) and create smaller, more manageable files for version control. The inverse function (`recompose`) will recreate metadata files for deployments.
+The `sf-decomposer` is a Salesforce plugin to read the original metadata files (XML) and create smaller, more manageable files for version control. The inverse function (`recompose`) will recreate metadata files for deployments.
 
 This plugin requires [git](https://git-scm.com/downloads) to be installed and that it can be called using the command `git`.
 
@@ -26,12 +24,12 @@ The decomposed file format can be XML, JSON, or YAML. Based on testing, XML and 
 ## Install
 
 ```bash
-sf plugins install sfdx-decomposer@x.y.z
+sf plugins install sf-decomposer@x.y.z
 ```
 
 ## Commands
 
-The `sfdx-decomposer` supports 2 commands:
+The `sf-decomposer` supports 2 commands:
 
 - `sf decomposer decompose`
 - `sf decomposer recompose`
@@ -42,13 +40,13 @@ Both commands need to be ran somewhere inside your Salesforce DX git repository,
 
 Decomposes the original metadata files into smaller files for version control. Excluding custom labels, the smaller files will be placed into new sub-directories:
 
-<img src="https://raw.githubusercontent.com/mcarvin8/sfdx-decomposer-plugin/main/.github/images/decomposed-perm-set.png">
+<img src="https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-perm-set.png">
 
 <br>
 
 Custom Labels will be decomposed directly in the root labels folder:
 
-<img src="https://raw.githubusercontent.com/mcarvin8/sfdx-decomposer-plugin/main/.github/images/decomposed-labels.png">
+<img src="https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-labels.png">
 
 <br>
 
@@ -72,7 +70,7 @@ It's recommended to add the `--prepurge` flag to the `decompose` command to remo
 
 Using the `--format` flag, you can set the desired file type for the decomposed files to XML (default), YAML, or JSON. **Note**: The `--format` flag for the recompose command must match what you selected for the decompose `--format`.
 
-<img src="https://raw.githubusercontent.com/mcarvin8/sfdx-decomposer-plugin/main/.github/images/decomposed-apps-hashes.png">
+<img src="https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-apps-hashes.png">
 
 <br>
 
@@ -216,7 +214,7 @@ By default, this package will only log errors to the file. This plugin will prin
 These warnings when running `decompose` and `recompose` commands will look as such:
 
 ```
-Warning: [2024-04-08T19:27:43.622] [ERROR] default - C:\Users\matth\Documents\sfdx-decomposer-plugin\test\baselines\flows\Get_Info\actionCalls\Get_Info.actionCalls-meta.xml was unabled to be parsed and will not be processed. Confirm formatting and try again.
+Warning: [2024-04-08T19:27:43.622] [ERROR] default - C:\Users\matth\Documents\sf-decomposer\test\baselines\flows\Get_Info\actionCalls\Get_Info.actionCalls-meta.xml was unabled to be parsed and will not be processed. Confirm formatting and try again.
 ```
 
 To add additional debugging statements to the log file, provide the `--debug` flag to either command to generate additional logging statements to `disassemble.log`.
