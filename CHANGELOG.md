@@ -1,3 +1,9 @@
+## [3.3.8-beta.1](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.3.7...v3.3.8-beta.1) (2024-04-29)
+
+### Bug Fixes
+
+- add predeploy hooks for recompose ([8aee9a3](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/8aee9a33e51e5c8ba1e76005d9f8885772574ae4))
+
 ## [3.3.7](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.3.6...v3.3.7) (2024-04-29)
 
 ### Bug Fixes
