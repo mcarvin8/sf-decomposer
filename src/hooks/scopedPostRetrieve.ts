@@ -22,6 +22,7 @@ export const scopedPostRetrieve: HookFunction = async function (options) {
   const prepurge = env.getBoolean('SFDX_DECOMPOSER_PREPURGE', false);
   const postpurge = env.getBoolean('SFDX_DECOMPOSER_POSTPURGE', false);
   const metadataTypes: string = env.getString('SFDX_DECOMPOSER_METADATA_TYPES', '.');
+  const format: string = env.getString('SFDX_DECOMPOSER_METADATA_FORMAT', 'xml');
 
   if (metadataTypes.trim() === '.') {
     return;
@@ -35,6 +36,8 @@ export const scopedPostRetrieve: HookFunction = async function (options) {
     commandArgs.push('--metadata-type');
     commandArgs.push(sanitizedMetadataType);
   }
+  commandArgs.push('--format');
+  commandArgs.push(format);
   if (prepurge) {
     commandArgs.push('--prepurge');
   }

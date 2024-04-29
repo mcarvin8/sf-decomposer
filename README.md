@@ -242,6 +242,12 @@ SFDX_DECOMPOSER_METADATA_TYPES=labels,workflow,profile
 
 If you do not want to use the hook, do not set the `SFDX_DECOMPOSER_METADATA_TYPES` variable. The hook will be skipped if this variable isn't found.
 
+Another environment variable that you can set is `SFDX_DECOMPOSER_METADATA_FORMAT`. This should be a string and it should be either `xml`, `yaml`, or `json` depending on which file format you would like the decomposed files to be created as. If you do not provide this environment variable, the decomposed file format will be `xml` by default.
+
+```
+SFDX_DECOMPOSER_METADATA_FORMAT=json
+```
+
 Optionally, you can set these boolean environment variables for the `--prepurge` and `--postpurge` flags. If these variables aren't set, the decompose command will not prepurge or postpurge files.
 
 ```
