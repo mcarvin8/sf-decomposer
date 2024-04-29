@@ -38,7 +38,7 @@ export const scopedPostRetrieve: HookFunction = async function (options) {
 
   const git: SimpleGit = simpleGit(gitOptions);
   const repoRoot = (await git.revparse('--show-toplevel')).trim();
-  const configPath = resolve(repoRoot, 'sfdx-decomposer.json');
+  const configPath = resolve(repoRoot, '.sfdecomposer.config.json');
 
   try {
     const jsonString: string = await readFile(configPath, 'utf-8');

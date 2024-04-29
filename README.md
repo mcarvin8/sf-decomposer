@@ -229,9 +229,9 @@ Recommend adding the `disassemble.log` to your `.gitignore` file.
 
 ## Hook
 
-A post-retrieve hook has been configured if you elect to use it. The post-retrieve hook will automatically decompose the desired metadata types after every Salesforce CLI retrieval if you create this file in the root of your repo: `sfdx-decomposer.json`
+A post-retrieve hook has been configured if you elect to use it. The post-retrieve hook will automatically decompose the desired metadata types after every Salesforce CLI retrieval if you create this file in the root of your repo: `.sfdecomposer.config.json`
 
-The `sfdx-decomposer.json` should look like this:
+The `.sfdecomposer.config.json` should look like this:
 
 ```json
 {
@@ -247,7 +247,7 @@ The `sfdx-decomposer.json` should look like this:
 - `postPurge` is optional and should be a boolean. If true, this will delete the retrieval file after decomposing it. If you do not provide this, the default will be `false`.
 - `decomposedFormat` is optional and should be either `xml`, `json`, or `yaml`, depending on what file format you want the decomposed files created as. If you do not provide this, the default will be `xml`.
 
-If the `sfdx-decomposer.json` file isn't found, the hook will be skipped.
+If the `.sfdecomposer.config.json` file isn't found, the hook will be skipped.
 
 **NOTE:** In order to avoid errors during the retrieval, you must configure your `.forceignore` file to have the Salesforce CLI ignore the decomposed files. See section below.
 
