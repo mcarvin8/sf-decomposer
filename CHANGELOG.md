@@ -1,3 +1,9 @@
+## [3.3.6](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.3.5...v3.3.6) (2024-04-29)
+
+### Bug Fixes
+
+- fix postpurge hook name in readme ([9c3a9b7](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/9c3a9b73670f899a878fe32a6b92e0942864e369))
+
 ## [3.3.5](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.3.4...v3.3.5) (2024-04-29)
 
 ### Bug Fixes
