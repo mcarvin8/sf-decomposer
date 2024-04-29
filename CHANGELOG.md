@@ -1,3 +1,9 @@
+## [3.3.5-beta.2](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.3.5-beta.1...v3.3.5-beta.2) (2024-04-29)
+
+### Bug Fixes
+
+- push commands differently and remove commas in meta type ([b5cf769](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/b5cf76957df40965902a2001859589a78b664f38))
+
 ## [3.3.5-beta.1](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.3.4...v3.3.5-beta.1) (2024-04-29)
 
 ### Bug Fixes
