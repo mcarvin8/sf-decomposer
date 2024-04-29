@@ -1,3 +1,9 @@
+## [3.3.5-beta.1](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.3.4...v3.3.5-beta.1) (2024-04-29)
+
+### Bug Fixes
+
+- add post retrieve hook ([ef53099](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/ef53099623e0ca10d27bd0dc2f3616c7bb603871))
+
 ## [3.3.4](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.3.3...v3.3.4) (2024-04-24)
 
 ### Bug Fixes
