@@ -1,3 +1,9 @@
+## [3.3.7](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.3.6...v3.3.7) (2024-04-29)
+
+### Bug Fixes
+
+- add env variable for decomposed file format to post retrieve hook ([5c22ef9](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/5c22ef9a3d2d4bca7615bcc55cc6ea6b50e9e689))
+
 ## [3.3.6](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.3.5...v3.3.6) (2024-04-29)
 
 ### Bug Fixes
