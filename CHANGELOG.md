@@ -1,3 +1,13 @@
+# [4.0.0](https://github.com/mcarvin8/sf-decomposer/compare/v3.3.10...v4.0.0) (2024-04-29)
+
+### Features
+
+- rename package to `sf-decomposer` ([f03134d](https://github.com/mcarvin8/sf-decomposer/commit/f03134d723e9f693ec305833a62fc1a9aff79026))
+
+### BREAKING CHANGES
+
+- renamed from `sfdx-decomposer` to `sf-decomposer`
+
 ## [3.3.10](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.3.9...v3.3.10) (2024-04-29)
 
 ### Bug Fixes
