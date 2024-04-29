@@ -16,6 +16,7 @@ The decomposed file format can be XML, JSON, or YAML. Based on testing, XML and 
 
 **DISCLAIMERS:**
 
+- You must update the `.forceignore` to have the Salesforce CLI ignore the decomposed files created by this plugin. See section `Ignore Files`. Updates to the `.gitignore` are optional and can be updated based on what you want staged in your repo.
 - It is highly recommended that you extensively test this plugin in a sandbox environment on the metadata types you wish to use this tool for.
 - Do not change your production/QA pipelines until you have tested this and are happy with the results.
 - Confirm your deployment pipelines are stable prior to implementing this plugin.
@@ -228,32 +229,25 @@ Recommend adding the `disassemble.log` to your `.gitignore` file.
 
 ## Hook
 
-A post-retrieve hook has been configured if you elect to use it. The post-retrieve hook will automatically decompose the desired metadata types after every Salesforce CLI retrieval if you set this environment variable: `SFDX_DECOMPOSER_METADATA_TYPES`
+A post-retrieve hook has been configured if you elect to use it. The post-retrieve hook will automatically decompose the desired metadata types after every Salesforce CLI retrieval if you create this file in the root of your repo: `sfdx-decomposer.json`
 
-The value for the `SFDX_DECOMPOSER_METADATA_TYPES` variable should look like:
+The `sfdx-decomposer.json` should look like this:
 
-```
-# To decompose 1 type of metadata, just provide the metadata's suffix
-SFDX_DECOMPOSER_METADATA_TYPES=labels
-
-# To decompose multiple metadata types, provide a comma-separated list of metadata suffixes
-SFDX_DECOMPOSER_METADATA_TYPES=labels,workflow,profile
-```
-
-If you do not want to use the hook, do not set the `SFDX_DECOMPOSER_METADATA_TYPES` variable. The hook will be skipped if this variable isn't found.
-
-Another environment variable that you can set is `SFDX_DECOMPOSER_METADATA_FORMAT`. This should be a string and it should be either `xml`, `yaml`, or `json` depending on which file format you would like the decomposed files to be created as. If you do not provide this environment variable, the decomposed file format will be `xml` by default.
-
-```
-SFDX_DECOMPOSER_METADATA_FORMAT=json
+```json
+{
+  "metadataSuffixes": "labels,workflow,profile",
+  "prePurge": true,
+  "postPurge": true,
+  "decomposedFormat": "xml"
+}
 ```
 
-Optionally, you can set these boolean environment variables for the `--prepurge` and `--postpurge` flags. If these variables aren't set, the decompose command will not prepurge or postpurge files.
+- `metadataSuffixes` is required and should be a comma-separated string of metadata suffixes to decompose automatically after retrievals.
+- `prePurge` is optional and should be a boolean. If true, this will delete any existing decomposed files before decomposing the files. If you do not provide this, the default will be `false`.
+- `postPurge` is optional and should be a boolean. If true, this will delete the retrieval file after decomposing it. If you do not provide this, the default will be `false`.
+- `decomposedFormat` is optional and should be either `xml`, `json`, or `yaml`, depending on what file format you want the decomposed files created as. If you do not provide this, the default will be `xml`.
 
-```
-SFDX_DECOMPOSER_PREPURGE=true
-SFDX_DECOMPOSER_POSTPURGE=true
-```
+If the `sfdx-decomposer.json` file isn't found, the hook will be skipped.
 
 **NOTE:** In order to avoid errors during the retrieval, you must configure your `.forceignore` file to have the Salesforce CLI ignore the decomposed files. See section below.
 

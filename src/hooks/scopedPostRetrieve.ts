@@ -1,6 +1,10 @@
+'use strict';
+
+import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import { Command, Hook, Config } from '@oclif/core';
 import { ScopedPostRetrieve } from '@salesforce/source-deploy-retrieve';
-import { env } from '@salesforce/kit';
+import { simpleGit, SimpleGit, SimpleGitOptions } from 'simple-git';
 import DecomposerDecompose from '../commands/decomposer/decompose.js';
 
 type HookFunction = (this: Hook.Context, options: HookOptions) => Promise<void>;
@@ -13,16 +17,40 @@ type HookOptions = {
   config: Config;
 };
 
-// eslint-disable-next-line @typescript-eslint/require-await
+interface ConfigFile {
+  metadataSuffixes: string;
+  prePurge: boolean;
+  postPurge: boolean;
+  decomposedFormat: string;
+}
+
 export const scopedPostRetrieve: HookFunction = async function (options) {
   if (!options.result?.retrieveResult.response.status) {
     return;
   }
+  let configFile: ConfigFile;
+  const gitOptions: Partial<SimpleGitOptions> = {
+    baseDir: process.cwd(),
+    binary: 'git',
+    maxConcurrentProcesses: 6,
+    trimmed: true,
+  };
 
-  const prepurge = env.getBoolean('SFDX_DECOMPOSER_PREPURGE', false);
-  const postpurge = env.getBoolean('SFDX_DECOMPOSER_POSTPURGE', false);
-  const metadataTypes: string = env.getString('SFDX_DECOMPOSER_METADATA_TYPES', '.');
-  const format: string = env.getString('SFDX_DECOMPOSER_METADATA_FORMAT', 'xml');
+  const git: SimpleGit = simpleGit(gitOptions);
+  const repoRoot = (await git.revparse('--show-toplevel')).trim();
+  const configPath = resolve(repoRoot, 'sfdx-decomposer.json');
+
+  try {
+    const jsonString: string = await readFile(configPath, 'utf-8');
+    configFile = JSON.parse(jsonString) as ConfigFile;
+  } catch (error) {
+    return;
+  }
+
+  const metadataTypes: string = configFile.metadataSuffixes || '.';
+  const format: string = configFile.decomposedFormat || 'xml';
+  const prepurge: boolean = configFile.prePurge || false;
+  const postpurge: boolean = configFile.postPurge || false;
 
   if (metadataTypes.trim() === '.') {
     return;
