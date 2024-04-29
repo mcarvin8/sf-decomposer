@@ -23,7 +23,7 @@ export const scopedPostRetrieve: HookFunction = async function (options) {
   const postpurge = env.getBoolean('SFDX_DECOMPOSER_POSTPURGE', false);
   const metadataTypes: string[] = env.getString('SFDX_DECOMPOSER_METADATA_TYPES', '').split(',');
 
-  if (metadataTypes.length === 0) {
+  if (metadataTypes.length === 0 || metadataTypes.trim() === '.') {
     return;
   }
 
