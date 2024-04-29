@@ -61,7 +61,8 @@
       "@oclif/plugin-help"
     ],
     "hooks": {
-      "scopedPostRetrieve": "./lib/hooks/scopedPostRetrieve"
+      "scopedPostRetrieve": "./lib/hooks/scopedPostRetrieve",
+      "scopedPreDeploy": "./lib/hooks/scopedPreDeploy"
     },
     "flexibleTaxonomy": true
   },

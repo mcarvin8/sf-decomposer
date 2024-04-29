@@ -1,7 +1,7 @@
 import { Command, Hook, Config } from '@oclif/core';
-import { ScopedPostRetrieve } from '@salesforce/source-deploy-retrieve';
+import { ScopedPreDeploy } from '@salesforce/source-deploy-retrieve';
 import { env } from '@salesforce/kit';
-import DecomposerDecompose from '../commands/decomposer/decompose.js';
+import DecomposerRecompose from '../commands/decomposer/recompose.js';
 
 type HookFunction = (this: Hook.Context, options: HookOptions) => Promise<void>;
 
@@ -9,16 +9,11 @@ type HookOptions = {
   Command: Command;
   argv: string[];
   commandId: string;
-  result?: ScopedPostRetrieve;
+  result?: ScopedPreDeploy;
   config: Config;
 };
 
-export const scopedPostRetrieve: HookFunction = async function (options) {
-  if (!options.result?.retrieveResult.response.status) {
-    return;
-  }
-
-  const prepurge = env.getBoolean('SFDX_DECOMPOSER_PREPURGE', false);
+export const scopedPreDeploy: HookFunction = async function () {
   const postpurge = env.getBoolean('SFDX_DECOMPOSER_POSTPURGE', false);
   const metadataTypes: string = env.getString('SFDX_DECOMPOSER_METADATA_TYPES', '.');
   const format: string = env.getString('SFDX_DECOMPOSER_METADATA_FORMAT', 'xml');
@@ -37,11 +32,8 @@ export const scopedPostRetrieve: HookFunction = async function (options) {
   }
   commandArgs.push('--format');
   commandArgs.push(format);
-  if (prepurge) {
-    commandArgs.push('--prepurge');
-  }
   if (postpurge) {
     commandArgs.push('--postpurge');
   }
-  await DecomposerDecompose.run(commandArgs);
+  await DecomposerRecompose.run(commandArgs);
 };
