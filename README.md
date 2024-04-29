@@ -2,6 +2,8 @@
 
 [![NPM](https://img.shields.io/npm/v/sfdx-decomposer.svg?label=sfdx-decomposer)](https://www.npmjs.com/package/sfdx-decomposer) [![Downloads/week](https://img.shields.io/npm/dw/sfdx-decomposer.svg)](https://npmjs.org/package/sfdx-decomposer) [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://raw.githubusercontent.com/mcarvin8/sfdx-decomposer-plugin/main/LICENSE.md)
 
+**DEPRECATION**: The current version of this plugin, `sfdx-decomposer`, will be deprecated and renamed to `sf-decomposer`. Please download the plugin under [sf-decomposer](https://npmjs.org/package/sf-decomposer).
+
 The `sfdx-decomposer` is a Salesforce plugin to read the original metadata files (XML) and create smaller, more manageable files for version control. The inverse function (`recompose`) will recreate metadata files for deployments.
 
 This plugin requires [git](https://git-scm.com/downloads) to be installed and that it can be called using the command `git`.
