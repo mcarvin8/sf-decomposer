@@ -21,14 +21,16 @@ export const scopedPostRetrieve: HookFunction = async function (options) {
 
   const prepurge = env.getBoolean('SFDX_DECOMPOSER_PREPURGE', false);
   const postpurge = env.getBoolean('SFDX_DECOMPOSER_POSTPURGE', false);
-  const metadataTypes: string[] = env.getString('SFDX_DECOMPOSER_METADATA_TYPES', '').split(',');
+  const metadataTypes: string = env.getString('SFDX_DECOMPOSER_METADATA_TYPES', '.');
 
-  if (metadataTypes.length === 0 || metadataTypes.trim() === '.') {
+  if (metadataTypes.trim() === '.') {
     return;
   }
 
+  const metadataTypesArray: string[] = metadataTypes.split(',');
+
   const commandArgs: string[] = [];
-  for (const metadataType of metadataTypes) {
+  for (const metadataType of metadataTypesArray) {
     const sanitizedMetadataType = metadataType.replace(/,/g, '');
     commandArgs.push('--metadata-type');
     commandArgs.push(sanitizedMetadataType);
