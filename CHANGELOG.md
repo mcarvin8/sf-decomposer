@@ -1,3 +1,10 @@
+## [3.3.5-beta.3](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.3.5-beta.2...v3.3.5-beta.3) (2024-04-29)
+
+### Bug Fixes
+
+- fix check of null env variable ([3c17f22](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/3c17f2290a858f956b97e4ca081ccae16efcc8c9))
+- fix condition when metadata types env variable isn't set ([5c864fd](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/5c864fde6168244988cd39d07b33a2f6c112f5a2))
+
 ## [3.3.5-beta.2](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.3.5-beta.1...v3.3.5-beta.2) (2024-04-29)
 
 ### Bug Fixes
