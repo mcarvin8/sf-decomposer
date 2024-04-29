@@ -1,3 +1,9 @@
+## [3.3.8](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.3.7...v3.3.8) (2024-04-29)
+
+### Bug Fixes
+
+- read a new JSON file for post retrieve hook variables ([7a2b39f](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/7a2b39f54c992e541aed67465bce38dc220fc1a9))
+
 ## [3.3.7](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.3.6...v3.3.7) (2024-04-29)
 
 ### Bug Fixes
