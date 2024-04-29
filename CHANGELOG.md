@@ -1,3 +1,9 @@
+## [3.3.9](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.3.8...v3.3.9) (2024-04-29)
+
+### Bug Fixes
+
+- rename hook JSON to `.sfdecomposer.config.json` ([ecb6140](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/ecb6140eb56818272b1c5e9aaf7a61ece09e411b))
+
 ## [3.3.8](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.3.7...v3.3.8) (2024-04-29)
 
 ### Bug Fixes
