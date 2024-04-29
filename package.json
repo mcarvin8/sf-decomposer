@@ -28,7 +28,7 @@
     "@types/fs-extra": "^11.0.4",
     "eslint-plugin-sf-plugin": "^1.17.5",
     "husky": "^9.0.11",
-    "oclif": "^4.4.10",
+    "oclif": "^4.9.0",
     "semantic-release": "^17.4.7",
     "shx": "0.3.4",
     "ts-node": "^10.9.2",
