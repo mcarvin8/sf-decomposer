@@ -29,7 +29,7 @@ export const scopedPostRetrieve: HookFunction = async function (options) {
 
   const commandArgs: string[] = [];
   for (const metadataType of metadataTypes) {
-    commandArgs.push(`--metadata-type "${metadataType}"`);
+    commandArgs.push(`--metadata-type ${metadataType}`);
   }
   if (prepurge) {
     commandArgs.push('--prepurge');
