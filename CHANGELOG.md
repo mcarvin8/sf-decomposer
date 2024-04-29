@@ -1,3 +1,9 @@
+## [3.3.10](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.3.9...v3.3.10) (2024-04-29)
+
+### Bug Fixes
+
+- deprecate this package. this will be renamed to `sf-decomposer`. ([1305913](https://github.com/mcarvin8/sfdx-decomposer-plugin/commit/1305913cfe558cc13859d3269b5b737e91e11460))
+
 ## [3.3.9](https://github.com/mcarvin8/sfdx-decomposer-plugin/compare/v3.3.8...v3.3.9) (2024-04-29)
 
 ### Bug Fixes
