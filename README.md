@@ -227,9 +227,15 @@ General debugging statements in the log file will look like:
 
 Recommend adding the `disassemble.log` to your `.gitignore` file.
 
-## Hook
+## Hooks
 
-A post-retrieve hook has been configured if you elect to use it. The post-retrieve hook will automatically decompose the desired metadata types after every Salesforce CLI retrieval if you create this file in the root of your repo: `.sfdecomposer.config.json`
+A post-retrieve hook (for the decompose command) and a pre-run hook (for the recompose command) have been configured if you elect to use them.
+
+The post-retrieve hook will automatically decompose the desired metadata types after every Salesforce CLI retrieval (`sf project retrieve start` command).
+
+The pre-run hook will automatically recompose the desired metadata types before every Salesforce CLI deployment/validation (`sf project deploy start` and `sf project deploy validate` commands).
+
+Both hooks require you to create this file in the root of your repo: `.sfdecomposer.config.json`
 
 The `.sfdecomposer.config.json` should look like this:
 
@@ -243,11 +249,11 @@ The `.sfdecomposer.config.json` should look like this:
 ```
 
 - `metadataSuffixes` is required and should be a comma-separated string of metadata suffixes to decompose automatically after retrievals.
-- `prePurge` is optional and should be a boolean. If true, this will delete any existing decomposed files before decomposing the files. If you do not provide this, the default will be `false`.
-- `postPurge` is optional and should be a boolean. If true, this will delete the retrieval file after decomposing it. If you do not provide this, the default will be `false`.
+- `prePurge` is optional and should be a boolean. If true, this will delete any existing decomposed files before decomposing the files. If you do not provide this, the default will be `false`. This flag is not used by the recompose command/pre-run hook.
+- `postPurge` is optional and should be a boolean. If true, this will delete the retrieval file after decomposing it or delete the decomposed files after recomposing them. If you do not provide this, the default will be `false`.
 - `decomposedFormat` is optional and should be either `xml`, `json`, or `yaml`, depending on what file format you want the decomposed files created as. If you do not provide this, the default will be `xml`.
 
-If the `.sfdecomposer.config.json` file isn't found, the hook will be skipped.
+If the `.sfdecomposer.config.json` file isn't found, the hooks will be skipped.
 
 **NOTE:** In order to avoid errors during the retrieval, you must configure your `.forceignore` file to have the Salesforce CLI ignore the decomposed files. See section below.
 
