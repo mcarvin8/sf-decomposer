@@ -1,3 +1,9 @@
+## [4.0.1-beta.1](https://github.com/mcarvin8/sf-decomposer/compare/v4.0.0...v4.0.1-beta.1) (2024-04-30)
+
+### Bug Fixes
+
+- add project deploy prerun hook for recompose command ([f5351b0](https://github.com/mcarvin8/sf-decomposer/commit/f5351b0a9b1f79fe842bbb1202c97f21c4c13115))
+
 # [4.0.0](https://github.com/mcarvin8/sf-decomposer/compare/v3.3.10...v4.0.0) (2024-04-29)
 
 ### Features
