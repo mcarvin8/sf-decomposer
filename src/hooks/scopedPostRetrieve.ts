@@ -6,6 +6,7 @@ import { Command, Hook, Config } from '@oclif/core';
 import { ScopedPostRetrieve } from '@salesforce/source-deploy-retrieve';
 import { simpleGit, SimpleGit, SimpleGitOptions } from 'simple-git';
 import DecomposerDecompose from '../commands/decomposer/decompose.js';
+import { ConfigFile } from '../helpers/types.js';
 
 type HookFunction = (this: Hook.Context, options: HookOptions) => Promise<void>;
 
@@ -16,13 +17,6 @@ type HookOptions = {
   result?: ScopedPostRetrieve;
   config: Config;
 };
-
-interface ConfigFile {
-  metadataSuffixes: string;
-  prePurge: boolean;
-  postPurge: boolean;
-  decomposedFormat: string;
-}
 
 export const scopedPostRetrieve: HookFunction = async function (options) {
   if (!options.result?.retrieveResult.response.status) {
