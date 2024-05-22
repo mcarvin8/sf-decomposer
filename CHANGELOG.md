@@ -1,3 +1,9 @@
+## [4.1.1](https://github.com/mcarvin8/sf-decomposer/compare/v4.1.0...v4.1.1) (2024-05-22)
+
+### Bug Fixes
+
+- post disclaimer to state this plugin must be ran in the root folder ([5ba6bf5](https://github.com/mcarvin8/sf-decomposer/commit/5ba6bf5039cbb04f596191810fae98d807eb6934))
+
 # [4.1.0](https://github.com/mcarvin8/sf-decomposer/compare/v4.0.1...v4.1.0) (2024-05-22)
 
 ### Features
