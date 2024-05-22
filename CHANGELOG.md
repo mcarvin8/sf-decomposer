@@ -1,3 +1,9 @@
+## [4.1.2](https://github.com/mcarvin8/sf-decomposer/compare/v4.1.1...v4.1.2) (2024-05-22)
+
+### Bug Fixes
+
+- rename ignore file to `.sfdecomposerignore` ([de5260a](https://github.com/mcarvin8/sf-decomposer/commit/de5260a58ee0e9d28bbd40330486193ce18d35ed))
+
 ## [4.1.1](https://github.com/mcarvin8/sf-decomposer/compare/v4.1.0...v4.1.1) (2024-05-22)
 
 ### Bug Fixes
