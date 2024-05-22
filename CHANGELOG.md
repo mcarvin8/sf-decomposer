@@ -1,3 +1,9 @@
+# [4.1.0](https://github.com/mcarvin8/sf-decomposer/compare/v4.0.1...v4.1.0) (2024-05-22)
+
+### Features
+
+- process an ignore file when decomposing ([f7d72f7](https://github.com/mcarvin8/sf-decomposer/commit/f7d72f75846a603d10d5c1cb40edc4bd4cec5691))
+
 ## [4.0.1](https://github.com/mcarvin8/sf-decomposer/compare/v4.0.0...v4.0.1) (2024-04-30)
 
 ### Bug Fixes
