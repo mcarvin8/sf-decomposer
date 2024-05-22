@@ -2,7 +2,7 @@
 
 [![NPM](https://img.shields.io/npm/v/sf-decomposer.svg?label=sf-decomposer)](https://www.npmjs.com/package/sf-decomposer) [![Downloads/week](https://img.shields.io/npm/dw/sf-decomposer.svg)](https://npmjs.org/package/sf-decomposer) [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/LICENSE.md)
 
-The `sf-decomposer` is a Salesforce plugin to read the original metadata files (XML) and create smaller, more manageable files for version control. The inverse function (`recompose`) will recreate metadata files for deployments.
+The `sf-decomposer` is a Salesforce plugin to read the original metadata files (XML) and create smaller, more manageable files for version control. The inverse function (`recompose`) will recreate metadata files for deployments. This plugin is intended for users who deploy their Salesforce codebase from a git repository that follows the Salesforce DX Project Configuration (`sfdx-project.json` file).
 
 This plugin requires [git](https://git-scm.com/downloads) to be installed and that it can be called using the command `git`.
 
@@ -16,6 +16,7 @@ The decomposed file format can be XML, JSON, or YAML. Based on testing, XML and 
 
 **DISCLAIMERS:**
 
+- Due to a bug with running in sub-directories, **you must run this plugin from the root folder of your git repository.**
 - You must update the `.forceignore` to have the Salesforce CLI ignore the decomposed files created by this plugin. See section `Ignore Files`. Updates to the `.gitignore` are optional and can be updated based on what you want staged in your repo.
 - It is highly recommended that you extensively test this plugin in a sandbox environment on the metadata types you wish to use this tool for.
 - Do not change your production/QA pipelines until you have tested this and are happy with the results.
@@ -34,7 +35,7 @@ The `sf-decomposer` supports 2 commands:
 - `sf decomposer decompose`
 - `sf decomposer recompose`
 
-Both commands need to be ran somewhere inside your Salesforce DX git repository, whether in the root folder (recommended) or in a subfolder. This plugin will determine the root folder of this repository and read the `sfdx-project.json` file in the root folder. All package directories listed in the `sfdx-project.json` file will be processed when running this plugin.
+Both commands need to be ran in the root folder of your Salesforce DX git repository. This plugin will read the `sfdx-project.json` file and it will process all package directories listed in the file.
 
 ## `sf decomposer decompose`
 
@@ -227,7 +228,7 @@ General debugging statements in the log file will look like:
 
 Recommend adding the `disassemble.log` to your `.gitignore` file.
 
-## Ignore File
+## Ignore Files when Decomposing
 
 If you wish, you can create an ignore file in the root of your repository named `.xmldisassemblerignore` to ignore specific XMLs when running the decompose command.
 
@@ -247,7 +248,7 @@ A post-retrieve hook (for the decompose command) and a pre-run hook (for the rec
 
 The post-retrieve hook will automatically decompose the desired metadata types after every Salesforce CLI retrieval (`sf project retrieve start` command).
 
-The pre-run hook will automatically recompose the desired metadata types before every Salesforce CLI deployment/validation (`sf project deploy start` and `sf project deploy validate` commands).
+The pre-run hook will automatically recompose the desired metadata types before every Salesforce CLI deployment/validation (`sf project deploy start` and `sf project deploy validate` commands). **You must run the Salesforce CLI commands from the root folder of your repository in order for the hooks to execute correctly.**
 
 Both hooks require you to create this file in the root of your repo: `.sfdecomposer.config.json`
 
