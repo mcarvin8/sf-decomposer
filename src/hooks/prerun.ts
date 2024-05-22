@@ -3,22 +3,15 @@
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { Hook } from '@oclif/core';
-import { simpleGit, SimpleGit, SimpleGitOptions } from 'simple-git';
+
 import DecomposerRecompose from '../commands/decomposer/recompose.js';
 import { ConfigFile } from '../helpers/types.js';
+import { getRepoRoot } from '../service/getRepoRoot.js';
 
 export const prerun: Hook<'prerun'> = async function (options) {
   if (['project:deploy:validate', 'project:deploy:start'].includes(options.Command.id)) {
     let configFile: ConfigFile;
-    const gitOptions: Partial<SimpleGitOptions> = {
-      baseDir: process.cwd(),
-      binary: 'git',
-      maxConcurrentProcesses: 6,
-      trimmed: true,
-    };
-
-    const git: SimpleGit = simpleGit(gitOptions);
-    const repoRoot = (await git.revparse('--show-toplevel')).trim();
+    const repoRoot = await getRepoRoot();
     const configPath = resolve(repoRoot, '.sfdecomposer.config.json');
 
     try {

@@ -227,6 +227,20 @@ General debugging statements in the log file will look like:
 
 Recommend adding the `disassemble.log` to your `.gitignore` file.
 
+## Ignore File
+
+If you wish, you can create an ignore file in the root of your repository named `.xmldisassemblerignore` to ignore specific XMLs when running the decompose command.
+
+The ignore file should follow [.gitignore spec 2.22.1](https://git-scm.com/docs/gitignore).
+
+When the decompose command is ran with the `--debug` flag and it processes a file that matches an entry in `.xmldisassemblerignore`, a warning will be printed to the `disassemble.log`:
+
+```
+[2024-05-22T09:32:12.078] [WARN] default - File ignored by .xmldisassemblerignore: C:\Users\matth\Documents\sf-decomposer\test\baselines\bots\Assessment_Bot\v1.botVersion-meta.xml
+```
+
+The ignore file is not read by the recompose command.
+
 ## Hooks
 
 A post-retrieve hook (for the decompose command) and a pre-run hook (for the recompose command) have been configured if you elect to use them.

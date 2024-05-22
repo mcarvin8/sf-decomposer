@@ -1,13 +1,14 @@
 'use strict';
 /* eslint-disable no-await-in-loop */
-import { resolve, join } from 'node:path';
+import { resolve, relative, join } from 'node:path';
 import { readdir, stat, rm } from 'node:fs/promises';
 import { DisassembleXMLFileHandler, setLogLevel } from 'xml-disassembler';
 import { XmlToYamlDisassembler } from 'xml2yaml-disassembler';
 import { XmlToJsonDisassembler } from 'xml2json-disassembler';
 
-import { CUSTOM_LABELS_FILE } from '../helpers/constants.js';
+import { CUSTOM_LABELS_FILE, IGNORE_FILE } from '../helpers/constants.js';
 import { moveFiles } from './moveFiles.js';
+import { getRepoRoot } from './getRepoRoot.js';
 
 export async function decomposeFileHandler(
   metaAttributes: {
@@ -31,9 +32,10 @@ export async function decomposeFileHandler(
     } else if (metaSuffix === 'labels') {
       // do not use the prePurge flag in the xml-disassembler package for labels due to file moving
       if (prepurge) await prePurgeLabels(metadataPath);
-      const labelFilePath = resolve(metadataPath, CUSTOM_LABELS_FILE);
+      const absoluteLabelFilePath = resolve(metadataPath, CUSTOM_LABELS_FILE);
+      const relativeLabelFilePath = relative(process.cwd(), absoluteLabelFilePath);
 
-      await disassembleHandler(labelFilePath, uniqueIdElements, false, postpurge, format);
+      await disassembleHandler(relativeLabelFilePath, uniqueIdElements, false, postpurge, format);
       // move labels from the directory they are created in
       await moveLabels(metadataPath);
     } else {
@@ -45,8 +47,8 @@ export async function decomposeFileHandler(
 async function disassembleHandler(
   filePath: string,
   uniqueIdElements: string,
-  prepurge: boolean,
-  postpurge: boolean,
+  prePurge: boolean,
+  postPurge: boolean,
   format: string
 ): Promise<void> {
   let handler: DisassembleXMLFileHandler | XmlToJsonDisassembler | XmlToYamlDisassembler;
@@ -57,11 +59,14 @@ async function disassembleHandler(
   } else {
     handler = new DisassembleXMLFileHandler();
   }
+  const repoRoot = await getRepoRoot();
+  const ignorePath = resolve(repoRoot, IGNORE_FILE);
   await handler.disassemble({
     filePath,
     uniqueIdElements,
-    prePurge: prepurge,
-    postPurge: postpurge,
+    prePurge,
+    postPurge,
+    ignorePath,
   });
 }
 

@@ -4,9 +4,10 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { Command, Hook, Config } from '@oclif/core';
 import { ScopedPostRetrieve } from '@salesforce/source-deploy-retrieve';
-import { simpleGit, SimpleGit, SimpleGitOptions } from 'simple-git';
+
 import DecomposerDecompose from '../commands/decomposer/decompose.js';
 import { ConfigFile } from '../helpers/types.js';
+import { getRepoRoot } from '../service/getRepoRoot.js';
 
 type HookFunction = (this: Hook.Context, options: HookOptions) => Promise<void>;
 
@@ -23,15 +24,7 @@ export const scopedPostRetrieve: HookFunction = async function (options) {
     return;
   }
   let configFile: ConfigFile;
-  const gitOptions: Partial<SimpleGitOptions> = {
-    baseDir: process.cwd(),
-    binary: 'git',
-    maxConcurrentProcesses: 6,
-    trimmed: true,
-  };
-
-  const git: SimpleGit = simpleGit(gitOptions);
-  const repoRoot = (await git.revparse('--show-toplevel')).trim();
+  const repoRoot = await getRepoRoot();
   const configPath = resolve(repoRoot, '.sfdecomposer.config.json');
 
   try {
