@@ -1,3 +1,9 @@
+## [4.1.4-beta.1](https://github.com/mcarvin8/sf-decomposer/compare/v4.1.3...v4.1.4-beta.1) (2024-05-23)
+
+### Bug Fixes
+
+- downgrade @semantic-release/npm ([6194106](https://github.com/mcarvin8/sf-decomposer/commit/6194106ebbb5e58cc2820853889fbddc5d7576f3))
+
 ## [4.1.3](https://github.com/mcarvin8/sf-decomposer/compare/v4.1.2...v4.1.3) (2024-05-22)
 
 ### Bug Fixes
