@@ -1,3 +1,9 @@
+## [4.1.4-beta.2](https://github.com/mcarvin8/sf-decomposer/compare/v4.1.4-beta.1...v4.1.4-beta.2) (2024-05-27)
+
+### Bug Fixes
+
+- downgrade all dependencies prior to semantic release errors ([3cd6484](https://github.com/mcarvin8/sf-decomposer/commit/3cd648420133b28126552ccae8d3ec345524c5fb))
+
 ## [4.1.4-beta.1](https://github.com/mcarvin8/sf-decomposer/compare/v4.1.3...v4.1.4-beta.1) (2024-05-23)
 
 ### Bug Fixes
