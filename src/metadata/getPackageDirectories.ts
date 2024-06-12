@@ -14,6 +14,7 @@ interface SfdxProject {
 
 export async function getPackageDirectories(metaDirectory: string): Promise<string[]> {
   const repoRoot = await getRepoRoot();
+  process.chdir(repoRoot);
   const dxConfigPath = resolve(repoRoot, SFDX_PROJECT_FILE_NAME);
   if (!existsSync(dxConfigPath)) {
     throw Error(`Salesforce DX Config File does not exist in this path: ${dxConfigPath}`);
