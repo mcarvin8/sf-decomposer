@@ -4,6 +4,73 @@
 
 - fix logger warning for ignore file path ([6e790da](https://github.com/mcarvin8/sf-decomposer/commit/6e790daad05f933311377a6bf8e268f461b4b4c4))
 
+## [5.0.0](https://github.com/mcarvin8/sf-decomposer/compare/v4.1.4...v5.0.0) (2024-06-12)
+
+
+### ⚠ BREAKING CHANGES
+
+* renamed from `sfdx-decomposer` to `sf-decomposer`
+* Decompose files will need to be re-generated.
+* rename 'compose' command to 'recompose'
+* beta
+
+### Features
+
+* add marketing app extensions and CDATA support ([38d6941](https://github.com/mcarvin8/sf-decomposer/commit/38d694184054b1caa35d9c9a04fd8448d69258fd))
+* add xml-disassembler package ([e5f6173](https://github.com/mcarvin8/sf-decomposer/commit/e5f6173ea9dce4600e3544baf523406869486c0e))
+* allow decomposed files to be XMLs, JSONs, or YAMLs ([0256e68](https://github.com/mcarvin8/sf-decomposer/commit/0256e68b82bd2aae36f5ac64aeb405f9dabb3d68))
+* beta release ([808e88c](https://github.com/mcarvin8/sf-decomposer/commit/808e88cbb5b25cf1bdc6076286448ffd0753aa52))
+* expand supported metadata types to the majority of metadata types supported by SDR ([02fb119](https://github.com/mcarvin8/sf-decomposer/commit/02fb119dae4b1c02a29f92149844368e3f543527))
+* import SDR for metadata types ([9b7b08a](https://github.com/mcarvin8/sf-decomposer/commit/9b7b08a13c22e36ea4b7a0b3f0dee50da03ff77a))
+* process an ignore file when decomposing ([f7d72f7](https://github.com/mcarvin8/sf-decomposer/commit/f7d72f75846a603d10d5c1cb40edc4bd4cec5691))
+* read `sfdx-project.json` for directories and process multiple directories in a command ([518243d](https://github.com/mcarvin8/sf-decomposer/commit/518243d19b833f71127fa956487b5a208983897d))
+* rename `purge` flag to `prepurge` and add `postpurge` flag ([2fd7ff6](https://github.com/mcarvin8/sf-decomposer/commit/2fd7ff64c4bb9e261732675fb4b609e13400e830))
+* rename compose command ([6a7002e](https://github.com/mcarvin8/sf-decomposer/commit/6a7002e44f0b5c4d5cfd137e80673c3423f2fb2d))
+* rename package to `sf-decomposer` ([f03134d](https://github.com/mcarvin8/sf-decomposer/commit/f03134d723e9f693ec305833a62fc1a9aff79026))
+* trigger new beta release with async updates ([81e6792](https://github.com/mcarvin8/sf-decomposer/commit/81e6792e249a54e2a701a3f73706a7ba72e68e8f))
+
+
+### Bug Fixes
+
+* add `--postpurge` flag to recompose, refactor imports, upgrade disassembler ([ee8a52b](https://github.com/mcarvin8/sf-decomposer/commit/ee8a52bcf3368737406a7fb60db09180b5e4da9a))
+* add env variable for decomposed file format to post retrieve hook ([5c22ef9](https://github.com/mcarvin8/sf-decomposer/commit/5c22ef9a3d2d4bca7615bcc55cc6ea6b50e9e689))
+* add logging from salesforce core ([3f80ca8](https://github.com/mcarvin8/sf-decomposer/commit/3f80ca8f9675f1306d88fbb4ae20ded0d624b5c8))
+* add post retrieve hook to run decompose command ([64ede9e](https://github.com/mcarvin8/sf-decomposer/commit/64ede9e9da4fca403b538161b04ff379adc57508))
+* add project deploy prerun hook for recompose command ([c073993](https://github.com/mcarvin8/sf-decomposer/commit/c073993b55aee1146c52e0cc76d62f36a58647e1))
+* adjust comment prop name to  allow comments in translations ([e3d9279](https://github.com/mcarvin8/sf-decomposer/commit/e3d9279d77757eea630997f113da4042bc68f332))
+* allow `--metadata-type` to be declared multiple times in a command ([e4d489a](https://github.com/mcarvin8/sf-decomposer/commit/e4d489a7e6d12b7f9ff1bc1d335c0fe0ef3cda8f))
+* delete empty custom label temp directory created during recompose process ([f27c211](https://github.com/mcarvin8/sf-decomposer/commit/f27c211c51c96be4b6b10ff55207ec761ad6c7a2))
+* deprecate this package. this will be renamed to `sf-decomposer`. ([1305913](https://github.com/mcarvin8/sf-decomposer/commit/1305913cfe558cc13859d3269b5b737e91e11460))
+* **deps:** bump @oclif/core from 3.19.4 to 3.26.0 ([437a306](https://github.com/mcarvin8/sf-decomposer/commit/437a3060fb583f71a83a69d3695bc589bee19f3c))
+* **deps:** bump @salesforce/core from 6.5.1 to 6.5.3 ([0eff76c](https://github.com/mcarvin8/sf-decomposer/commit/0eff76c57039b697d9eaf9a482b24f90b8485399))
+* **deps:** bump @salesforce/sf-plugins-core from 7.1.3 to 7.1.9 ([7b48afc](https://github.com/mcarvin8/sf-decomposer/commit/7b48afc50060449c7ffbc9d02a005ead19df4c69))
+* **deps:** bump @salesforce/source-deploy-retrieve from 10.5.2 to 10.7.1 ([8b26d08](https://github.com/mcarvin8/sf-decomposer/commit/8b26d08d015d7bd6f7bd0eba9ee5fc0272b25ede))
+* **deps:** bump fast-xml-parser from 4.3.3 to 4.3.4 ([654d939](https://github.com/mcarvin8/sf-decomposer/commit/654d9397d6d1c49557c673151898f0a380676c5c))
+* fix how decompose sets unique id elements ([2a0d78a](https://github.com/mcarvin8/sf-decomposer/commit/2a0d78ab0a066253ae64c46628c1728c4512205d))
+* fix leaf file indenting by upgrading xml disassembler ([ed170f8](https://github.com/mcarvin8/sf-decomposer/commit/ed170f8df1aad761981107c4ddad130ec7fe2caa))
+* fix logger warning for ignore file path ([6e790da](https://github.com/mcarvin8/sf-decomposer/commit/6e790daad05f933311377a6bf8e268f461b4b4c4))
+* fix postpurge hook name in readme ([9c3a9b7](https://github.com/mcarvin8/sf-decomposer/commit/9c3a9b73670f899a878fe32a6b92e0942864e369))
+* fix promises in commands ([02f1470](https://github.com/mcarvin8/sf-decomposer/commit/02f14709445ff7abb4d21318cfe66228f5a02946))
+* if root element key is an array of leaf elements, add to leaf file ([3259d85](https://github.com/mcarvin8/sf-decomposer/commit/3259d855e89d495d34d4847ac21ba6f54f62db82))
+* links in readme ([e7351d3](https://github.com/mcarvin8/sf-decomposer/commit/e7351d32ac1627f7a51b611fd8f4f134fffdb765))
+* load json using fs ([54f4853](https://github.com/mcarvin8/sf-decomposer/commit/54f4853375861dfa26a07f6c7aed7a8ebde688f3))
+* log xml disassembler errors as warnings when running both commands ([117cf60](https://github.com/mcarvin8/sf-decomposer/commit/117cf606683f2e96fe22d7c6170b5ac170070402))
+* only disassemble the original custom labels file ([1d6d502](https://github.com/mcarvin8/sf-decomposer/commit/1d6d502767331a15d0dd89e1daef8081c21f55bd))
+* post disclaimer to state this plugin must be ran in the root folder ([5ba6bf5](https://github.com/mcarvin8/sf-decomposer/commit/5ba6bf5039cbb04f596191810fae98d807eb6934))
+* read a new JSON file for post retrieve hook variables ([7a2b39f](https://github.com/mcarvin8/sf-decomposer/commit/7a2b39f54c992e541aed67465bce38dc220fc1a9))
+* readd `resolveJsonModule` to tsconfig.json ([9532e2f](https://github.com/mcarvin8/sf-decomposer/commit/9532e2f8d3c862811e753ccaaec1d9a1f084c499))
+* rename bot version meta files and delete recomposed files during test to ensure they are remade ([f6b4675](https://github.com/mcarvin8/sf-decomposer/commit/f6b4675a492692037441053ebfc93cc2a834e8d9))
+* rename hook JSON to `.sfdecomposer.config.json` ([ecb6140](https://github.com/mcarvin8/sf-decomposer/commit/ecb6140eb56818272b1c5e9aaf7a61ece09e411b))
+* rename ignore file to `.sfdecomposerignore` ([de5260a](https://github.com/mcarvin8/sf-decomposer/commit/de5260a58ee0e9d28bbd40330486193ce18d35ed))
+* resolve lint issues on  buildNestedElements ([e1bd33d](https://github.com/mcarvin8/sf-decomposer/commit/e1bd33d7e3a2e4c06bc3742faf0c1f56ac9c3f2d))
+* switch Node working directory to root folder ([d2653f1](https://github.com/mcarvin8/sf-decomposer/commit/d2653f1e8c1c173dc11e2ff1caa4f86a64b3fdf4))
+* update @salesforce/source-deploy-retrieve ([d48871d](https://github.com/mcarvin8/sf-decomposer/commit/d48871d37c57f1fa017b7a9fed11e914018e1ba1))
+* upgrade disassemblers ([d1cc730](https://github.com/mcarvin8/sf-decomposer/commit/d1cc7306e4dd30f10976a1ac8982cdbda739659c))
+* upgrade disassemblers to fix multi-line leaf content sorting ([d9e4672](https://github.com/mcarvin8/sf-decomposer/commit/d9e46729186d5f33c97e89972306413f6d52a224))
+* upgrade xml-disassembler to ensure consistent sorting in recomposed files on linux ([4230f95](https://github.com/mcarvin8/sf-decomposer/commit/4230f955b18bf5f50d861ade67b82d2e336b0d22))
+* use `simple-git` to get `sfdx-project.json` path, remove `--sfdx-configuration` flag ([9bfe341](https://github.com/mcarvin8/sf-decomposer/commit/9bfe3410da98db1316211eb5acde920fac569981))
+* use short SHA-256 hash if no unique ID elements are found ([4ac65a0](https://github.com/mcarvin8/sf-decomposer/commit/4ac65a04e0f51859e9a7ae93509fe4497d13543b))
+
 ## [4.1.4](https://github.com/mcarvin8/sf-decomposer/compare/v4.1.3...v4.1.4) (2024-06-12)
 
 
