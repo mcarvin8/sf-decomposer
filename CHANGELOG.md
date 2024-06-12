@@ -4,6 +4,13 @@
 
 - fix logger warning for ignore file path ([6e790da](https://github.com/mcarvin8/sf-decomposer/commit/6e790daad05f933311377a6bf8e268f461b4b4c4))
 
+## [4.1.4](https://github.com/mcarvin8/sf-decomposer/compare/v4.1.3...v4.1.4) (2024-06-12)
+
+
+### Bug Fixes
+
+* switch Node working directory to root folder ([d2653f1](https://github.com/mcarvin8/sf-decomposer/commit/d2653f1e8c1c173dc11e2ff1caa4f86a64b3fdf4))
+
 ## [4.1.2](https://github.com/mcarvin8/sf-decomposer/compare/v4.1.1...v4.1.2) (2024-05-22)
 
 ### Bug Fixes
