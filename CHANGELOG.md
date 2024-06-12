@@ -1,3 +1,9 @@
+## [4.1.4](https://github.com/mcarvin8/sf-decomposer/compare/v4.1.3...v4.1.4) (2024-06-12)
+
+### Bug Fixes
+
+- switch Node working directory to repo root folder ([fa2f0bb](https://github.com/mcarvin8/sf-decomposer/commit/fa2f0bb91b45e28887ec958bc4924e8bbb33d468))
+
 ## [4.1.3](https://github.com/mcarvin8/sf-decomposer/compare/v4.1.2...v4.1.3) (2024-05-22)
 
 ### Bug Fixes
