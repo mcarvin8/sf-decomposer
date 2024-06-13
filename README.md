@@ -34,7 +34,7 @@ The `sf-decomposer` supports 2 commands:
 - `sf decomposer decompose`
 - `sf decomposer recompose`
 
-Both commands need to be ran somwhere inside your Salesforce DX git repository (root folder is preferred). This plugin will read the `sfdx-project.json` file and it will process all package directories listed in the file.
+Both commands need to be ran somewhere inside your Salesforce DX git repository (root folder is preferred). This plugin will read the `sfdx-project.json` file and it will process all package directories listed in the file.
 
 ## `sf decomposer decompose`
 

@@ -1,9 +1,6 @@
 name: Build
 on:
-  push:
-    branches-ignore:
-      - main
-      - beta
+  workflow_call:
 
 jobs:
   build:

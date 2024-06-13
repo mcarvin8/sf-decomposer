@@ -1,0 +1,11 @@
+name: Build - Non-Release
+
+on:
+  push:
+    branches-ignore:
+      - main
+
+jobs:
+  build:
+    uses: ./.github/workflows/reusable-build.yml
+    secrets: inherit
