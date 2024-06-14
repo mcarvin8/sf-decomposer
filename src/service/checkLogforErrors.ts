@@ -22,7 +22,8 @@ export async function checkLogForErrors(logFile: string, originalLogContents: st
 
   for (const line of currentLog) {
     if (!originalLogContents.includes(line) && line.includes('[ERROR]')) {
-      newErrors.push(line);
+      const errorMessage = line.split('default - ')[1];
+      newErrors.push(errorMessage);
     }
   }
   return newErrors;

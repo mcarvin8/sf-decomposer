@@ -214,7 +214,7 @@ By default, this package will only log errors to the file. This plugin will prin
 These warnings when running `decompose` and `recompose` commands will look as such:
 
 ```
-Warning: [2024-04-08T19:27:43.622] [ERROR] default - C:\Users\matth\Documents\sf-decomposer\test\baselines\flows\Get_Info\actionCalls\Get_Info.actionCalls-meta.xml was unabled to be parsed and will not be processed. Confirm formatting and try again.
+Warning: C:\Users\matth\Documents\sf-decomposer\test\baselines\flows\Get_Info\actionCalls\Get_Info.actionCalls-meta.xml was unabled to be parsed and will not be processed. Confirm formatting and try again.
 ```
 
 To add additional debugging statements to the log file, provide the `--debug` flag to either command to generate additional logging statements to `disassemble.log`.
