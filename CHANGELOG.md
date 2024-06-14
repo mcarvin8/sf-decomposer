@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.1.5](https://github.com/mcarvin8/sf-decomposer/compare/v4.1.4...v4.1.5) (2024-06-14)
+
+
+### Bug Fixes
+
+* cleaner warning message ([4e22408](https://github.com/mcarvin8/sf-decomposer/commit/4e22408006cdaa733e9cf5565ea5e4a38909cf9b))
+
 ## [4.1.4](https://github.com/mcarvin8/sf-decomposer/compare/v4.1.3...v4.1.4) (2024-06-12)
 
 ### Bug Fixes
