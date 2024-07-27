@@ -3,16 +3,9 @@
 import { RegistryAccess, MetadataType } from '@salesforce/source-deploy-retrieve';
 
 import { DEFAULT_UNIQUE_ID_ELEMENTS } from '../helpers/constants.js';
+import { MetaAttributes } from '../helpers/types.js';
 import { getUniqueIdElements } from './getUniqueIdElements.js';
 import { getPackageDirectories } from './getPackageDirectories.js';
-
-interface MetaAttributes {
-  metaSuffix: string;
-  strictDirectoryName: boolean;
-  folderType: string;
-  metadataPaths: string[];
-  uniqueIdElements: string;
-}
 
 export async function getRegistryValuesBySuffix(metaSuffix: string, command: string): Promise<MetaAttributes> {
   if (metaSuffix === 'object') {
