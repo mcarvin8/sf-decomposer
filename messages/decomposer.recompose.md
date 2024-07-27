@@ -1,12 +1,12 @@
 # summary
 
-Recomposes the files created by the `decompose` command prior to deployments.
+Recomposes the files created by the `decompose` command before deployments.
 
 # description
 
-This command will read all of the decomposed files and recreate deployment compatible metadata files in each package directory.
+This command will read the decomposed files and recreate deployment-compatible metadata files in each package directory.
 
-You should run this before you deploy the metadata to an org.
+You should run this before you deploy decomposed metadata to an org.
 
 # examples
 
@@ -15,7 +15,7 @@ You should run this before you deploy the metadata to an org.
 
 # flags.metadata-type.summary
 
-The metadata suffix to process, such as 'flow', 'labels', etc. You can provide this flag multiple times to process multiple metadata types at once.
+The metadata suffix to process, such as 'flow', 'labels', etc. You can provide this flag multiple times to process multiple metadata types with a single command.
 
 # flags.postpurge.summary
 
@@ -23,7 +23,7 @@ If provided, purge the decomposed files after recomposing them.
 
 # flags.debug.summary
 
-If provided, debug to log file.
+If provided, debug to a log file.
 
 # flags.format.summary
 

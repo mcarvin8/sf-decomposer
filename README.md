@@ -2,9 +2,9 @@
 
 [![NPM](https://img.shields.io/npm/v/sf-decomposer.svg?label=sf-decomposer)](https://www.npmjs.com/package/sf-decomposer) [![Downloads/week](https://img.shields.io/npm/dw/sf-decomposer.svg)](https://npmjs.org/package/sf-decomposer) [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/LICENSE.md)
 
-The `sf-decomposer` is a Salesforce plugin to read the original metadata files (XML) and create smaller, more manageable files for version control. The inverse function (`recompose`) will recreate metadata files for deployments. This plugin is intended for users who deploy their Salesforce codebase from a git repository that follows the Salesforce DX Project Configuration (`sfdx-project.json` file).
+The `sf-decomposer` is a Salesforce plugin that reads the original metadata files (XML) and creates smaller, more manageable files for version control. The inverse function (`recompose`) will recreate deployment-compatible metadata files. This plugin is intended for users who deploy their Salesforce codebase from a git repository that follows the Salesforce DX Project Configuration (`sfdx-project.json` file).
 
-This plugin requires [git](https://git-scm.com/downloads) to be installed and that it can be called using the command `git`.
+This plugin requires [git](https://git-scm.com/downloads) to be installed and it can be called using the command `git`.
 
 This will parse and retain the following in the original XMLs:
 
@@ -12,14 +12,14 @@ This will parse and retain the following in the original XMLs:
 - Comments
 - Attributes
 
-The decomposed file format can be XML, JSON, or YAML. Based on testing, XML and YAML handles CDATA formatting nicer than JSON.
+The decomposed file format can be XML, JSON, or YAML. Based on testing, XML and YAML handle CDATA formatting more nicely than JSON.
 
 **DISCLAIMERS:**
 
-- You must update the `.forceignore` to have the Salesforce CLI ignore the decomposed files created by this plugin. See section `Ignore Files`. Updates to the `.gitignore` are optional and can be updated based on what you want staged in your repo.
-- It is highly recommended that you extensively test this plugin in a sandbox environment on the metadata types you wish to use this tool for.
+- You must update the `.forceignore` to have the Salesforce CLI ignore the decomposed files created by this plugin. See section `Ignore Files`. Updates to the `.gitignore` are optional and can be updated based on what you want to be staged in your repo.
+- It is recommended that you extensively test this plugin in a sandbox environment on the metadata types for which you wish to use this tool.
 - Do not change your production/QA pipelines until you have tested this and are happy with the results.
-- Confirm your deployment pipelines are stable prior to implementing this plugin.
+- Ensure your deployment pipelines are stable before implementing this plugin.
 
 ## Install
 
@@ -34,17 +34,17 @@ The `sf-decomposer` supports 2 commands:
 - `sf decomposer decompose`
 - `sf decomposer recompose`
 
-Both commands need to be ran somewhere inside your Salesforce DX git repository (root folder is preferred). This plugin will read the `sfdx-project.json` file and it will process all package directories listed in the file.
+Both commands need to be run somewhere inside your Salesforce DX git repository (root folder is preferred). This plugin will read the `sfdx-project.json` file and process all package directories listed in the file.
 
 ## `sf decomposer decompose`
 
-Decomposes the original metadata files into smaller files for version control. Excluding custom labels, the smaller files will be placed into new sub-directories:
+Decomposes the original metadata files into smaller files for version control. Except for custom labels, the smaller files will be placed into new sub-directories:
 
 <img src="https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-perm-set.png">
 
 <br>
 
-Custom Labels will be decomposed directly in the root labels folder:
+Custom labels will be decomposed directly in the root labels folder:
 
 <img src="https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-labels.png">
 
@@ -62,13 +62,11 @@ Unique ID elements are used to name decomposed files for nested elements. The de
     </labels>
 ```
 
-If the default unique ID elements are not found in the nested element, the plugin will look for any other metadata specific unique ID elements (see `CONTRIBUTING` section for more information).
+If the default unique ID elements are not found in the nested element, the plugin will look for any other metadata-specific unique ID elements (see the `Contributing` section for more information). If a unique ID element is not found, the short SHA-256 hash of the element contents will be used to name the decomposed file, as shown below. It's recommended to add the `--prepurge` flag to the `decompose` command to remove pre-existing decomposed files that may conflict with newer decomposed files due to different SHA hashes.
 
-If a unique ID element is not found in the nested element, the short SHA-256 hash of the element contents will be used to name the decomposed file, as shown below.
+Using the `--format` flag, you can set the desired file type for the decomposed files to XML (default), YAML, or JSON.
 
-It's recommended to add the `--prepurge` flag to the `decompose` command to remove pre-existing decomposed files that may conflict with newer decomposed files due to different SHA hashes.
-
-Using the `--format` flag, you can set the desired file type for the decomposed files to XML (default), YAML, or JSON. **Note**: The `--format` flag for the recompose command must match what you selected for the decompose `--format`.
+**Note**: The `--format` flag for the recompose command must match what you selected for the decompose `--format`.
 
 <img src="https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-apps-hashes.png">
 
@@ -79,7 +77,7 @@ USAGE
   $ sf decomposer decompose -m <value> -f <value> [--prepurge --postpurge --debug --json]
 
 FLAGS
-  -m, --metadata-type=<value> The metadata suffix to process, such as 'flow', 'labels', etc. You can provide this flag multiple times to process multiple metadata types at once.
+  -m, --metadata-type=<value> The metadata suffix to process, such as 'flow', 'labels', etc. You can provide this flag multiple times to process multiple metadata types with a single command.
   -f, --format=<value> [default: 'xml'] The file type for the decomposed files.
   --prepurge  [default: false] If provided, purge directories of pre-existing decomposed files.
   --postpurge  [default: false] If provided, purge the original files after decomposing them.
@@ -93,7 +91,7 @@ DESCRIPTION
 
   These smaller decomposed files can be XMLs, YAMLs, or JSONs.
 
-  You should run this after retrieving metadata from an org.
+  You should run this after you retrieve metadata from an org.
 
 EXAMPLES
   Decompose all flows:
@@ -108,7 +106,7 @@ EXAMPLES
 
 ## `sf decomposer recompose`
 
-Reads all of the files created by the decompose command and recreates metadata files suitable for deployments.
+Reads the files created by the decompose command and recreates deployment-compatible metadata files.
 
 Ensure the `--format` flag of the recompose command matches the file format selected for the `--format` flag in the decompose command. File formats for the decomposed files can be XML (default), YAML, or JSON.
 
@@ -119,7 +117,7 @@ USAGE
   $ sf decomposer recompose -m <value> -f <value> [--postpurge --debug --json]
 
 FLAGS
-  -m, --metadata-type=<value> The metadata suffix to process, such as 'flow', 'labels', etc. You can provide this flag multiple times to process multiple metadata types at once.
+  -m, --metadata-type=<value> The metadata suffix to process, such as 'flow', 'labels', etc. You can provide this flag multiple times to process multiple metadata types with a single command.
   -f, --format=<value> [default: 'xml'] The file format for the decomposed files.
   --postpurge  [default: false] If provided, purge the decomposed files after recomposing them.
   --debug [default: false] If provided, log debugging results to a text file (disassemble.log).
@@ -128,9 +126,9 @@ GLOBAL FLAGS
   --json  Format output as json.
 
 DESCRIPTION
-  This command will read all of the decomposed files and recreate deployment compatible metadata files in each package directory.
+  This command will read the decomposed files and recreate deployment-compatible metadata files in each package directory.
 
-  You should run this before you deploy the metadata to an org.
+  You should run this before you deploy decomposed metadata to an org.
 
 EXAMPLES
   Recompose all flows:
@@ -175,7 +173,7 @@ Here are some examples:
   - The `botVersion` meta suffix will be blocked from running directly
 - Marketing App Extension (`--metadata-type "marketingappextension"`)
 
-### Exceptions
+### Metadata Exceptions
 
 `botVersion` is blocked from being ran directly. Please use the `bot` meta suffix to decompose and recompose bots and bot versions.
 
@@ -201,13 +199,9 @@ Children metadata types (ex: custom fields) are not supported and will result in
 Error (1): Metadata type not found for the given suffix: field.
 ```
 
-### Issues
-
-Please create "Issues" in this repository if you experience problems decomposing and recomposing specific metadata types or if this plugin's version of SDR needs to be updated to account for new metadata types.
-
 ## Warnings and Logging
 
-The package used to decompose and recompose XMLs, `xml-disassembler`, will log errors, and optionally debugging statements, to a log file, `disassemble.log`. This log will be created in the working directory and will be created when runnign this plugin at all times. If there were no XML decomposing/recomposing errors, this log will simply be empty.
+The package used to decompose and recompose XMLs, `xml-disassembler`, will log errors, and optionally debugging statements, to a log file, `disassemble.log`. This log will be created in the working directory and will be created when running this plugin at all times. If there were no XML decomposing/recomposing errors, this log will simply be empty.
 
 By default, this package will only log errors to the file. This plugin will print `xml-disassembler` errors as warnings in the command terminal to allow all other files to be processed.
 
@@ -273,43 +267,7 @@ If the `.sfdecomposer.config.json` file isn't found, the hooks will be skipped.
 
 ## Ignore Files
 
-The `.gitignore` and `.forceignore` files in your repository should be updated based on the metadata types you wish to decompose.
-
-Reference the below examples:
-
-### `.gitignore` updates
-
-Git should ignore the recomposed files.
-
-```
-# Ignore recomposed files
-**/permissionsets/*.permissionset-meta.xml
-**/profiles/*.profile-meta.xml
-**/labels/CustomLabels.labels-meta.xml
-**/workflows/*.workflow-meta.xml
-**/flows/*.flow-meta.xml
-**/matchingRules/*.matchingRule-meta.xml
-**/assignmentRules/*.assignmentRules-meta.xml
-**/escalationRules/*.escalationRules-meta.xml
-**/sharingRules/*.sharingRules-meta.xml
-**/autoResponseRules/*.autoResponseRules-meta.xml
-**/globalValueSetTranslations/*.globalValueSetTranslation-meta.xml
-**/standardValueSetTranslations/*.standardValueSetTranslation-meta.xml
-**/translations/*.translation-meta.xml
-**/globalValueSets/*.globalValueSet-meta.xml
-**/standardValueSets/*.standardValueSet-meta.xml
-**/decisionMatrixDefinition/*.decisionMatrixDefinition-meta.xml
-**/aiScoringModelDefinitions/*.aiScoringModelDefinition-meta.xml
-**/bots/*/*.botVersion-meta.xml
-**/bots/*/*.bot-meta.xml
-**/marketingappextensions/*.marketingappextension-meta.xml
-```
-
-Git should also ignore the log created by the `xml-disassembler` package (see previous section).
-
-```
-disassemble.log
-```
+You must update the `.forceignore` to have the Salesforce CLI ignore the decomposed files created by this plugin. Optionally, you can add the recomposed files to your `.gitignore` to avoid staging those in your repoisotry.
 
 ### `.forceignore` updates
 
@@ -359,3 +317,53 @@ The Salesforce CLI should ignore the decomposed files and should allow the recom
 !**/bots/*/*.bot-meta.xml
 !**/marketingappextensions/*.marketingappextension-meta.xml
 ```
+
+### `.gitignore` updates
+
+Git should ignore the recomposed files.
+
+```
+# Ignore recomposed files
+**/permissionsets/*.permissionset-meta.xml
+**/profiles/*.profile-meta.xml
+**/labels/CustomLabels.labels-meta.xml
+**/workflows/*.workflow-meta.xml
+**/flows/*.flow-meta.xml
+**/matchingRules/*.matchingRule-meta.xml
+**/assignmentRules/*.assignmentRules-meta.xml
+**/escalationRules/*.escalationRules-meta.xml
+**/sharingRules/*.sharingRules-meta.xml
+**/autoResponseRules/*.autoResponseRules-meta.xml
+**/globalValueSetTranslations/*.globalValueSetTranslation-meta.xml
+**/standardValueSetTranslations/*.standardValueSetTranslation-meta.xml
+**/translations/*.translation-meta.xml
+**/globalValueSets/*.globalValueSet-meta.xml
+**/standardValueSets/*.standardValueSet-meta.xml
+**/decisionMatrixDefinition/*.decisionMatrixDefinition-meta.xml
+**/aiScoringModelDefinitions/*.aiScoringModelDefinition-meta.xml
+**/bots/*/*.botVersion-meta.xml
+**/bots/*/*.bot-meta.xml
+**/marketingappextensions/*.marketingappextension-meta.xml
+```
+
+Git should also ignore the log created by the `xml-disassembler` package.
+
+```
+disassemble.log
+```
+
+## Contributing
+
+Contributions are welcome! If you would like to contribute, please fork the repository, make your changes, and submit a pull request.
+
+### Unique ID Elements
+
+To add more unique ID elements for a metadata type, you can update the `src/metadata/uniqueIdElements.json` file. The metadata type's suffix should be used as the key.
+
+## Issues
+
+If you encounter any issues, please create an issue in the repository's [issue tracker](https://github.com/mcarvin8/sf-decomposer/issues). Please also create issues for feature enhancements or to support newer metadata types added to the [SDR toolkit](https://github.com/forcedotcom/source-deploy-retrieve).
+
+## License
+
+This project is licensed under the MIT license. Please see the [LICENSE](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/LICENSE.md) file for details.

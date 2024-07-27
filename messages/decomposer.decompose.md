@@ -4,11 +4,9 @@ Decomposes the metadata files created by retrievals.
 
 # description
 
-This command will read all of the original metadata files and separate them into smaller files.
+This command will read the original metadata files and decompose them into smaller files. The decomposed file format can be XML, YAML, or JSON.
 
-These smaller decomposed files can be XMLs, YAMLs, or JSONs.
-
-You should use this to create files for version control after retrieving metadata from an org.
+You should run this after you retrieve metadata from an org and before you commit the metadata to your git repository.
 
 # examples
 
@@ -17,7 +15,7 @@ You should use this to create files for version control after retrieving metadat
 
 # flags.metadata-type.summary
 
-The metadata suffix to process, such as 'flow', 'labels', etc. You can provide this flag multiple times to process multiple metadata types at once.
+The metadata suffix to process, such as 'flow', 'labels', etc. You can provide this flag multiple times to process multiple metadata types with a single command.
 
 # flags.prepurge.summary
 
@@ -29,7 +27,7 @@ If provided, purge the original files after decomposing them.
 
 # flags.debug.summary
 
-If provided, debug to log file.
+If provided, debug to a log file.
 
 # flags.format.summary
 
