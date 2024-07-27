@@ -4,7 +4,7 @@
 import { rm, writeFile } from 'node:fs/promises';
 import { copy } from 'fs-extra';
 
-import { TestContext } from '@salesforce/core/lib/testSetup.js';
+import { TestContext } from '@salesforce/core/testSetup';
 import { expect } from 'chai';
 import { stubSfCommandUx } from '@salesforce/sf-plugins-core';
 import { setLogLevel } from 'xml-disassembler';

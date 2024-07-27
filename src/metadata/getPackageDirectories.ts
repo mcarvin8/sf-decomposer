@@ -7,10 +7,7 @@ import { readFile, readdir, stat } from 'node:fs/promises';
 
 import { SFDX_PROJECT_FILE_NAME } from '../helpers/constants.js';
 import { getRepoRoot } from '../service/getRepoRoot.js';
-
-interface SfdxProject {
-  packageDirectories: Array<{ path: string }>;
-}
+import { SfdxProject } from '../helpers/types.js';
 
 export async function getPackageDirectories(metaDirectory: string): Promise<string[]> {
   const repoRoot = await getRepoRoot();

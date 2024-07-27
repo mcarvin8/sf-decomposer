@@ -1,11 +1,7 @@
 'use strict';
 import { readFile } from 'node:fs/promises';
 
-interface UniqueIdElements {
-  [key: string]: {
-    uniqueIdElements: string[];
-  };
-}
+import { UniqueIdElements } from '../helpers/types.js';
 
 export async function getUniqueIdElements(metaSuffix: string): Promise<string | undefined> {
   const fileContent: string = await readFile(new URL('./uniqueIdElements.json', import.meta.url), 'utf-8');
