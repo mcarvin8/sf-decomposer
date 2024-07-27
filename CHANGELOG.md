@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.1.7](https://github.com/mcarvin8/sf-decomposer/compare/v4.1.6...v4.1.7) (2024-07-27)
+
+
+### Bug Fixes
+
+* upgrade sf-plugins-core ([0119f34](https://github.com/mcarvin8/sf-decomposer/commit/0119f34d7bf3bc6c2f072e091fdb89e4e41265e4))
+
 ## [4.1.6](https://github.com/mcarvin8/sf-decomposer/compare/v4.1.5...v4.1.6) (2024-07-27)
 
 
