@@ -5,6 +5,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.1.6](https://github.com/mcarvin8/sf-decomposer/compare/v4.1.5...v4.1.6) (2024-07-27)
+
+
+### Bug Fixes
+
+* add unique ID element for loyaltyProgramSetup ([1c72ac9](https://github.com/mcarvin8/sf-decomposer/commit/1c72ac94a8472c6855280cd92e3a8ac4f01739cf))
+* upgrade salesforce dependencies ([b813332](https://github.com/mcarvin8/sf-decomposer/commit/b8133320160c76ffc4f42cc2d6577a3b18912dd6))
+
 ## [4.1.5](https://github.com/mcarvin8/sf-decomposer/compare/v4.1.4...v4.1.5) (2024-06-14)
 
 
