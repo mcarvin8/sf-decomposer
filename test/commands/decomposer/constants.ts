@@ -22,4 +22,5 @@ export const METADATA_UNDER_TEST = [
   'aiScoringModelDefinition',
   'marketingappextension',
   'app',
+  'loyaltyProgramSetup',
 ];
