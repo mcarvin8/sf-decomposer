@@ -1,15 +1,12 @@
 'use strict';
-import { simpleGit, SimpleGit, SimpleGitOptions } from 'simple-git';
+import { promises as fsPromises, readFile, stat, readdir } from 'node:fs';
+import git from 'isomorphic-git';
 
 export async function getRepoRoot(): Promise<string> {
-  const gitOptions: Partial<SimpleGitOptions> = {
-    baseDir: process.cwd(),
-    binary: 'git',
-    maxConcurrentProcesses: 6,
-    trimmed: true,
-  };
-
-  const git: SimpleGit = simpleGit(gitOptions);
-  const repoRoot = (await git.revparse('--show-toplevel')).trim();
+  const fs = { promises: fsPromises, readFile, stat, readdir };
+  const repoRoot = await git.findRoot({
+    fs,
+    filepath: process.cwd(),
+  });
   return repoRoot;
 }
