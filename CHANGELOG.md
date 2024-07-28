@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.1.8](https://github.com/mcarvin8/sf-decomposer/compare/v4.1.7...v4.1.8) (2024-07-28)
+
+
+### Bug Fixes
+
+* switch to isomorphic-git ([e483bef](https://github.com/mcarvin8/sf-decomposer/commit/e483bef0c6b007e66e7915fb4701d622fb00302c))
+
 ## [4.1.7](https://github.com/mcarvin8/sf-decomposer/compare/v4.1.6...v4.1.7) (2024-07-27)
 
 
