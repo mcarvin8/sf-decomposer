@@ -4,8 +4,6 @@
 
 The `sf-decomposer` is a Salesforce plugin that reads the original metadata files (XML) and creates smaller, more manageable files for version control. The inverse function (`recompose`) will recreate deployment-compatible metadata files. This plugin is intended for users who deploy their Salesforce codebase from a git repository that follows the Salesforce DX Project Configuration (`sfdx-project.json` file).
 
-This plugin requires [git](https://git-scm.com/downloads) to be installed and it can be called using the command `git`.
-
 This will parse and retain the following in the original XMLs:
 
 - Character Data (CDATA)
