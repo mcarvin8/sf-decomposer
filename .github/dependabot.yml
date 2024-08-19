@@ -30,7 +30,6 @@ updates:
       prefix: fix(deps)
       prefix-development: chore(dev-deps)
     ignore:
-      - dependency-name: '@salesforce/source-deploy-retrieve'
       - dependency-name: '@salesforce/dev-scripts'
       - dependency-name: '*'
         update-types: ['version-update:semver-major']
