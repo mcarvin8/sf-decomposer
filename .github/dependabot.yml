@@ -15,21 +15,6 @@ updates:
       prefix-development: chore(dev-deps)
     allow:
       - dependency-name: '@salesforce/source-deploy-retrieve'
-  - package-ecosystem: 'npm'
-    directory: '/'
-    schedule:
-      interval: 'monthly'
-      day: 'saturday'
-    versioning-strategy: 'increase'
-    labels:
-      - 'dependencies'
-    open-pull-requests-limit: 5
-    pull-request-branch-name:
-      separator: '-'
-    commit-message:
-      prefix: fix(deps)
-      prefix-development: chore(dev-deps)
-    ignore:
-      - dependency-name: '@salesforce/dev-scripts'
-      - dependency-name: '*'
-        update-types: ['version-update:semver-major']
+      - dependency-name: 'isomorphic-git'
+      - dependency-name: '@salesforce/core'
+      - dependency-name: '@oclif/core'
