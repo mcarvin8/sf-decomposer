@@ -2,22 +2,14 @@
 
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { Command, Hook, Config } from '@oclif/core';
-import { ScopedPostRetrieve } from '@salesforce/source-deploy-retrieve';
+import { Hook } from '@oclif/core';
 
 import DecomposerDecompose from '../commands/decomposer/decompose.js';
 import { ConfigFile } from '../helpers/types.js';
 import { getRepoRoot } from '../service/getRepoRoot.js';
+import { PostRetrieveHookOptions } from '../helpers/types.js';
 
-type HookFunction = (this: Hook.Context, options: HookOptions) => Promise<void>;
-
-type HookOptions = {
-  Command: Command;
-  argv: string[];
-  commandId: string;
-  result?: ScopedPostRetrieve;
-  config: Config;
-};
+type HookFunction = (this: Hook.Context, options: PostRetrieveHookOptions) => Promise<void>;
 
 export const scopedPostRetrieve: HookFunction = async function (options) {
   if (!options.result?.retrieveResult.response.status) {

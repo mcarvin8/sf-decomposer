@@ -8,15 +8,12 @@ import { LOG_FILE, DECOMPOSED_FILE_TYPES } from '../../helpers/constants.js';
 import { decomposeFileHandler } from '../../service/decomposeFileHandler.js';
 import { getRegistryValuesBySuffix } from '../../metadata/getRegistryValuesBySuffix.js';
 import { readOriginalLogFile, checkLogForErrors } from '../../service/checkLogforErrors.js';
+import { DecomposerResult } from '../../helpers/types.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('sf-decomposer', 'decomposer.decompose');
 
-export type DecomposerDecomposeResult = {
-  metadata: string[];
-};
-
-export default class DecomposerDecompose extends SfCommand<DecomposerDecomposeResult> {
+export default class DecomposerDecompose extends SfCommand<DecomposerResult> {
   public static readonly summary = messages.getMessage('summary');
   public static readonly description = messages.getMessage('description');
   public static readonly examples = messages.getMessages('examples');
@@ -53,7 +50,7 @@ export default class DecomposerDecompose extends SfCommand<DecomposerDecomposeRe
     }),
   };
 
-  public async run(): Promise<DecomposerDecomposeResult> {
+  public async run(): Promise<DecomposerResult> {
     const { flags } = await this.parse(DecomposerDecompose);
     const metadataTypes = flags['metadata-type'];
     const prepurge = flags['prepurge'];
