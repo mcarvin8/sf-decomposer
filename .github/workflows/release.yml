@@ -8,12 +8,11 @@ permissions:
   pull-requests: write
 
 jobs:
-  build:
-    uses: ./.github/workflows/reusable-build.yml
-    secrets: inherit
+  unit-tests:
+    uses: salesforcecli/github-workflows/.github/workflows/unitTest.yml@main
 
   release:
-    needs: [build]
+    needs: [unit-tests]
     name: Release
     runs-on: ubuntu-latest
     steps:

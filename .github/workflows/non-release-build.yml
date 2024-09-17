@@ -6,6 +6,5 @@ on:
       - main
 
 jobs:
-  build:
-    uses: ./.github/workflows/reusable-build.yml
-    secrets: inherit
+  unit-tests:
+    uses: salesforcecli/github-workflows/.github/workflows/unitTest.yml@main
