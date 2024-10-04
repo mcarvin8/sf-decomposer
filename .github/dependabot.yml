@@ -15,13 +15,6 @@ updates:
       prefix-development: chore(dev-deps)
     allow:
       - dependency-name: '@salesforce/source-deploy-retrieve'
-      - dependency-name: 'isomorphic-git'
-      - dependency-name: '@salesforce/core'
-      - dependency-name: '@oclif/core'
-      - dependency-name: '@salesforce/sf-plugins-core'
-      - dependency-name: '@oclif/plugin-command-snapshot'
-      - dependency-name: '@salesforce/cli-plugins-testkit'
-      - dependency-name: 'eslint-plugin-sf-plugin'
       - dependency-name: 'xml-disassembler'
       - dependency-name: 'xml2json-disassembler'
       - dependency-name: 'xml2yaml-disassembler'
