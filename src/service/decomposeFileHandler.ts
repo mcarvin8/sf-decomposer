@@ -1,7 +1,7 @@
 'use strict';
 /* eslint-disable no-await-in-loop */
 import { resolve, relative, join } from 'node:path';
-import { readdir, stat, rm } from 'node:fs/promises';
+import { readdir, stat, rm, rename } from 'node:fs/promises';
 import { DisassembleXMLFileHandler, setLogLevel } from 'xml-disassembler';
 import { XmlToYamlDisassembler } from 'xml2yaml-disassembler';
 import { XmlToJsonDisassembler } from 'xml2json-disassembler';
@@ -37,7 +37,7 @@ export async function decomposeFileHandler(
 
       await disassembleHandler(relativeLabelFilePath, uniqueIdElements, false, postpurge, format);
       // move labels from the directory they are created in
-      await moveLabels(metadataPath);
+      await moveAndRenameLabels(metadataPath);
     } else {
       await disassembleHandler(metadataPath, uniqueIdElements, prepurge, postpurge, format);
     }
@@ -80,9 +80,18 @@ async function prePurgeLabels(metadataPath: string): Promise<void> {
   }
 }
 
-async function moveLabels(metadataPath: string): Promise<void> {
+async function moveAndRenameLabels(metadataPath: string): Promise<void> {
   const sourceDirectory = join(metadataPath, 'CustomLabels', 'labels');
   const destinationDirectory = metadataPath;
+  const labelFiles = await readdir(sourceDirectory);
+  for (const file of labelFiles) {
+    if (file.endsWith('.labels-meta.xml')) {
+      const oldFilePath = join(sourceDirectory, file);
+      const newFileName = file.replace('.labels-meta.xml', '.label-meta.xml');
+      const newFilePath = join(destinationDirectory, newFileName);
+      await rename(oldFilePath, newFilePath);
+    }
+  }
   await moveFiles(sourceDirectory, destinationDirectory, () => true);
   await rm(join(metadataPath, 'CustomLabels'), { recursive: true });
 }
