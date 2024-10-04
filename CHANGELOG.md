@@ -5,6 +5,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.0.0](https://github.com/mcarvin8/sf-decomposer/compare/v4.1.8...v5.0.0) (2024-10-04)
+
+
+### ⚠ BREAKING CHANGES
+
+* rename decomposed labels to align with salesforce's decomposed labels
+
+### Features
+
+* rename decomposed labels to align with salesforce's decomposed labels ([90bc332](https://github.com/mcarvin8/sf-decomposer/commit/90bc332fb4998fcce8adbda283d4e3532a2922e2))
+
+
+### Bug Fixes
+
+* **deps:** bump @salesforce/source-deploy-retrieve from 12.1.8 to 12.7.3 ([ae0e188](https://github.com/mcarvin8/sf-decomposer/commit/ae0e1888e84be2988ad1d0e10bb61999cd26f2d5))
+
 ## [4.1.8](https://github.com/mcarvin8/sf-decomposer/compare/v4.1.7...v4.1.8) (2024-07-28)
 
 
