@@ -58,6 +58,11 @@
       "scopedPostRetrieve": "./lib/hooks/scopedPostRetrieve",
       "prerun": "./lib/hooks/prerun"
     },
+    "topics": {
+      "decomposer": {
+        "description": "description for decomposer"
+      }
+    },
     "flexibleTaxonomy": true
   },
   "scripts": {

@@ -48,3 +48,6 @@ oclif.manifest.json
 oclif.lock
 
 disassemble.log
+
+stderr*.txt
+stdout*.txt
