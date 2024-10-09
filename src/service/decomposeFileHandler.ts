@@ -37,7 +37,7 @@ export async function decomposeFileHandler(
 
       await disassembleHandler(relativeLabelFilePath, uniqueIdElements, false, postpurge, format);
       // move labels from the directory they are created in
-      await moveAndRenameLabels(metadataPath);
+      await moveAndRenameLabels(metadataPath, format);
     } else {
       await disassembleHandler(metadataPath, uniqueIdElements, prepurge, postpurge, format);
     }
@@ -80,14 +80,14 @@ async function prePurgeLabels(metadataPath: string): Promise<void> {
   }
 }
 
-async function moveAndRenameLabels(metadataPath: string): Promise<void> {
+async function moveAndRenameLabels(metadataPath: string, format: string): Promise<void> {
   const sourceDirectory = join(metadataPath, 'CustomLabels', 'labels');
   const destinationDirectory = metadataPath;
   const labelFiles = await readdir(sourceDirectory);
   for (const file of labelFiles) {
-    if (file.endsWith('.labels-meta.xml')) {
+    if (file.endsWith(`.labels-meta.${format}`)) {
       const oldFilePath = join(sourceDirectory, file);
-      const newFileName = file.replace('.labels-meta.xml', '.label-meta.xml');
+      const newFileName = file.replace(`.labels-meta.${format}`, `.label-meta.${format}`);
       const newFilePath = join(destinationDirectory, newFileName);
       await rename(oldFilePath, newFilePath);
     }
