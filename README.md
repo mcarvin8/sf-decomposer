@@ -2,6 +2,28 @@
 
 [![NPM](https://img.shields.io/npm/v/sf-decomposer.svg?label=sf-decomposer)](https://www.npmjs.com/package/sf-decomposer) [![Downloads/week](https://img.shields.io/npm/dw/sf-decomposer.svg)](https://npmjs.org/package/sf-decomposer) [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/LICENSE.md)
 
+<!-- TABLE OF CONTENTS -->
+<details>
+  <summary>Table of Contents</summary>
+
+- [Install](#install)
+- [Commands](#commands)
+  - [`sf decomposer decompose`](#sf-decomposer-decompose)
+  - [`sf decomposer recompose`](#sf-decomposer-recompose)
+- [Supported Metadata](#supported-metadata)
+  - [Metadata Exceptions](#metadata-exceptions)
+- [Warnings and Logging](#warnings-and-logging)
+- [Ignore Files when Decomposing](#ignore-files-when-decomposing)
+- [Hooks](#hooks)
+- [Ignore Files](#ignore-files)
+  - [`.forceignore` updates](#.forceignore-updates)
+  - [`.gitignore` updates](#.gitignore-updates)
+- [Contributing](#contributing)
+  - [Unique ID Elements](#unique-id-elements)
+- [Issues](#issues)
+- [License](#license)
+</details>
+
 The `sf-decomposer` is a Salesforce plugin that reads the original metadata files (XML) and creates smaller, more manageable files for version control. The inverse function (`recompose`) will recreate deployment-compatible metadata files. This plugin is intended for users who deploy their Salesforce codebase from a git repository that follows the Salesforce DX Project Configuration (`sfdx-project.json` file).
 
 This will parse and retain the following in the original XMLs:
