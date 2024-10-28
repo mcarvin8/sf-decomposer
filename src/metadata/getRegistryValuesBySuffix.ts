@@ -7,7 +7,10 @@ import { MetaAttributes } from '../helpers/types.js';
 import { getUniqueIdElements } from './getUniqueIdElements.js';
 import { getPackageDirectories } from './getPackageDirectories.js';
 
-export async function getRegistryValuesBySuffix(metaSuffix: string, command: string): Promise<MetaAttributes> {
+export async function getRegistryValuesBySuffix(
+  metaSuffix: string,
+  command: string
+): Promise<{ metaAttributes: MetaAttributes; ignorePath: string }> {
   if (metaSuffix === 'object') {
     throw Error('Custom Objects are not supported by this plugin.');
   }
@@ -33,7 +36,7 @@ export async function getRegistryValuesBySuffix(metaSuffix: string, command: str
 
   let uniqueIdElements: string | undefined;
   if (command === 'decompose') uniqueIdElements = await getUniqueIdElements(metaSuffix);
-  const metadataPaths: string[] = await getPackageDirectories(`${metadataTypeEntry.directoryName}`);
+  const { metadataPaths, ignorePath } = await getPackageDirectories(`${metadataTypeEntry.directoryName}`);
   if (metadataPaths.length === 0)
     throw Error(`No directories named ${metadataTypeEntry.directoryName} were found in any package directory.`);
 
@@ -46,5 +49,5 @@ export async function getRegistryValuesBySuffix(metaSuffix: string, command: str
       ? `${DEFAULT_UNIQUE_ID_ELEMENTS},${uniqueIdElements}`
       : DEFAULT_UNIQUE_ID_ELEMENTS,
   };
-  return metaAttributes;
+  return { metaAttributes, ignorePath };
 }

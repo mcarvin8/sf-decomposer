@@ -11,7 +11,10 @@ import { getRepoRoot } from '../service/getRepoRoot.js';
 export const prerun: Hook<'prerun'> = async function (options) {
   if (['project:deploy:validate', 'project:deploy:start'].includes(options.Command.id)) {
     let configFile: ConfigFile;
-    const repoRoot = await getRepoRoot();
+    const { repoRoot } = await getRepoRoot();
+    if (!repoRoot) {
+      return;
+    }
     const configPath = resolve(repoRoot, '.sfdecomposer.config.json');
 
     try {

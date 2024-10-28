@@ -52,7 +52,7 @@ export default class DecomposerRecompose extends SfCommand<DecomposerResult> {
     const debug = flags['debug'];
     const format = flags['format'];
     for (const metadataType of metadataTypes) {
-      const metaAttributes = await getRegistryValuesBySuffix(metadataType, 'recompose');
+      const { metaAttributes } = await getRegistryValuesBySuffix(metadataType, 'recompose');
 
       const currentLogFile = await readOriginalLogFile(LOG_FILE);
       await recomposeFileHandler(metaAttributes, postpurge, debug, format);

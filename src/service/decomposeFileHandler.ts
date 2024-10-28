@@ -6,9 +6,8 @@ import { DisassembleXMLFileHandler, setLogLevel } from 'xml-disassembler';
 import { XmlToYamlDisassembler } from 'xml2yaml-disassembler';
 import { XmlToJsonDisassembler } from 'xml2json-disassembler';
 
-import { CUSTOM_LABELS_FILE, IGNORE_FILE } from '../helpers/constants.js';
+import { CUSTOM_LABELS_FILE } from '../helpers/constants.js';
 import { moveFiles } from './moveFiles.js';
-import { getRepoRoot } from './getRepoRoot.js';
 
 export async function decomposeFileHandler(
   metaAttributes: {
@@ -21,25 +20,26 @@ export async function decomposeFileHandler(
   prepurge: boolean,
   postpurge: boolean,
   debug: boolean,
-  format: string
+  format: string,
+  ignorePath: string
 ): Promise<void> {
   const { metadataPaths, metaSuffix, strictDirectoryName, folderType, uniqueIdElements } = metaAttributes;
   if (debug) setLogLevel('debug');
 
   for (const metadataPath of metadataPaths) {
     if (strictDirectoryName || folderType) {
-      await subDirectoryHandler(metadataPath, uniqueIdElements, prepurge, postpurge, format);
+      await subDirectoryHandler(metadataPath, uniqueIdElements, prepurge, postpurge, format, ignorePath);
     } else if (metaSuffix === 'labels') {
       // do not use the prePurge flag in the xml-disassembler package for labels due to file moving
       if (prepurge) await prePurgeLabels(metadataPath);
       const absoluteLabelFilePath = resolve(metadataPath, CUSTOM_LABELS_FILE);
       const relativeLabelFilePath = relative(process.cwd(), absoluteLabelFilePath);
 
-      await disassembleHandler(relativeLabelFilePath, uniqueIdElements, false, postpurge, format);
+      await disassembleHandler(relativeLabelFilePath, uniqueIdElements, false, postpurge, format, ignorePath);
       // move labels from the directory they are created in
       await moveAndRenameLabels(metadataPath, format);
     } else {
-      await disassembleHandler(metadataPath, uniqueIdElements, prepurge, postpurge, format);
+      await disassembleHandler(metadataPath, uniqueIdElements, prepurge, postpurge, format, ignorePath);
     }
   }
 }
@@ -49,7 +49,8 @@ async function disassembleHandler(
   uniqueIdElements: string,
   prePurge: boolean,
   postPurge: boolean,
-  format: string
+  format: string,
+  ignorePath: string
 ): Promise<void> {
   let handler: DisassembleXMLFileHandler | XmlToJsonDisassembler | XmlToYamlDisassembler;
   if (format === 'yaml') {
@@ -59,8 +60,6 @@ async function disassembleHandler(
   } else {
     handler = new DisassembleXMLFileHandler();
   }
-  const repoRoot = await getRepoRoot();
-  const ignorePath = resolve(repoRoot, IGNORE_FILE);
   await handler.disassemble({
     filePath,
     uniqueIdElements,
@@ -101,13 +100,14 @@ async function subDirectoryHandler(
   uniqueIdElements: string,
   prepurge: boolean,
   postpurge: boolean,
-  format: string
+  format: string,
+  ignorePath: string
 ): Promise<void> {
   const subFiles = await readdir(metadataPath);
   for (const subFile of subFiles) {
     const subFilePath = join(metadataPath, subFile);
     if ((await stat(subFilePath)).isDirectory()) {
-      await disassembleHandler(subFilePath, uniqueIdElements, prepurge, postpurge, format);
+      await disassembleHandler(subFilePath, uniqueIdElements, prepurge, postpurge, format, ignorePath);
     }
   }
 }

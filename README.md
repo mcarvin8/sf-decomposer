@@ -24,7 +24,7 @@
 - [License](#license)
 </details>
 
-The `sf-decomposer` is a Salesforce plugin that reads the original metadata files (XML) and creates smaller, more manageable files for version control. The inverse function (`recompose`) will recreate deployment-compatible metadata files. This plugin is intended for users who deploy their Salesforce codebase from a git repository that follows the Salesforce DX Project Configuration (`sfdx-project.json` file).
+The `sf-decomposer` is a Salesforce CLI plugin that reads the original metadata files (XML) and creates smaller, more manageable files for version control. The inverse function (`recompose`) will recreate deployment-compatible metadata files. This plugin is intended for users who deploy their Salesforce codebase from any repository that follows the Salesforce DX Project Configuration (`sfdx-project.json` file), not just git-based ones.
 
 This will parse and retain the following in the original XMLs:
 
@@ -36,7 +36,8 @@ The decomposed file format can be XML, JSON, or YAML. Based on testing, XML and 
 
 **DISCLAIMERS:**
 
-- You must update the `.forceignore` to have the Salesforce CLI ignore the decomposed files created by this plugin. See section `Ignore Files`. Updates to the `.gitignore` are optional and can be updated based on what you want to be staged in your repo.
+- You must update the `.forceignore` to have the Salesforce CLI ignore the decomposed files created by this plugin. See section `Ignore Files`.
+  - Updates to the `.gitignore` are optional if you are using this in a git-based repo and can be updated based on what you want to be staged in your repo.
 - It is recommended that you extensively test this plugin in a sandbox environment on the metadata types for which you wish to use this tool.
 - Do not change your production/QA pipelines until you have tested this and are happy with the results.
 - Ensure your deployment pipelines are stable before implementing this plugin.
@@ -54,7 +55,7 @@ The `sf-decomposer` supports 2 commands:
 - `sf decomposer decompose`
 - `sf decomposer recompose`
 
-Both commands need to be run somewhere inside your Salesforce DX git repository (root folder is preferred). This plugin will read the `sfdx-project.json` file and process all package directories listed in the file.
+Both commands need to be run somewhere inside your Salesforce DX repository (root folder is preferred). This plugin will look for the `sfdx-project.json` file in the root folder and process all package directories listed in the file.
 
 ## `sf decomposer decompose`
 
@@ -221,6 +222,12 @@ Error (1): Metadata type not found for the given suffix: field.
 
 ## Warnings and Logging
 
+The plugin searches the current working directory for the `sfdx-project.json`, and if it's not found in the current working directory, it will search upwards for it until it hits your root drive. If the `sfdx-project.json` file isn't found, the plugin will fail with:
+
+```
+Error (1): sfdx-project.json not found in any parent directory.
+```
+
 The package used to decompose and recompose XMLs, `xml-disassembler`, will log errors, and optionally debugging statements, to a log file, `disassemble.log`. This log will be created in the working directory and will be created when running this plugin at all times. If there were no XML decomposing/recomposing errors, this log will simply be empty.
 
 By default, this package will only log errors to the file. This plugin will print `xml-disassembler` errors as warnings in the command terminal to allow all other files to be processed.
@@ -239,7 +246,7 @@ General debugging statements in the log file will look like:
 [2024-03-30T14:28:37.959] [DEBUG] default - Created disassembled file: mock\no-nested-elements\HR_Admin\HR_Admin.permissionset-meta.xml
 ```
 
-Recommend adding the `disassemble.log` to your `.gitignore` file.
+Recommend adding the `disassemble.log` to your `.gitignore` file if you are using this in a git-based repo.
 
 ## Ignore Files when Decomposing
 
@@ -287,7 +294,7 @@ If the `.sfdecomposer.config.json` file isn't found, the hooks will be skipped.
 
 ## Ignore Files
 
-You must update the `.forceignore` to have the Salesforce CLI ignore the decomposed files created by this plugin. Optionally, you can add the recomposed files to your `.gitignore` to avoid staging those in your repoisotry.
+You must update the `.forceignore` to have the Salesforce CLI ignore the decomposed files created by this plugin. Optionally, you can add the recomposed files to your `.gitignore` to avoid staging those in your git-based repository.
 
 ### `.forceignore` updates
 
@@ -340,7 +347,7 @@ The Salesforce CLI should ignore the decomposed files and should allow the recom
 
 ### `.gitignore` updates
 
-Git should ignore the recomposed files.
+I recommend having Git (or whatever version control system you are using) ignore the recomposed files so you don't stage those in your repositories.
 
 ```
 # Ignore recomposed files
@@ -366,7 +373,7 @@ Git should ignore the recomposed files.
 **/marketingappextensions/*.marketingappextension-meta.xml
 ```
 
-Git should also ignore the log created by the `xml-disassembler` package.
+Your VCS should also ignore the log created by the `xml-disassembler` package.
 
 ```
 disassemble.log

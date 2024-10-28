@@ -16,7 +16,10 @@ export const scopedPostRetrieve: HookFunction = async function (options) {
     return;
   }
   let configFile: ConfigFile;
-  const repoRoot = await getRepoRoot();
+  const { repoRoot } = await getRepoRoot();
+  if (!repoRoot) {
+    return;
+  }
   const configPath = resolve(repoRoot, '.sfdecomposer.config.json');
 
   try {
