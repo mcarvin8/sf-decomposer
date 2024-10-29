@@ -7,6 +7,7 @@
   <summary>Table of Contents</summary>
 
 - [Install](#install)
+- [Why Use This Plugin?](#why-use-this-plugin)
 - [Commands](#commands)
   - [`sf decomposer decompose`](#sf-decomposer-decompose)
   - [`sf decomposer recompose`](#sf-decomposer-recompose)
@@ -47,6 +48,15 @@ The decomposed file format can be XML, JSON, or YAML. Based on testing, XML and 
 ```bash
 sf plugins install sf-decomposer@x.y.z
 ```
+
+## Why Use this Plugin?
+
+Why should you consider using this Salesforce CLI Plugin over Salesforce's decomposition:
+
+- Salesforce's decomposition betas are evaluated for each metadata type before they are considered. My plugin already supports the vast majority of Salesforce metadata types available from the Metadata API.
+- Salesforce's decomposition is all or nothing for each metadata type. Meaning, if you want to decompose workflows, all of your workflows will need to be decomposed to work with Salesforce's approach. My plugin allows you to selectively decompose for each metadata type.
+    - See [Ignore Files when Decomposing](#ignore-files-when-decomposing)
+- Some metadata types may only be partially decomposed by Salesforce such as permission sets based on what designs are picked. My plugin will allow for total decomposition. So if a user wants to fully decompose permission sets, they can use this plugin.
 
 ## Commands
 
