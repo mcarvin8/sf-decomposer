@@ -5,6 +5,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.2.0](https://github.com/mcarvin8/sf-decomposer/compare/v5.1.1...v5.2.0) (2024-11-04)
+
+
+### Features
+
+* rename decomposed workflows for sfdx-git-delta detection ([8d6a61f](https://github.com/mcarvin8/sf-decomposer/commit/8d6a61f6c47299e8f58fda7750c56e4f85482f87))
+
+
+### Bug Fixes
+
+* include workflow send suffix ([a09048b](https://github.com/mcarvin8/sf-decomposer/commit/a09048bc3eac1b4f761add90eed5d12b3edc67f2))
+
 ## [5.1.1](https://github.com/mcarvin8/sf-decomposer/compare/v5.1.0...v5.1.1) (2024-11-01)
 
 
