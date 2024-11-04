@@ -13,4 +13,5 @@ export const WORKFLOW_SUFFIX_MAPPING: { [key: string]: string } = {
   'outboundMessages-meta.xml': 'workflowOutboundMessage-meta.xml',
   'rules-meta.xml': 'workflowRule-meta.xml',
   'tasks-meta.xml': 'workflowTask-meta.xml',
+  'send-meta.xml': 'workflowSend-meta.xml',
 };
