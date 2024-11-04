@@ -6,7 +6,7 @@ import { DisassembleXMLFileHandler, setLogLevel } from 'xml-disassembler';
 import { XmlToYamlDisassembler } from 'xml2yaml-disassembler';
 import { XmlToJsonDisassembler } from 'xml2json-disassembler';
 
-import { CUSTOM_LABELS_FILE } from '../helpers/constants.js';
+import { CUSTOM_LABELS_FILE, WORKFLOW_SUFFIX_MAPPING } from '../helpers/constants.js';
 import { moveFiles } from './moveFiles.js';
 
 export async function decomposeFileHandler(
@@ -40,6 +40,9 @@ export async function decomposeFileHandler(
       await moveAndRenameLabels(metadataPath, format);
     } else {
       await disassembleHandler(metadataPath, uniqueIdElements, prepurge, postpurge, format, ignorePath);
+    }
+    if (metaSuffix === 'workflow') {
+      await renameWorkflows(metadataPath);
     }
   }
 }
@@ -108,6 +111,22 @@ async function subDirectoryHandler(
     const subFilePath = join(metadataPath, subFile);
     if ((await stat(subFilePath)).isDirectory()) {
       await disassembleHandler(subFilePath, uniqueIdElements, prepurge, postpurge, format, ignorePath);
+    }
+  }
+}
+
+async function renameWorkflows(directory: string): Promise<void> {
+  const files = await readdir(directory, { recursive: true });
+
+  for (const file of files) {
+    // Check if the file matches any suffix in WORKFLOW_SUFFIX_MAPPING
+    for (const [suffix, newSuffix] of Object.entries(WORKFLOW_SUFFIX_MAPPING)) {
+      if (file.endsWith(suffix)) {
+        const oldFilePath = join(directory, file);
+        const newFilePath = join(directory, file.replace(suffix, newSuffix));
+        await rename(oldFilePath, newFilePath);
+        break;
+      }
     }
   }
 }
