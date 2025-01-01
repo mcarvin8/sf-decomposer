@@ -7790,20 +7790,10 @@ write-file-atomic@^3.0.0:
     signal-exit "^3.0.2"
     typedarray-to-buffer "^3.1.5"
 
-xml-disassembler@^1.3.1:
-  version "1.3.1"
-  resolved "https://registry.yarnpkg.com/xml-disassembler/-/xml-disassembler-1.3.1.tgz#e82fa0b92fd4cc5b8d0580c29239d4c8dbe61161"
-  integrity sha512-EyntSrKoeODyjlnzYEtO/+nB9XOHmPHno+1mXN7CptgDIYZ+vcUF0V4iSighdonXjG/lFhwTYVw24UDGxhwEKA==
-  dependencies:
-    fast-xml-parser "^4.3.4"
-    ignore "^5.3.1"
-    log4js "^6.9.1"
-    tslib "^2.6.2"
-
-xml-disassembler@^1.3.2:
-  version "1.3.2"
-  resolved "https://registry.yarnpkg.com/xml-disassembler/-/xml-disassembler-1.3.2.tgz#32bbdf45e0ed81ed5c83d8d9a20f5eedb9bd2748"
-  integrity sha512-USQZJW83VhYRPEBx/8CfsXJ7xrHxB3/tb8ifGXyvZ5kszXZ/5ZunPJnEN8xas3CHShnRZGX2/iDepGBCoL6MMA==
+xml-disassembler@^1.3.1, xml-disassembler@^1.3.4:
+  version "1.3.4"
+  resolved "https://registry.yarnpkg.com/xml-disassembler/-/xml-disassembler-1.3.4.tgz#f13859e1cfc0c547e018bec2285a15f500089966"
+  integrity sha512-mszDT+ewyuecj3HidRq6UrDFQMEvKc/tzabZs2MuvaCpnm9pdw3Vx/vtXT1Omnbw834AmM0NsR7PVUyxInMzEA==
   dependencies:
     fast-xml-parser "^4.3.4"
     ignore "^5.3.1"
