@@ -7808,16 +7808,16 @@ xml2js@^0.6.2:
     sax ">=0.6.0"
     xmlbuilder "~11.0.0"
 
-xml2json-disassembler@^1.1.1:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/xml2json-disassembler/-/xml2json-disassembler-1.1.1.tgz#5af69ef0caa99241c5f72d64083e51dd20c49a49"
-  integrity sha512-w11ykQFDyny+4iE5u/0uON4ZQQwrGNyCGaVMgmQgecscsFE979yF5/uaqN7/lqyfZnZEqerMygtdfrj9mmRoJQ==
+xml2json-disassembler@^1.1.3:
+  version "1.1.3"
+  resolved "https://registry.yarnpkg.com/xml2json-disassembler/-/xml2json-disassembler-1.1.3.tgz#8701b71a2497643a8613589805fd1e1b0c6168f5"
+  integrity sha512-0YFga4Rwl6X+0k5RqTQjtmdSohRTtmt8ZxAN8i10W1AjgB09eXg4bsvoWugiYiZnosHggEpjiUovNb55VNsyFA==
   dependencies:
     fast-xml-parser "^4.3.4"
     ignore "^5.3.1"
     log4js "^6.9.1"
     tslib "^2.6.2"
-    xml-disassembler "^1.3.1"
+    xml-disassembler "^1.3.4"
 
 xml2yaml-disassembler@^1.1.1:
   version "1.1.1"
