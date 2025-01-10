@@ -5,6 +5,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.2.2](https://github.com/mcarvin8/sf-decomposer/compare/v5.2.1...v5.2.2) (2025-01-10)
+
+
+### Bug Fixes
+
+* **deps:** bump @salesforce/source-deploy-retrieve ([8fb57c6](https://github.com/mcarvin8/sf-decomposer/commit/8fb57c6d060c18761559324aec7301a5ec772d53))
+* **deps:** bump xml-disassembler from 1.3.4 to 1.3.7 ([e91bc0f](https://github.com/mcarvin8/sf-decomposer/commit/e91bc0f6c6970e575aac680fa14c30b1b2f9f14a))
+* **deps:** bump xml2json-disassembler from 1.1.4 to 1.1.7 ([19552a2](https://github.com/mcarvin8/sf-decomposer/commit/19552a22a5c4c6dbde9d53367fce1b94938ac2c1))
+* **deps:** bump xml2yaml-disassembler from 1.1.4 to 1.1.7 ([d12bee2](https://github.com/mcarvin8/sf-decomposer/commit/d12bee269dab1dc02c961699f424c4ebe63603aa))
+
 ## [5.2.1](https://github.com/mcarvin8/sf-decomposer/compare/v5.2.0...v5.2.1) (2025-01-02)
 
 
