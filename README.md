@@ -25,15 +25,7 @@
 - [License](#license)
 </details>
 
-The `sf-decomposer` is a Salesforce CLI plugin that reads the original metadata files (XML) and creates smaller, more manageable files for version control. The inverse function (`recompose`) will recreate deployment-compatible metadata files. This plugin is intended for users who deploy their Salesforce codebase from any repository that follows the Salesforce DX Project Configuration (`sfdx-project.json` file), not just git-based ones.
-
-This will parse and retain the following in the original XMLs:
-
-- Character Data (CDATA)
-- Comments
-- Attributes
-
-The decomposed file format can be XML, JSON, or YAML. Based on testing, XML and YAML handle CDATA formatting more nicely than JSON.
+A Salesforce CLI plugin to break down large metadata files into smaller, more manageable files for version control and then recreate deployment-compatible files. This plugin is intended for users who deploy their Salesforce codebase from any Salesforce DX project (`sfdx-project.json`).
 
 **DISCLAIMERS:**
 
@@ -53,7 +45,7 @@ sf plugins install sf-decomposer@x.y.z
 
 Why should you consider using this Salesforce CLI Plugin over Salesforce's decomposition:
 
-- Salesforce's decomposition betas are evaluated for each metadata type before they are considered. My plugin already supports the vast majority of Salesforce metadata types available from the Metadata API.
+- Salesforce's decomposition betas are evaluated for each metadata type before they are considered. My plugin supports the vast majority of Salesforce metadata types available from the Metadata API.
 - Salesforce's decomposition is all or nothing for each metadata type. Meaning, if you want to decompose workflows, all of your workflows will need to be decomposed to work with Salesforce's approach. My plugin allows you to selectively decompose for each metadata type.
     - See [Ignore Files when Decomposing](#ignore-files-when-decomposing)
 - Some metadata types may only be partially decomposed by Salesforce such as permission sets based on what designs are picked. My plugin will allow for total decomposition. So if a user wants to fully decompose permission sets, they can use this plugin.
@@ -65,7 +57,7 @@ The `sf-decomposer` supports 2 commands:
 - `sf decomposer decompose`
 - `sf decomposer recompose`
 
-Both commands need to be run somewhere inside your Salesforce DX repository (root folder is preferred). This plugin will look for the `sfdx-project.json` file in the root folder and process all package directories listed in the file.
+Both commands need to be run somewhere inside your Salesforce DX repository. This plugin will look for the `sfdx-project.json` file in the root folder and process all package directories listed in the file.
 
 ## `sf decomposer decompose`
 
@@ -109,10 +101,10 @@ USAGE
 
 FLAGS
   -m, --metadata-type=<value> The metadata suffix to process, such as 'flow', 'labels', etc. You can provide this flag multiple times to process multiple metadata types with a single command.
-  -f, --format=<value> [default: 'xml'] The file type for the decomposed files.
-  --prepurge  [default: false] If provided, purge directories of pre-existing decomposed files.
-  --postpurge  [default: false] If provided, purge the original files after decomposing them.
-  --debug [default: false] If provided, log debugging results to a text file (disassemble.log).
+  -f, --format=<value>        [default: 'xml'] The file type for the decomposed files.
+  --prepurge                  [default: false] If provided, purge directories of pre-existing decomposed files.
+  --postpurge                 [default: false] If provided, purge the original files after decomposing them.
+  --debug                     [default: false] If provided, log debugging results to a text file (disassemble.log).
 
 GLOBAL FLAGS
   --json  Format output as json.
@@ -149,9 +141,9 @@ USAGE
 
 FLAGS
   -m, --metadata-type=<value> The metadata suffix to process, such as 'flow', 'labels', etc. You can provide this flag multiple times to process multiple metadata types with a single command.
-  -f, --format=<value> [default: 'xml'] The file format for the decomposed files.
-  --postpurge  [default: false] If provided, purge the decomposed files after recomposing them.
-  --debug [default: false] If provided, log debugging results to a text file (disassemble.log).
+  -f, --format=<value>        [default: 'xml'] The file format for the decomposed files.
+  --postpurge                 [default: false] If provided, purge the decomposed files after recomposing them.
+  --debug                     [default: false] If provided, log debugging results to a text file (disassemble.log).
 
 GLOBAL FLAGS
   --json  Format output as json.
