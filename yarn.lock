@@ -7790,12 +7790,12 @@ write-file-atomic@^3.0.0:
     signal-exit "^3.0.2"
     typedarray-to-buffer "^3.1.5"
 
-xml-disassembler@^1.3.4:
-  version "1.3.4"
-  resolved "https://registry.yarnpkg.com/xml-disassembler/-/xml-disassembler-1.3.4.tgz#f13859e1cfc0c547e018bec2285a15f500089966"
-  integrity sha512-mszDT+ewyuecj3HidRq6UrDFQMEvKc/tzabZs2MuvaCpnm9pdw3Vx/vtXT1Omnbw834AmM0NsR7PVUyxInMzEA==
+xml-disassembler@^1.3.4, xml-disassembler@^1.3.6:
+  version "1.3.6"
+  resolved "https://registry.yarnpkg.com/xml-disassembler/-/xml-disassembler-1.3.6.tgz#58d1553249d6125dd87f8b5254135ca5495a3c5b"
+  integrity sha512-3KscPSaFyV7HsOAGFwB+o/DVEgcG/25AunZcOPHbHbwDIsMEysnZx3WOctJRKrT4Q4z4J+TWGxQG20VhNRnwSg==
   dependencies:
-    fast-xml-parser "^4.3.4"
+    fast-xml-parser "^4.5.1"
     ignore "^5.3.1"
     log4js "^6.9.1"
     tslib "^2.6.2"
@@ -7808,15 +7808,13 @@ xml2js@^0.6.2:
     sax ">=0.6.0"
     xmlbuilder "~11.0.0"
 
-xml2json-disassembler@^1.1.4:
-  version "1.1.4"
-  resolved "https://registry.yarnpkg.com/xml2json-disassembler/-/xml2json-disassembler-1.1.4.tgz#b570734a09e05cc4e3d7b867ece2c6196c1fc98b"
-  integrity sha512-jM1MgIEme3KoIbPK8/WXTyTVjd9lAk33C8DRkhLpt8znOO5GmJb3NiEoBa/cjkA40BFltIcioVI1Ae3017oV/A==
+xml2json-disassembler@^1.1.6:
+  version "1.1.6"
+  resolved "https://registry.yarnpkg.com/xml2json-disassembler/-/xml2json-disassembler-1.1.6.tgz#e2d7a58350b01e12f697700914e3986d89bbb479"
+  integrity sha512-yTlyj3P8WWaOc298lMPPCSLlEauU8S2ErHZHtwJNgGrKdSUKA6+f8uU1uQtOGkbkagufaLileJ267v96Pb0K9A==
   dependencies:
-    fast-xml-parser "^4.3.4"
-    log4js "^6.9.1"
     tslib "^2.6.2"
-    xml-disassembler "^1.3.4"
+    xml-disassembler "^1.3.6"
 
 xml2yaml-disassembler@^1.1.4:
   version "1.1.4"
