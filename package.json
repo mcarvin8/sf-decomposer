@@ -9,7 +9,7 @@
     "@salesforce/source-deploy-retrieve": "^12.10.4",
     "fs-extra": "^11.2.0",
     "xml-disassembler": "^1.3.7",
-    "xml2json-disassembler": "^1.1.4",
+    "xml2json-disassembler": "^1.1.7",
     "xml2yaml-disassembler": "^1.1.4"
   },
   "devDependencies": {
