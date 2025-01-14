@@ -15,3 +15,4 @@ export const WORKFLOW_SUFFIX_MAPPING: { [key: string]: string } = {
   'tasks-meta.xml': 'workflowTask-meta.xml',
   'send-meta.xml': 'workflowSend-meta.xml',
 };
+export const HOOK_CONFIG_JSON = '.sfdecomposer.config.json';

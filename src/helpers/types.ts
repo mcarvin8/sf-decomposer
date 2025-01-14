@@ -12,6 +12,7 @@ export type ConfigFile = {
   prePurge: boolean;
   postPurge: boolean;
   decomposedFormat: string;
+  ignorePackageDirectories: string;
 };
 
 export type SfdxProject = {

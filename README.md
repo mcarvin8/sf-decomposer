@@ -153,9 +153,7 @@ EXAMPLES
 
 All metadata types imported from this plugin's version of `@salesforce/source-deploy-retrieve` (SDR) toolkit are supported except for certain types.
 
-The `--metadata-type`/`-m` flag should be the metadata's `"suffix"` value as listed in the [metadataRegistry.json](https://github.com/forcedotcom/source-deploy-retrieve/blob/main/src/registry/metadataRegistry.json).
-
-The suffix is this part of the original meta file name - `labels` is the suffix in `*.labels-meta.xml`.
+The `--metadata-type`/`-m` flag should be the metadata's `suffix` value as listed in the [metadataRegistry.json](https://github.com/forcedotcom/source-deploy-retrieve/blob/main/src/registry/metadataRegistry.json).
 
 Here are some examples:
 
@@ -166,8 +164,7 @@ Here are some examples:
 - AI Scoring Model Definition (`--metadata-type "aiScoringModelDefinition"`)
 - Decision Matrix Definition (`--metadata-type "decisionMatrixDefinition"`)
 - Bot (`--metadata-type "bot"`)
-  - **NOTE**: Running "bot" will also decompose and recompose Bot Version meta files
-  - The `botVersion` meta suffix will be blocked from running directly
+  - **NOTE**: Running "bot" will also decompose and recompose Bot Version meta files. The `botVersion` meta suffix will be blocked from running directly.
 - Marketing App Extension (`--metadata-type "marketingappextension"`)
 
 ### Metadata Exceptions
@@ -231,17 +228,14 @@ The ignore file is not read by the recompose command.
 
 ## Hooks
 
-**NOTE:** In order to avoid errors during the retrieval, you must configure your `.forceignore` file to have the Salesforce CLI ignore the decomposed files. See section below.
+**NOTE:** In order to avoid errors during the retrieval, you must configure your `.forceignore` file to have the Salesforce CLI ignore the decomposed files. See "Ignore Files" section below.
 
-A post-retrieve hook (for the decompose command) and a pre-run hook (for the recompose command) have been configured if you elect to use them.
-
-The post-retrieve hook will automatically decompose the desired metadata types after every Salesforce CLI retrieval (`sf project retrieve start` command).
-
-The pre-run hook will automatically recompose the desired metadata types before every Salesforce CLI deployment/validation (`sf project deploy start` and `sf project deploy validate` commands).
+A post-retrieve hook (for the decompose command) and a pre-run hook (for the recompose command) have been configured if you elect to use them. The post-retrieve hook will automatically decompose the desired metadata types after every Salesforce CLI retrieval (`sf project retrieve start` command). The pre-run hook will automatically recompose the desired metadata types before every Salesforce CLI deployment/validation (`sf project deploy start` and `sf project deploy validate` commands).
 
 Both hooks require you to create this file in the root of your repo: `.sfdecomposer.config.json`. You can use the sample [.sfdecomposer.config.json](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.sfdecomposer.config.json) provided. Update the file as such:
 
 - `metadataSuffixes` is required and should be a comma-separated string of metadata suffixes to decompose automatically after retrievals.
+- `ignorePackageDirectories` is optional and should be a comma-separated string of package directories to ignore.
 - `prePurge` is optional and should be a boolean. If true, this will delete any existing decomposed files before decomposing the files. If you do not provide this, the default will be `false`. This flag is not used by the recompose command/pre-run hook.
 - `postPurge` is optional and should be a boolean. If true, this will delete the retrieval file after decomposing it or delete the decomposed files after recomposing them. If you do not provide this, the default will be `false`.
 - `decomposedFormat` is optional and should be either `xml`, `json`, or `yaml`, depending on what file format you want the decomposed files created as. If you do not provide this, the default will be `xml`.

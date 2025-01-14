@@ -5,9 +5,9 @@ import { resolve } from 'node:path';
 import { Hook } from '@oclif/core';
 
 import DecomposerDecompose from '../commands/decomposer/decompose.js';
-import { ConfigFile } from '../helpers/types.js';
+import { ConfigFile, PostRetrieveHookOptions } from '../helpers/types.js';
 import { getRepoRoot } from '../service/getRepoRoot.js';
-import { PostRetrieveHookOptions } from '../helpers/types.js';
+import { HOOK_CONFIG_JSON } from '../helpers/constants.js';
 
 type HookFunction = (this: Hook.Context, options: PostRetrieveHookOptions) => Promise<void>;
 
@@ -20,7 +20,7 @@ export const scopedPostRetrieve: HookFunction = async function (options) {
   if (!repoRoot) {
     return;
   }
-  const configPath = resolve(repoRoot, '.sfdecomposer.config.json');
+  const configPath = resolve(repoRoot, HOOK_CONFIG_JSON);
 
   try {
     const jsonString: string = await readFile(configPath, 'utf-8');
@@ -33,6 +33,7 @@ export const scopedPostRetrieve: HookFunction = async function (options) {
   const format: string = configFile.decomposedFormat || 'xml';
   const prepurge: boolean = configFile.prePurge || false;
   const postpurge: boolean = configFile.postPurge || false;
+  const ignorePackageDirs: string = configFile.ignorePackageDirectories || '';
 
   if (metadataTypes.trim() === '.') {
     return;
@@ -45,6 +46,14 @@ export const scopedPostRetrieve: HookFunction = async function (options) {
     const sanitizedMetadataType = metadataType.replace(/,/g, '');
     commandArgs.push('--metadata-type');
     commandArgs.push(sanitizedMetadataType);
+  }
+  if (ignorePackageDirs.trim() !== '') {
+    const ignorePackageDirArray: string[] = ignorePackageDirs.split(',');
+    for (const dirs of ignorePackageDirArray) {
+      const sanitizedDir = dirs.replace(/,/g, '');
+      commandArgs.push('--ignore-package-directory');
+      commandArgs.push(sanitizedDir);
+    }
   }
   commandArgs.push('--format');
   commandArgs.push(format);
