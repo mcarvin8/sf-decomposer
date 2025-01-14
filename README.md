@@ -25,7 +25,7 @@
 - [License](#license)
 </details>
 
-A Salesforce CLI plugin to break down large metadata files into smaller, more manageable files for version control and then recreate deployment-compatible files. This plugin is intended for users who deploy their Salesforce codebase from any Salesforce DX project (`sfdx-project.json`).
+A Salesforce CLI plugin to break down large metadata files into smaller, more manageable files for version control and then recreate deployment-compatible files.
 
 **DISCLAIMERS:**
 
@@ -57,39 +57,17 @@ The `sf-decomposer` supports 2 commands:
 - `sf decomposer decompose`
 - `sf decomposer recompose`
 
-Both commands need to be run somewhere inside your Salesforce DX repository. This plugin will look for the `sfdx-project.json` file in the root folder and process all package directories listed in the file.
-
 ## `sf decomposer decompose`
 
-Decomposes the original metadata files into smaller files for version control. Except for custom labels, the smaller files will be placed into new sub-directories:
+Decomposes the original metadata files in all local package directories into smaller files for version control.
 
 <img src="https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-perm-set.png">
 
 <br>
 
-Custom labels will be decomposed directly in the root labels folder:
-
 <img src="https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-labels.png">
 
 <br>
-
-Unique ID elements are used to name decomposed files for nested elements. The default unique ID elements for all metadata types are `<fullName>` and `<name>`. In this example XML below, the `<fullName>` tag is included in the nested element and its contents (`quoteAuto`) will be used to name the decomposed file.
-
-```xml
-    <labels>
-        <fullName>quoteAuto</fullName>
-        <value>This is an automatically generated quote.</value>
-        <language>en_US</language>
-        <protected>false</protected>
-        <shortDescription>Automatic Quote</shortDescription>
-    </labels>
-```
-
-If the default unique ID elements are not found in the nested element, the plugin will look for any other metadata-specific unique ID elements (see the `Contributing` section for more information). If a unique ID element is not found, the short SHA-256 hash of the element contents will be used to name the decomposed file, as shown below. It's recommended to add the `--prepurge` flag to the `decompose` command to remove pre-existing decomposed files that may conflict with newer decomposed files due to different SHA hashes.
-
-Using the `--format` flag, you can set the desired file type for the decomposed files to XML (default), YAML, or JSON.
-
-**Note**: The `--format` flag for the recompose command must match what you selected for the decompose `--format`.
 
 <img src="https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-apps-hashes.png">
 
@@ -101,7 +79,7 @@ USAGE
 
 FLAGS
   -m, --metadata-type=<value> The metadata suffix to process, such as 'flow', 'labels', etc. You can provide this flag multiple times to process multiple metadata types with a single command.
-  -f, --format=<value>        [default: 'xml'] The file type for the decomposed files.
+  -f, --format=<value>        [default: 'xml'] The file type for the decomposed files. Must match what format you provide for recompose.
   --prepurge                  [default: false] If provided, purge directories of pre-existing decomposed files.
   --postpurge                 [default: false] If provided, purge the original files after decomposing them.
   --debug                     [default: false] If provided, log debugging results to a text file (disassemble.log).
@@ -110,9 +88,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 
 DESCRIPTION
-  This command will read all of the original metadata files and separate them into smaller files in each package directory.
-
-  These smaller decomposed files can be XMLs, YAMLs, or JSONs.
+  Decomoose large metadata files into smaller files.
 
   You should run this after you retrieve metadata from an org.
 
@@ -129,11 +105,7 @@ EXAMPLES
 
 ## `sf decomposer recompose`
 
-Reads the files created by the decompose command and recreates deployment-compatible metadata files.
-
-Ensure the `--format` flag of the recompose command matches the file format selected for the `--format` flag in the decompose command. File formats for the decomposed files can be XML (default), YAML, or JSON.
-
-This command will always create XMLs as its output format.
+Recompose decomposed files into deployment-compatible files.
 
 ```
 USAGE
@@ -166,7 +138,7 @@ EXAMPLES
 
 ## Supported Metadata
 
-All parent metadata types imported from this plugin's version of @salesforce/source-deploy-retrieve (SDR) toolkit are supported except for certain types.
+All metadata types imported from this plugin's version of `@salesforce/source-deploy-retrieve` (SDR) toolkit are supported except for certain types.
 
 The `--metadata-type`/`-m` flag should be the metadata's `"suffix"` value as listed in the [metadataRegistry.json](https://github.com/forcedotcom/source-deploy-retrieve/blob/main/src/registry/metadataRegistry.json).
 
