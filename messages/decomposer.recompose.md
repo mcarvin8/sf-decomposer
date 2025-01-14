@@ -4,7 +4,7 @@ Recomposes the files created by the `decompose` command before deployments.
 
 # description
 
-This command will read the decomposed files and recreate deployment-compatible metadata files in each package directory.
+Recompose the decomposed files into deployment-compatible metadata files.
 
 You should run this before you deploy decomposed metadata to an org.
 
@@ -12,6 +12,7 @@ You should run this before you deploy decomposed metadata to an org.
 
 - `sf decomposer recompose -m "flow" -f "xml" --postpurge --debug`
 - `sf decomposer recompose -m "flow" -m "labels" -f "xml" --postpurge --debug`
+- `sf decomposer recompose -m "flow" -i "force-app"`
 
 # flags.metadata-type.summary
 
@@ -28,3 +29,7 @@ If provided, debug to a log file.
 # flags.format.summary
 
 File format for the decomposed files.
+
+# flags.ignore-package-directory.summary
+
+Ignore a package directory.

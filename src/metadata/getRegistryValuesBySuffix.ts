@@ -9,7 +9,8 @@ import { getPackageDirectories } from './getPackageDirectories.js';
 
 export async function getRegistryValuesBySuffix(
   metaSuffix: string,
-  command: string
+  command: string,
+  ignoreDirs: string[] | undefined
 ): Promise<{ metaAttributes: MetaAttributes; ignorePath: string }> {
   if (metaSuffix === 'object') {
     throw Error('Custom Objects are not supported by this plugin.');
@@ -36,7 +37,7 @@ export async function getRegistryValuesBySuffix(
 
   let uniqueIdElements: string | undefined;
   if (command === 'decompose') uniqueIdElements = await getUniqueIdElements(metaSuffix);
-  const { metadataPaths, ignorePath } = await getPackageDirectories(`${metadataTypeEntry.directoryName}`);
+  const { metadataPaths, ignorePath } = await getPackageDirectories(`${metadataTypeEntry.directoryName}`, ignoreDirs);
   if (metadataPaths.length === 0)
     throw Error(`No directories named ${metadataTypeEntry.directoryName} were found in any package directory.`);
 

@@ -4,14 +4,15 @@ Decomposes the metadata files created by retrievals.
 
 # description
 
-This command will read the original metadata files and decompose them into smaller files. The decomposed file format can be XML, YAML, or JSON.
+Decompose large metadata files into smaller files.
 
-You should run this after you retrieve metadata from an org and before you commit the metadata to your git repository.
+You should run this after you retrieve metadata from an org.
 
 # examples
 
 - `sf decomposer decompose -m "flow" -f "xml" --prepurge --postpurge --debug`
 - `sf decomposer decompose -m "flow" -m "labels" -f "xml" --prepurge --postpurge --debug`
+- `sf decomposer decompose -m "flow" -f "xml" -i "force-app"`
 
 # flags.metadata-type.summary
 
@@ -32,3 +33,7 @@ If provided, debug to a log file.
 # flags.format.summary
 
 File format for the decomposed files.
+
+# flags.ignore-package-directory.summary
+
+Ignore a package directory.
