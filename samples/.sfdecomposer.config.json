@@ -1,0 +1,6 @@
+{
+  "metadataSuffixes": "labels,workflow,profile",
+  "prePurge": true,
+  "postPurge": true,
+  "decomposedFormat": "xml"
+}

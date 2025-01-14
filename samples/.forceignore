@@ -1,0 +1,58 @@
+# List files or directories below to ignore them when running force:source:push, force:source:pull, and force:source:status
+# More information: https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_exclude_source.htm
+#
+
+package.xml
+
+# LWC configuration files
+**/jsconfig.json
+**/.eslintrc.json
+
+# LWC Jest
+**/__tests__/**
+
+**/tsconfig.json
+**/*.ts
+
+# Ignore decomposed files
+**/profiles/**/*.xml
+**/permissionsets/**/*.xml
+**/labels/*.xml
+**/workflows/**/*.xml
+**/flows/**/*.xml
+**/matchingRules/**/*.xml
+**/assignmentRules/**/*.xml
+**/escalationRules/**/*.xml
+**/sharingRules/**/*.xml
+**/autoResponseRules/**/*.xml
+**/globalValueSetTranslations/**/*.xml
+**/standardValueSetTranslations/**/*.xml
+**/translations/**/*.xml
+**/globalValueSets/**/*.xml
+**/standardValueSets/**/*.xml
+**/decisionMatrixDefinition/**/*.xml
+**/aiScoringModelDefinitions/**/*.xml
+**/bots/**/*.xml
+**/marketingappextensions/**/*.xml
+
+# Allow the recomposed files
+!**/permissionsets/*.permissionset-meta.xml
+!**/labels/CustomLabels.labels-meta.xml
+!**/workflows/*.workflow-meta.xml
+!**/profiles/*.profile-meta.xml
+!**/flows/*.flow-meta.xml
+!**/matchingRules/*.matchingRule-meta.xml
+!**/assignmentRules/*.assignmentRules-meta.xml
+!**/escalationRules/*.escalationRules-meta.xml
+!**/sharingRules/*.sharingRules-meta.xml
+!**/autoResponseRules/*.autoResponseRules-meta.xml
+!**/globalValueSetTranslations/*.globalValueSetTranslation-meta.xml
+!**/standardValueSetTranslations/*.standardValueSetTranslation-meta.xml
+!**/translations/*.translation-meta.xml
+!**/globalValueSets/*.globalValueSet-meta.xml
+!**/standardValueSets/*.standardValueSet-meta.xml
+!**/decisionMatrixDefinition/*.decisionMatrixDefinition-meta.xml
+!**/aiScoringModelDefinitions/*.aiScoringModelDefinition-meta.xml
+!**/bots/*/*.botVersion-meta.xml
+!**/bots/*/*.bot-meta.xml
+!**/marketingappextensions/*.marketingappextension-meta.xml

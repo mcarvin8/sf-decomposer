@@ -231,24 +231,15 @@ The ignore file is not read by the recompose command.
 
 ## Hooks
 
+**NOTE:** In order to avoid errors during the retrieval, you must configure your `.forceignore` file to have the Salesforce CLI ignore the decomposed files. See section below.
+
 A post-retrieve hook (for the decompose command) and a pre-run hook (for the recompose command) have been configured if you elect to use them.
 
 The post-retrieve hook will automatically decompose the desired metadata types after every Salesforce CLI retrieval (`sf project retrieve start` command).
 
 The pre-run hook will automatically recompose the desired metadata types before every Salesforce CLI deployment/validation (`sf project deploy start` and `sf project deploy validate` commands).
 
-Both hooks require you to create this file in the root of your repo: `.sfdecomposer.config.json`
-
-The `.sfdecomposer.config.json` should look like this:
-
-```json
-{
-  "metadataSuffixes": "labels,workflow,profile",
-  "prePurge": true,
-  "postPurge": true,
-  "decomposedFormat": "xml"
-}
-```
+Both hooks require you to create this file in the root of your repo: `.sfdecomposer.config.json`. You can use the sample [.sfdecomposer.config.json](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.sfdecomposer.config.json) provided. Update the file as such:
 
 - `metadataSuffixes` is required and should be a comma-separated string of metadata suffixes to decompose automatically after retrievals.
 - `prePurge` is optional and should be a boolean. If true, this will delete any existing decomposed files before decomposing the files. If you do not provide this, the default will be `false`. This flag is not used by the recompose command/pre-run hook.
@@ -257,94 +248,21 @@ The `.sfdecomposer.config.json` should look like this:
 
 If the `.sfdecomposer.config.json` file isn't found, the hooks will be skipped.
 
-**NOTE:** In order to avoid errors during the retrieval, you must configure your `.forceignore` file to have the Salesforce CLI ignore the decomposed files. See section below.
-
 ## Ignore Files
 
-You must update the `.forceignore` to have the Salesforce CLI ignore the decomposed files created by this plugin. Optionally, you can add the recomposed files to your `.gitignore` to avoid staging those in your git-based repository.
+You **must** update the `.forceignore` to have the Salesforce CLI ignore the decomposed files created by this plugin. Optionally, you can add the recomposed files to your `.gitignore` to avoid staging those in your git-based repository.
 
 ### `.forceignore` updates
 
-The Salesforce CLI should ignore the decomposed files and should allow the recomposed files. Update based on the decomposed file format you are using (`.xml`, `.json`, or `.yaml`).
+The Salesforce CLI should ignore the decomposed files and should allow the recomposed files.
 
-```
-# Ignore decomposed files
-**/profiles/**/*.xml
-**/permissionsets/**/*.xml
-**/labels/*.xml
-**/workflows/**/*.xml
-**/flows/**/*.xml
-**/matchingRules/**/*.xml
-**/assignmentRules/**/*.xml
-**/escalationRules/**/*.xml
-**/sharingRules/**/*.xml
-**/autoResponseRules/**/*.xml
-**/globalValueSetTranslations/**/*.xml
-**/standardValueSetTranslations/**/*.xml
-**/translations/**/*.xml
-**/globalValueSets/**/*.xml
-**/standardValueSets/**/*.xml
-**/decisionMatrixDefinition/**/*.xml
-**/aiScoringModelDefinitions/**/*.xml
-**/bots/**/*.xml
-**/marketingappextensions/**/*.xml
-
-# Allow the recomposed files
-!**/permissionsets/*.permissionset-meta.xml
-!**/labels/CustomLabels.labels-meta.xml
-!**/workflows/*.workflow-meta.xml
-!**/profiles/*.profile-meta.xml
-!**/flows/*.flow-meta.xml
-!**/matchingRules/*.matchingRule-meta.xml
-!**/assignmentRules/*.assignmentRules-meta.xml
-!**/escalationRules/*.escalationRules-meta.xml
-!**/sharingRules/*.sharingRules-meta.xml
-!**/autoResponseRules/*.autoResponseRules-meta.xml
-!**/globalValueSetTranslations/*.globalValueSetTranslation-meta.xml
-!**/standardValueSetTranslations/*.standardValueSetTranslation-meta.xml
-!**/translations/*.translation-meta.xml
-!**/globalValueSets/*.globalValueSet-meta.xml
-!**/standardValueSets/*.standardValueSet-meta.xml
-!**/decisionMatrixDefinition/*.decisionMatrixDefinition-meta.xml
-!**/aiScoringModelDefinitions/*.aiScoringModelDefinition-meta.xml
-!**/bots/*/*.botVersion-meta.xml
-!**/bots/*/*.bot-meta.xml
-!**/marketingappextensions/*.marketingappextension-meta.xml
-```
+You can use the sample [.forceignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.forceignore) provided. Update the decomposed file extensions based on what format you're using (`.xml`, `.json`, or `.yaml`).
 
 ### `.gitignore` updates
 
-I recommend having Git (or whatever version control system you are using) ignore the recomposed files so you don't stage those in your repositories.
+I recommend having Git (or whatever version control system you are using) ignore the recomposed files so you don't stage those in your repositories. You can also ignore the log created by the disassembler package.
 
-```
-# Ignore recomposed files
-**/permissionsets/*.permissionset-meta.xml
-**/profiles/*.profile-meta.xml
-**/labels/CustomLabels.labels-meta.xml
-**/workflows/*.workflow-meta.xml
-**/flows/*.flow-meta.xml
-**/matchingRules/*.matchingRule-meta.xml
-**/assignmentRules/*.assignmentRules-meta.xml
-**/escalationRules/*.escalationRules-meta.xml
-**/sharingRules/*.sharingRules-meta.xml
-**/autoResponseRules/*.autoResponseRules-meta.xml
-**/globalValueSetTranslations/*.globalValueSetTranslation-meta.xml
-**/standardValueSetTranslations/*.standardValueSetTranslation-meta.xml
-**/translations/*.translation-meta.xml
-**/globalValueSets/*.globalValueSet-meta.xml
-**/standardValueSets/*.standardValueSet-meta.xml
-**/decisionMatrixDefinition/*.decisionMatrixDefinition-meta.xml
-**/aiScoringModelDefinitions/*.aiScoringModelDefinition-meta.xml
-**/bots/*/*.botVersion-meta.xml
-**/bots/*/*.bot-meta.xml
-**/marketingappextensions/*.marketingappextension-meta.xml
-```
-
-Your VCS should also ignore the log created by the `xml-disassembler` package.
-
-```
-disassemble.log
-```
+You can use the sample [.gitignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.gitignore) provided.
 
 ## Issues
 
