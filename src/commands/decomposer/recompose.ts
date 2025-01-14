@@ -43,6 +43,12 @@ export default class DecomposerRecompose extends SfCommand<DecomposerResult> {
       default: 'xml',
       options: DECOMPOSED_FILE_TYPES,
     }),
+    'ignore-package-directory': Flags.directory({
+      summary: messages.getMessage('flags.ignore-package-directory.summary'),
+      char: 'i',
+      required: false,
+      multiple: true,
+    }),
   };
 
   public async run(): Promise<DecomposerResult> {
@@ -51,8 +57,9 @@ export default class DecomposerRecompose extends SfCommand<DecomposerResult> {
     const postpurge = flags['postpurge'];
     const debug = flags['debug'];
     const format = flags['format'];
+    const ignoreDirs = flags['ignore-package-directory'];
     for (const metadataType of metadataTypes) {
-      const { metaAttributes } = await getRegistryValuesBySuffix(metadataType, 'recompose');
+      const { metaAttributes } = await getRegistryValuesBySuffix(metadataType, 'recompose', ignoreDirs);
 
       const currentLogFile = await readOriginalLogFile(LOG_FILE);
       await recomposeFileHandler(metaAttributes, postpurge, debug, format);

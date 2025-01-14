@@ -19,8 +19,6 @@
 - [Ignore Files](#ignore-files)
   - [`.forceignore` updates](#.forceignore-updates)
   - [`.gitignore` updates](#.gitignore-updates)
-- [Contributing](#contributing)
-  - [Unique ID Elements](#unique-id-elements)
 - [Issues](#issues)
 - [License](#license)
 </details>
@@ -43,11 +41,11 @@ sf plugins install sf-decomposer@x.y.z
 
 ## Why Use this Plugin?
 
-Why should you consider using this Salesforce CLI Plugin over Salesforce's decomposition:
+Why should you consider using this Salesforce CLI Plugin over Salesforce's decomposition?
 
 - Salesforce's decomposition betas are evaluated for each metadata type before they are considered. My plugin supports the vast majority of Salesforce metadata types available from the Metadata API.
 - Salesforce's decomposition is all or nothing for each metadata type. Meaning, if you want to decompose workflows, all of your workflows will need to be decomposed to work with Salesforce's approach. My plugin allows you to selectively decompose for each metadata type.
-    - See [Ignore Files when Decomposing](#ignore-files-when-decomposing)
+  - See [Ignore Files when Decomposing](#ignore-files-when-decomposing)
 - Some metadata types may only be partially decomposed by Salesforce such as permission sets based on what designs are picked. My plugin will allow for total decomposition. So if a user wants to fully decompose permission sets, they can use this plugin.
 
 ## Commands
@@ -59,36 +57,41 @@ The `sf-decomposer` supports 2 commands:
 
 ## `sf decomposer decompose`
 
-Decomposes the original metadata files in all local package directories into smaller files for version control.
+Decomposes the original metadata files in all local package directories into smaller files for version control. If unique ID elements are found, the decomposed files will be named using them. Otherwise, the decomposed files will be named with the SHA-256 hash of the element contents.
 
 <img src="https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-perm-set.png">
+<p><em>Decomposed Permission Sets named using unique ID elements</em></p>
 
 <br>
 
-<img src="https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-labels.png">
+<img src="https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-labels.png" alt="Description"> 
+<p><em>Decomposed Custom Labels named using unique ID elements</em></p>
 
 <br>
 
 <img src="https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-apps-hashes.png">
+<p><em>Decomposed Application named using SHA-256 hashes of elements</em></p>
 
 <br>
 
 ```
 USAGE
-  $ sf decomposer decompose -m <value> -f <value> [--prepurge --postpurge --debug --json]
+  $ sf decomposer decompose -m <value> -f <value> -i <value> [--prepurge --postpurge --debug --json]
 
 FLAGS
-  -m, --metadata-type=<value> The metadata suffix to process, such as 'flow', 'labels', etc. You can provide this flag multiple times to process multiple metadata types with a single command.
-  -f, --format=<value>        [default: 'xml'] The file type for the decomposed files. Must match what format you provide for recompose.
-  --prepurge                  [default: false] If provided, purge directories of pre-existing decomposed files.
-  --postpurge                 [default: false] If provided, purge the original files after decomposing them.
-  --debug                     [default: false] If provided, log debugging results to a text file (disassemble.log).
+  -m, --metadata-type=<value>             The metadata suffix to process, such as 'flow', 'labels', etc. You can provide this flag multiple times to process multiple metadata types with a single command.
+  -f, --format=<value>                    [default: 'xml'] The file type for the decomposed files. Must match what format you provide for recompose.
+  -i, --ignore-package-directory=<value>  Package directories to ignore. Should be as they appear in the "sfdx-project.json" file.
+                                          Can be declared multiple times.
+  --prepurge                              [default: false] If provided, purge directories of pre-existing decomposed files.
+  --postpurge                             [default: false] If provided, purge the original files after decomposing them.
+  --debug                                 [default: false] If provided, log debugging results to a text file (disassemble.log).
 
 GLOBAL FLAGS
   --json  Format output as json.
 
 DESCRIPTION
-  Decomoose large metadata files into smaller files.
+  Decompose large metadata files into smaller files.
 
   You should run this after you retrieve metadata from an org.
 
@@ -101,6 +104,10 @@ EXAMPLES
 
     $ sf decomposer decompose -m "flow" -m "labels" -f "xml" --prepurge --postpurge --debug
 
+  Decompose flows except for those in the "force-app" package directory.
+
+    $ sf decomposer decompose -m "flow" -i "force-app"
+
 ```
 
 ## `sf decomposer recompose`
@@ -109,19 +116,21 @@ Recompose decomposed files into deployment-compatible files.
 
 ```
 USAGE
-  $ sf decomposer recompose -m <value> -f <value> [--postpurge --debug --json]
+  $ sf decomposer recompose -m <value> -f <value> -i <value> [--postpurge --debug --json]
 
 FLAGS
-  -m, --metadata-type=<value> The metadata suffix to process, such as 'flow', 'labels', etc. You can provide this flag multiple times to process multiple metadata types with a single command.
-  -f, --format=<value>        [default: 'xml'] The file format for the decomposed files.
-  --postpurge                 [default: false] If provided, purge the decomposed files after recomposing them.
-  --debug                     [default: false] If provided, log debugging results to a text file (disassemble.log).
+  -m, --metadata-type=<value>               The metadata suffix to process, such as 'flow', 'labels', etc. You can provide this flag multiple times to process multiple metadata types with a single command.
+  -f, --format=<value>                      [default: 'xml'] The file format for the decomposed files.
+  -i, --ignore-package-directory=<value>    Package directories to ignore. Should be as they appear in the "sfdx-project.json" file.
+                                            Can be declared multiple times.
+  --postpurge                               [default: false] If provided, purge the decomposed files after recomposing them.
+  --debug                                   [default: false] If provided, log debugging results to a text file (disassemble.log).
 
 GLOBAL FLAGS
   --json  Format output as json.
 
 DESCRIPTION
-  This command will read the decomposed files and recreate deployment-compatible metadata files in each package directory.
+  Recompose the decomposed files into deployment-compatible metadata files.
 
   You should run this before you deploy decomposed metadata to an org.
 
@@ -133,6 +142,10 @@ EXAMPLES
   Recompose all flows and custom labels:
 
     $ sf decomposer recompose -m "flow" -m "labels" -f "xml" --postpurge --debug
+
+  Recompose flows except for those in the "force-app" package directory.
+
+    $ sf decomposer recompose -m "flow" -i "force-app"
 
 ```
 
@@ -150,17 +163,6 @@ Here are some examples:
 - Workflows (`--metadata-type "workflow"`)
 - Profiles (`--metadata-type "profile"`)
 - Permission Sets (`--metadata-type "permissionset"`)
-- Flows (`--metadata-type "flow"`)
-- Matching Rules (`--metadata-type "matchingRule"`)
-- Assignment Rules (`--metadata-type "assignmentRules"`)
-- Escalation Rules (`--metadata-type "escalationRules"`)
-- Sharing Rules (`--metadata-type "sharingRules"`)
-- Auto Response Rules (`--metadata-type "autoResponseRules"`)
-- Global Value Set Translation (`--metadata-type "globalValueSetTranslation"`)
-- Standard Value Set Translation (`--metadata-type "standardValueSetTranslation"`)
-- Translations (`--metadata-type "translation"`)
-- Standard Value Sets (`--metadata-type "standardValueSet"`)
-- Global Value Sets (`--metadata-type "globalValueSet"`)
 - AI Scoring Model Definition (`--metadata-type "aiScoringModelDefinition"`)
 - Decision Matrix Definition (`--metadata-type "decisionMatrixDefinition"`)
 - Bot (`--metadata-type "bot"`)
@@ -170,29 +172,22 @@ Here are some examples:
 
 ### Metadata Exceptions
 
-`botVersion` is blocked from being ran directly. Please use the `bot` meta suffix to decompose and recompose bots and bot versions.
-
-```
-Error (1): `botVersion` suffix should not be used. Please use `bot` to decompose/recompose bot and bot version files.
-```
-
-Custom Objects are not supported by this plugin.
-
-```
-Error (1): Custom Objects are not supported by this plugin.
-```
-
-Metadata types such as Apex Classes, Apex Components, Triggers, etc. with certain SDR adapter strategies (`matchingContentFile`, `digitalExperience`, `mixedContent`, `bundle`) are not supported by this plugin.
-
-```
-Error (1): Metadata types with [matchingContentFile, digitalExperience, mixedContent, bundle] strategies are not supported by this plugin.
-```
-
-Children metadata types (ex: custom fields) are not supported and will result in this general error:
-
-```
-Error (1): Metadata type not found for the given suffix: field.
-```
+- `botVersion` is blocked from being ran directly. Please use the `bot` meta suffix to decompose and recompose bots and bot versions.
+  ```
+  Error (1): `botVersion` suffix should not be used. Please use `bot` to decompose/recompose bot and bot version files.
+  ```
+- Custom Objects are not supported by this plugin.
+  ```
+  Error (1): Custom Objects are not supported by this plugin.
+  ```
+- Metadata types such as Apex Classes, Apex Components, Triggers, etc. with certain SDR adapter strategies (`matchingContentFile`, `digitalExperience`, `mixedContent`, `bundle`) are not supported by this plugin.
+  ```
+  Error (1): Metadata types with [matchingContentFile, digitalExperience, mixedContent, bundle] strategies are not supported by this plugin.
+  ```
+- Children metadata types (i.e. custom fields) are not supported and will result in this general error:
+  ```
+  Error (1): Metadata type not found for the given suffix: field.
+  ```
 
 ## Warnings and Logging
 
@@ -224,9 +219,7 @@ Recommend adding the `disassemble.log` to your `.gitignore` file if you are usin
 
 ## Ignore Files when Decomposing
 
-If you wish, you can create an ignore file in the root of your repository named `.sfdecomposerignore` to ignore specific XMLs when running the decompose command.
-
-The ignore file should follow [.gitignore spec 2.22.1](https://git-scm.com/docs/gitignore).
+If you wish, you can create an ignore file in the root of your repository named `.sfdecomposerignore` to ignore specific XMLs when running the decompose command. The ignore file should follow [.gitignore spec 2.22.1](https://git-scm.com/docs/gitignore).
 
 When the decompose command is ran with the `--debug` flag and it processes a file that matches an entry in `.sfdecomposerignore`, a warning will be printed to the `disassemble.log`:
 
@@ -352,14 +345,6 @@ Your VCS should also ignore the log created by the `xml-disassembler` package.
 ```
 disassemble.log
 ```
-
-## Contributing
-
-Contributions are welcome! If you would like to contribute, please fork the repository, make your changes, and submit a pull request.
-
-### Unique ID Elements
-
-To add more unique ID elements for a metadata type, you can update the `src/metadata/uniqueIdElements.json` file. The metadata type's suffix should be used as the key.
 
 ## Issues
 
