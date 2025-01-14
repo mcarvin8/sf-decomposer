@@ -60,17 +60,17 @@ The `sf-decomposer` supports 2 commands:
 Decomposes the original metadata files in all local package directories into smaller files for version control. If unique ID elements are found, the decomposed files will be named using them. Otherwise, the decomposed files will be named with the SHA-256 hash of the element contents.
 
 <img src="https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-perm-set.png">
-Decomposed Permission Sets named using unique ID elements
+<p><em>Decomposed Permission Sets named using unique ID elements</em></p>
 
 <br>
 
-<img src="https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-labels.png">
-Decomposed Custom Labels named using unique ID elements
+<img src="https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-labels.png" alt="Description"> 
+<p><em>Decomposed Custom Labels named using unique ID elements</em></p>
 
 <br>
 
 <img src="https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-apps-hashes.png">
-Decomposed Application named using SHA-256 hashes of elements
+<p><em>Decomposed Application named using SHA-256 hashes of elements</em></p>
 
 <br>
 
@@ -163,17 +163,6 @@ Here are some examples:
 - Workflows (`--metadata-type "workflow"`)
 - Profiles (`--metadata-type "profile"`)
 - Permission Sets (`--metadata-type "permissionset"`)
-- Flows (`--metadata-type "flow"`)
-- Matching Rules (`--metadata-type "matchingRule"`)
-- Assignment Rules (`--metadata-type "assignmentRules"`)
-- Escalation Rules (`--metadata-type "escalationRules"`)
-- Sharing Rules (`--metadata-type "sharingRules"`)
-- Auto Response Rules (`--metadata-type "autoResponseRules"`)
-- Global Value Set Translation (`--metadata-type "globalValueSetTranslation"`)
-- Standard Value Set Translation (`--metadata-type "standardValueSetTranslation"`)
-- Translations (`--metadata-type "translation"`)
-- Standard Value Sets (`--metadata-type "standardValueSet"`)
-- Global Value Sets (`--metadata-type "globalValueSet"`)
 - AI Scoring Model Definition (`--metadata-type "aiScoringModelDefinition"`)
 - Decision Matrix Definition (`--metadata-type "decisionMatrixDefinition"`)
 - Bot (`--metadata-type "bot"`)
