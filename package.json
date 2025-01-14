@@ -1,7 +1,7 @@
 {
   "name": "sf-decomposer",
   "description": "Decomposes Salesforce metadata into more manageable files.",
-  "version": "5.3.0",
+  "version": "5.3.1",
   "dependencies": {
     "@oclif/core": "^4",
     "@salesforce/core": "^8.2.1",
