@@ -13,7 +13,7 @@
   - [`sf decomposer recompose`](#sf-decomposer-recompose)
 - [Supported Metadata](#supported-metadata)
   - [Metadata Exceptions](#metadata-exceptions)
-- [Warnings and Logging](#warnings-and-logging)
+- [Debugging](#debugging)
 - [Ignore Files when Decomposing](#ignore-files-when-decomposing)
 - [Hooks](#hooks)
 - [Ignore Files](#ignore-files)
@@ -186,7 +186,7 @@ Here are some examples:
   Error (1): Metadata type not found for the given suffix: field.
   ```
 
-## Warnings and Logging
+## Debugging
 
 The plugin searches the current working directory for the `sfdx-project.json`, and if it's not found in the current working directory, it will search upwards for it until it hits your root drive. If the `sfdx-project.json` file isn't found, the plugin will fail with:
 
@@ -194,19 +194,13 @@ The plugin searches the current working directory for the `sfdx-project.json`, a
 Error (1): sfdx-project.json not found in any parent directory.
 ```
 
-The package used to decompose and recompose XMLs, `xml-disassembler`, will log errors, and optionally debugging statements, to a log file, `disassemble.log`. This log will be created in the working directory and will be created when running this plugin at all times. If there were no XML decomposing/recomposing errors, this log will simply be empty.
-
-By default, this package will only log errors to the file. This plugin will print `xml-disassembler` errors as warnings in the command terminal to allow all other files to be processed.
-
-These warnings when running `decompose` and `recompose` commands will look as such:
+The xml-disassembler package will log errors, and optionally debugging statements, to a log file, `disassemble.log`. This log will be created in the working directory and will be created when running this plugin at all times. If there were no errors, this log will be empty. By default, the log will only contain errors. This plugin will print the errors as warnings in the command terminal to allow all other files to be processed. These warnings when decomposing or recomposing will look like:
 
 ```
 Warning: C:\Users\matth\Documents\sf-decomposer\test\baselines\flows\Get_Info\actionCalls\Get_Info.actionCalls-meta.xml was unabled to be parsed and will not be processed. Confirm formatting and try again.
 ```
 
-To add additional debugging statements to the log file, provide the `--debug` flag to either command to generate additional logging statements to `disassemble.log`.
-
-General debugging statements in the log file will look like:
+To add additional debugging statements to the log file, provide the `--debug` flag to the decompose or recompose command. Debugging statements will look like:
 
 ```
 [2024-03-30T14:28:37.959] [DEBUG] default - Created disassembled file: mock\no-nested-elements\HR_Admin\HR_Admin.permissionset-meta.xml
