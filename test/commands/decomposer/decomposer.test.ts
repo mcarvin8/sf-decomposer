@@ -1,5 +1,4 @@
 'use strict';
-/* eslint-disable no-await-in-loop */
 
 import { rm, writeFile } from 'node:fs/promises';
 import { copy } from 'fs-extra';
@@ -45,25 +44,28 @@ describe('decomposer unit tests', () => {
   });
 
   it('should decompose all metadata types under test in XML format', async () => {
-    for (const metadataType of METADATA_UNDER_TEST) {
-      // eslint-disable-next-line no-await-in-loop
-      await DecomposerDecompose.run(['--metadata-type', metadataType, '--postpurge', '--prepurge']);
-      const output = sfCommandStubs.log
-        .getCalls()
-        .flatMap((c) => c.args)
-        .join('\n');
+    await DecomposerDecompose.run([
+      '--postpurge',
+      '--prepurge',
+      ...METADATA_UNDER_TEST.map((metadataType) => `--metadata-type=${metadataType}`),
+    ]);
+
+    const output = sfCommandStubs.log
+      .getCalls()
+      .flatMap((c) => c.args)
+      .join('\n');
+    METADATA_UNDER_TEST.forEach((metadataType) => {
       expect(output).to.include(`All metadata files have been decomposed for the metadata type: ${metadataType}`);
-    }
+    });
   });
 
   it('should recompose all decomposed XML files for all metadata types under test', async () => {
-    for (const metadataType of METADATA_UNDER_TEST) {
-      // eslint-disable-next-line no-await-in-loop
-      await DecomposerRecompose.run(['--metadata-type', metadataType, '--postpurge']);
-    }
+    await DecomposerRecompose.run([
+      '--postpurge',
+      ...METADATA_UNDER_TEST.map((metadataType) => `--metadata-type=${metadataType}`),
+    ]);
 
     // Check if there are no errors in the log
-    // Can't clear the existing log to check standard output message
     const errorOutput = sfCommandStubs.log
       .getCalls()
       .flatMap((c) => c.args)
@@ -76,25 +78,32 @@ describe('decomposer unit tests', () => {
   });
 
   it('should decompose all metadata types under test in JSON format', async () => {
-    for (const metadataType of METADATA_UNDER_TEST) {
-      // eslint-disable-next-line no-await-in-loop
-      await DecomposerDecompose.run(['--metadata-type', metadataType, '--postpurge', '--prepurge', '--format', 'json']);
-      const output = sfCommandStubs.log
-        .getCalls()
-        .flatMap((c) => c.args)
-        .join('\n');
+    await DecomposerDecompose.run([
+      '--postpurge',
+      '--prepurge',
+      '--format',
+      'json',
+      ...METADATA_UNDER_TEST.map((metadataType) => `--metadata-type=${metadataType}`),
+    ]);
+
+    const output = sfCommandStubs.log
+      .getCalls()
+      .flatMap((c) => c.args)
+      .join('\n');
+    METADATA_UNDER_TEST.forEach((metadataType) => {
       expect(output).to.include(`All metadata files have been decomposed for the metadata type: ${metadataType}`);
-    }
+    });
   });
 
   it('should recompose all decomposed JSON files for all metadata types under test', async () => {
-    for (const metadataType of METADATA_UNDER_TEST) {
-      // eslint-disable-next-line no-await-in-loop
-      await DecomposerRecompose.run(['--metadata-type', metadataType, '--postpurge', '--format', 'json']);
-    }
+    await DecomposerRecompose.run([
+      '--postpurge',
+      '--format',
+      'json',
+      ...METADATA_UNDER_TEST.map((metadataType) => `--metadata-type=${metadataType}`),
+    ]);
 
     // Check if there are no errors in the log
-    // Can't clear the existing log to check standard output message
     const errorOutput = sfCommandStubs.log
       .getCalls()
       .flatMap((c) => c.args)
@@ -107,25 +116,32 @@ describe('decomposer unit tests', () => {
   });
 
   it('should decompose all metadata types under test in YAML format', async () => {
-    for (const metadataType of METADATA_UNDER_TEST) {
-      // eslint-disable-next-line no-await-in-loop
-      await DecomposerDecompose.run(['--metadata-type', metadataType, '--postpurge', '--prepurge', '--format', 'yaml']);
-      const output = sfCommandStubs.log
-        .getCalls()
-        .flatMap((c) => c.args)
-        .join('\n');
+    await DecomposerDecompose.run([
+      '--postpurge',
+      '--prepurge',
+      '--format',
+      'yaml',
+      ...METADATA_UNDER_TEST.map((metadataType) => `--metadata-type=${metadataType}`),
+    ]);
+
+    const output = sfCommandStubs.log
+      .getCalls()
+      .flatMap((c) => c.args)
+      .join('\n');
+    METADATA_UNDER_TEST.forEach((metadataType) => {
       expect(output).to.include(`All metadata files have been decomposed for the metadata type: ${metadataType}`);
-    }
+    });
   });
 
   it('should recompose all decomposed YAML files for all metadata types under test', async () => {
-    for (const metadataType of METADATA_UNDER_TEST) {
-      // eslint-disable-next-line no-await-in-loop
-      await DecomposerRecompose.run(['--metadata-type', metadataType, '--postpurge', '--format', 'yaml']);
-    }
+    await DecomposerRecompose.run([
+      '--postpurge',
+      '--format',
+      'yaml',
+      ...METADATA_UNDER_TEST.map((metadataType) => `--metadata-type=${metadataType}`),
+    ]);
 
     // Check if there are no errors in the log
-    // Can't clear the existing log to check standard output message
     const errorOutput = sfCommandStubs.log
       .getCalls()
       .flatMap((c) => c.args)
