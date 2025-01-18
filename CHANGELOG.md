@@ -5,6 +5,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.3.2](https://github.com/mcarvin8/sf-decomposer/compare/v5.3.1...v5.3.2) (2025-01-18)
+
+
+### Bug Fixes
+
+* get all package directories in parallel ([7b412cd](https://github.com/mcarvin8/sf-decomposer/commit/7b412cd85918050faeda3d57ac9dfdbb9ce0c206))
+* move files in parallel ([e23cd9b](https://github.com/mcarvin8/sf-decomposer/commit/e23cd9b1cc4a2a0c95a6fac394d9f0a46ad691f2))
+* remove awaits in loops in handlers ([0e12cee](https://github.com/mcarvin8/sf-decomposer/commit/0e12ceeb734fc95be04bd5ccdbec52a340057e24))
+* rename all bot version files in parallel ([b24645a](https://github.com/mcarvin8/sf-decomposer/commit/b24645a599e48c516ac0aca4b2adc161c7d8c2ae))
+
 ## [5.3.1](https://github.com/mcarvin8/sf-decomposer/compare/v5.3.0...v5.3.1) (2025-01-14)
 
 
