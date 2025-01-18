@@ -13,9 +13,11 @@ describe('decomposer NUTs XML format', () => {
   let session: TestSession;
 
   const originalDirectory: string = 'test/baselines';
-  const mockDirectory: string = 'xml';
+  const originalDirectory2: string = 'test/baselines2';
+  const mockDirectory: string = 'force-app';
+  const mockDirectory2: string = 'package';
   const configFile = {
-    packageDirectories: [{ path: 'xml', default: true }],
+    packageDirectories: [{ path: 'force-app', default: true }, { path: 'package' }],
     namespace: '',
     sfdcLoginUrl: 'https://login.salesforce.com',
     sourceApiVersion: '58.0',
@@ -25,12 +27,14 @@ describe('decomposer NUTs XML format', () => {
   before(async () => {
     session = await TestSession.create({ devhubAuthStrategy: 'NONE' });
     await copy(originalDirectory, mockDirectory, { overwrite: true });
+    await copy(originalDirectory2, mockDirectory2, { overwrite: true });
     await writeFile(SFDX_CONFIG_FILE, configJsonString);
   });
 
   after(async () => {
     await session?.clean();
     await rm(mockDirectory, { recursive: true });
+    await rm(mockDirectory2, { recursive: true });
     await rm(SFDX_CONFIG_FILE);
   });
 
@@ -120,7 +124,8 @@ describe('decomposer NUTs XML format', () => {
     });
   });
 
-  it('should confirm the recomposed files in a mock directory match the reference files (force-app)', async () => {
+  it('should confirm the recomposed files in a mock directory match the reference files', async () => {
     await compareDirectories(originalDirectory, mockDirectory);
+    await compareDirectories(originalDirectory2, mockDirectory2);
   });
 });

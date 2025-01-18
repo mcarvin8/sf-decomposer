@@ -17,9 +17,11 @@ describe('decomposer unit tests', () => {
   let sfCommandStubs: ReturnType<typeof stubSfCommandUx>;
 
   const originalDirectory: string = 'test/baselines';
+  const originalDirectory2: string = 'test/baselines2';
   const mockDirectory: string = 'force-app';
+  const mockDirectory2: string = 'package';
   const configFile = {
-    packageDirectories: [{ path: 'force-app', default: true }],
+    packageDirectories: [{ path: 'force-app', default: true }, { path: 'package' }],
     namespace: '',
     sfdcLoginUrl: 'https://login.salesforce.com',
     sourceApiVersion: '58.0',
@@ -31,6 +33,7 @@ describe('decomposer unit tests', () => {
     setLogLevel('debug');
 
     await copy(originalDirectory, mockDirectory, { overwrite: true });
+    await copy(originalDirectory2, mockDirectory2, { overwrite: true });
     await writeFile(SFDX_CONFIG_FILE, configJsonString);
   });
 
@@ -40,6 +43,7 @@ describe('decomposer unit tests', () => {
 
   after(async () => {
     await rm(mockDirectory, { recursive: true });
+    await rm(mockDirectory2, { recursive: true });
     await rm(SFDX_CONFIG_FILE);
   });
 
@@ -149,7 +153,8 @@ describe('decomposer unit tests', () => {
     expect(errorOutput).to.not.include('Error');
   });
 
-  it('should confirm the recomposed files in a mock directory match the reference files (force-app)', async () => {
+  it('should confirm the recomposed files in a mock directory match the reference files', async () => {
     await compareDirectories(originalDirectory, mockDirectory);
+    await compareDirectories(originalDirectory2, mockDirectory2);
   });
 });
