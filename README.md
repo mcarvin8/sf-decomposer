@@ -79,7 +79,7 @@ USAGE
   $ sf decomposer decompose -m <value> -f <value> -i <value> [--prepurge --postpurge --debug --json]
 
 FLAGS
-  -m, --metadata-type=<value>             The metadata suffix to process, such as 'flow', 'labels', etc. You can provide this flag multiple times to process multiple metadata types with a single command.
+  -m, --metadata-type=<value>             The metadata suffix to process, such as 'flow', 'labels', etc. You can provide this flag multiple times.
   -f, --format=<value>                    [default: 'xml'] The file type for the decomposed files. Must match what format you provide for recompose.
   -i, --ignore-package-directory=<value>  Package directories to ignore. Should be as they appear in the "sfdx-project.json" file.
                                           Can be declared multiple times.
@@ -119,7 +119,7 @@ USAGE
   $ sf decomposer recompose -m <value> -f <value> -i <value> [--postpurge --debug --json]
 
 FLAGS
-  -m, --metadata-type=<value>               The metadata suffix to process, such as 'flow', 'labels', etc. You can provide this flag multiple times to process multiple metadata types with a single command.
+  -m, --metadata-type=<value>               The metadata suffix to process, such as 'flow', 'labels', etc. You can provide this flag multiple times.
   -f, --format=<value>                      [default: 'xml'] The file format for the decomposed files.
   -i, --ignore-package-directory=<value>    Package directories to ignore. Should be as they appear in the "sfdx-project.json" file.
                                             Can be declared multiple times.
