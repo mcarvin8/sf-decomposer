@@ -1,8 +1,8 @@
 'use strict';
-
+/* eslint-disable no-await-in-loop */
 import { readdir, stat, rm } from 'node:fs/promises';
 import { join } from 'node:path';
-import { ReassembleXMLFileHandler, setLogLevel, withConcurrencyLimit, getConcurrencyThreshold } from 'xml-disassembler';
+import { ReassembleXMLFileHandler, setLogLevel } from 'xml-disassembler';
 import { YamlToXmlReassembler } from 'xml2yaml-disassembler';
 import { JsonToXmlReassembler } from 'xml2json-disassembler';
 
@@ -23,23 +23,17 @@ export async function recomposeFileHandler(
 ): Promise<void> {
   const { metaSuffix, strictDirectoryName, folderType, metadataPaths } = metaAttributes;
   if (debug) setLogLevel('debug');
+  for (const metadataPath of metadataPaths) {
+    if (metaSuffix === 'labels') {
+      await reassembleLabels(metadataPath, metaSuffix, postpurge, format);
+    } else {
+      let recurse: boolean = false;
+      if (strictDirectoryName || folderType) recurse = true;
+      await reassembleDirectories(metadataPath, metaSuffix, recurse, postpurge, format);
+    }
 
-  const concurrencyLimit = getConcurrencyThreshold();
-
-  await withConcurrencyLimit(
-    metadataPaths.map((metadataPath) => async () => {
-      if (metaSuffix === 'labels') {
-        await reassembleLabels(metadataPath, metaSuffix, postpurge, format, concurrencyLimit);
-      } else {
-        const recurse = strictDirectoryName || Boolean(folderType);
-        await reassembleDirectories(metadataPath, metaSuffix, recurse, postpurge, format, concurrencyLimit);
-      }
-      if (metaSuffix === 'bot') {
-        await renameBotVersionFile(metadataPath, concurrencyLimit);
-      }
-    }),
-    concurrencyLimit
-  );
+    if (metaSuffix === 'bot') await renameBotVersionFile(metadataPath);
+  }
 }
 
 async function reassembleHandler(
@@ -48,7 +42,7 @@ async function reassembleHandler(
   postPurge: boolean,
   format: string
 ): Promise<void> {
-  let handler;
+  let handler: ReassembleXMLFileHandler | JsonToXmlReassembler | YamlToXmlReassembler;
   if (format === 'yaml') {
     handler = new YamlToXmlReassembler();
   } else if (format === 'json') {
@@ -56,7 +50,6 @@ async function reassembleHandler(
   } else {
     handler = new ReassembleXMLFileHandler();
   }
-
   await handler.reassemble({
     filePath,
     fileExtension,
@@ -68,43 +61,34 @@ async function reassembleLabels(
   metadataPath: string,
   metaSuffix: string,
   postpurge: boolean,
-  format: string,
-  concurrencyLimit: number
+  format: string
 ): Promise<void> {
   let sourceDirectory = metadataPath;
   let destinationDirectory = join(metadataPath, 'CustomLabels', 'labels');
 
-  await moveFiles(
-    sourceDirectory,
-    destinationDirectory,
-    concurrencyLimit,
-    (fileName) => fileName !== CUSTOM_LABELS_FILE
-  );
+  await moveFiles(sourceDirectory, destinationDirectory, (fileName) => fileName !== CUSTOM_LABELS_FILE);
 
+  // do not use postpurge flag due to file moving
   await reassembleHandler(join(metadataPath, 'CustomLabels'), `${metaSuffix}-meta.xml`, false, format);
 
   sourceDirectory = join(metadataPath, 'CustomLabels', 'labels');
   destinationDirectory = metadataPath;
 
-  await moveFiles(sourceDirectory, destinationDirectory, concurrencyLimit, () => true);
+  await moveFiles(sourceDirectory, destinationDirectory, () => true);
 
   await rm(join(metadataPath, 'CustomLabels'), { recursive: true });
-  if (postpurge) await deleteFilesInDirectory(destinationDirectory, concurrencyLimit);
+  if (postpurge) await deleteFilesInDirectory(destinationDirectory);
 }
 
-async function deleteFilesInDirectory(directory: string, concurrencyLimit: number): Promise<void> {
+async function deleteFilesInDirectory(directory: string): Promise<void> {
   const files = await readdir(directory);
-
-  await withConcurrencyLimit(
-    files.map((file) => async () => {
-      const filePath = join(directory, file);
-      const fileStat = await stat(filePath);
-      if (fileStat.isFile() && file !== CUSTOM_LABELS_FILE) {
-        await rm(filePath);
-      }
-    }),
-    concurrencyLimit
-  );
+  for (const file of files) {
+    const filePath = join(directory, file);
+    const fileStat = await stat(filePath);
+    if (fileStat.isFile() && file !== CUSTOM_LABELS_FILE) {
+      await rm(filePath);
+    }
+  }
 }
 
 async function reassembleDirectories(
@@ -112,22 +96,16 @@ async function reassembleDirectories(
   metaSuffix: string,
   recurse: boolean,
   postpurge: boolean,
-  format: string,
-  concurrencyLimit: number
+  format: string
 ): Promise<void> {
   const subdirectories = (await readdir(metadataPath)).map((file) => join(metadataPath, file));
-
-  await withConcurrencyLimit(
-    subdirectories.map((subdirectory) => async () => {
-      const subDirStat = await stat(subdirectory);
-      if (subDirStat.isDirectory()) {
-        if (recurse) {
-          await reassembleDirectories(subdirectory, metaSuffix, false, postpurge, format, concurrencyLimit);
-        } else {
-          await reassembleHandler(subdirectory, `${metaSuffix}-meta.xml`, postpurge, format);
-        }
-      }
-    }),
-    concurrencyLimit
-  );
+  for (const subdirectory of subdirectories) {
+    const subDirStat = await stat(subdirectory);
+    if (subDirStat.isDirectory() && recurse) {
+      // recursively call this function and set recurse to false
+      await reassembleDirectories(subdirectory, metaSuffix, false, postpurge, format);
+    } else if (subDirStat.isDirectory()) {
+      await reassembleHandler(subdirectory, `${metaSuffix}-meta.xml`, postpurge, format);
+    }
+  }
 }
