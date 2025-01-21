@@ -1,4 +1,5 @@
 'use strict';
+/* eslint-disable no-await-in-loop */
 
 import { SfCommand, Flags } from '@salesforce/sf-plugins-core';
 import { Messages } from '@salesforce/core';
@@ -57,8 +58,7 @@ export default class DecomposerRecompose extends SfCommand<DecomposerResult> {
     const debug = flags['debug'];
     const format = flags['format'];
     const ignoreDirs = flags['ignore-package-directory'];
-
-    const promises = metadataTypes.map(async (metadataType) => {
+    for (const metadataType of metadataTypes) {
       const { metaAttributes } = await getRegistryValuesBySuffix(metadataType, 'recompose', ignoreDirs);
 
       const currentLogFile = await readOriginalLogFile(LOG_FILE);
@@ -70,11 +70,7 @@ export default class DecomposerRecompose extends SfCommand<DecomposerResult> {
         });
       }
       this.log(`All metadata files have been recomposed for the metadata type: ${metadataType}`);
-    });
-
-    // Wait for all the promises to resolve
-    await Promise.all(promises);
-
+    }
     return {
       metadata: metadataTypes,
     };
