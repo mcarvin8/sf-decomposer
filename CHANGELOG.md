@@ -5,6 +5,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.3.3](https://github.com/mcarvin8/sf-decomposer/compare/v5.3.2...v5.3.3) (2025-01-21)
+
+
+### Bug Fixes
+
+* **deps:** bump xml-disassembler from 1.3.8 to 1.3.9 ([e4f3002](https://github.com/mcarvin8/sf-decomposer/commit/e4f3002fa2b3c985f020485633c6a8b9550e83c6))
+* **deps:** bump xml-disassembler from 1.3.9 to 1.3.10 ([ff47b11](https://github.com/mcarvin8/sf-decomposer/commit/ff47b11b95fb0791557dc81c65374509270e9056))
+* **deps:** bump xml2json-disassembler from 1.1.7 to 1.1.8 ([5e60535](https://github.com/mcarvin8/sf-decomposer/commit/5e6053545f90046a53e7c2114567bd47c914ce57))
+* **deps:** bump xml2json-disassembler from 1.1.8 to 1.1.9 ([3153656](https://github.com/mcarvin8/sf-decomposer/commit/315365694fe8781ea8796b3554f66609a9d84194))
+* **deps:** bump xml2json-disassembler from 1.1.9 to 1.1.10 ([f160907](https://github.com/mcarvin8/sf-decomposer/commit/f160907fd215565100a4578901fba75c919318e4))
+* **deps:** bump xml2yaml-disassembler from 1.1.7 to 1.1.8 ([326a6d9](https://github.com/mcarvin8/sf-decomposer/commit/326a6d9be7768a78898550446e58d720d557b496))
+* **deps:** bump xml2yaml-disassembler from 1.1.8 to 1.1.10 ([5151ac2](https://github.com/mcarvin8/sf-decomposer/commit/5151ac2fa53a35ac13f6cece1bc755eaa26435c2))
+
 ## [5.3.2](https://github.com/mcarvin8/sf-decomposer/compare/v5.3.1...v5.3.2) (2025-01-18)
 
 
