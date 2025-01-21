@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.3.5](https://github.com/mcarvin8/sf-decomposer/compare/v5.3.4...v5.3.5) (2025-01-21)
+
+
+### Bug Fixes
+
+* revert to v5.3.1 to remove parallel processing ([940e59f](https://github.com/mcarvin8/sf-decomposer/commit/940e59fe36580436176a22b9ae39cc6e9104afd1))
+
 ## [5.3.4](https://github.com/mcarvin8/sf-decomposer/compare/v5.3.3...v5.3.4) (2025-01-21)
 
 
