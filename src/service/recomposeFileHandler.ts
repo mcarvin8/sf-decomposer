@@ -2,7 +2,7 @@
 
 import { readdir, stat, rm } from 'node:fs/promises';
 import { join } from 'node:path';
-import { ReassembleXMLFileHandler, setLogLevel } from 'xml-disassembler';
+import { ReassembleXMLFileHandler, setLogLevel, withConcurrencyLimit, getConcurrencyThreshold } from 'xml-disassembler';
 import { YamlToXmlReassembler } from 'xml2yaml-disassembler';
 import { JsonToXmlReassembler } from 'xml2json-disassembler';
 
@@ -24,18 +24,21 @@ export async function recomposeFileHandler(
   const { metaSuffix, strictDirectoryName, folderType, metadataPaths } = metaAttributes;
   if (debug) setLogLevel('debug');
 
-  await Promise.all(
-    metadataPaths.map(async (metadataPath) => {
+  const concurrencyLimit = getConcurrencyThreshold();
+
+  await withConcurrencyLimit(
+    metadataPaths.map((metadataPath) => async () => {
       if (metaSuffix === 'labels') {
-        await reassembleLabels(metadataPath, metaSuffix, postpurge, format);
+        await reassembleLabels(metadataPath, metaSuffix, postpurge, format, concurrencyLimit);
       } else {
         const recurse = strictDirectoryName || Boolean(folderType);
-        await reassembleDirectories(metadataPath, metaSuffix, recurse, postpurge, format);
+        await reassembleDirectories(metadataPath, metaSuffix, recurse, postpurge, format, concurrencyLimit);
       }
       if (metaSuffix === 'bot') {
-        await renameBotVersionFile(metadataPath);
+        await renameBotVersionFile(metadataPath, concurrencyLimit);
       }
-    })
+    }),
+    concurrencyLimit
   );
 }
 
@@ -65,35 +68,42 @@ async function reassembleLabels(
   metadataPath: string,
   metaSuffix: string,
   postpurge: boolean,
-  format: string
+  format: string,
+  concurrencyLimit: number
 ): Promise<void> {
   let sourceDirectory = metadataPath;
   let destinationDirectory = join(metadataPath, 'CustomLabels', 'labels');
 
-  await moveFiles(sourceDirectory, destinationDirectory, (fileName) => fileName !== CUSTOM_LABELS_FILE);
+  await moveFiles(
+    sourceDirectory,
+    destinationDirectory,
+    concurrencyLimit,
+    (fileName) => fileName !== CUSTOM_LABELS_FILE
+  );
 
   await reassembleHandler(join(metadataPath, 'CustomLabels'), `${metaSuffix}-meta.xml`, false, format);
 
   sourceDirectory = join(metadataPath, 'CustomLabels', 'labels');
   destinationDirectory = metadataPath;
 
-  await moveFiles(sourceDirectory, destinationDirectory, () => true);
+  await moveFiles(sourceDirectory, destinationDirectory, concurrencyLimit, () => true);
 
   await rm(join(metadataPath, 'CustomLabels'), { recursive: true });
-  if (postpurge) await deleteFilesInDirectory(destinationDirectory);
+  if (postpurge) await deleteFilesInDirectory(destinationDirectory, concurrencyLimit);
 }
 
-async function deleteFilesInDirectory(directory: string): Promise<void> {
+async function deleteFilesInDirectory(directory: string, concurrencyLimit: number): Promise<void> {
   const files = await readdir(directory);
 
-  await Promise.all(
-    files.map(async (file) => {
+  await withConcurrencyLimit(
+    files.map((file) => async () => {
       const filePath = join(directory, file);
       const fileStat = await stat(filePath);
       if (fileStat.isFile() && file !== CUSTOM_LABELS_FILE) {
         await rm(filePath);
       }
-    })
+    }),
+    concurrencyLimit
   );
 }
 
@@ -102,20 +112,22 @@ async function reassembleDirectories(
   metaSuffix: string,
   recurse: boolean,
   postpurge: boolean,
-  format: string
+  format: string,
+  concurrencyLimit: number
 ): Promise<void> {
   const subdirectories = (await readdir(metadataPath)).map((file) => join(metadataPath, file));
 
-  await Promise.all(
-    subdirectories.map(async (subdirectory) => {
+  await withConcurrencyLimit(
+    subdirectories.map((subdirectory) => async () => {
       const subDirStat = await stat(subdirectory);
       if (subDirStat.isDirectory()) {
         if (recurse) {
-          await reassembleDirectories(subdirectory, metaSuffix, false, postpurge, format);
+          await reassembleDirectories(subdirectory, metaSuffix, false, postpurge, format, concurrencyLimit);
         } else {
           await reassembleHandler(subdirectory, `${metaSuffix}-meta.xml`, postpurge, format);
         }
       }
-    })
+    }),
+    concurrencyLimit
   );
 }
