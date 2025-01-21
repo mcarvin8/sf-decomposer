@@ -36,19 +36,27 @@ export async function decomposeFileHandler(
   await withConcurrencyLimit(
     metadataPaths.map((metadataPath) => async () => {
       if (strictDirectoryName || folderType) {
-        await subDirectoryHandler(metadataPath, uniqueIdElements, prepurge, postpurge, format, ignorePath);
+        await subDirectoryHandler(
+          metadataPath,
+          uniqueIdElements,
+          prepurge,
+          postpurge,
+          format,
+          ignorePath,
+          concurrencyLimit
+        );
       } else if (metaSuffix === 'labels') {
-        if (prepurge) await prePurgeLabels(metadataPath);
+        if (prepurge) await prePurgeLabels(metadataPath, concurrencyLimit);
         const absoluteLabelFilePath = resolve(metadataPath, CUSTOM_LABELS_FILE);
         const relativeLabelFilePath = relative(process.cwd(), absoluteLabelFilePath);
 
         await disassembleHandler(relativeLabelFilePath, uniqueIdElements, false, postpurge, format, ignorePath);
-        await moveAndRenameLabels(metadataPath, format);
+        await moveAndRenameLabels(metadataPath, format, concurrencyLimit);
       } else {
         await disassembleHandler(metadataPath, uniqueIdElements, prepurge, postpurge, format, ignorePath);
       }
       if (metaSuffix === 'workflow') {
-        await renameWorkflows(metadataPath);
+        await renameWorkflows(metadataPath, concurrencyLimit);
       }
     }),
     concurrencyLimit
@@ -80,9 +88,8 @@ async function disassembleHandler(
   });
 }
 
-async function prePurgeLabels(metadataPath: string): Promise<void> {
+async function prePurgeLabels(metadataPath: string, concurrencyLimit: number): Promise<void> {
   const subFiles = await readdir(metadataPath);
-  const concurrencyLimit = getConcurrencyThreshold();
 
   await withConcurrencyLimit(
     subFiles.map((subFile) => async () => {
@@ -95,11 +102,10 @@ async function prePurgeLabels(metadataPath: string): Promise<void> {
   );
 }
 
-async function moveAndRenameLabels(metadataPath: string, format: string): Promise<void> {
+async function moveAndRenameLabels(metadataPath: string, format: string, concurrencyLimit: number): Promise<void> {
   const sourceDirectory = join(metadataPath, 'CustomLabels', 'labels');
   const destinationDirectory = metadataPath;
   const labelFiles = await readdir(sourceDirectory);
-  const concurrencyLimit = getConcurrencyThreshold();
 
   await withConcurrencyLimit(
     labelFiles.map((file) => async () => {
@@ -123,10 +129,10 @@ async function subDirectoryHandler(
   prepurge: boolean,
   postpurge: boolean,
   format: string,
-  ignorePath: string
+  ignorePath: string,
+  concurrencyLimit: number
 ): Promise<void> {
   const subFiles = await readdir(metadataPath);
-  const concurrencyLimit = getConcurrencyThreshold();
 
   await withConcurrencyLimit(
     subFiles.map((subFile) => async () => {
@@ -139,9 +145,8 @@ async function subDirectoryHandler(
   );
 }
 
-async function renameWorkflows(directory: string): Promise<void> {
+async function renameWorkflows(directory: string, concurrencyLimit: number): Promise<void> {
   const files = await readdir(directory, { recursive: true });
-  const concurrencyLimit = getConcurrencyThreshold();
 
   await withConcurrencyLimit(
     files.map((file) => async () => {
