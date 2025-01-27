@@ -1500,10 +1500,10 @@
     strip-ansi "6.0.1"
     ts-retry-promise "^0.8.1"
 
-"@salesforce/core@^8.1.1", "@salesforce/core@^8.2.1", "@salesforce/core@^8.2.3", "@salesforce/core@^8.8.0":
-  version "8.8.0"
-  resolved "https://registry.yarnpkg.com/@salesforce/core/-/core-8.8.0.tgz#849c07ea3a2548ca201fc0fe8baef9b36a462194"
-  integrity sha512-HWGdRiy/MPCJ2KHz+W+cnqx0O9xhx9+QYvwP8bn9PE27wj0A/NjTi4xrqIWk1M+fE4dXHycE+8qPf4b540euvg==
+"@salesforce/core@^8.1.1", "@salesforce/core@^8.2.1", "@salesforce/core@^8.2.3", "@salesforce/core@^8.8.2":
+  version "8.8.2"
+  resolved "https://registry.yarnpkg.com/@salesforce/core/-/core-8.8.2.tgz#0fc1632cc183b8c62e333f1f884bf3ee0f4aee6e"
+  integrity sha512-EOH75R2Nr2tg7b3gbyzRNwZPfZ/dZOpmMKmFHKL9oCtUI59+N4IkVljg6dpKYypVKuJJTzjI7T2ibnA8/cluZg==
   dependencies:
     "@jsforce/jsforce-node" "^3.6.1"
     "@salesforce/kit" "^3.2.2"
@@ -1561,7 +1561,7 @@
     typescript "^5.4.3"
     wireit "^0.14.5"
 
-"@salesforce/kit@^3.1.6", "@salesforce/kit@^3.2.2":
+"@salesforce/kit@^3.1.6", "@salesforce/kit@^3.2.2", "@salesforce/kit@^3.2.3":
   version "3.2.3"
   resolved "https://registry.yarnpkg.com/@salesforce/kit/-/kit-3.2.3.tgz#a7293c384ef6133191fe3590e604e3896fdecf4a"
   integrity sha512-X8rZouLt06dxRkn+uYTwywWDS/NqZ783AyomGqgtWdUxF61EOJvu0ehtcYeutx9Ng08uuZ+s6wNvWiDsdhUcPg==
@@ -1596,13 +1596,13 @@
     string-width "^7.2.0"
     terminal-link "^3.0.0"
 
-"@salesforce/source-deploy-retrieve@^12.12.3":
-  version "12.12.3"
-  resolved "https://registry.yarnpkg.com/@salesforce/source-deploy-retrieve/-/source-deploy-retrieve-12.12.3.tgz#b03df07a60c55004c3b4c7ce8df3ecfd20b7742a"
-  integrity sha512-kQ78RekRvTLh5yp8eB67szRoQr64R/0PETgszxf65RRPzLTmBGs0JpkZBMx0GN95Mb6BWvOEjTYLgyezVPUXsw==
+"@salesforce/source-deploy-retrieve@^12.14.0":
+  version "12.14.0"
+  resolved "https://registry.yarnpkg.com/@salesforce/source-deploy-retrieve/-/source-deploy-retrieve-12.14.0.tgz#04036f76301071b2188c92f70d77a138bc0d72cf"
+  integrity sha512-3WOQCUY0a8cNYx5/NVtaubLEgxo/vHS/7k4Kw/FEZY3ysALpPCqWk2psJQP56xsp/SDAI3lV0VpMZadrL+ryMw==
   dependencies:
-    "@salesforce/core" "^8.8.0"
-    "@salesforce/kit" "^3.2.2"
+    "@salesforce/core" "^8.8.2"
+    "@salesforce/kit" "^3.2.3"
     "@salesforce/ts-types" "^2.0.12"
     fast-levenshtein "^3.0.0"
     fast-xml-parser "^4.5.1"
@@ -1614,6 +1614,7 @@
     mime "2.6.0"
     minimatch "^9.0.5"
     proxy-agent "^6.4.0"
+    yaml "^2.6.1"
 
 "@salesforce/ts-types@^2.0.10", "@salesforce/ts-types@^2.0.12":
   version "2.0.12"
@@ -7085,7 +7086,16 @@ streamroller@^3.1.5:
     debug "^4.3.4"
     fs-extra "^8.1.0"
 
-"string-width-cjs@npm:string-width@^4.2.0", string-width@^4.0.0, string-width@^4.1.0, string-width@^4.2.0, string-width@^4.2.3:
+"string-width-cjs@npm:string-width@^4.2.0":
+  version "4.2.3"
+  resolved "https://registry.npmjs.org/string-width/-/string-width-4.2.3.tgz"
+  integrity sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==
+  dependencies:
+    emoji-regex "^8.0.0"
+    is-fullwidth-code-point "^3.0.0"
+    strip-ansi "^6.0.1"
+
+string-width@^4.0.0, string-width@^4.1.0, string-width@^4.2.0, string-width@^4.2.3:
   version "4.2.3"
   resolved "https://registry.npmjs.org/string-width/-/string-width-4.2.3.tgz"
   integrity sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==
@@ -7153,7 +7163,14 @@ string_decoder@^1.3.0:
   dependencies:
     safe-buffer "~5.2.0"
 
-"strip-ansi-cjs@npm:strip-ansi@^6.0.1", strip-ansi@6.0.1, strip-ansi@^6.0.0, strip-ansi@^6.0.1:
+"strip-ansi-cjs@npm:strip-ansi@^6.0.1":
+  version "6.0.1"
+  resolved "https://registry.npmjs.org/strip-ansi/-/strip-ansi-6.0.1.tgz"
+  integrity sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==
+  dependencies:
+    ansi-regex "^5.0.1"
+
+strip-ansi@6.0.1, strip-ansi@^6.0.0, strip-ansi@^6.0.1:
   version "6.0.1"
   resolved "https://registry.npmjs.org/strip-ansi/-/strip-ansi-6.0.1.tgz"
   integrity sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==
@@ -7723,7 +7740,7 @@ workerpool@^6.5.1:
   resolved "https://registry.yarnpkg.com/workerpool/-/workerpool-6.5.1.tgz#060f73b39d0caf97c6db64da004cd01b4c099544"
   integrity sha512-Fs4dNYcsdpYSAfVxhnl1L5zTksjvOJxtC5hzMNl+1t9B8hTJTdKDyZ5ju7ztgPy+ft9tBFXoOlDNiOT9WUXZlA==
 
-"wrap-ansi-cjs@npm:wrap-ansi@^7.0.0", wrap-ansi@^7.0.0:
+"wrap-ansi-cjs@npm:wrap-ansi@^7.0.0":
   version "7.0.0"
   resolved "https://registry.npmjs.org/wrap-ansi/-/wrap-ansi-7.0.0.tgz"
   integrity sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==
@@ -7736,6 +7753,15 @@ wrap-ansi@^6.2.0:
   version "6.2.0"
   resolved "https://registry.npmjs.org/wrap-ansi/-/wrap-ansi-6.2.0.tgz"
   integrity sha512-r6lPcBGxZXlIcymEu7InxDMhdW0KDxpLgoFLcguasxCaJ/SOIZwINatK9KY/tf+ZrlywOKU0UDj3ATXUBfxJXA==
+  dependencies:
+    ansi-styles "^4.0.0"
+    string-width "^4.1.0"
+    strip-ansi "^6.0.0"
+
+wrap-ansi@^7.0.0:
+  version "7.0.0"
+  resolved "https://registry.npmjs.org/wrap-ansi/-/wrap-ansi-7.0.0.tgz"
+  integrity sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==
   dependencies:
     ansi-styles "^4.0.0"
     string-width "^4.1.0"
@@ -7825,7 +7851,7 @@ yallist@^4.0.0:
   resolved "https://registry.npmjs.org/yallist/-/yallist-4.0.0.tgz"
   integrity sha512-3wdGidZyq5PB084XLES5TpOSRA3wjXAlIWMhum2kRcv/41Sn2emQ0dycQW4uZXLejwKvg6EsvbdlVL+FYEct7A==
 
-yaml@^2.4.5, yaml@^2.7.0:
+yaml@^2.4.5, yaml@^2.6.1, yaml@^2.7.0:
   version "2.7.0"
   resolved "https://registry.yarnpkg.com/yaml/-/yaml-2.7.0.tgz#aef9bb617a64c937a9a748803786ad8d3ffe1e98"
   integrity sha512-+hSoy/QHluxmC9kCIJyL/uyFmLmc+e5CFR5Wa+bpIhIj85LVb9ZH2nVnqrHoSvKogwODv0ClqZkmiSSaIH5LTA==
