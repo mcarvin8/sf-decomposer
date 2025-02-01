@@ -222,7 +222,7 @@ The ignore file is not read by the recompose command.
 
 ## Hooks
 
-**NOTE:** In order to avoid errors during the retrieval, you must configure your `.forceignore` file to have the Salesforce CLI ignore the decomposed files. See "Ignore Files" section below.
+**NOTE:** In order to avoid errors during the retrieval, you must configure your `.forceignore` file to have the Salesforce CLI ignore the decomposed files. See [Ignore Files](#ignore-files) section.
 
 A post-retrieve hook (for the decompose command) and a pre-run hook (for the recompose command) have been configured if you elect to use them. The post-retrieve hook will automatically decompose the desired metadata types after every Salesforce CLI retrieval (`sf project retrieve start` command). The pre-run hook will automatically recompose the desired metadata types before every Salesforce CLI deployment/validation (`sf project deploy start` and `sf project deploy validate` commands).
 
@@ -238,17 +238,15 @@ If the `.sfdecomposer.config.json` file isn't found, the hooks will be skipped.
 
 ## Ignore Files
 
-You **must** update the `.forceignore` to have the Salesforce CLI ignore the decomposed files created by this plugin. Optionally, you can add the recomposed files to your `.gitignore` to avoid staging those in your git-based repository.
-
 ### `.forceignore` updates
 
-The Salesforce CLI should ignore the decomposed files and should allow the recomposed files.
+The Salesforce CLI **must** ignore the decomposed files and allow the recomposed files.
 
 You can use the sample [.forceignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.forceignore) provided. Update the decomposed file extensions based on what format you're using (`.xml`, `.json`, or `.yaml`).
 
 ### `.gitignore` updates
 
-I recommend having Git (or whatever version control system you are using) ignore the recomposed files so you don't stage those in your repositories. You can also ignore the log created by the disassembler package.
+Optimally, Git (or whatever version control system you are using) can ignore the recomposed files so you don't stage those in your repositories. You can also ignore the log created by the disassembler package.
 
 You can use the sample [.gitignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.gitignore) provided.
 
