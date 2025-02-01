@@ -27,8 +27,7 @@ A Salesforce CLI plugin to break down large metadata files into smaller, more ma
 
 **DISCLAIMERS:**
 
-- You must update the `.forceignore` to have the Salesforce CLI ignore the decomposed files created by this plugin. See section `Ignore Files`.
-  - Updates to the `.gitignore` are optional if you are using this in a git-based repo and can be updated based on what you want to be staged in your repo.
+- You must update the `.forceignore` to have the Salesforce CLI ignore the decomposed files created by this plugin. See [Ignore Files](#ignore-files).
 - It is recommended that you extensively test this plugin in a sandbox environment on the metadata types for which you wish to use this tool.
 - Do not change your production/QA pipelines until you have tested this and are happy with the results.
 - Ensure your deployment pipelines are stable before implementing this plugin.
@@ -246,7 +245,7 @@ You can use the sample [.forceignore](https://raw.githubusercontent.com/mcarvin8
 
 ### `.gitignore` updates
 
-Optimally, Git (or whatever version control system you are using) can ignore the recomposed files so you don't stage those in your repositories. You can also ignore the log created by the disassembler package.
+Optionally, Git (or whatever version control system you are using) can ignore the recomposed files so you don't stage those in your repositories. You can also ignore the log created by the disassembler package.
 
 You can use the sample [.gitignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.gitignore) provided.
 
