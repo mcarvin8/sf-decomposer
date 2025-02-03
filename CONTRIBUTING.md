@@ -49,6 +49,10 @@ yarn test:nuts
 
 ## Unique ID Elements
 
-Unique ID elements are used to name decomposed files (nested elements). The file that contains the leaf elements will always match the original file-name.
+Unique ID elements are used to name decomposed files with nested elements. The file that contains the leaf elements will always match the original file-name.
 
-To add more unique ID elements for a metadata type, you can update the `src/metadata/uniqueIdElements.json` file. The metadata type's suffix should be used as the key.
+The default unique ID elements for all metadata types is `fullName` and `name`.
+
+To add metadata-specific unique ID elements, you can update `src/metadata/uniqueIdElements.json`. The metadata type's suffix should be used as the key.
+
+When a unique ID element isn't found, it will use the SHA-256 hash of the element contents to name the decomposed nested element file.
