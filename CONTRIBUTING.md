@@ -56,3 +56,13 @@ The default unique ID elements for all metadata types is `fullName` and `name`.
 To add metadata-specific unique ID elements, you can update `src/metadata/uniqueIdElements.json`. The metadata type's suffix should be used as the key.
 
 When a unique ID element isn't found, it will use the SHA-256 hash of the element contents to name the decomposed nested element file.
+
+## XML Disassemblers
+
+This plugin's code-base primary handles Salesforce metadata specific functions. The core XML decomposing/recomposing logic is handled by the 3 external packages below (1 primary package and 2 extension packages). When these 3 packages below have new releases, this plugin should be updated to use the latest releases.
+
+- [XML Disassembler](https://github.com/mcarvin8/xml-disassembler): Disassemble large XML files into smaller XML files and reassemble the original XML file when needed
+    - [XML2JSON Disassembler](https://github.com/mcarvin8/xml2json-disassembler): Extension package which disassembles large XML files into smaller JSON files and reassembles the original XML file when needed
+    - [XML2YAML Disassembler](https://github.com/mcarvin8/xml2yaml-disassembler): Extension package which disassembles large XML files into smaller YAML files and reassembles the original XML file when needed
+
+Please fork and raise PRs in these repos for any features or bug fixes specific to XML decomposing/disassembly or recomposing/reassembly.
