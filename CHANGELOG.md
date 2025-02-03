@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.3.7](https://github.com/mcarvin8/sf-decomposer/compare/v5.3.6...v5.3.7) (2025-02-03)
+
+
+### Bug Fixes
+
+* upgrade disassemblers ([f36035b](https://github.com/mcarvin8/sf-decomposer/commit/f36035b309604dff445438823bf3cf16e529f65b))
+
 ## [5.3.6](https://github.com/mcarvin8/sf-decomposer/compare/v5.3.5...v5.3.6) (2025-02-01)
 
 
