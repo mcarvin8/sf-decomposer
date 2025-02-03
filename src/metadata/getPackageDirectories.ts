@@ -1,5 +1,4 @@
 'use strict';
-/* eslint-disable no-await-in-loop */
 
 import { resolve, join, basename } from 'node:path';
 import { readFile, readdir, stat } from 'node:fs/promises';
@@ -22,32 +21,35 @@ export async function getPackageDirectories(
   const sfdxProject: SfdxProject = JSON.parse(sfdxProjectRaw) as SfdxProject;
   const normalizedIgnoreDirs = (ignoreDirs ?? []).map((dir) => basename(dir));
   const packageDirectories = sfdxProject.packageDirectories.map((directory) => resolve(repoRoot, directory.path));
-  const metadataPaths: string[] = [];
-  for (const directory of packageDirectories) {
-    if (normalizedIgnoreDirs.includes(basename(directory))) {
-      continue;
+
+  const searchPromises = packageDirectories.map(async (directory) => {
+    if (!normalizedIgnoreDirs.includes(basename(directory))) {
+      return searchRecursively(directory, metaDirectory);
     }
-    const filePath: string | undefined = await searchRecursively(directory, metaDirectory);
-    if (filePath !== undefined) {
-      metadataPaths.push(resolve(filePath));
-    }
-  }
+  });
+
+  const results = await Promise.all(searchPromises);
+  const metadataPaths = results.filter((filePath) => filePath !== undefined).map((filePath) => resolve(filePath));
+
   return { metadataPaths, ignorePath };
 }
 
 async function searchRecursively(dxDirectory: string, subDirectoryName: string): Promise<string | undefined> {
   const files = await readdir(dxDirectory);
-  for (const file of files) {
+
+  const searchPromises = files.map(async (file) => {
     const filePath = join(dxDirectory, file);
     const stats = await stat(filePath);
-    if (stats.isDirectory() && file !== subDirectoryName) {
-      const result = await searchRecursively(filePath, subDirectoryName);
-      if (result) {
-        return result;
+
+    if (stats.isDirectory()) {
+      if (file === subDirectoryName) {
+        return filePath;
+      } else {
+        return searchRecursively(filePath, subDirectoryName);
       }
-    } else if (stats.isDirectory() && file === subDirectoryName) {
-      return filePath;
     }
-  }
-  return undefined;
+  });
+
+  const results = await Promise.all(searchPromises);
+  return results.find((result) => result !== undefined);
 }
