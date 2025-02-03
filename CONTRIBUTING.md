@@ -59,9 +59,9 @@ When a unique ID element isn't found, it will use the SHA-256 hash of the elemen
 
 ## XML Disassemblers
 
-This plugin's code-base primary handles Salesforce metadata specific functions. The core XML decomposing/recomposing logic is handled by the 3 external packages below (1 primary package and 2 extension packages). When these 3 packages below have new releases, this plugin should be updated to use the latest releases.
+This plugin's code-base primarily handles Salesforce metadata specific functions. The core XML decomposing/recomposing logic is handled by the 3 external packages below (1 primary package and 2 extension packages). When these 3 packages below have new releases, this plugin should be updated to use the latest releases.
 
-- [XML Disassembler](https://github.com/mcarvin8/xml-disassembler): Disassemble large XML files into smaller XML files and reassemble the original XML file when needed
+- [XML Disassembler](https://github.com/mcarvin8/xml-disassembler): Disassembles large XML files into smaller XML files and reassembles the original XML file when needed
     - [XML2JSON Disassembler](https://github.com/mcarvin8/xml2json-disassembler): Extension package which disassembles large XML files into smaller JSON files and reassembles the original XML file when needed
     - [XML2YAML Disassembler](https://github.com/mcarvin8/xml2yaml-disassembler): Extension package which disassembles large XML files into smaller YAML files and reassembles the original XML file when needed
 
