@@ -66,3 +66,5 @@ This plugin's code-base primarily handles Salesforce metadata specific functions
     - [XML2YAML Disassembler](https://github.com/mcarvin8/xml2yaml-disassembler): Extension package which disassembles large XML files into smaller YAML files and reassembles the original XML file when needed
 
 Please fork and raise PRs in these repos for any features or bug fixes specific to XML decomposing/disassembly or recomposing/reassembly.
+
+`src/service/recomposeFileHandler.ts` and `src/service/decomposeFileHandler.ts` in this plugin handles calling the applicable XML disassemblers.
