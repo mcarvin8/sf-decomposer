@@ -18,3 +18,9 @@ updates:
       - dependency-name: 'xml-disassembler'
       - dependency-name: 'xml2json-disassembler'
       - dependency-name: 'xml2yaml-disassembler'
+    groups:
+      xml-disassemblers:
+        patterns:
+          - 'xml-disassembler'
+          - 'xml2json-disassembler'
+          - 'xml2yaml-disassembler'
