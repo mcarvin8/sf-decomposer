@@ -19,6 +19,7 @@
 - [Ignore Files](#ignore-files)
   - [`.forceignore` updates](#.forceignore-updates)
   - [`.gitignore` updates](#.gitignore-updates)
+- [Contributing](#contributing)
 - [Issues](#issues)
 - [License](#license)
 </details>
@@ -248,6 +249,10 @@ You can use the sample [.forceignore](https://raw.githubusercontent.com/mcarvin8
 Optionally, Git (or whatever version control system you are using) can ignore the recomposed files so you don't stage those in your repositories. You can also ignore the log created by the disassembler package.
 
 You can use the sample [.gitignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.gitignore) provided.
+
+## Contributing
+
+Contributions are welcome! See [Contributing](https://github.com/mcarvin8/sf-decomposer/blob/main/CONTRIBUTING.md).
 
 ## Issues
 
