@@ -49,7 +49,9 @@ yarn test:nuts
 
 ## Metadata
 
-All metadata attributes, except for unique ID elements, are imported from this plugin's version of `@salesforce/source-deploy-retrieve`.
+All metadata attributes, except for unique ID elements, are imported from this plugin's version of `@salesforce/source-deploy-retrieve` (SDR).
+
+This plugin's dependabot will look for SDR updates once a week.
 
 ## Unique ID Elements
 
