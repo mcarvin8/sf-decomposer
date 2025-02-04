@@ -61,6 +61,8 @@ The default unique ID elements for all metadata types is `fullName` and `name`.
 
 To add metadata-specific unique ID elements, you can update `src/metadata/uniqueIdElements.json`. The metadata type's suffix should be used as the key.
 
+This plugin looks for the 2 default unique ID elements first before searching for any metadata-specific unique ID elements.
+
 When a unique ID element isn't found, it will use the SHA-256 hash of the element contents to name the decomposed nested element file.
 
 ## XML Disassemblers
