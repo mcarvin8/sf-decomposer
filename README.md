@@ -47,6 +47,7 @@ Why should you consider using this Salesforce CLI Plugin over Salesforce's decom
 - Salesforce's decomposition is all or nothing for each metadata type. Meaning, if you want to decompose workflows, all of your workflows will need to be decomposed to work with Salesforce's approach. My plugin allows you to selectively decompose for each metadata type.
   - See [Ignore Files when Decomposing](#ignore-files-when-decomposing)
 - Some metadata types may only be partially decomposed by Salesforce such as permission sets based on what designs are picked. My plugin will allow for total decomposition. So if a user wants to fully decompose permission sets, they can use this plugin.
+- When this plugin recomposes the decomposed files, it will sort the elements consistently compared to native Salesforce files.
 
 ## Commands
 
@@ -57,7 +58,14 @@ The `sf-decomposer` supports 2 commands:
 
 ## `sf decomposer decompose`
 
-Decomposes the original metadata files in all local package directories into smaller files for version control. If unique ID elements are found, the decomposed files will be named using them. Otherwise, the decomposed files will be named with the SHA-256 hash of the element contents. See [Contributing](#contributing) for more information on unique ID elements.
+Decomposes the original metadata files in all local package directories into smaller files for version control. 
+
+When the files are decomposed, it will:
+- decompose leaf elements (i.e. `<userLicense>Salesforce</userLicense>`) in the same file. The leaf file-name will match the original file-name, just in a decomposed directory.
+- decompose nested elements into their own files.
+  - If unique ID elements are found, the decomposed files will be named using them.
+  - Otherwise, the decomposed files will be named with the SHA-256 hash of the element contents.
+  - See [Contributing](#contributing) for more information on unique ID elements.
 
 <img src="https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-perm-set.png">
 <p><em>Decomposed Permission Sets named using unique ID elements</em></p>
