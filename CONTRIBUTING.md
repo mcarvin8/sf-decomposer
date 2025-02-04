@@ -47,6 +47,10 @@ To run the non-unit test, ensure you re-build the application and then run:
 yarn test:nuts
 ```
 
+## Metadata
+
+All metadata attributes, except for unique ID elements, are imported from this plugin's version of `@salesforce/source-deploy-retrieve`.
+
 ## Unique ID Elements
 
 Unique ID elements are used to name decomposed files with nested elements. The file that contains the leaf elements will always match the original file-name.
