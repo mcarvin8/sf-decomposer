@@ -57,7 +57,7 @@ The `sf-decomposer` supports 2 commands:
 
 ## `sf decomposer decompose`
 
-Decomposes the original metadata files in all local package directories into smaller files for version control. If unique ID elements are found, the decomposed files will be named using them. Otherwise, the decomposed files will be named with the SHA-256 hash of the element contents.
+Decomposes the original metadata files in all local package directories into smaller files for version control. If unique ID elements are found, the decomposed files will be named using them. Otherwise, the decomposed files will be named with the SHA-256 hash of the element contents. See [Contributing](#contributing) for more information on unique ID elements.
 
 <img src="https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-perm-set.png">
 <p><em>Decomposed Permission Sets named using unique ID elements</em></p>
