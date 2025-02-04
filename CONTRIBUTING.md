@@ -9,11 +9,7 @@ Contributions are welcome! If you would like to contribute, please fork the repo
 
 ## Installation
 
-### 1) Download the repository
-
-```bash
-git clone git@github.com:mcarvin8/sf-decomposer.git
-```
+### 1) Fork the repository
 
 ### 2) Install Dependencies
 
