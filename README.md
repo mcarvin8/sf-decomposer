@@ -149,12 +149,10 @@ When the original metadata files are decomposed, this structure is followed for 
 
 <br>
 
-When custom labels are decomposed, each label will have its own file in the original labels directory.
+When custom labels are decomposed, each custom label will have its own file in the original labels directory.
 
 <img src="https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-labels.png" alt="Description"> 
-<p><em>Decomposed Custom Labels named using unique ID elements</em></p>
-
-<br>
+<p><em>Decomposed Custom Labels</em></p>
 
 ## Supported Metadata
 
