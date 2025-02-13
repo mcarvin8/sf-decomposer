@@ -7,7 +7,7 @@
   <summary>Table of Contents</summary>
 
 - [Install](#install)
-- [Why Use This Plugin?](#why-use-this-plugin)
+- [Why SF Decomposer](#why-sf-decomposer)
 - [Commands](#commands)
   - [`sf decomposer decompose`](#sf-decomposer-decompose)
   - [`sf decomposer recompose`](#sf-decomposer-recompose)
@@ -26,28 +26,21 @@
 
 A Salesforce CLI plugin to break down large metadata files into smaller, more manageable files for version control and then recreate deployment-compatible files.
 
-**DISCLAIMERS:**
-
-- You must update the `.forceignore` to have the Salesforce CLI ignore the decomposed files created by this plugin. See [Ignore Files](#ignore-files).
-- It is recommended that you extensively test this plugin in a sandbox environment on the metadata types for which you wish to use this tool.
-- Do not change your production/QA pipelines until you have tested this and are happy with the results.
-- Ensure your deployment pipelines are stable before implementing this plugin.
-
 ## Install
 
 ```bash
 sf plugins install sf-decomposer@x.y.z
 ```
 
-## Why Use this Plugin?
+## Why SF Decomposer
 
-Why should you consider using this Salesforce CLI Plugin over Salesforce's decomposition?
+Why should you consider using `sf-decomposer` over Salesforce's decomposition?
 
-- Salesforce's decomposition betas are evaluated for each metadata type before they are considered. My plugin supports the vast majority of Salesforce metadata types available from the Metadata API.
-- Salesforce's decomposition is all or nothing for each metadata type. Meaning, if you want to decompose workflows, all of your workflows will need to be decomposed to work with Salesforce's approach. My plugin allows you to selectively decompose for each metadata type.
+- Salesforce's decomposition betas are evaluated for each metadata type before they are considered. `sf-decomposer` supports the vast majority of Salesforce metadata types available from the Metadata API.
+- Salesforce's decomposition is all or nothing for each metadata type. Meaning, if you want to decompose workflows, all of your workflows will need to be decomposed to work with Salesforce's approach. `sf-decomposer` allows you to selectively decompose for each metadata type.
   - See [Ignore Files when Decomposing](#ignore-files-when-decomposing)
-- Some metadata types may only be partially decomposed by Salesforce such as permission sets based on what designs are picked. My plugin will allow for total decomposition. So if a user wants to fully decompose permission sets, they can use this plugin.
-- When this plugin recomposes the decomposed files, it will sort the elements consistently compared to native Salesforce files.
+- Some metadata types may only be partially decomposed by Salesforce such as permission sets based on what designs are picked. `sf-decomposer` will allow for total decomposition. So if a user wants to fully decompose permission sets, they can use this plugin.
+- When `sf-decomposer` recomposes the decomposed files, it will sort the elements consistently compared to native Salesforce files.
 
 ## Commands
 
@@ -196,13 +189,13 @@ Here are some examples:
 
 ## Debugging
 
-The plugin searches the current working directory for the `sfdx-project.json`, and if it's not found in the current working directory, it will search upwards for it until it hits your root drive. If the `sfdx-project.json` file isn't found, the plugin will fail with:
+`sf-decomposer` searches the current working directory for the `sfdx-project.json`, and if it's not found in the current working directory, it will search upwards for it until it hits your root drive. If the `sfdx-project.json` file isn't found, the plugin will fail with:
 
 ```
 Error (1): sfdx-project.json not found in any parent directory.
 ```
 
-The xml-disassembler package will log errors, and optionally debugging statements, to a log file, `disassemble.log`. This log will be created in the working directory and will be created when running this plugin at all times. If there were no errors, this log will be empty. By default, the log will only contain errors. This plugin will print the errors as warnings in the command terminal to allow all other files to be processed. These warnings when decomposing or recomposing will look like:
+The `xml-disassembler` package will log errors, and optionally debugging statements, to a log file, `disassemble.log`. This log will be created in the working directory and will be created when running this plugin at all times. If there were no errors, this log will be empty. By default, the log will only contain errors. This plugin will print the errors as warnings in the command terminal to allow all other files to be processed. These warnings when decomposing or recomposing will look like:
 
 ```
 Warning: C:\Users\matth\Documents\sf-decomposer\test\baselines\flows\Get_Info\actionCalls\Get_Info.actionCalls-meta.xml was unabled to be parsed and will not be processed. Confirm formatting and try again.
