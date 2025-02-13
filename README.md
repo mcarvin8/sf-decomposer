@@ -18,8 +18,8 @@
 - [Ignore Files when Decomposing](#ignore-files-when-decomposing)
 - [Hooks](#hooks)
 - [Ignore Files](#ignore-files)
-  - [`.forceignore` updates](#.forceignore-updates)
-  - [`.gitignore` updates](#.gitignore-updates)
+  - [`.forceignore`](#.forceignore)
+  - [`.gitignore`](#.gitignore)
 - [Contributing](#contributing)
 - [Issues](#issues)
 - [License](#license)
@@ -147,8 +147,6 @@ When the original metadata files are decomposed, this structure is followed for 
 <img src="https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-apps-hashes.png">
 <p><em>Decomposed Application named using SHA-256 hashes of elements</em></p>
 
-<br>
-
 When custom labels are decomposed, each custom label will have its own file in the original labels directory.
 
 <img src="https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-labels.png" alt="Description"> 
@@ -243,13 +241,13 @@ If the `.sfdecomposer.config.json` file isn't found, the hooks will be skipped.
 
 ## Ignore Files
 
-### `.forceignore` updates
+### `.forceignore`
 
 The Salesforce CLI **must** ignore the decomposed files and allow the recomposed files.
 
 You can use the sample [.forceignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.forceignore) provided. Update the decomposed file extensions based on what format you're using (`.xml`, `.json`, or `.yaml`).
 
-### `.gitignore` updates
+### `.gitignore`
 
 Optionally, Git (or whatever version control system you are using) can ignore the recomposed files so you don't stage those in your repositories. You can also ignore the log created by the disassembler package.
 
