@@ -15,10 +15,10 @@
 - [Supported Metadata](#supported-metadata)
   - [Metadata Exceptions](#metadata-exceptions)
 - [Debugging](#debugging)
-- [Ignore Files when Decomposing](#ignore-files-when-decomposing)
 - [Hooks](#hooks)
 - [Ignore Files](#ignore-files)
   - [`.forceignore`](#.forceignore)
+  - [`.sfdecomposerignore`](#.sfdecomposerignore)
   - [`.gitignore`](#.gitignore)
 - [Contributing](#contributing)
 - [Issues](#issues)
@@ -39,7 +39,7 @@ Why should you consider using `sf-decomposer` over Salesforce's decomposition?
 
 - Salesforce's decomposition betas are evaluated for each metadata type before they are considered. `sf-decomposer` supports the vast majority of Salesforce metadata types available from the Metadata API.
 - Salesforce's decomposition is all or nothing for each metadata type. Meaning, if you want to decompose workflows, all of your workflows will need to be decomposed to work with Salesforce's approach. `sf-decomposer` allows you to selectively decompose for each metadata type.
-  - See [Ignore Files when Decomposing](#ignore-files-when-decomposing)
+  - See [.sfdecomposerignore](#.sfdecomposerignore)
 - Some metadata types may only be partially decomposed by Salesforce such as permission sets based on what designs are picked. `sf-decomposer` will allow for total decomposition. So if a user wants to fully decompose permission sets, they can use this plugin.
 - When `sf-decomposer` recomposes the decomposed files, it will sort the elements consistently compared to native Salesforce files.
 
@@ -211,18 +211,6 @@ To add additional debugging statements to the log file, provide the `--debug` fl
 
 Recommend adding the `disassemble.log` to your `.gitignore` file if you are using this in a git-based repo.
 
-## Ignore Files when Decomposing
-
-If you wish, you can create an ignore file in the root of your repository named `.sfdecomposerignore` to ignore specific XMLs when running the decompose command. The ignore file should follow [.gitignore spec 2.22.1](https://git-scm.com/docs/gitignore).
-
-When the decompose command is ran with the `--debug` flag and it processes a file that matches an entry in `.sfdecomposerignore`, a warning will be printed to the `disassemble.log`:
-
-```
-[2024-05-22T09:32:12.078] [WARN] default - File ignored by .sfdecomposerignore: C:\Users\matth\Documents\sf-decomposer\test\baselines\bots\Assessment_Bot\v1.botVersion-meta.xml
-```
-
-The ignore file is not read by the recompose command.
-
 ## Hooks
 
 > **NOTE:** In order to avoid errors during the retrieval, you must configure your `.forceignore` file to have the Salesforce CLI ignore the decomposed files. See [Ignore Files](#ignore-files) section.
@@ -246,6 +234,18 @@ If the `.sfdecomposer.config.json` file isn't found, the hooks will be skipped.
 The Salesforce CLI **must** ignore the decomposed files and allow the recomposed files.
 
 You can use the sample [.forceignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.forceignore) provided. Update the decomposed file extensions based on what format you're using (`.xml`, `.json`, or `.yaml`).
+
+### `.sfdecomposerignore`
+
+If you wish, you can create a `.sfdecomposerignore` file in the root of your repository to ignore specific XMLs when running the decompose command. The `.sfdecomposerignore` file should follow [.gitignore spec 2.22.1](https://git-scm.com/docs/gitignore).
+
+When the decompose command is ran with the `--debug` flag and it processes a file that matches an entry in `.sfdecomposerignore`, a warning will be printed to the `disassemble.log`:
+
+```
+[2024-05-22T09:32:12.078] [WARN] default - File ignored by .sfdecomposerignore: C:\Users\matth\Documents\sf-decomposer\test\baselines\bots\Assessment_Bot\v1.botVersion-meta.xml
+```
+
+`.sfdecomposerignore` is not read by the recompose command.
 
 ### `.gitignore`
 
