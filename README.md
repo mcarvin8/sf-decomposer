@@ -249,7 +249,7 @@ When the decompose command is ran with the `--debug` flag and it processes a fil
 
 ### `.gitignore`
 
-Optionally, Git (or whatever version control system you are using) can ignore the recomposed files so you don't stage those in your repositories. You can also ignore the log created by the disassembler package.
+Optionally, Git (or whatever version control system you are using) can ignore the recomposed files so you don't stage those in your repositories. You can also have git ignore the `disassemble.log` created by the `xml-disassembler` package.
 
 You can use the sample [.gitignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.gitignore) provided.
 
