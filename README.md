@@ -11,6 +11,7 @@
 - [Commands](#commands)
   - [`sf decomposer decompose`](#sf-decomposer-decompose)
   - [`sf decomposer recompose`](#sf-decomposer-recompose)
+- [Decompose Structure](#decompose-structure)
 - [Supported Metadata](#supported-metadata)
   - [Metadata Exceptions](#metadata-exceptions)
 - [Debugging](#debugging)
@@ -52,28 +53,6 @@ The `sf-decomposer` supports 2 commands:
 ## `sf decomposer decompose`
 
 Decomposes the original metadata files in all local package directories into smaller files for version control. 
-
-When the files are decomposed, it will:
-- decompose leaf elements (i.e. `<userLicense>Salesforce</userLicense>`) in the same file. The leaf file-name will match the original file-name, just in a decomposed directory.
-- decompose nested elements into their own files.
-  - If unique ID elements are found, the decomposed files will be named using them.
-  - Otherwise, the decomposed files will be named with the SHA-256 hash of the element contents.
-  - See [Contributing](#contributing) for more information on unique ID elements.
-
-<img src="https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-perm-set.png">
-<p><em>Decomposed Permission Sets named using unique ID elements</em></p>
-
-<br>
-
-<img src="https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-labels.png" alt="Description"> 
-<p><em>Decomposed Custom Labels named using unique ID elements</em></p>
-
-<br>
-
-<img src="https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-apps-hashes.png">
-<p><em>Decomposed Application named using SHA-256 hashes of elements</em></p>
-
-<br>
 
 ```
 USAGE
@@ -149,6 +128,33 @@ EXAMPLES
     $ sf decomposer recompose -m "flow" -i "force-app"
 
 ```
+
+## Decompose Structure
+
+When the original metadata files are decomposed, this structure is followed for all metadata types except for custom labels:
+
+- Leaf elements (i.e. `<userLicense>Salesforce</userLicense>`) will be decomposed in the same file in the root of the decomposed directory. The leaf file-name will match the original file-name.
+- Nested elements will be decomposed into their own files under sub-directories by the element type, i.e. custom permissions in a permission set will have their own decomposed file under a custom permissions sub-folder. 
+  - If unique ID elements are found, the decomposed nested files will be named using them.
+  - Otherwise, the decomposed nested files will be named with the SHA-256 hash of the element contents.
+  - See [Contributing](#contributing) for more information on unique ID elements.
+
+<img src="https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-perm-set.png">
+<p><em>Decomposed Permission Sets named using unique ID elements</em></p>
+
+<br>
+
+<img src="https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-apps-hashes.png">
+<p><em>Decomposed Application named using SHA-256 hashes of elements</em></p>
+
+<br>
+
+When custom labels are decomposed, each label will have its own file in the original labels directory.
+
+<img src="https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-labels.png" alt="Description"> 
+<p><em>Decomposed Custom Labels named using unique ID elements</em></p>
+
+<br>
 
 ## Supported Metadata
 
