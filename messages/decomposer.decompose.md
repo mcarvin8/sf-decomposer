@@ -16,19 +16,19 @@ You should run this after you retrieve metadata from an org.
 
 # flags.metadata-type.summary
 
-The metadata suffix to process, such as 'flow', 'labels', etc. You can provide this flag multiple times to process multiple metadata types with a single command.
+The metadata suffix to process, such as 'flow', 'labels', etc.
 
 # flags.prepurge.summary
 
-If provided, purge directories of pre-existing decomposed files.
+Purge directories of pre-existing decomposed files.
 
 # flags.postpurge.summary
 
-If provided, purge the original files after decomposing them.
+Purge the original files after decomposing them.
 
 # flags.debug.summary
 
-If provided, debug to a log file.
+Debug to a log file.
 
 # flags.format.summary
 
