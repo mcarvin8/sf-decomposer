@@ -61,7 +61,8 @@ USAGE
 FLAGS
   -m, --metadata-type=<value>             The metadata suffix to process, such as 'flow', 'labels', etc. You can provide this flag multiple times.
   -f, --format=<value>                    [default: 'xml'] The file type for the decomposed files. Must match what format you provide for recompose.
-  -i, --ignore-package-directory=<value>  Package directories to ignore. Should be as they appear in the "sfdx-project.json" file.
+  -i, --ignore-package-directory=<value>  Package directory to ignore.
+                                          Should be as they appear in the "sfdx-project.json".
                                           Can be declared multiple times.
   --prepurge                              [default: false] If provided, purge directories of pre-existing decomposed files.
   --postpurge                             [default: false] If provided, purge the original files after decomposing them.
@@ -101,7 +102,8 @@ USAGE
 FLAGS
   -m, --metadata-type=<value>               The metadata suffix to process, such as 'flow', 'labels', etc. You can provide this flag multiple times.
   -f, --format=<value>                      [default: 'xml'] The file format for the decomposed files.
-  -i, --ignore-package-directory=<value>    Package directories to ignore. Should be as they appear in the "sfdx-project.json" file.
+  -i, --ignore-package-directory=<value>    Package directory to ignore. 
+                                            Should be as they appear in the "sfdx-project.json".
                                             Can be declared multiple times.
   --postpurge                               [default: false] If provided, purge the decomposed files after recomposing them.
   --debug                                   [default: false] If provided, log debugging results to a text file (disassemble.log).
