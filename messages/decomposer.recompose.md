@@ -16,15 +16,15 @@ You should run this before you deploy decomposed metadata to an org.
 
 # flags.metadata-type.summary
 
-The metadata suffix to process, such as 'flow', 'labels', etc. You can provide this flag multiple times to process multiple metadata types with a single command.
+The metadata suffix to process, such as 'flow', 'labels', etc.
 
 # flags.postpurge.summary
 
-If provided, purge the decomposed files after recomposing them.
+Purge the decomposed files after recomposing them.
 
 # flags.debug.summary
 
-If provided, debug to a log file.
+Debug to a log file.
 
 # flags.format.summary
 
