@@ -1,6 +1,6 @@
 {
   "name": "sf-decomposer",
-  "description": "Decomposes Salesforce metadata into more manageable files.",
+  "description": "Break down large Salesforce metadata files into smaller, more manageable files for version control and then recreate deployment-compatible files.",
   "version": "5.3.9",
   "dependencies": {
     "@oclif/core": "^4",
