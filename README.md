@@ -272,7 +272,7 @@ Contributions are welcome! See [Contributing](https://github.com/mcarvin8/sf-dec
 
 ## Issues
 
-If you encounter any issues, please create an issue in the repository's [issue tracker](https://github.com/mcarvin8/sf-decomposer/issues). Please also create issues for feature enhancements or to support newer metadata types added to the [SDR toolkit](https://github.com/forcedotcom/source-deploy-retrieve).
+If you encounter any bugs or would like to request features, please create an [issue](https://github.com/mcarvin8/sf-decomposer/issues).
 
 ## License
 
