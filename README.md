@@ -14,14 +14,14 @@
 - [Decompose Structure](#decompose-structure)
 - [Supported Metadata](#supported-metadata)
   - [Metadata Exceptions](#metadata-exceptions)
-- [Debugging](#debugging)
+- [Troubleshooting](#troubleshooting)
 - [Hooks](#hooks)
 - [Ignore Files](#ignore-files)
   - [`.forceignore`](#.forceignore)
   - [`.sfdecomposerignore`](#.sfdecomposerignore)
   - [`.gitignore`](#.gitignore)
-- [Contributing](#contributing)
 - [Issues](#issues)
+- [Contributing](#contributing)
 - [License](#license)
 </details>
 
@@ -202,7 +202,7 @@ Here are some examples:
   Error (1): Metadata type not found for the given suffix: field.
   ```
 
-## Debugging
+## Troubleshooting
 
 `sf-decomposer` searches the current working directory for the `sfdx-project.json`, and if it's not found in the current working directory, it will search upwards for it until it hits your root drive. If the `sfdx-project.json` file isn't found, the plugin will fail with:
 
@@ -266,13 +266,13 @@ Optionally, Git (or whatever version control system you are using) can ignore th
 
 You can use the sample [.gitignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.gitignore) provided.
 
-## Contributing
-
-Contributions are welcome! See [Contributing](https://github.com/mcarvin8/sf-decomposer/blob/main/CONTRIBUTING.md).
-
 ## Issues
 
 If you encounter any bugs or would like to request features, please create an [issue](https://github.com/mcarvin8/sf-decomposer/issues).
+
+## Contributing
+
+Contributions are welcome! See [Contributing](https://github.com/mcarvin8/sf-decomposer/blob/main/CONTRIBUTING.md).
 
 ## License
 
