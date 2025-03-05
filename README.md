@@ -37,11 +37,11 @@ sf plugins install sf-decomposer@x.y.z
 
 Why should you consider using `sf-decomposer` over Salesforce's decomposition?
 
-- Salesforce's decomposition betas are evaluated for each metadata type before they are considered. `sf-decomposer` supports the vast majority of Salesforce metadata types available from the Metadata API.
-- Salesforce's decomposition is all or nothing for each metadata type. Meaning, if you want to decompose workflows, all of your workflows will need to be decomposed to work with Salesforce's approach. `sf-decomposer` allows you to selectively decompose for each metadata type.
+- **Broad Metadata Support**: Unlike Salesforce's decomposition, `sf-decomposer` supports most metadata types available in the Metadata API.  
+- **Selective Decomposition**: `sf-decomposer` allows you to decompose only the metadata you need instead of Salesforce's all-or-nothing approach.
   - See [.sfdecomposerignore](#.sfdecomposerignore)
-- Some metadata types may only be partially decomposed by Salesforce such as permission sets based on what designs are picked. `sf-decomposer` will allow for total decomposition. So if a user wants to fully decompose permission sets, they can use this plugin.
-- When `sf-decomposer` recomposes the decomposed files, it will sort the elements consistently compared to native Salesforce files.
+- **Complete Decomposition**: Partially decomposed metadata types (e.g., permission sets) can be fully decomposed by `sf-decomposer`.  
+- **Consistent Sorting**: `sf-decomposer` recomposition ensures elements are always sorted consistently for better version control.
 
 ## Commands
 
@@ -167,7 +167,7 @@ When custom labels are decomposed, each custom label will have its own file in t
 
 ## Supported Metadata
 
-All metadata types imported from this plugin's version of `@salesforce/source-deploy-retrieve` (SDR) toolkit are supported except for certain types.
+All parent metadata types imported from this plugin's version of `@salesforce/source-deploy-retrieve` (SDR) toolkit are supported except for certain types.
 
 The `--metadata-type`/`-m` flag should be the metadata's `suffix` value as listed in the [metadataRegistry.json](https://github.com/forcedotcom/source-deploy-retrieve/blob/main/src/registry/metadataRegistry.json).
 
@@ -189,7 +189,7 @@ Here are some examples:
   ```
   Error (1): `botVersion` suffix should not be used. Please use `bot` to decompose/recompose bot and bot version files.
   ```
-- Custom Objects are not supported by this plugin.
+- Custom Objects are not supported by this plugin as they already are decomposed by default.
   ```
   Error (1): Custom Objects are not supported by this plugin.
   ```
