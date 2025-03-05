@@ -34,7 +34,7 @@ Break down large Salesforce metadata files into smaller, more manageable files f
 sf plugins install sf-decomposer@x.y.z
 ```
 
-2. Decompose the metadata type(s)
+2. Decompose the metadata type(s) in your Salesforce DX project
 
 ```bash
 sf decomposer decompose -m "flow" -m "labels"
@@ -279,7 +279,7 @@ You can use the sample [.forceignore](https://raw.githubusercontent.com/mcarvin8
 
 ### `.sfdecomposerignore`
 
-If you wish, you can create a `.sfdecomposerignore` file in the root of your repository to ignore specific XMLs when running the decompose command. The `.sfdecomposerignore` file should follow [.gitignore spec 2.22.1](https://git-scm.com/docs/gitignore).
+If you wish, you can create a `.sfdecomposerignore` file in the root of your Salesforce DX project to ignore specific XMLs when running the decompose command. The `.sfdecomposerignore` file should follow [.gitignore spec 2.22.1](https://git-scm.com/docs/gitignore).
 
 When the decompose command is ran with the `--debug` flag and it processes a file that matches an entry in `.sfdecomposerignore`, a warning will be printed to the `disassemble.log`:
 
