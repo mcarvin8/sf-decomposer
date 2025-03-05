@@ -25,7 +25,7 @@
 - [License](#license)
 </details>
 
-A Salesforce CLI plugin to break down large metadata files into smaller, more manageable files for version control and then recreate deployment-compatible files.
+Break down large Salesforce metadata files into smaller, more manageable files for version control and then recreate deployment-compatible files.
 
 ## Quick Start
 1. Install plugin using `sf`
