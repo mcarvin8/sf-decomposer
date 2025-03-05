@@ -247,9 +247,9 @@ Recommend adding the `disassemble.log` to your `.gitignore` file if you are usin
 
 ## Hooks
 
-> **NOTE:** In order to avoid errors during the retrieval, you must configure your `.forceignore` file to have the Salesforce CLI ignore the decomposed files. See [Ignore Files](#ignore-files) section.
+> **NOTE:** In order to avoid errors when running `sf` commands, you must configure your `.forceignore` file to have the Salesforce CLI ignore the decomposed files. See [Ignore Files](#ignore-files) section.
 
-To automate decomposing and recomposing, create `.sfdecomposer.config.json` in the root of your Salesforce DX project. You can use the copy and update the sample [.sfdecomposer.config.json](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.sfdecomposer.config.json) provided.
+To automate decomposing and recomposing, create `.sfdecomposer.config.json` in the root of your Salesforce DX project. You can copy and update the sample [.sfdecomposer.config.json](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.sfdecomposer.config.json) provided.
 
 - `metadataSuffixes` is required and should be a comma-separated string of metadata suffixes to decompose automatically after retrievals.
 - `ignorePackageDirectories` is optional and should be a comma-separated string of package directories to ignore.
@@ -259,7 +259,7 @@ To automate decomposing and recomposing, create `.sfdecomposer.config.json` in t
 
 If `.sfdecomposer.config.json` is found, the hooks will fire:
 
-- the decompose command after a `sf project retrieve start` command is complete (post-run)
+- the decompose command after a `sf project retrieve start` command completes successfully (post-run)
 - the recompose command before a `sf project deploy start` or `sf project deploy validate` command starts (pre-run)
 
 If `.sfdecomposer.config.json` isn't found, the hooks will be skipped.
