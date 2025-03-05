@@ -64,6 +64,11 @@ Why should you consider using `sf-decomposer` over Salesforce's decomposition?
 - **Complete Decomposition**: Partially decomposed metadata types (e.g., Salesforce's `decomposePermissionSetBeta2`) can be fully decomposed by `sf-decomposer`.  
 - **Consistent Sorting**: `sf-decomposer` recomposition ensures elements are always sorted consistently for better version control.
 
+In general, `sf-decomposer` helps Salesforce Admins do a few things with their source deployments:
+
+- Enhance peer reviews of large metadata in CI/CD platforms like GitHub, i.e. easier-to-review diffs in pull requests
+- Make deployments safer by ensuring only the intended changes are deployed, improving the overall version control process
+
 ## Commands
 
 The `sf-decomposer` supports 2 commands:
