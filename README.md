@@ -6,7 +6,7 @@
 <details>
   <summary>Table of Contents</summary>
 
-- [Install](#install)
+- [Quick Start](#quick-start)
 - [Why SF Decomposer](#why-sf-decomposer)
 - [Commands](#commands)
   - [`sf decomposer decompose`](#sf-decomposer-decompose)
@@ -27,11 +27,30 @@
 
 A Salesforce CLI plugin to break down large metadata files into smaller, more manageable files for version control and then recreate deployment-compatible files.
 
-## Install
+## Quick Start
+1. Install plugin using `sf`
 
 ```bash
 sf plugins install sf-decomposer@x.y.z
 ```
+
+2. Decompose the metadata type(s)
+
+```bash
+sf decomposer decompose -m "flow" -m "labels"
+```
+
+3. Add decomposed files to `.forceignore`
+
+4. Stage files in version control
+
+5. Recompose the metadata type(s)
+
+```bash
+sf decomposer recompose -m "flow" -m "labels"
+```
+
+6. Deploy recomposed metadata
 
 ## Why SF Decomposer
 
