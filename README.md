@@ -42,6 +42,8 @@ sf decomposer decompose -m "flow" -m "labels"
 
 3. Add decomposed files to `.forceignore`
 
+> This is **REQUIRED** to avoid errors when running `sf`commands. See [Ignore Files](#ignore-files) section.
+
 4. Stage files in version control
 
 5. Recompose the metadata type(s)
@@ -247,9 +249,7 @@ Recommend adding the `disassemble.log` to your `.gitignore` file if you are usin
 
 > **NOTE:** In order to avoid errors during the retrieval, you must configure your `.forceignore` file to have the Salesforce CLI ignore the decomposed files. See [Ignore Files](#ignore-files) section.
 
-A post-retrieve hook (for the decompose command) and a pre-run hook (for the recompose command) have been configured if you elect to use them. The post-retrieve hook will automatically decompose the desired metadata types after every Salesforce CLI retrieval (`sf project retrieve start` command). The pre-run hook will automatically recompose the desired metadata types before every Salesforce CLI deployment/validation (`sf project deploy start` and `sf project deploy validate` commands).
-
-Both hooks require you to create this file in the root of your repo: `.sfdecomposer.config.json`. You can use the sample [.sfdecomposer.config.json](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.sfdecomposer.config.json) provided. Update the file as such:
+To automate decomposing and recomposing, create `.sfdecomposer.config.json` in the root of your Salesforce DX project. You can use the copy and update the sample [.sfdecomposer.config.json](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.sfdecomposer.config.json) provided.
 
 - `metadataSuffixes` is required and should be a comma-separated string of metadata suffixes to decompose automatically after retrievals.
 - `ignorePackageDirectories` is optional and should be a comma-separated string of package directories to ignore.
@@ -257,7 +257,12 @@ Both hooks require you to create this file in the root of your repo: `.sfdecompo
 - `postPurge` is optional and should be a boolean. If true, this will delete the retrieval file after decomposing it or delete the decomposed files after recomposing them. If you do not provide this, the default will be `false`.
 - `decomposedFormat` is optional and should be either `xml`, `json`, or `yaml`, depending on what file format you want the decomposed files created as. If you do not provide this, the default will be `xml`.
 
-If the `.sfdecomposer.config.json` file isn't found, the hooks will be skipped.
+If `.sfdecomposer.config.json` is found, the hooks will fire:
+
+- the decompose command after a `sf project retrieve start` command is complete (post-run)
+- the recompose command before a `sf project deploy start` or `sf project deploy validate` command starts (pre-run)
+
+If `.sfdecomposer.config.json` isn't found, the hooks will be skipped.
 
 ## Ignore Files
 
