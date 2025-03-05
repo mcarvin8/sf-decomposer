@@ -40,7 +40,7 @@ Why should you consider using `sf-decomposer` over Salesforce's decomposition?
 - **Broad Metadata Support**: Unlike Salesforce's decomposition, `sf-decomposer` supports most metadata types available in the Metadata API.  
 - **Selective Decomposition**: `sf-decomposer` allows you to decompose only the metadata you need instead of Salesforce's all-or-nothing approach.
   - See [.sfdecomposerignore](#.sfdecomposerignore)
-- **Complete Decomposition**: Partially decomposed metadata types (e.g., permission sets) can be fully decomposed by `sf-decomposer`.  
+- **Complete Decomposition**: Partially decomposed metadata types (e.g., Salesforce's `decomposePermissionSetBeta2`) can be fully decomposed by `sf-decomposer`.  
 - **Consistent Sorting**: `sf-decomposer` recomposition ensures elements are always sorted consistently for better version control.
 
 ## Commands
@@ -262,7 +262,7 @@ When the decompose command is ran with the `--debug` flag and it processes a fil
 
 ### `.gitignore`
 
-Optionally, Git (or whatever version control system you are using) can ignore the recomposed files so you don't stage those in your repositories. You can also have git ignore the `disassemble.log` created by the `xml-disassembler` package.
+Optionally, git can ignore the recomposed files so you don't stage those in your repositories. You can also have git ignore the `disassemble.log` created by the `xml-disassembler` package.
 
 You can use the sample [.gitignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.gitignore) provided.
 
