@@ -34,7 +34,7 @@ Break down large Salesforce metadata files into smaller, more manageable files f
 sf plugins install sf-decomposer@x.y.z
 ```
 
-2. Decompose the metadata type(s) in your Salesforce DX project
+2. [Decompose](#sf-decomposer-decompose) the metadata type(s) in your Salesforce DX project
 
 ```bash
 sf decomposer decompose -m "flow" -m "labels"
@@ -46,7 +46,7 @@ sf decomposer decompose -m "flow" -m "labels"
 
 4. Stage files in version control
 
-5. Recompose the metadata type(s)
+5. [Recompose](#sf-decomposer-recompose) the metadata type(s)
 
 ```bash
 sf decomposer recompose -m "flow" -m "labels"
@@ -63,6 +63,7 @@ Why should you consider using `sf-decomposer` over Salesforce's decomposition?
   - See [.sfdecomposerignore](#.sfdecomposerignore)
 - **Complete Decomposition**: Partially decomposed metadata types (e.g., Salesforce's `decomposePermissionSetBeta2`) can be fully decomposed by `sf-decomposer`.  
 - **Consistent Sorting**: `sf-decomposer` recomposition ensures elements are always sorted consistently for better version control.
+- **Multiple Decompose Formats**: `sf-decomposer` allows you to decompose the original XML file into smaller XML, JSON, or YAML files depending on your preference.
 
 In general, `sf-decomposer` helps Salesforce Admins do a few things with their source deployments:
 
@@ -89,6 +90,7 @@ FLAGS
                                           Can be declared multiple times.
   -f, --format=<value>                    The file type for the decomposed files. 
                                           Must match what format you provide for recompose.
+                                          Options: ['xml', 'yaml', 'json']
                                           [default: 'xml']
   -i, --ignore-package-directory=<value>  Package directory to ignore.
                                           Should be as they appear in the "sfdx-project.json".
@@ -136,6 +138,7 @@ FLAGS
                                             Can be declared multiple times.
   -f, --format=<value>                      The file format for the decomposed files.
                                             Must match what format you provide for decompose.
+                                            Options: ['xml', 'yaml', 'json']
                                             [default: 'xml']
   -i, --ignore-package-directory=<value>    Package directory to ignore. 
                                             Should be as they appear in the "sfdx-project.json".
