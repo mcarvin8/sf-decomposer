@@ -257,7 +257,7 @@ Recommend adding the `disassemble.log` to your `.gitignore` file if you are usin
 
 > **NOTE:** In order to avoid errors when running `sf` commands, you must configure your `.forceignore` file to have the Salesforce CLI ignore the decomposed files. See [Ignore Files](#ignore-files) section.
 
-To automate decomposing and recomposing, create `.sfdecomposer.config.json` in the root of your Salesforce DX project. You can copy and update the sample [.sfdecomposer.config.json](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.sfdecomposer.config.json) provided.
+To automate decomposing and recomposing before and after `sf` commands, create `.sfdecomposer.config.json` in the root of your Salesforce DX project. You can copy and update the sample [.sfdecomposer.config.json](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.sfdecomposer.config.json) provided.
 
 - `metadataSuffixes` is required and should be a comma-separated string of metadata suffixes to decompose automatically after retrievals.
 - `ignorePackageDirectories` is optional and should be a comma-separated string of package directories to ignore.
