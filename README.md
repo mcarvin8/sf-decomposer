@@ -268,7 +268,7 @@ To automate decomposing and recomposing, create `.sfdecomposer.config.json` in t
 If `.sfdecomposer.config.json` is found, the hooks will fire:
 
 - the decompose command after a `sf project retrieve start` command completes successfully (post-run)
-- the recompose command before a `sf project deploy start` or `sf project deploy validate` command starts (pre-run)
+- the recompose command before a `sf project deploy [start/validate]` command starts (pre-run)
 
 If `.sfdecomposer.config.json` isn't found, the hooks will be skipped.
 
