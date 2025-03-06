@@ -44,7 +44,16 @@
     "sf-plugin",
     "sfdx",
     "sfdx-plugin",
-    "git"
+    "git",
+    "decomposition",
+    "deployment",
+    "xml",
+    "yaml",
+    "json",
+    "decompose",
+    "reassemble",
+    "recompose",
+    "disassemble"
   ],
   "license": "MIT",
   "oclif": {
