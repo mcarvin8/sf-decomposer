@@ -53,7 +53,8 @@
     "decompose",
     "reassemble",
     "recompose",
-    "disassemble"
+    "disassemble",
+    "metadata"
   ],
   "license": "MIT",
   "oclif": {
