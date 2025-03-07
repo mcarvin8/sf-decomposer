@@ -51,6 +51,7 @@
     "xml",
     "yaml",
     "json",
+    "json5",
     "decompose",
     "reassemble",
     "recompose",
