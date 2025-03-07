@@ -64,8 +64,9 @@ describe('decomposer NUTs XML format', () => {
     });
   });
 
-  it('should confirm the recomposed files in a mock directory match the reference files (force-app)', async () => {
+  it('should confirm the recomposed files in a mock directory match the reference files', async () => {
     await compareDirectories(originalDirectory, mockDirectory);
+    await compareDirectories(originalDirectory2, mockDirectory2);
   });
 
   it('should decompose all metadata types under test in JSON format', async () => {
@@ -94,8 +95,40 @@ describe('decomposer NUTs XML format', () => {
     });
   });
 
-  it('should confirm the recomposed files in a mock directory match the reference files (force-app)', async () => {
+  it('should confirm the recomposed files in a mock directory match the reference files', async () => {
     await compareDirectories(originalDirectory, mockDirectory);
+    await compareDirectories(originalDirectory2, mockDirectory2);
+  });
+
+  it('should decompose all metadata types under test in JSON5 format', async () => {
+    const command = `decomposer decompose --postpurge --prepurge --debug --format "json5" ${METADATA_UNDER_TEST.map(
+      (metadataType) => `--metadata-type "${metadataType}"`
+    ).join(' ')}`;
+    const output = execCmd(command, { ensureExitCode: 0 }).shellOutput.stdout;
+
+    METADATA_UNDER_TEST.forEach((metadataType) => {
+      expect(output.replace('\n', '')).to.include(
+        `All metadata files have been decomposed for the metadata type: ${metadataType}`
+      );
+    });
+  });
+
+  it('should recompose the decomposed JSON5 files for all metadata types under test', async () => {
+    const command = `decomposer recompose --postpurge --debug --format "json5" ${METADATA_UNDER_TEST.map(
+      (metadataType) => `--metadata-type "${metadataType}"`
+    ).join(' ')}`;
+    const output = execCmd(command, { ensureExitCode: 0 }).shellOutput.stdout;
+
+    METADATA_UNDER_TEST.forEach((metadataType) => {
+      expect(output.replace('\n', '')).to.include(
+        `All metadata files have been recomposed for the metadata type: ${metadataType}`
+      );
+    });
+  });
+
+  it('should confirm the recomposed files in a mock directory match the reference files', async () => {
+    await compareDirectories(originalDirectory, mockDirectory);
+    await compareDirectories(originalDirectory2, mockDirectory2);
   });
 
   it('should decompose all metadata types under test in YAML format', async () => {

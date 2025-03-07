@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { ReassembleXMLFileHandler, setLogLevel } from 'xml-disassembler';
 import { YamlToXmlReassembler } from 'xml2yaml-disassembler';
 import { JsonToXmlReassembler } from 'xml2json-disassembler';
+import { Json5ToXmlReassembler } from 'xml2json5-disassembler';
 
 import { CUSTOM_LABELS_FILE } from '../helpers/constants.js';
 import { renameBotVersionFile } from './renameBotVersionFiles.js';
@@ -42,11 +43,13 @@ async function reassembleHandler(
   postPurge: boolean,
   format: string
 ): Promise<void> {
-  let handler: ReassembleXMLFileHandler | JsonToXmlReassembler | YamlToXmlReassembler;
+  let handler: ReassembleXMLFileHandler | JsonToXmlReassembler | YamlToXmlReassembler | Json5ToXmlReassembler;
   if (format === 'yaml') {
     handler = new YamlToXmlReassembler();
   } else if (format === 'json') {
     handler = new JsonToXmlReassembler();
+  } else if (format === 'json5') {
+    handler = new Json5ToXmlReassembler();
   } else {
     handler = new ReassembleXMLFileHandler();
   }

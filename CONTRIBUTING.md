@@ -63,14 +63,15 @@ When a unique ID element isn't found, it will use the SHA-256 hash of the elemen
 
 ## XML Disassemblers
 
-This plugin's code-base primarily handles Salesforce metadata specific functions. The core XML decomposing/recomposing logic is handled by the 3 external packages below (1 primary package and 2 extension packages). When these 3 packages below have new releases, this plugin should be updated to use the latest releases.
+This plugin's code-base primarily handles Salesforce metadata specific functions. The core XML decomposing/recomposing logic is handled by the external packages below (1 primary package and 3 extension packages). When these packages have new releases, this plugin should be updated to use the latest releases.
 
 - [XML Disassembler](https://github.com/mcarvin8/xml-disassembler): Disassembles large XML files into smaller XML files and reassembles the original XML file when needed
-    - [XML2JSON Disassembler](https://github.com/mcarvin8/xml2json-disassembler): Extension package which disassembles large XML files into smaller JSON files and reassembles the original XML file when needed
-    - [XML2YAML Disassembler](https://github.com/mcarvin8/xml2yaml-disassembler): Extension package which disassembles large XML files into smaller YAML files and reassembles the original XML file when needed
+  - [XML2JSON Disassembler](https://github.com/mcarvin8/xml2json-disassembler): Extension package which disassembles large XML files into smaller JSON files and reassembles the original XML file when needed
+  - [XML2YAML Disassembler](https://github.com/mcarvin8/xml2yaml-disassembler): Extension package which disassembles large XML files into smaller YAML files and reassembles the original XML file when needed
+  - [XML2JSON5 Disassembler](https://github.com/mcarvin8/xml2json5-disassembler): Extension package which disassembles large XML files into smaller JSON5 files and reassembles the original XML file when needed
 
 Please fork and raise PRs in these repos for any features or bug fixes specific to XML decomposing/disassembly or recomposing/reassembly. You must install `pnpm` to contribute to these repos.
 
-This plugin's dependabot config will group the 3 disassemblers in the same PR. Dependabot runs weekly.
+This plugin's dependabot config will group the 4 disassemblers in the same PR. Dependabot runs weekly.
 
 `src/service/recomposeFileHandler.ts` and `src/service/decomposeFileHandler.ts` in this plugin handles calling the applicable XML disassemblers.

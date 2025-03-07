@@ -77,8 +77,9 @@ describe('decomposer unit tests', () => {
     expect(errorOutput).to.not.include('Error');
   });
 
-  it('should confirm the recomposed files in a mock directory match the reference files (force-app)', async () => {
+  it('should confirm the recomposed files in a mock directory match the reference files', async () => {
     await compareDirectories(originalDirectory, mockDirectory);
+    await compareDirectories(originalDirectory2, mockDirectory2);
   });
 
   it('should decompose all metadata types under test in JSON format', async () => {
@@ -115,8 +116,48 @@ describe('decomposer unit tests', () => {
     expect(errorOutput).to.not.include('Error');
   });
 
-  it('should confirm the recomposed files in a mock directory match the reference files (force-app)', async () => {
+  it('should confirm the recomposed files in a mock directory match the reference files', async () => {
     await compareDirectories(originalDirectory, mockDirectory);
+    await compareDirectories(originalDirectory2, mockDirectory2);
+  });
+
+  it('should decompose all metadata types under test in JSON5 format', async () => {
+    await DecomposerDecompose.run([
+      '--postpurge',
+      '--prepurge',
+      '--format',
+      'json5',
+      ...METADATA_UNDER_TEST.map((metadataType) => `--metadata-type=${metadataType}`),
+    ]);
+
+    const output = sfCommandStubs.log
+      .getCalls()
+      .flatMap((c) => c.args)
+      .join('\n');
+    METADATA_UNDER_TEST.forEach((metadataType) => {
+      expect(output).to.include(`All metadata files have been decomposed for the metadata type: ${metadataType}`);
+    });
+  });
+
+  it('should recompose all decomposed JSON5 files for all metadata types under test', async () => {
+    await DecomposerRecompose.run([
+      '--postpurge',
+      '--format',
+      'json5',
+      ...METADATA_UNDER_TEST.map((metadataType) => `--metadata-type=${metadataType}`),
+    ]);
+
+    // Check if there are no errors in the log
+    const errorOutput = sfCommandStubs.log
+      .getCalls()
+      .flatMap((c) => c.args)
+      .join('\n');
+    expect(errorOutput).to.not.include('Error');
+  });
+
+  it('should confirm the recomposed files in a mock directory match the reference files', async () => {
+    await compareDirectories(originalDirectory, mockDirectory);
+    await compareDirectories(originalDirectory2, mockDirectory2);
   });
 
   it('should decompose all metadata types under test in YAML format', async () => {

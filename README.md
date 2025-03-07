@@ -28,6 +28,7 @@
 Break down large Salesforce metadata files into smaller, more manageable files for version control and then recreate deployment-compatible files.
 
 ## Quick Start
+
 1. Install plugin using `sf`
 
 ```bash
@@ -58,12 +59,12 @@ sf decomposer recompose -m "flow" -m "labels"
 
 Why should you consider using `sf-decomposer` over Salesforce's decomposition?
 
-- **Broad Metadata Support**: Unlike Salesforce's decomposition, `sf-decomposer` supports most metadata types available in the Metadata API.  
+- **Broad Metadata Support**: Unlike Salesforce's decomposition, `sf-decomposer` supports most metadata types available in the Metadata API.
 - **Selective Decomposition**: `sf-decomposer` allows you to decompose only the metadata you need instead of Salesforce's all-or-nothing approach.
   - See [.sfdecomposerignore](#.sfdecomposerignore)
-- **Complete Decomposition**: Partially decomposed metadata types (e.g., Salesforce's `decomposePermissionSetBeta2`) can be fully decomposed by `sf-decomposer`.  
+- **Complete Decomposition**: Partially decomposed metadata types (e.g., Salesforce's `decomposePermissionSetBeta2`) can be fully decomposed by `sf-decomposer`.
 - **Consistent Sorting**: `sf-decomposer` recomposition ensures elements are always sorted consistently for better version control.
-- **Multiple Decompose Formats**: `sf-decomposer` allows you to decompose the original XML file into smaller XML, JSON, or YAML files depending on your preference.
+- **Multiple Decompose Formats**: `sf-decomposer` allows you to decompose the original XML file into smaller XML, JSON, JSON5, or YAML files depending on your preference.
 
 In general, `sf-decomposer` helps Salesforce Admins do a few things with their source deployments:
 
@@ -79,28 +80,28 @@ The `sf-decomposer` supports 2 commands:
 
 ## `sf decomposer decompose`
 
-Decomposes the original metadata files in all local package directories into smaller files for version control. 
+Decomposes the original metadata files in all local package directories into smaller files for version control.
 
 ```
 USAGE
   $ sf decomposer decompose -m <value> -f <value> -i <value> [--prepurge --postpurge --debug --json]
 
 FLAGS
-  -m, --metadata-type=<value>             The metadata suffix to process, such as 'flow', 'labels', etc. 
+  -m, --metadata-type=<value>             The metadata suffix to process, such as 'flow', 'labels', etc.
                                           Can be declared multiple times.
-  -f, --format=<value>                    The file type for the decomposed files. 
+  -f, --format=<value>                    The file type for the decomposed files.
                                           Must match what format you provide for recompose.
-                                          Options: ['xml', 'yaml', 'json']
+                                          Options: ['xml', 'yaml', 'json', 'json5']
                                           [default: 'xml']
   -i, --ignore-package-directory=<value>  Package directory to ignore.
                                           Should be as they appear in the "sfdx-project.json".
                                           Can be declared multiple times.
   --prepurge                              Purgd directories of pre-existing decomposed files.
-                                          [default: false] 
+                                          [default: false]
   --postpurge                             Purge the original files after decomposing them.
-                                          [default: false] 
+                                          [default: false]
   --debug                                 Log debugging results to a text file (disassemble.log).
-                                          [default: false] 
+                                          [default: false]
 
 GLOBAL FLAGS
   --json  Format output as json.
@@ -134,13 +135,13 @@ USAGE
   $ sf decomposer recompose -m <value> -f <value> -i <value> [--postpurge --debug --json]
 
 FLAGS
-  -m, --metadata-type=<value>               The metadata suffix to process, such as 'flow', 'labels', etc. 
+  -m, --metadata-type=<value>               The metadata suffix to process, such as 'flow', 'labels', etc.
                                             Can be declared multiple times.
   -f, --format=<value>                      The file format for the decomposed files.
                                             Must match what format you provide for decompose.
-                                            Options: ['xml', 'yaml', 'json']
+                                            Options: ['xml', 'yaml', 'json', 'json5']
                                             [default: 'xml']
-  -i, --ignore-package-directory=<value>    Package directory to ignore. 
+  -i, --ignore-package-directory=<value>    Package directory to ignore.
                                             Should be as they appear in the "sfdx-project.json".
                                             Can be declared multiple times.
   --postpurge                               Purge the decomposed files after recomposing them.
@@ -176,7 +177,7 @@ EXAMPLES
 When the original metadata files are decomposed, this structure is followed for all metadata types except for custom labels:
 
 - Leaf elements (i.e. `<userLicense>Salesforce</userLicense>`) will be decomposed in the same file in the root of the decomposed directory. The leaf file-name will match the original file-name.
-- Nested elements will be decomposed into their own files under sub-directories by the element type, i.e. custom permissions in a permission set will have their own decomposed file under a custom permissions sub-folder. 
+- Nested elements will be decomposed into their own files under sub-directories by the element type, i.e. custom permissions in a permission set will have their own decomposed file under a custom permissions sub-folder.
   - If unique ID elements are found, the decomposed nested files will be named using them.
   - Otherwise, the decomposed nested files will be named with the SHA-256 hash of the element contents.
   - See [Contributing](#contributing) for more information on unique ID elements.
@@ -263,7 +264,7 @@ To automate decomposing and recomposing before and after `sf` commands, create `
 - `ignorePackageDirectories` is optional and should be a comma-separated string of package directories to ignore.
 - `prePurge` is optional and should be a boolean. If true, this will delete any existing decomposed files before decomposing the files. If you do not provide this, the default will be `false`. This flag is not used by the recompose command/pre-run hook.
 - `postPurge` is optional and should be a boolean. If true, this will delete the retrieval file after decomposing it or delete the decomposed files after recomposing them. If you do not provide this, the default will be `false`.
-- `decomposedFormat` is optional and should be either `xml`, `json`, or `yaml`, depending on what file format you want the decomposed files created as. If you do not provide this, the default will be `xml`.
+- `decomposedFormat` is optional and should be either `xml`, `json`, `json5`, or `yaml`, depending on what file format you want the decomposed files created as. If you do not provide this, the default will be `xml`.
 
 If `.sfdecomposer.config.json` is found, the hooks will fire:
 
