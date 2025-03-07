@@ -5,6 +5,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.4.0](https://github.com/mcarvin8/sf-decomposer/compare/v5.3.13...v5.4.0) (2025-03-07)
+
+
+### Features
+
+* add json5 format for decomposed files ([c5ad254](https://github.com/mcarvin8/sf-decomposer/commit/c5ad25478bcaf39e61cf65195cb6d9b6d91b2054))
+
+
+### Bug Fixes
+
+* **deps:** bump @salesforce/source-deploy-retrieve ([4333d3b](https://github.com/mcarvin8/sf-decomposer/commit/4333d3b1f6a7621fad94085e1146a6daa7fc0d93))
+
 ## [5.3.13](https://github.com/mcarvin8/sf-decomposer/compare/v5.3.12...v5.3.13) (2025-03-05)
 
 
