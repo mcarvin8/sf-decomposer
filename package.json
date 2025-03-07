@@ -10,6 +10,7 @@
     "fs-extra": "^11.2.0",
     "xml-disassembler": "^1.3.13",
     "xml2json-disassembler": "^1.1.13",
+    "xml2json5-disassembler": "^1.0.0",
     "xml2yaml-disassembler": "^1.1.13"
   },
   "devDependencies": {
