@@ -21,6 +21,7 @@
   - [`.sfdecomposerignore`](#.sfdecomposerignore)
   - [`.gitignore`](#.gitignore)
 - [Issues](#issues)
+- [Built With](#built-with)
 - [Contributing](#contributing)
 - [License](#license)
 </details>
@@ -302,6 +303,13 @@ You can use the sample [.gitignore](https://raw.githubusercontent.com/mcarvin8/s
 ## Issues
 
 If you encounter any bugs or would like to request features, please create an [issue](https://github.com/mcarvin8/sf-decomposer/issues).
+
+## Built With
+
+- [XML Disassembler](https://github.com/mcarvin8/xml-disassembler): Disassembles large XML files into smaller XML files and reassembles the original XML file when needed
+- [XML2JSON Disassembler](https://github.com/mcarvin8/xml2json-disassembler): Disassembles large XML files into smaller JSON files and reassembles the original XML file when needed
+- [XML2YAML Disassembler](https://github.com/mcarvin8/xml2yaml-disassembler): Disassembles large XML files into smaller YAML files and reassembles the original XML file when needed
+- [XML2JSON5 Disassembler](https://github.com/mcarvin8/xml2json5-disassembler): Disassembles large XML files into smaller JSON5 files and reassembles the original XML file when needed
 
 ## Contributing
 
