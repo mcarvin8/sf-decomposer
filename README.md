@@ -279,7 +279,7 @@ If `.sfdecomposer.config.json` isn't found, the hooks will be skipped.
 
 The Salesforce CLI **must** ignore the decomposed files and allow the recomposed files.
 
-You can use the sample [.forceignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.forceignore) provided. Update the decomposed file extensions based on what format you're using (`.xml`, `.json`, or `.yaml`).
+You can use the sample [.forceignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.forceignore) provided. Update the decomposed file extensions based on what format you're using (`.xml`, `.json`, `.json5`, or `.yaml`).
 
 ### `.sfdecomposerignore`
 
