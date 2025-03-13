@@ -46,9 +46,9 @@ sf decomposer decompose -m "flow" -m "labels"
 
 > This is **REQUIRED** to avoid errors when running `sf`commands. See [Ignore Files](#ignore-files) section.
 
-4. Stage files in version control
+4. Stage decomposed files in version control
 
-5. [Recompose](#sf-decomposer-recompose) the metadata type(s)
+5. [Recompose](#sf-decomposer-recompose) the metadata type(s) before deployment
 
 ```bash
 sf decomposer recompose -m "flow" -m "labels"
@@ -200,7 +200,7 @@ When custom labels are decomposed, each custom label will have its own file in t
 
 All parent metadata types imported from this plugin's version of `@salesforce/source-deploy-retrieve` (SDR) toolkit are supported except for certain types.
 
-The `--metadata-type`/`-m` flag should be the metadata's `suffix` value as listed in the [metadataRegistry.json](https://github.com/forcedotcom/source-deploy-retrieve/blob/main/src/registry/metadataRegistry.json).
+The `--metadata-type`/`-m` flag should be the metadata's `suffix` value as listed in the [metadataRegistry.json](https://github.com/forcedotcom/source-deploy-retrieve/blob/main/src/registry/metadataRegistry.json). You can also infer the suffix by looking at the original XML file-name, i.e. `*.{suffix}-meta.xml`.
 
 Here are some examples:
 
@@ -211,7 +211,6 @@ Here are some examples:
 - AI Scoring Model Definition (`--metadata-type "aiScoringModelDefinition"`)
 - Decision Matrix Definition (`--metadata-type "decisionMatrixDefinition"`)
 - Bot (`--metadata-type "bot"`)
-  - **NOTE**: Running "bot" will also decompose and recompose Bot Version meta files. The `botVersion` meta suffix will be blocked from running directly.
 - Marketing App Extension (`--metadata-type "marketingappextension"`)
 
 ### Metadata Exceptions
