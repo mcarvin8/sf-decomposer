@@ -1,4 +1,4 @@
-# sf-decomposer
+# `sf-decomposer`
 
 [![NPM](https://img.shields.io/npm/v/sf-decomposer.svg?label=sf-decomposer)](https://www.npmjs.com/package/sf-decomposer) [![Downloads/week](https://img.shields.io/npm/dw/sf-decomposer.svg)](https://npmjs.org/package/sf-decomposer) [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/LICENSE.md)
 
@@ -26,7 +26,7 @@
 - [License](#license)
 </details>
 
-Break down large Salesforce metadata files into smaller, more manageable files for version control and then recreate deployment-compatible files.
+Break down large Salesforce metadata files (XML) into smaller, more manageable files (XML/JSON/YAML/JSON5) for version control and then recreate deployment-compatible files.
 
 ## Quick Start
 
@@ -113,13 +113,13 @@ DESCRIPTION
   You should run this after you retrieve metadata from an org.
 
 EXAMPLES
-  Decompose all flows:
+  Decompose all flows in XML format:
 
     $ sf decomposer decompose -m "flow" -f "xml" --prepurge --postpurge --debug
 
-  Decompose all flows and custom labels:
+  Decompose all flows and custom labels in YAML format
 
-    $ sf decomposer decompose -m "flow" -m "labels" -f "xml" --prepurge --postpurge --debug
+    $ sf decomposer decompose -m "flow" -m "labels" -f "yaml" --prepurge --postpurge --debug
 
   Decompose flows except for those in the "force-app" package directory.
 
@@ -163,9 +163,9 @@ EXAMPLES
 
     $ sf decomposer recompose -m "flow" -f "xml" --postpurge --debug
 
-  Recompose all flows and custom labels:
+  Recompose all decomposed flows and custom labels YAMLs into XMLs
 
-    $ sf decomposer recompose -m "flow" -m "labels" -f "xml" --postpurge --debug
+    $ sf decomposer recompose -m "flow" -m "labels" -f "yaml" --postpurge --debug
 
   Recompose flows except for those in the "force-app" package directory.
 
@@ -240,19 +240,19 @@ Here are some examples:
 Error (1): sfdx-project.json not found in any parent directory.
 ```
 
-The `xml-disassembler` package will log errors, and optionally debugging statements, to a log file, `disassemble.log`. This log will be created in the working directory and will be created when running this plugin at all times. If there were no errors, this log will be empty. By default, the log will only contain errors. This plugin will print the errors as warnings in the command terminal to allow all other files to be processed. These warnings when decomposing or recomposing will look like:
+The `xml-disassembler` package will create a log file, `disassemble.log`, at all times. By default, the log will only contain decomposing/recomposing errors. XML decomposing/recomposing errors do not cause the Salesforce CLI to fail. The CLI will proceed to decompose/recompose all remaining metadata.
+
+The Salesforce CLI will print XML errors as warnings in the terminal:
 
 ```
 Warning: C:\Users\matth\Documents\sf-decomposer\test\baselines\flows\Get_Info\actionCalls\Get_Info.actionCalls-meta.xml was unabled to be parsed and will not be processed. Confirm formatting and try again.
 ```
 
-To add additional debugging statements to the log file, provide the `--debug` flag to the decompose or recompose command. Debugging statements will look like:
+To add debugging to the log, provide the `--debug` flag to the decompose or recompose command.
 
 ```
 [2024-03-30T14:28:37.959] [DEBUG] default - Created disassembled file: mock\no-nested-elements\HR_Admin\HR_Admin.permissionset-meta.xml
 ```
-
-Recommend adding the `disassemble.log` to your `.gitignore` file if you are using this in a git-based repo.
 
 ## Hooks
 
