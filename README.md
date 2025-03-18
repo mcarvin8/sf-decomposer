@@ -305,10 +305,10 @@ If you encounter any bugs or would like to request features, please create an [i
 
 ## Built With
 
-- [XML Disassembler](https://github.com/mcarvin8/xml-disassembler): Disassembles large XML files into smaller XML files and reassembles the original XML file when needed
-- [XML2JSON Disassembler](https://github.com/mcarvin8/xml2json-disassembler): Disassembles large XML files into smaller JSON files and reassembles the original XML file when needed
-- [XML2YAML Disassembler](https://github.com/mcarvin8/xml2yaml-disassembler): Disassembles large XML files into smaller YAML files and reassembles the original XML file when needed
-- [XML2JSON5 Disassembler](https://github.com/mcarvin8/xml2json5-disassembler): Disassembles large XML files into smaller JSON5 files and reassembles the original XML file when needed
+- [`xml-disassembler`](https://github.com/mcarvin8/xml-disassembler): Disassembles large XML files into smaller XML files and reassembles the original XML file when needed
+- [`xml2json-disassembler`](https://github.com/mcarvin8/xml2json-disassembler): Disassembles large XML files into smaller JSON files and reassembles the original XML file when needed
+- [`xml2yaml-disassembler`](https://github.com/mcarvin8/xml2yaml-disassembler): Disassembles large XML files into smaller YAML files and reassembles the original XML file when needed
+- [`xml2json5-disassembler`](https://github.com/mcarvin8/xml2json5-disassembler): Disassembles large XML files into smaller JSON5 files and reassembles the original XML file when needed
 
 ## Contributing
 
