@@ -240,7 +240,7 @@ Here are some examples:
 Error (1): sfdx-project.json not found in any parent directory.
 ```
 
-The `xml-disassembler` package will create a log file, `disassemble.log`, at all times. By default, the log will only contain decomposing/recomposing errors. XML decomposing/recomposing errors do not cause the Salesforce CLI to fail. The CLI will proceed to decompose/recompose all remaining metadata.
+The `xml-disassembler` package will create a log file, `disassemble.log`, at all times. By default, the log will only contain XML decomposing/recomposing errors. XML decomposing/recomposing errors do not cause the Salesforce CLI to fail. The CLI will proceed to decompose/recompose all remaining metadata.
 
 The Salesforce CLI will print XML errors as warnings in the terminal:
 
@@ -256,15 +256,15 @@ To add debugging to the log, provide the `--debug` flag to the decompose or reco
 
 ## Hooks
 
-> **NOTE:** In order to avoid errors when running `sf` commands, you must configure your `.forceignore` file to have the Salesforce CLI ignore the decomposed files. See [Ignore Files](#ignore-files) section.
+> **NOTE:** In order to avoid errors when running `sf` commands, you must configure your `.forceignore` file to have the Salesforce CLI ignore the decomposed files. See [Ignore Files](#ignore-files).
 
-To automate decomposing and recomposing before and after `sf` commands, create `.sfdecomposer.config.json` in the root of your Salesforce DX project. You can copy and update the sample [.sfdecomposer.config.json](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.sfdecomposer.config.json) provided.
+To automate decomposing and recomposing before and after `sf` commands, create `.sfdecomposer.config.json` in the root of your Salesforce DX project. You can copy and update the sample [.sfdecomposer.config.json](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.sfdecomposer.config.json).
 
-- `metadataSuffixes` is required and should be a comma-separated string of metadata suffixes to decompose automatically after retrievals.
+- `metadataSuffixes` is required and should be a comma-separated string of metadata suffixes to decompose and recompose based on the CLI command.
 - `ignorePackageDirectories` is optional and should be a comma-separated string of package directories to ignore.
-- `prePurge` is optional and should be a boolean. If true, this will delete any existing decomposed files before decomposing the files. If you do not provide this, the default will be `false`. This flag is not used by the recompose command/pre-run hook.
-- `postPurge` is optional and should be a boolean. If true, this will delete the retrieval file after decomposing it or delete the decomposed files after recomposing them. If you do not provide this, the default will be `false`.
-- `decomposedFormat` is optional and should be either `xml`, `json`, `json5`, or `yaml`, depending on what file format you want the decomposed files created as. If you do not provide this, the default will be `xml`.
+- `prePurge` is optional and should be `true` or `false`. If true, this will delete any existing decomposed files before decomposing the files. This defauls to `false`.
+- `postPurge` is optional and should be `true` or `false`. If true, this will delete the retrieval file after decomposing it or delete the decomposed files after recomposing them. This defauls to `false`.
+- `decomposedFormat` is optional and should be either `xml`, `json`, `json5`, or `yaml`, depending on the decomposed file format. This defaults to `xml`.
 
 If `.sfdecomposer.config.json` is found, the hooks will fire:
 
@@ -279,7 +279,7 @@ If `.sfdecomposer.config.json` isn't found, the hooks will be skipped.
 
 The Salesforce CLI **must** ignore the decomposed files and allow the recomposed files.
 
-You can use the sample [.forceignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.forceignore) provided. Update the decomposed file extensions based on what format you're using (`.xml`, `.json`, `.json5`, or `.yaml`).
+You can use the sample [.forceignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.forceignore). Update the decomposed file extensions based on what format you're using (`.xml`, `.json`, `.json5`, or `.yaml`).
 
 ### `.sfdecomposerignore`
 
@@ -297,7 +297,7 @@ When the decompose command is ran with the `--debug` flag and it processes a fil
 
 Optionally, git can ignore the recomposed files so you don't stage those in your repositories. You can also have git ignore the `disassemble.log` created by the `xml-disassembler` package.
 
-You can use the sample [.gitignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.gitignore) provided.
+You can use the sample [.gitignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.gitignore).
 
 ## Issues
 
