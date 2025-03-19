@@ -44,7 +44,7 @@ sf decomposer decompose -m "flow" -m "labels"
 
 3. Add decomposed files to `.forceignore`
 
-> This is **REQUIRED** to avoid errors when running `sf`commands. See [Ignore Files](#ignore-files) section.
+> This is **REQUIRED** to avoid errors when running `sf`commands. See [`.forceignore`](#.forceignore).
 
 4. Stage decomposed files in version control
 
