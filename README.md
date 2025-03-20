@@ -66,6 +66,7 @@ Why should you consider using `sf-decomposer` over Salesforce's decomposition?
 - **Complete Decomposition**: Partially decomposed metadata types (e.g., Salesforce's `decomposePermissionSetBeta2`) can be fully decomposed by `sf-decomposer`.
 - **Consistent Sorting**: `sf-decomposer` recomposition ensures elements are always sorted consistently for better version control.
 - **Multiple Decompose Formats**: `sf-decomposer` allows you to decompose the original XML file into smaller XML, JSON, JSON5, or YAML files depending on your preference.
+- **CI/CD Friendly**: Hooks allow for seamless decomposition and recomposition in CI/CD workflows.
 
 In general, `sf-decomposer` helps Salesforce Admins do a few things with their source deployments:
 
@@ -248,7 +249,9 @@ To add debugging to the log, provide the `--debug` flag to the decompose or reco
 
 > **NOTE:** In order to avoid errors when running `sf` commands, you must configure your `.forceignore` file to have the Salesforce CLI ignore the decomposed files. See [Ignore Files](#ignore-files).
 
-To automate decomposing and recomposing before and after `sf` commands, create `.sfdecomposer.config.json` in the root of your Salesforce DX project. You can copy and update the sample [.sfdecomposer.config.json](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.sfdecomposer.config.json).
+`sf-decomposer` supports automatic decomposition and recomposition by defining a `.sfdecomposer.config.json` file in your project root.
+
+You can copy and update the sample [.sfdecomposer.config.json](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.sfdecomposer.config.json).
 
 - `metadataSuffixes` is required and should be a comma-separated string of metadata suffixes to decompose and recompose based on the CLI command.
 - `ignorePackageDirectories` is optional and should be a comma-separated string of package directories to ignore.
@@ -256,10 +259,10 @@ To automate decomposing and recomposing before and after `sf` commands, create `
 - `postPurge` is optional and should be `true` or `false`. If true, this will delete the retrieval file after decomposing it or delete the decomposed files after recomposing them. This defauls to `false`.
 - `decomposedFormat` is optional and should be either `xml`, `json`, `json5`, or `yaml`, depending on the decomposed file format. This defaults to `xml`.
 
-If `.sfdecomposer.config.json` is found, the hooks will fire:
+If `.sfdecomposer.config.json` is found, the hooks will run:
 
-- the decompose command after a `sf project retrieve start` command completes successfully (post-run)
-- the recompose command before a `sf project deploy [start/validate]` command starts (pre-run)
+- the decompose command **after** a `sf project retrieve start` command completes successfully (post-run)
+- the recompose command **before** a `sf project deploy [start/validate]` command starts (pre-run)
 
 If `.sfdecomposer.config.json` isn't found, the hooks will be skipped.
 
@@ -273,15 +276,15 @@ You can use the sample [.forceignore](https://raw.githubusercontent.com/mcarvin8
 
 ### `.sfdecomposerignore`
 
-If you wish, you can create a `.sfdecomposerignore` file in the root of your Salesforce DX project to ignore specific XMLs when running the decompose command. The `.sfdecomposerignore` file should follow [.gitignore spec 2.22.1](https://git-scm.com/docs/gitignore).
+Optionally, you can create a `.sfdecomposerignore` file in the root of your Salesforce DX project to ignore specific XMLs when decomposing. The `.sfdecomposerignore` file should follow [.gitignore spec 2.22.1](https://git-scm.com/docs/gitignore).
 
-When the decompose command is ran with the `--debug` flag and it processes a file that matches an entry in `.sfdecomposerignore`, a warning will be printed to the `disassemble.log`:
+When you run `sf decomposer decompose --debug` and it processes a file that matches an entry in `.sfdecomposerignore`, a warning will be printed to the `disassemble.log`:
 
 ```
 [2024-05-22T09:32:12.078] [WARN] default - File ignored by .sfdecomposerignore: C:\Users\matth\Documents\sf-decomposer\test\baselines\bots\Assessment_Bot\v1.botVersion-meta.xml
 ```
 
-`.sfdecomposerignore` is not read by the recompose command.
+`.sfdecomposerignore` is not read when recomposing metadata.
 
 ### `.gitignore`
 
@@ -295,10 +298,10 @@ If you encounter any bugs or would like to request features, please create an [i
 
 ## Built With
 
-- [`xml-disassembler`](https://github.com/mcarvin8/xml-disassembler): Disassembles large XML files into smaller XML files and reassembles the original XML file when needed
-- [`xml2json-disassembler`](https://github.com/mcarvin8/xml2json-disassembler): Disassembles large XML files into smaller JSON files and reassembles the original XML file when needed
-- [`xml2yaml-disassembler`](https://github.com/mcarvin8/xml2yaml-disassembler): Disassembles large XML files into smaller YAML files and reassembles the original XML file when needed
-- [`xml2json5-disassembler`](https://github.com/mcarvin8/xml2json5-disassembler): Disassembles large XML files into smaller JSON5 files and reassembles the original XML file when needed
+- [`xml-disassembler`](https://github.com/mcarvin8/xml-disassembler)
+- [`xml2json-disassembler`](https://github.com/mcarvin8/xml2json-disassembler)
+- [`xml2yaml-disassembler`](https://github.com/mcarvin8/xml2yaml-disassembler)
+- [`xml2json5-disassembler`](https://github.com/mcarvin8/xml2json5-disassembler)
 
 ## Contributing
 
