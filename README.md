@@ -67,6 +67,7 @@ Why should you consider using `sf-decomposer` over Salesforce's decomposition?
 - **Consistent Sorting**: `sf-decomposer` recomposition ensures elements are always sorted consistently for better version control.
 - **Multiple Decompose Formats**: `sf-decomposer` allows you to decompose the original XML file into smaller XML, JSON, JSON5, or YAML files depending on your preference.
 - **CI/CD Friendly**: Hooks allow for seamless decomposition and recomposition in CI/CD workflows.
+- **Better Version Control**: Smaller files make pull requests more readable and reduce merge conflicts.
 
 In general, `sf-decomposer` helps Salesforce Admins do a few things with their source deployments:
 
