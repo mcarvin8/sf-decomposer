@@ -107,11 +107,6 @@ FLAGS
 GLOBAL FLAGS
   --json  Format output as json.
 
-DESCRIPTION
-  Decompose large metadata files into smaller files.
-
-  You should run this after you retrieve metadata from an org.
-
 EXAMPLES
   Decompose all flows in XML format:
 
@@ -152,11 +147,6 @@ FLAGS
 
 GLOBAL FLAGS
   --json  Format output as json.
-
-DESCRIPTION
-  Recompose the decomposed files into deployment-compatible metadata files.
-
-  You should run this before you deploy decomposed metadata to an org.
 
 EXAMPLES
   Recompose all flows:
