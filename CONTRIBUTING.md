@@ -63,12 +63,11 @@ When a unique ID element isn't found, it will use the SHA-256 hash of the elemen
 
 ## XML Disassemblers
 
-This plugin's code-base primarily handles Salesforce metadata specific functions. The core XML decomposing/recomposing logic is handled by the external packages below (1 primary package and 3 extension packages). When these packages have new releases, this plugin should be updated to use the latest releases.
-
-- [`xml-disassembler`](https://github.com/mcarvin8/xml-disassembler): Disassembles large XML files into smaller XML files and reassembles the original XML file when needed
-    - [`xml2json-disassembler`](https://github.com/mcarvin8/xml2json-disassembler): Disassembles large XML files into smaller JSON files and reassembles the original XML file when needed
-    - [`xml2yaml-disassembler`](https://github.com/mcarvin8/xml2yaml-disassembler): Disassembles large XML files into smaller YAML files and reassembles the original XML file when needed
-    - [`xml2json5-disassembler`](https://github.com/mcarvin8/xml2json5-disassembler): Disassembles large XML files into smaller JSON5 files and reassembles the original XML file when needed
+This plugin's code-base primarily handles Salesforce metadata specific functions. The core XML decomposing/recomposing logic is handled by the external packages below.
+- [`xml-disassembler`](https://github.com/mcarvin8/xml-disassembler)
+- [`xml2json-disassembler`](https://github.com/mcarvin8/xml2json-disassembler)
+- [`xml2yaml-disassembler`](https://github.com/mcarvin8/xml2yaml-disassembler)
+- [`xml2json5-disassembler`](https://github.com/mcarvin8/xml2json5-disassembler)
 
 Please fork and raise PRs in these repos for any features or bug fixes specific to XML decomposing/disassembly or recomposing/reassembly. You must install `pnpm` to contribute to these repos.
 
