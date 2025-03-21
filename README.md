@@ -7,7 +7,7 @@
   <summary>Table of Contents</summary>
 
 - [Quick Start](#quick-start)
-- [Why SF Decomposer](#why-sf-decomposer)
+- [Why Choose `sf-decomposer`](#why-choose-sf-decomposer)
 - [Commands](#commands)
   - [`sf decomposer decompose`](#sf-decomposer-decompose)
   - [`sf decomposer recompose`](#sf-decomposer-recompose)
@@ -56,23 +56,25 @@ sf decomposer recompose -m "flow" -m "labels"
 
 6. Deploy recomposed metadata
 
-## Why SF Decomposer
+## Why Choose `sf-decomposer`  
 
-Why should you consider using `sf-decomposer` over Salesforce's decomposition?
+Salesforce's built-in decomposition has limitations. `sf-decomposer` offers more control, flexibility, and versioning benefits for Admins and Developers.  
 
-- **Broad Metadata Support**: Unlike Salesforce's decomposition, `sf-decomposer` supports most metadata types available in the Metadata API.
-- **Selective Decomposition**: `sf-decomposer` allows you to decompose only the metadata you need instead of Salesforce's all-or-nothing approach.
-  - See [.sfdecomposerignore](#.sfdecomposerignore)
-- **Complete Decomposition**: Partially decomposed metadata types (e.g., Salesforce's `decomposePermissionSetBeta2`) can be fully decomposed by `sf-decomposer`.
-- **Consistent Sorting**: `sf-decomposer` recomposition ensures elements are always sorted consistently for better version control.
-- **Multiple Decompose Formats**: `sf-decomposer` allows you to decompose the original XML file into smaller XML, JSON, JSON5, or YAML files depending on your preference.
-- **CI/CD Friendly**: Hooks allow for seamless decomposition and recomposition in CI/CD workflows.
-- **Better Version Control**: Smaller files make pull requests more readable and reduce merge conflicts.
+### Key Advantages  
 
-In general, `sf-decomposer` helps Salesforce Admins do a few things with their source deployments:
+- **Supports More Metadata** – Works with most Metadata API types, unlike Salesforce’s limited decomposition.  
+- **Selective Decomposition** – Decompose only what you need, avoiding Salesforce’s all-or-nothing approach.  
+  - See [.sfdecomposerignore](#.sfdecomposerignore)  
+- **Fully Decomposes Metadata** – Ensures complete decomposition for types that Salesforce only partially decomposes (e.g., `decomposePermissionSetBeta2`).  
+- **Consistent Sorting** – Keeps elements in a predictable order to reduce unnecessary version control noise.  
+- **Multiple Output Formats** – Supports XML, JSON, JSON5, and YAML for greater flexibility.  
+- **CI/CD Integration** – Hooks enable seamless decomposition and recomposition in automated workflows.  
+- **Improved Version Control** – Smaller, structured files make pull requests easier to review and reduce merge conflicts.  
 
-- Enhance peer reviews of large metadata in CI/CD platforms like GitHub, i.e. easier-to-review diffs in pull requests
-- Make deployments safer by ensuring only the intended changes are deployed, improving the overall version control process
+### How It Helps Salesforce Teams  
+
+- **Better Peer Reviews** – More readable diffs for large metadata in GitHub and other CI/CD platforms.  
+- **Safer Deployments** – Ensures only intended changes are deployed, improving release quality.
 
 ## Commands
 
