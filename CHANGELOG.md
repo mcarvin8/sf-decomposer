@@ -5,6 +5,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.4.3](https://github.com/mcarvin8/sf-decomposer/compare/v5.4.2...v5.4.3) (2025-03-25)
+
+
+### Bug Fixes
+
+* **deps:** bump @oclif/core from 4.0.16 to 4.2.10 ([e2fe34e](https://github.com/mcarvin8/sf-decomposer/commit/e2fe34ed349b0f41fcfd6e59a1e5daacb63e28be))
+* **deps:** bump fs-extra from 11.2.0 to 11.3.0 ([1e6b86c](https://github.com/mcarvin8/sf-decomposer/commit/1e6b86c8880f5c80e532f746324e32586826d424))
+
 ## [5.4.2](https://github.com/mcarvin8/sf-decomposer/compare/v5.4.1...v5.4.2) (2025-03-21)
 
 
