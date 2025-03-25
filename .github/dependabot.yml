@@ -14,12 +14,6 @@ updates:
     commit-message:
       prefix: fix(deps)
       prefix-development: chore(dev-deps)
-    allow:
-      - dependency-name: '@salesforce/source-deploy-retrieve'
-      - dependency-name: 'xml-disassembler'
-      - dependency-name: 'xml2json-disassembler'
-      - dependency-name: 'xml2json5-disassembler'
-      - dependency-name: 'xml2yaml-disassembler'
     groups:
       xml-disassemblers:
         patterns:
