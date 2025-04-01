@@ -47,7 +47,7 @@ yarn test:nuts
 
 All metadata attributes, except for unique ID elements, are imported from this plugin's version of `@salesforce/source-deploy-retrieve` (SDR).
 
-This plugin's dependabot will look for SDR updates once a week.
+This plugin's dependabot will look for SDR updates once a month.
 
 ## Unique ID Elements
 
@@ -71,6 +71,6 @@ This plugin's code-base primarily handles Salesforce metadata specific functions
 
 Please fork and raise PRs in these repos for any features or bug fixes specific to XML decomposing/disassembly or recomposing/reassembly. You must install `pnpm` to contribute to these repos.
 
-This plugin's dependabot config will group the 4 disassemblers in the same PR. Dependabot runs weekly.
+This plugin's dependabot config will group the 4 disassemblers in the same PR. Dependabot runs monthly.
 
 `src/service/recomposeFileHandler.ts` and `src/service/decomposeFileHandler.ts` in this plugin handles calling the applicable XML disassemblers.
