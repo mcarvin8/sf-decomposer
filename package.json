@@ -10,8 +10,8 @@
     "fs-extra": "^11.3.0",
     "xml-disassembler": "^1.3.15",
     "xml2json-disassembler": "^1.1.14",
-    "xml2json5-disassembler": "^1.0.1",
-    "xml2yaml-disassembler": "^1.1.14"
+    "xml2json5-disassembler": "^1.0.2",
+    "xml2yaml-disassembler": "^1.1.15"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.0",
