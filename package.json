@@ -14,18 +14,21 @@
     "xml2yaml-disassembler": "^1.1.14"
   },
   "devDependencies": {
-    "@commitlint/cli": "^18.6.1",
+    "@commitlint/cli": "^19.8.0",
     "@commitlint/config-conventional": "^19.8.0",
     "@oclif/plugin-command-snapshot": "^5.2.37",
     "@salesforce/cli-plugins-testkit": "^5.3.10",
     "@salesforce/dev-scripts": "^10",
     "@types/fs-extra": "^11.0.4",
+    "@types/mocha": "^10.0.10",
     "eslint-plugin-sf-plugin": "^1.20.18",
     "husky": "^9.1.7",
+    "mocha": "^11.1.0",
     "oclif": "^4.14.0",
     "shx": "0.4.0",
     "ts-node": "^10.9.2",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "wireit": "^0.14.11"
   },
   "engines": {
     "node": ">=18.0.0"
