@@ -7370,16 +7370,7 @@ streamroller@^3.1.5:
     debug "^4.3.4"
     fs-extra "^8.1.0"
 
-"string-width-cjs@npm:string-width@^4.2.0":
-  version "4.2.3"
-  resolved "https://registry.npmjs.org/string-width/-/string-width-4.2.3.tgz"
-  integrity sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==
-  dependencies:
-    emoji-regex "^8.0.0"
-    is-fullwidth-code-point "^3.0.0"
-    strip-ansi "^6.0.1"
-
-string-width@^4.0.0, string-width@^4.1.0, string-width@^4.2.0, string-width@^4.2.3:
+"string-width-cjs@npm:string-width@^4.2.0", string-width@^4.0.0, string-width@^4.1.0, string-width@^4.2.0, string-width@^4.2.3:
   version "4.2.3"
   resolved "https://registry.npmjs.org/string-width/-/string-width-4.2.3.tgz"
   integrity sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==
@@ -7447,14 +7438,7 @@ string_decoder@^1.3.0:
   dependencies:
     safe-buffer "~5.2.0"
 
-"strip-ansi-cjs@npm:strip-ansi@^6.0.1":
-  version "6.0.1"
-  resolved "https://registry.npmjs.org/strip-ansi/-/strip-ansi-6.0.1.tgz"
-  integrity sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==
-  dependencies:
-    ansi-regex "^5.0.1"
-
-strip-ansi@6.0.1, strip-ansi@^6.0.0, strip-ansi@^6.0.1:
+"strip-ansi-cjs@npm:strip-ansi@^6.0.1", strip-ansi@6.0.1, strip-ansi@^6.0.0, strip-ansi@^6.0.1:
   version "6.0.1"
   resolved "https://registry.npmjs.org/strip-ansi/-/strip-ansi-6.0.1.tgz"
   integrity sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==
@@ -8057,7 +8041,7 @@ workerpool@^6.5.1:
   resolved "https://registry.yarnpkg.com/workerpool/-/workerpool-6.5.1.tgz#060f73b39d0caf97c6db64da004cd01b4c099544"
   integrity sha512-Fs4dNYcsdpYSAfVxhnl1L5zTksjvOJxtC5hzMNl+1t9B8hTJTdKDyZ5ju7ztgPy+ft9tBFXoOlDNiOT9WUXZlA==
 
-"wrap-ansi-cjs@npm:wrap-ansi@^7.0.0":
+"wrap-ansi-cjs@npm:wrap-ansi@^7.0.0", wrap-ansi@^7.0.0:
   version "7.0.0"
   resolved "https://registry.npmjs.org/wrap-ansi/-/wrap-ansi-7.0.0.tgz"
   integrity sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==
@@ -8070,15 +8054,6 @@ wrap-ansi@^6.2.0:
   version "6.2.0"
   resolved "https://registry.npmjs.org/wrap-ansi/-/wrap-ansi-6.2.0.tgz"
   integrity sha512-r6lPcBGxZXlIcymEu7InxDMhdW0KDxpLgoFLcguasxCaJ/SOIZwINatK9KY/tf+ZrlywOKU0UDj3ATXUBfxJXA==
-  dependencies:
-    ansi-styles "^4.0.0"
-    string-width "^4.1.0"
-    strip-ansi "^6.0.0"
-
-wrap-ansi@^7.0.0:
-  version "7.0.0"
-  resolved "https://registry.npmjs.org/wrap-ansi/-/wrap-ansi-7.0.0.tgz"
-  integrity sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==
   dependencies:
     ansi-styles "^4.0.0"
     string-width "^4.1.0"
@@ -8108,10 +8083,10 @@ write-file-atomic@^3.0.0:
     signal-exit "^3.0.2"
     typedarray-to-buffer "^3.1.5"
 
-xml-disassembler@^1.3.15:
-  version "1.3.15"
-  resolved "https://registry.yarnpkg.com/xml-disassembler/-/xml-disassembler-1.3.15.tgz#ddd25995caa311aa7168875d82abb5bad9c89ec1"
-  integrity sha512-YcBJK0HwS70v74q3aU6jMOfEeD8+irzMAI9ImPBxhezZNq6zjxTJg9TNlECDvjpzKMHGuscWoYLhrF9eyMM7eg==
+xml-disassembler@^1.4.0:
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/xml-disassembler/-/xml-disassembler-1.4.0.tgz#d441df956e524ad02f018953797ba260214f5411"
+  integrity sha512-ydX430qTFmq7N8IzsU5yNvJTmdBHojIeKBtEoaI6XtpVfHNvyqz1/IDBDD/HhQlPwJyZPWQCDSJs0xr39hjO3g==
   dependencies:
     fast-xml-parser "^5.0.9"
     ignore "^7.0.3"
@@ -8126,30 +8101,30 @@ xml2js@^0.6.2:
     sax ">=0.6.0"
     xmlbuilder "~11.0.0"
 
-xml2json-disassembler@^1.1.14:
-  version "1.1.14"
-  resolved "https://registry.yarnpkg.com/xml2json-disassembler/-/xml2json-disassembler-1.1.14.tgz#d6cbdd6ce8f6f2599294d8aecc70180d28761b4c"
-  integrity sha512-X+UyuqrJHOQFROlLTLe5RtN6Z0Xy/6GhKSclDrQgzpkT2dKSTnILb1KQhcfkEtMLj1IppKtoH7f3ol9wweonDQ==
+xml2json-disassembler@^1.1.15:
+  version "1.1.15"
+  resolved "https://registry.yarnpkg.com/xml2json-disassembler/-/xml2json-disassembler-1.1.15.tgz#61d44ce49a3d53b345ea75269a5bedc53258aa75"
+  integrity sha512-ZydXCF08iK9OVQudku+kY4hExnvF/GiDwa/IdSNNdtFRrXy70Qf6zZrbK8QcBgHsmQE71toR3G8+BhhjR08RiA==
   dependencies:
     tslib "^2.6.2"
-    xml-disassembler "^1.3.15"
+    xml-disassembler "^1.4.0"
 
-xml2json5-disassembler@^1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/xml2json5-disassembler/-/xml2json5-disassembler-1.0.2.tgz#f29dc4df46c6a4cd60a58121a8b0615ada23bb28"
-  integrity sha512-/O7Evf0XQR+FxrT6dNZFz8CdClkyV25mLRAT1BJn2AFIjZ/glN+Psa9y6QK3J1n98tiIqD28dLSeKrcAYDjNnQ==
+xml2json5-disassembler@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/xml2json5-disassembler/-/xml2json5-disassembler-1.0.3.tgz#f9b577af986acb15eba9a90780a3c56b70a813ca"
+  integrity sha512-9JAqswacHsxDkdbLITPqINetEtcqd1TxWZgTzNkJAffCUfK8XoLb1k8Avy+Ifvf7z88I1aqL1WvFH1yBXvEfhA==
   dependencies:
     json5 "^2.2.3"
     tslib "^2.8.1"
-    xml-disassembler "^1.3.15"
+    xml-disassembler "^1.4.0"
 
-xml2yaml-disassembler@^1.1.15:
-  version "1.1.15"
-  resolved "https://registry.yarnpkg.com/xml2yaml-disassembler/-/xml2yaml-disassembler-1.1.15.tgz#f5172223b56930bc1dc6dbc6eb9c505688edc5cb"
-  integrity sha512-ZKtjK9YJdw/RRkTJDtqlXA8gCbeUeqXiVoXHqAX9KseTwKF0U9bZQt+sYFH663uLXlC2TNV7LtMxoqa3Qfa4zA==
+xml2yaml-disassembler@^1.1.16:
+  version "1.1.16"
+  resolved "https://registry.yarnpkg.com/xml2yaml-disassembler/-/xml2yaml-disassembler-1.1.16.tgz#d524b589022ed1f050527858d56220f4a61134d1"
+  integrity sha512-4Q8vkfVyq9aaanGTE2p50Y8NGEUMj3uLirV7HTQcuU+iJ9kqtVKD5KSk1E/KrOkQgYDjxQ14hTMfHXU2mxGbIQ==
   dependencies:
     tslib "^2.6.2"
-    xml-disassembler "^1.3.15"
+    xml-disassembler "^1.4.0"
     yaml "^2.7.1"
 
 xmlbuilder@~11.0.0:
