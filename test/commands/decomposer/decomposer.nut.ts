@@ -83,7 +83,7 @@ describe('decomposer NUTs XML format', () => {
   });
 
   it('should recompose the decomposed JSON files for all metadata types under test', async () => {
-    const command = `decomposer recompose --postpurge --debug --format "json" ${METADATA_UNDER_TEST.map(
+    const command = `decomposer recompose --postpurge --debug ${METADATA_UNDER_TEST.map(
       (metadataType) => `--metadata-type "${metadataType}"`
     ).join(' ')}`;
     const output = execCmd(command, { ensureExitCode: 0 }).shellOutput.stdout;
@@ -114,7 +114,7 @@ describe('decomposer NUTs XML format', () => {
   });
 
   it('should recompose the decomposed JSON5 files for all metadata types under test', async () => {
-    const command = `decomposer recompose --postpurge --debug --format "json5" ${METADATA_UNDER_TEST.map(
+    const command = `decomposer recompose --postpurge --debug ${METADATA_UNDER_TEST.map(
       (metadataType) => `--metadata-type "${metadataType}"`
     ).join(' ')}`;
     const output = execCmd(command, { ensureExitCode: 0 }).shellOutput.stdout;
@@ -145,7 +145,7 @@ describe('decomposer NUTs XML format', () => {
   });
 
   it('should recompose the decomposed YAML files for all metadata types under test', async () => {
-    const command = `decomposer recompose --postpurge --debug --format "yaml" ${METADATA_UNDER_TEST.map(
+    const command = `decomposer recompose --postpurge --debug ${METADATA_UNDER_TEST.map(
       (metadataType) => `--metadata-type "${metadataType}"`
     ).join(' ')}`;
     const output = execCmd(command, { ensureExitCode: 0 }).shellOutput.stdout;

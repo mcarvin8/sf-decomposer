@@ -3,9 +3,6 @@
 import { resolve, relative, join } from 'node:path';
 import { readdir, stat, rm, rename } from 'node:fs/promises';
 import { DisassembleXMLFileHandler, setLogLevel } from 'xml-disassembler';
-import { XmlToYamlDisassembler } from 'xml2yaml-disassembler';
-import { XmlToJsonDisassembler } from 'xml2json-disassembler';
-import { XmlToJson5Disassembler } from 'xml2json5-disassembler';
 
 import { CUSTOM_LABELS_FILE, WORKFLOW_SUFFIX_MAPPING } from '../helpers/constants.js';
 import { moveFiles } from './moveFiles.js';
@@ -56,22 +53,15 @@ async function disassembleHandler(
   format: string,
   ignorePath: string
 ): Promise<void> {
-  let handler: DisassembleXMLFileHandler | XmlToJsonDisassembler | XmlToYamlDisassembler | XmlToJson5Disassembler;
-  if (format === 'yaml') {
-    handler = new XmlToYamlDisassembler();
-  } else if (format === 'json') {
-    handler = new XmlToJsonDisassembler();
-  } else if (format === 'json5') {
-    handler = new XmlToJson5Disassembler();
-  } else {
-    handler = new DisassembleXMLFileHandler();
-  }
+  const handler: DisassembleXMLFileHandler = new DisassembleXMLFileHandler();
+
   await handler.disassemble({
     filePath,
     uniqueIdElements,
     prePurge,
     postPurge,
     ignorePath,
+    format,
   });
 }
 

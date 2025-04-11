@@ -29,7 +29,6 @@ export const prerun: Hook<'prerun'> = async function (options) {
   }
 
   const metadataTypes: string = configFile.metadataSuffixes || '.';
-  const format: string = configFile.decomposedFormat || 'xml';
   const postpurge: boolean = configFile.postPurge || false;
   const ignorePackageDirs: string = configFile.ignorePackageDirectories || '';
 
@@ -53,8 +52,6 @@ export const prerun: Hook<'prerun'> = async function (options) {
       commandArgs.push(sanitizedDir);
     }
   }
-  commandArgs.push('--format');
-  commandArgs.push(format);
   if (postpurge) {
     commandArgs.push('--postpurge');
   }

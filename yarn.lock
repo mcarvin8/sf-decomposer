@@ -7685,7 +7685,7 @@ tsconfig-paths@^3.15.0:
     minimist "^1.2.6"
     strip-bom "^3.0.0"
 
-tslib@^2.0.1, tslib@^2.0.3, tslib@^2.5.0, tslib@^2.6.2, tslib@^2.8.1:
+tslib@^2.0.1, tslib@^2.0.3, tslib@^2.5.0, tslib@^2.6.2:
   version "2.8.1"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.8.1.tgz#612efe4ed235d567e8aba5f2a5fab70280ade83f"
   integrity sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==
@@ -8083,15 +8083,17 @@ write-file-atomic@^3.0.0:
     signal-exit "^3.0.2"
     typedarray-to-buffer "^3.1.5"
 
-xml-disassembler@^1.4.0:
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/xml-disassembler/-/xml-disassembler-1.4.0.tgz#d441df956e524ad02f018953797ba260214f5411"
-  integrity sha512-ydX430qTFmq7N8IzsU5yNvJTmdBHojIeKBtEoaI6XtpVfHNvyqz1/IDBDD/HhQlPwJyZPWQCDSJs0xr39hjO3g==
+xml-disassembler@^1.5.0:
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/xml-disassembler/-/xml-disassembler-1.5.0.tgz#9940934c87c1923c2b05c896b120a5259e7acf82"
+  integrity sha512-Pb1KcNIMaL4LXRfcOsbAyYlcy1PnQj2aqnuf2opGVJPYHzaQspy69j7FXyQ4U6BvqgeyfgMxbWMzD70HqiCDiA==
   dependencies:
     fast-xml-parser "^5.0.9"
     ignore "^7.0.3"
+    json5 "^2.2.3"
     log4js "^6.9.1"
     tslib "^2.6.2"
+    yaml "^2.7.1"
 
 xml2js@^0.6.2:
   version "0.6.2"
@@ -8100,32 +8102,6 @@ xml2js@^0.6.2:
   dependencies:
     sax ">=0.6.0"
     xmlbuilder "~11.0.0"
-
-xml2json-disassembler@^1.1.15:
-  version "1.1.15"
-  resolved "https://registry.yarnpkg.com/xml2json-disassembler/-/xml2json-disassembler-1.1.15.tgz#61d44ce49a3d53b345ea75269a5bedc53258aa75"
-  integrity sha512-ZydXCF08iK9OVQudku+kY4hExnvF/GiDwa/IdSNNdtFRrXy70Qf6zZrbK8QcBgHsmQE71toR3G8+BhhjR08RiA==
-  dependencies:
-    tslib "^2.6.2"
-    xml-disassembler "^1.4.0"
-
-xml2json5-disassembler@^1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/xml2json5-disassembler/-/xml2json5-disassembler-1.0.3.tgz#f9b577af986acb15eba9a90780a3c56b70a813ca"
-  integrity sha512-9JAqswacHsxDkdbLITPqINetEtcqd1TxWZgTzNkJAffCUfK8XoLb1k8Avy+Ifvf7z88I1aqL1WvFH1yBXvEfhA==
-  dependencies:
-    json5 "^2.2.3"
-    tslib "^2.8.1"
-    xml-disassembler "^1.4.0"
-
-xml2yaml-disassembler@^1.1.16:
-  version "1.1.16"
-  resolved "https://registry.yarnpkg.com/xml2yaml-disassembler/-/xml2yaml-disassembler-1.1.16.tgz#d524b589022ed1f050527858d56220f4a61134d1"
-  integrity sha512-4Q8vkfVyq9aaanGTE2p50Y8NGEUMj3uLirV7HTQcuU+iJ9kqtVKD5KSk1E/KrOkQgYDjxQ14hTMfHXU2mxGbIQ==
-  dependencies:
-    tslib "^2.6.2"
-    xml-disassembler "^1.4.0"
-    yaml "^2.7.1"
 
 xmlbuilder@~11.0.0:
   version "11.0.1"

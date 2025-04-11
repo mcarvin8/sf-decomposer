@@ -47,8 +47,6 @@ yarn test:nuts
 
 All metadata attributes, except for unique ID elements, are imported from this plugin's version of `@salesforce/source-deploy-retrieve` (SDR).
 
-This plugin's dependabot will look for SDR updates once a month.
-
 ## Unique ID Elements
 
 Unique ID elements are used to name decomposed files with nested elements. The file that contains the leaf elements will always match the original file-name.
@@ -61,16 +59,10 @@ This plugin looks for the 2 default unique ID elements first before searching fo
 
 When a unique ID element isn't found, it will use the SHA-256 hash of the element contents to name the decomposed nested element file.
 
-## XML Disassemblers
+## XML Disassembler
 
-This plugin's code-base primarily handles Salesforce metadata specific functions. The core XML decomposing/recomposing logic is handled by the external packages below.
-- [`xml-disassembler`](https://github.com/mcarvin8/xml-disassembler)
-- [`xml2json-disassembler`](https://github.com/mcarvin8/xml2json-disassembler)
-- [`xml2yaml-disassembler`](https://github.com/mcarvin8/xml2yaml-disassembler)
-- [`xml2json5-disassembler`](https://github.com/mcarvin8/xml2json5-disassembler)
+This plugin's code-base primarily handles Salesforce metadata specific functions. The core XML decomposing/recomposing logic is handled by [`xml-disassembler`](https://github.com/mcarvin8/xml-disassembler).
 
-Please fork and raise PRs in these repos for any features or bug fixes specific to XML decomposing/disassembly or recomposing/reassembly. You must install `pnpm` to contribute to these repos.
+Please fork and raise PRs in this repo for any issues related to XML decomposing or recomposing. You must install `pnpm` to contribute to this repo.
 
-This plugin's dependabot config will group the 4 disassemblers in the same PR. Dependabot runs monthly.
-
-`src/service/recomposeFileHandler.ts` and `src/service/decomposeFileHandler.ts` in this plugin handles calling the applicable XML disassemblers.
+`src/service/recomposeFileHandler.ts` and `src/service/decomposeFileHandler.ts` in this plugin handles calling `xml-disassembler`.
