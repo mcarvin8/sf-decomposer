@@ -13,7 +13,7 @@
   - [`sf decomposer recompose`](#sf-decomposer-recompose)
 - [Decompose Structure](#decompose-structure)
 - [Supported Metadata](#supported-metadata)
-  - [Metadata Exceptions](#metadata-exceptions)
+  - [Exceptions](#exceptions)
 - [Troubleshooting](#troubleshooting)
 - [Hooks](#hooks)
 - [Ignore Files](#ignore-files)
@@ -167,6 +167,8 @@ When the original metadata files are decomposed, this structure is followed for 
   - If unique ID elements are found, the decomposed nested files will be named using them. Otherwise, the decomposed nested files will be named with the SHA-256 hash of the element contents.
   - See [Contributing](#contributing) for more information on unique ID elements.
 
+**Decomposed Permission Set Example**
+
 | Format    | Unique ID Elements                                                                                                  |
 | --------- | ------------------------------------------------------------------------------------------------------------------- |
 | **XML**   | ![XML UID](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-xml.png)<br>     |
@@ -176,8 +178,9 @@ When the original metadata files are decomposed, this structure is followed for 
 
 When custom labels are decomposed, each custom label will have its own file in the original labels directory.
 
-<img src="https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-labels.png" alt="Description"> 
-<p><em>Decomposed Custom Labels</em></p>
+**Decomposed Custom Labels Example**
+
+![Decomposed Custom Labels](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-labels.png)<br>
 
 ## Supported Metadata
 
@@ -187,33 +190,25 @@ The `--metadata-type`/`-m` flag should be the metadata's `suffix` value as liste
 
 Here are some examples:
 
-- Custom Labels (`--metadata-type "labels"`)
-- Workflows (`--metadata-type "workflow"`)
-- Profiles (`--metadata-type "profile"`)
-- Permission Sets (`--metadata-type "permissionset"`)
-- AI Scoring Model Definition (`--metadata-type "aiScoringModelDefinition"`)
-- Decision Matrix Definition (`--metadata-type "decisionMatrixDefinition"`)
-- Bot (`--metadata-type "bot"`)
-- Marketing App Extension (`--metadata-type "marketingappextension"`)
+| Metadata Type               | CLI Option                                   |
+| --------------------------- | -------------------------------------------- |
+| Custom Labels               | `--metadata-type "labels"`                   |
+| Workflows                   | `--metadata-type "workflow"`                 |
+| Profiles                    | `--metadata-type "profile"`                  |
+| Permission Sets             | `--metadata-type "permissionset"`            |
+| AI Scoring Model Definition | `--metadata-type "aiScoringModelDefinition"` |
+| Decision Matrix Definition  | `--metadata-type "decisionMatrixDefinition"` |
+| Bot                         | `--metadata-type "bot"`                      |
+| Marketing App Extension     | `--metadata-type "marketingappextension"`    |
 
-### Metadata Exceptions
+### Exceptions
 
-- `botVersion` is blocked from being ran directly. Please use the `bot` meta suffix to decompose and recompose bots and bot versions.
-  ```
-  Error (1): `botVersion` suffix should not be used. Please use `bot` to decompose/recompose bot and bot version files.
-  ```
-- Custom Objects are not supported by this plugin as they already are decomposed by default.
-  ```
-  Error (1): Custom Objects are not supported by this plugin.
-  ```
-- Metadata types such as Apex Classes, Apex Components, Triggers, etc. with certain SDR adapter strategies (`matchingContentFile`, `digitalExperience`, `mixedContent`, `bundle`) are not supported by this plugin.
-  ```
-  Error (1): Metadata types with [matchingContentFile, digitalExperience, mixedContent, bundle] strategies are not supported by this plugin.
-  ```
-- Children metadata types (i.e. custom fields) are not supported and will result in this general error:
-  ```
-  Error (1): Metadata type not found for the given suffix: field.
-  ```
+| Scenario                                                                                                        | Message                                                                                                                                      |
+| --------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `botVersion` is blocked from being run directly                                                                 | `Error (1): botVersion suffix should not be used. Please use bot to decompose/recompose bot and bot version files.`                          |
+| Custom Objects not supported                                                                                    | `Error (1): Custom Objects are not supported by this plugin.`                                                                                |
+| Unsupported SDR adapter strategies (e.g., `matchingContentFile`, `digitalExperience`, `mixedContent`, `bundle`) | `Error (1): Metadata types with [matchingContentFile, digitalExperience, mixedContent, bundle] strategies are not supported by this plugin.` |
+| Children metadata types (e.g., custom fields) and invalid suffixes                                              | `Error (1): Metadata type not found for the given suffix: field.`                                                                            |
 
 ## Troubleshooting
 
