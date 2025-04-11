@@ -169,12 +169,12 @@ When the original metadata files are decomposed, this structure is followed for 
 
 **Decomposed Permission Set Example**
 
-| Format    | Unique ID Elements                                                                                                  |
-| --------- | ------------------------------------------------------------------------------------------------------------------- |
-| **XML**   | ![XML UID](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-xml.png)<br>     |
-| **YAML**  | ![YAML UID](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-yaml.png)<br>   |
-| **JSON**  | ![JSON UID](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-json.png)<br>   |
-| **JSON5** | ![JSON5 UID](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-json5.png)<br> |
+| Format    | Example                                                                                                         |
+| --------- | --------------------------------------------------------------------------------------------------------------- |
+| **XML**   | ![XML](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-xml.png)<br>     |
+| **YAML**  | ![YAML](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-yaml.png)<br>   |
+| **JSON**  | ![JSON](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-json.png)<br>   |
+| **JSON5** | ![JSON5](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-json5.png)<br> |
 
 When custom labels are decomposed, each custom label will have its own file in the original labels directory.
 
