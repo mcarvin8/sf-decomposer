@@ -178,8 +178,6 @@ When the original metadata files are decomposed, this structure is followed for 
 
 When custom labels are decomposed, each custom label will have its own file in the original labels directory.
 
-**Decomposed Custom Labels Example**
-
 ![Decomposed Custom Labels](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-labels.png)<br>
 
 ## Supported Metadata
