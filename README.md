@@ -240,18 +240,18 @@ To add debugging to the log, provide the `--debug` flag to the decompose or reco
 
 You can copy and update the sample [.sfdecomposer.config.json](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.sfdecomposer.config.json).
 
-- `metadataSuffixes` is required and should be a comma-separated string of metadata suffixes to decompose and recompose based on the CLI command.
-- `ignorePackageDirectories` is optional and should be a comma-separated string of package directories to ignore.
-- `prePurge` is optional and should be `true` or `false`. If true, this will delete any existing decomposed files before decomposing the files. This defauls to `false`.
-- `postPurge` is optional and should be `true` or `false`. If true, this will delete the retrieval file after decomposing it or delete the decomposed files after recomposing them. This defauls to `false`.
-- `decomposedFormat` is optional and should be either `xml`, `json`, `json5`, or `yaml`, depending on the decomposed file format. This defaults to `xml`.
+| Configuration Option       | Required | Description                                                                                                                                    |
+| -------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `metadataSuffixes`         | Yes      | Comma-separated string of metadata suffixes to decompose and recompose based on the CLI command.                                               |
+| `ignorePackageDirectories` | No       | Comma-separated string of package directories to ignore.                                                                                       |
+| `prePurge`                 | No       | `true` or `false`. If `true`, deletes existing decomposed files before decomposing. Defaults to `false`.                                       |
+| `postPurge`                | No       | `true` or `false`. If `true`, deletes the retrieval file after decomposing or deletes decomposed files after recomposing. Defaults to `false`. |
+| `decomposedFormat`         | No       | Format of decomposed files: `xml`, `json`, `json5`, or `yaml`. Defaults to `xml`.                                                              |
 
 If `.sfdecomposer.config.json` is found, the hooks will run:
 
-- the decompose command **after** a `sf project retrieve start` command completes successfully (post-run)
-- the recompose command **before** a `sf project deploy [start/validate]` command starts (pre-run)
-
-If `.sfdecomposer.config.json` isn't found, the hooks will be skipped.
+- the decompose command **after** a `sf project retrieve start` command completes successfully
+- the recompose command **before** a `sf project deploy [start/validate]` command starts
 
 ## Ignore Files
 
