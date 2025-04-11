@@ -13,10 +13,3 @@ updates:
     commit-message:
       prefix: fix(deps)
       prefix-development: chore(dev-deps)
-    groups:
-      xml-disassemblers:
-        patterns:
-          - 'xml-disassembler'
-          - 'xml2json-disassembler'
-          - 'xml2json5-disassembler'
-          - 'xml2yaml-disassembler'
