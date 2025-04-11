@@ -164,17 +164,15 @@ When the original metadata files are decomposed, this structure is followed for 
 
 - Leaf elements (i.e. `<userLicense>Salesforce</userLicense>`) will be decomposed in the same file in the root of the decomposed directory. The leaf file-name will match the original file-name.
 - Nested elements will be decomposed into their own files under sub-directories by the element type, i.e. custom permissions in a permission set will have their own decomposed file under a custom permissions sub-folder.
-  - If unique ID elements are found, the decomposed nested files will be named using them.
-  - Otherwise, the decomposed nested files will be named with the SHA-256 hash of the element contents.
+  - If unique ID elements are found, the decomposed nested files will be named using them. Otherwise, the decomposed nested files will be named with the SHA-256 hash of the element contents.
   - See [Contributing](#contributing) for more information on unique ID elements.
 
-<img src="https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-perm-set.png">
-<p><em>Decomposed Permission Sets named using unique ID elements</em></p>
-
-<br>
-
-<img src="https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-apps-hashes.png">
-<p><em>Decomposed Application named using SHA-256 hashes of elements</em></p>
+| Format    | Unique ID Elements                                                                                                  |
+| --------- | ------------------------------------------------------------------------------------------------------------------- |
+| **XML**   | ![XML UID](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-xml.png)<br>     |
+| **YAML**  | ![YAML UID](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-yaml.png)<br>   |
+| **JSON**  | ![JSON UID](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-json.png)<br>   |
+| **JSON5** | ![JSON5 UID](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-json5.png)<br> |
 
 When custom labels are decomposed, each custom label will have its own file in the original labels directory.
 
