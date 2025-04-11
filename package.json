@@ -21,7 +21,7 @@
     "eslint-plugin-sf-plugin": "^1.20.18",
     "husky": "^9.1.7",
     "mocha": "^11.1.0",
-    "oclif": "^4.14.0",
+    "oclif": "^4.17.43",
     "shx": "0.4.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3",
