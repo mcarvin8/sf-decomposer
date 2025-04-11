@@ -103,8 +103,6 @@ describe('decomposer unit tests', () => {
   it('should recompose all decomposed JSON files for all metadata types under test', async () => {
     await DecomposerRecompose.run([
       '--postpurge',
-      '--format',
-      'json',
       ...METADATA_UNDER_TEST.map((metadataType) => `--metadata-type=${metadataType}`),
     ]);
 
@@ -142,8 +140,6 @@ describe('decomposer unit tests', () => {
   it('should recompose all decomposed JSON5 files for all metadata types under test', async () => {
     await DecomposerRecompose.run([
       '--postpurge',
-      '--format',
-      'json5',
       ...METADATA_UNDER_TEST.map((metadataType) => `--metadata-type=${metadataType}`),
     ]);
 
@@ -181,8 +177,6 @@ describe('decomposer unit tests', () => {
   it('should recompose all decomposed YAML files for all metadata types under test', async () => {
     await DecomposerRecompose.run([
       '--postpurge',
-      '--format',
-      'yaml',
       ...METADATA_UNDER_TEST.map((metadataType) => `--metadata-type=${metadataType}`),
     ]);
 

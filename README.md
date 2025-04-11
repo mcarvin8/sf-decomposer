@@ -7,7 +7,7 @@
   <summary>Table of Contents</summary>
 
 - [Quick Start](#quick-start)
-- [Why Choose `sf-decomposer`](#why-choose-sf-decomposer)
+- [Why Choose `sf-decomposer`?](#why-choose-sf-decomposer)
 - [Commands](#commands)
   - [`sf decomposer decompose`](#sf-decomposer-decompose)
   - [`sf decomposer recompose`](#sf-decomposer-recompose)
@@ -56,24 +56,24 @@ sf decomposer recompose -m "flow" -m "labels"
 
 6. Deploy recomposed metadata
 
-## Why Choose `sf-decomposer`  
+## Why Choose `sf-decomposer`?
 
-Salesforce's built-in decomposition has limitations. `sf-decomposer` offers more control, flexibility, and versioning benefits for Admins and Developers.  
+Salesforce's built-in decomposition has limitations. `sf-decomposer` offers more control, flexibility, and versioning benefits for Admins and Developers.
 
-### Key Advantages  
+### Key Advantages
 
-- **Supports More Metadata** – Works with most Metadata API types, unlike Salesforce’s limited decomposition.  
-- **Selective Decomposition** – Decompose only what you need, avoiding Salesforce’s all-or-nothing approach.  
-  - See [.sfdecomposerignore](#.sfdecomposerignore)  
-- **Fully Decomposes Metadata** – Ensures complete decomposition for types that Salesforce only partially decomposes (e.g., `decomposePermissionSetBeta2`).  
-- **Consistent Sorting** – Keeps elements in a predictable order to reduce unnecessary version control noise.  
-- **Multiple Output Formats** – Supports XML, JSON, JSON5, and YAML for greater flexibility.  
-- **CI/CD Integration** – Hooks enable seamless decomposition and recomposition in automated workflows.  
-- **Improved Version Control** – Smaller, structured files make pull requests easier to review and reduce merge conflicts.  
+- **Supports More Metadata** – Works with most Metadata API types, unlike Salesforce’s limited decomposition.
+- **Selective Decomposition** – Decompose only what you need, avoiding Salesforce’s all-or-nothing approach.
+  - See [.sfdecomposerignore](#.sfdecomposerignore)
+- **Fully Decomposes Metadata** – Ensures complete decomposition for types that Salesforce only partially decomposes (e.g., `decomposePermissionSetBeta2`).
+- **Consistent Sorting** – Keeps elements in a predictable order to reduce unnecessary version control noise.
+- **Multiple Output Formats** – Supports XML, JSON, JSON5, and YAML for greater flexibility.
+- **CI/CD Integration** – Hooks enable seamless decomposition and recomposition in automated workflows.
+- **Improved Version Control** – Smaller, structured files make pull requests easier to review and reduce merge conflicts.
 
-### How It Helps Salesforce Teams  
+### How It Helps Salesforce Teams
 
-- **Better Peer Reviews** – More readable diffs for large metadata in GitHub and other CI/CD platforms.  
+- **Better Peer Reviews** – More readable diffs for large metadata in GitHub and other CI/CD platforms.
 - **Safer Deployments** – Ensures only intended changes are deployed, improving release quality.
 
 ## Commands
@@ -95,7 +95,6 @@ FLAGS
   -m, --metadata-type=<value>             The metadata suffix to process, such as 'flow', 'labels', etc.
                                           Can be declared multiple times.
   -f, --format=<value>                    The file type for the decomposed files.
-                                          Must match what format you provide for recompose.
                                           Options: ['xml', 'yaml', 'json', 'json5']
                                           [default: 'xml']
   -i, --ignore-package-directory=<value>  Package directory to ignore.
@@ -132,15 +131,11 @@ Recompose decomposed files into deployment-compatible files.
 
 ```
 USAGE
-  $ sf decomposer recompose -m <value> -f <value> -i <value> [--postpurge --debug --json]
+  $ sf decomposer recompose -m <value> -i <value> [--postpurge --debug --json]
 
 FLAGS
   -m, --metadata-type=<value>               The metadata suffix to process, such as 'flow', 'labels', etc.
                                             Can be declared multiple times.
-  -f, --format=<value>                      The file format for the decomposed files.
-                                            Must match what format you provide for decompose.
-                                            Options: ['xml', 'yaml', 'json', 'json5']
-                                            [default: 'xml']
   -i, --ignore-package-directory=<value>    Package directory to ignore.
                                             Should be as they appear in the "sfdx-project.json".
                                             Can be declared multiple times.
@@ -155,11 +150,7 @@ GLOBAL FLAGS
 EXAMPLES
   Recompose all flows:
 
-    $ sf decomposer recompose -m "flow" -f "xml" --postpurge --debug
-
-  Recompose all decomposed flows and custom labels YAMLs into XMLs
-
-    $ sf decomposer recompose -m "flow" -m "labels" -f "yaml" --postpurge --debug
+    $ sf decomposer recompose -m "flow" --postpurge --debug
 
   Recompose flows except for those in the "force-app" package directory.
 
@@ -301,10 +292,9 @@ If you encounter any bugs or would like to request features, please create an [i
 
 ## Built With
 
-- [`xml-disassembler`](https://github.com/mcarvin8/xml-disassembler)
-- [`xml2json-disassembler`](https://github.com/mcarvin8/xml2json-disassembler)
-- [`xml2yaml-disassembler`](https://github.com/mcarvin8/xml2yaml-disassembler)
-- [`xml2json5-disassembler`](https://github.com/mcarvin8/xml2json5-disassembler)
+- [`xml-disassembler`](https://github.com/mcarvin8/xml-disassembler) - Disassembles XML files into smaller files and reassembles the XML
+- [`fs-extra`](https://github.com/jprichardson/node-fs-extra) - Node.js: extra methods for the fs object like copy(), remove(), mkdirs()
+- [`@salesforce/source-deploy-retrieve`](https://github.com/forcedotcom/source-deploy-retrieve) - JavaScript toolkit for working with Salesforce metadata
 
 ## Contributing
 

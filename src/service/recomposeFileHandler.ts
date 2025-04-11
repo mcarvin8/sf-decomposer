@@ -3,9 +3,6 @@
 import { readdir, stat, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { ReassembleXMLFileHandler, setLogLevel } from 'xml-disassembler';
-import { YamlToXmlReassembler } from 'xml2yaml-disassembler';
-import { JsonToXmlReassembler } from 'xml2json-disassembler';
-import { Json5ToXmlReassembler } from 'xml2json5-disassembler';
 
 import { CUSTOM_LABELS_FILE } from '../helpers/constants.js';
 import { renameBotVersionFile } from './renameBotVersionFiles.js';
@@ -19,40 +16,25 @@ export async function recomposeFileHandler(
     metadataPaths: string[];
   },
   postpurge: boolean,
-  debug: boolean,
-  format: string
+  debug: boolean
 ): Promise<void> {
   const { metaSuffix, strictDirectoryName, folderType, metadataPaths } = metaAttributes;
   if (debug) setLogLevel('debug');
   for (const metadataPath of metadataPaths) {
     if (metaSuffix === 'labels') {
-      await reassembleLabels(metadataPath, metaSuffix, postpurge, format);
+      await reassembleLabels(metadataPath, metaSuffix, postpurge);
     } else {
       let recurse: boolean = false;
       if (strictDirectoryName || folderType) recurse = true;
-      await reassembleDirectories(metadataPath, metaSuffix, recurse, postpurge, format);
+      await reassembleDirectories(metadataPath, metaSuffix, recurse, postpurge);
     }
 
     if (metaSuffix === 'bot') await renameBotVersionFile(metadataPath);
   }
 }
 
-async function reassembleHandler(
-  filePath: string,
-  fileExtension: string,
-  postPurge: boolean,
-  format: string
-): Promise<void> {
-  let handler: ReassembleXMLFileHandler | JsonToXmlReassembler | YamlToXmlReassembler | Json5ToXmlReassembler;
-  if (format === 'yaml') {
-    handler = new YamlToXmlReassembler();
-  } else if (format === 'json') {
-    handler = new JsonToXmlReassembler();
-  } else if (format === 'json5') {
-    handler = new Json5ToXmlReassembler();
-  } else {
-    handler = new ReassembleXMLFileHandler();
-  }
+async function reassembleHandler(filePath: string, fileExtension: string, postPurge: boolean): Promise<void> {
+  const handler: ReassembleXMLFileHandler = new ReassembleXMLFileHandler();
   await handler.reassemble({
     filePath,
     fileExtension,
@@ -60,19 +42,14 @@ async function reassembleHandler(
   });
 }
 
-async function reassembleLabels(
-  metadataPath: string,
-  metaSuffix: string,
-  postpurge: boolean,
-  format: string
-): Promise<void> {
+async function reassembleLabels(metadataPath: string, metaSuffix: string, postpurge: boolean): Promise<void> {
   let sourceDirectory = metadataPath;
   let destinationDirectory = join(metadataPath, 'CustomLabels', 'labels');
 
   await moveFiles(sourceDirectory, destinationDirectory, (fileName) => fileName !== CUSTOM_LABELS_FILE);
 
   // do not use postpurge flag due to file moving
-  await reassembleHandler(join(metadataPath, 'CustomLabels'), `${metaSuffix}-meta.xml`, false, format);
+  await reassembleHandler(join(metadataPath, 'CustomLabels'), `${metaSuffix}-meta.xml`, false);
 
   sourceDirectory = join(metadataPath, 'CustomLabels', 'labels');
   destinationDirectory = metadataPath;
@@ -98,17 +75,16 @@ async function reassembleDirectories(
   metadataPath: string,
   metaSuffix: string,
   recurse: boolean,
-  postpurge: boolean,
-  format: string
+  postpurge: boolean
 ): Promise<void> {
   const subdirectories = (await readdir(metadataPath)).map((file) => join(metadataPath, file));
   for (const subdirectory of subdirectories) {
     const subDirStat = await stat(subdirectory);
     if (subDirStat.isDirectory() && recurse) {
       // recursively call this function and set recurse to false
-      await reassembleDirectories(subdirectory, metaSuffix, false, postpurge, format);
+      await reassembleDirectories(subdirectory, metaSuffix, false, postpurge);
     } else if (subDirStat.isDirectory()) {
-      await reassembleHandler(subdirectory, `${metaSuffix}-meta.xml`, postpurge, format);
+      await reassembleHandler(subdirectory, `${metaSuffix}-meta.xml`, postpurge);
     }
   }
 }
