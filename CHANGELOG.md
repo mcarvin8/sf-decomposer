@@ -5,6 +5,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.5.0](https://github.com/mcarvin8/sf-decomposer/compare/v5.4.6...v5.5.0) (2025-04-11)
+
+
+### Features
+
+* remove format flag on recompose ([7caea40](https://github.com/mcarvin8/sf-decomposer/commit/7caea40a1964a07c5595f0813d0a30f63f6717ae))
+
+
+### Bug Fixes
+
+* **deps:** bump @salesforce/source-deploy-retrieve ([9c8e11f](https://github.com/mcarvin8/sf-decomposer/commit/9c8e11fb38cc307b22d1af37d7e7bfb058aab65b))
+
 ## [5.4.6](https://github.com/mcarvin8/sf-decomposer/compare/v5.4.5...v5.4.6) (2025-04-02)
 
 
