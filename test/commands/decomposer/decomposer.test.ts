@@ -192,4 +192,41 @@ describe('decomposer unit tests', () => {
     await compareDirectories(originalDirectory, mockDirectory);
     await compareDirectories(originalDirectory2, mockDirectory2);
   });
+  it('should decompose all metadata types under test in TOML format', async () => {
+    await DecomposerDecompose.run([
+      '--postpurge',
+      '--prepurge',
+      '--format',
+      'toml',
+      ...METADATA_UNDER_TEST.map((metadataType) => `--metadata-type=${metadataType}`),
+    ]);
+
+    const output = sfCommandStubs.log
+      .getCalls()
+      .flatMap((c) => c.args)
+      .join('\n');
+    METADATA_UNDER_TEST.forEach((metadataType) => {
+      expect(output).to.include(`All metadata files have been decomposed for the metadata type: ${metadataType}`);
+    });
+  });
+
+  it('should recompose all decomposed TOML files for all metadata types under test', async () => {
+    await DecomposerRecompose.run([
+      '--postpurge',
+      ...METADATA_UNDER_TEST.map((metadataType) => `--metadata-type=${metadataType}`),
+    ]);
+
+    // Check if there are no errors in the log
+    const errorOutput = sfCommandStubs.log
+      .getCalls()
+      .flatMap((c) => c.args)
+      .join('\n');
+    expect(errorOutput).to.not.include('Error');
+  });
+  // can't compare TOML recomposed files to reference files due to differences in key-order pairing
+  // TOML re-generated files contains the same elements, but the ordering varies compared to the other file formats
+  /* it('should confirm the recomposed files in a mock directory match the reference files', async () => {
+    await compareDirectories(originalDirectory, mockDirectory);
+    await compareDirectories(originalDirectory2, mockDirectory2);
+  }); */
 });
