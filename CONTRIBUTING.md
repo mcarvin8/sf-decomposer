@@ -47,7 +47,7 @@ yarn test:nuts
 
 All metadata attributes, except for unique ID elements, are imported from this plugin's version of `@salesforce/source-deploy-retrieve` (SDR).
 
-## Unique ID Elements
+### Unique ID Elements
 
 Unique ID elements are used to name decomposed files with nested elements. The file that contains the leaf elements will always match the original file-name.
 
