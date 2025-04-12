@@ -36,25 +36,27 @@ Break down large Salesforce metadata files (XML) into smaller, more manageable f
 sf plugins install sf-decomposer@x.y.z
 ```
 
-2. [Decompose](#sf-decomposer-decompose) the metadata type(s) in your Salesforce DX project
+2. Retrieve metadata into your Salesforce DX project
+
+3. [Decompose](#sf-decomposer-decompose) the metadata type(s)
 
 ```bash
-sf decomposer decompose -m "flow" -m "labels"
+sf decomposer decompose -m "flow" -m "labels" --postpurge
 ```
 
-3. Add decomposed files to [`.forceignore`](#.forceignore)
+4. Add decomposed files to [`.forceignore`](#.forceignore)
 
 > This is **REQUIRED** to avoid errors when running `sf`commands
 
-4. Stage decomposed files in version control
+5. Stage decomposed files in version control
 
-5. [Recompose](#sf-decomposer-recompose) the metadata type(s) before deployment
+6. [Recompose](#sf-decomposer-recompose) the metadata type(s) before deployment
 
 ```bash
 sf decomposer recompose -m "flow" -m "labels"
 ```
 
-6. Deploy recomposed metadata
+7. Deploy recomposed metadata
 
 ## Why Choose `sf-decomposer`?
 
