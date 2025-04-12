@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.7.0](https://github.com/mcarvin8/sf-decomposer/compare/v5.6.0...v5.7.0) (2025-04-12)
+
+
+### Features
+
+* add ini as a decomposed file format ([572a8a2](https://github.com/mcarvin8/sf-decomposer/commit/572a8a2bfa1b4ef81180fa8ef2034d6229f1dad2))
+
 ## [5.6.0](https://github.com/mcarvin8/sf-decomposer/compare/v5.5.0...v5.6.0) (2025-04-12)
 
 
