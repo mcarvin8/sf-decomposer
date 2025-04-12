@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.7.2](https://github.com/mcarvin8/sf-decomposer/compare/v5.7.1...v5.7.2) (2025-04-12)
+
+
+### Bug Fixes
+
+* remove extension on bot version suffix renaming ([248f576](https://github.com/mcarvin8/sf-decomposer/commit/248f576a08fc3f0ff0b8fcb6bd0798f01c438129))
+
 ## [5.7.1](https://github.com/mcarvin8/sf-decomposer/compare/v5.7.0...v5.7.1) (2025-04-12)
 
 
