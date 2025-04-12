@@ -176,6 +176,7 @@ When the original metadata files are decomposed, this structure is followed for 
 | **YAML**  | ![YAML](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-yaml.png)<br>   |
 | **JSON**  | ![JSON](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-json.png)<br>   |
 | **JSON5** | ![JSON5](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-json5.png)<br> |
+| **TOML**  | ![TOML](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-toml.png)<br>   |
 
 When custom labels are decomposed, each custom label will have its own file in the original labels directory.
 
