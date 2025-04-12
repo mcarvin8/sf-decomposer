@@ -4334,10 +4334,10 @@ fast-xml-parser@^4.5.3:
   dependencies:
     strnum "^1.1.1"
 
-fast-xml-parser@^5.0.9:
-  version "5.0.9"
-  resolved "https://registry.yarnpkg.com/fast-xml-parser/-/fast-xml-parser-5.0.9.tgz#5b64c810e70941a9c07b07ead8299841fbb8dd76"
-  integrity sha512-2mBwCiuW3ycKQQ6SOesSB8WeF+fIGb6I/GG5vU5/XEptwFFhp9PE8b9O7fbs2dpq9fXn4ULR3UsfydNUCntf5A==
+fast-xml-parser@^5.2.0:
+  version "5.2.0"
+  resolved "https://registry.yarnpkg.com/fast-xml-parser/-/fast-xml-parser-5.2.0.tgz#a1a209c5d8e161989a3bce0942a02aeef460c9ef"
+  integrity sha512-Uw9+Mjt4SBRud1IcaYuW/O0lW8SKKdMl5g7g24HiIuyH5fQSD+AVLybSlJtqLYEbytVFjWQa5DMGcNgeksdRBg==
   dependencies:
     strnum "^2.0.5"
 
@@ -8306,12 +8306,12 @@ write-file-atomic@^3.0.0:
     signal-exit "^3.0.2"
     typedarray-to-buffer "^3.1.5"
 
-xml-disassembler@^1.5.0:
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/xml-disassembler/-/xml-disassembler-1.5.0.tgz#9940934c87c1923c2b05c896b120a5259e7acf82"
-  integrity sha512-Pb1KcNIMaL4LXRfcOsbAyYlcy1PnQj2aqnuf2opGVJPYHzaQspy69j7FXyQ4U6BvqgeyfgMxbWMzD70HqiCDiA==
+xml-disassembler@^1.5.1:
+  version "1.5.1"
+  resolved "https://registry.yarnpkg.com/xml-disassembler/-/xml-disassembler-1.5.1.tgz#e82bf1762c342782e276af222905eddcb18750fc"
+  integrity sha512-0K+pUeXbje7ZekvU68yXzPhAWN4Thef64AZzgkKp3YtHxzyBcRiPOiHGpvDgsDvlL/f7Hj2XmupLbf4OvkkC7g==
   dependencies:
-    fast-xml-parser "^5.0.9"
+    fast-xml-parser "^5.2.0"
     ignore "^7.0.3"
     json5 "^2.2.3"
     log4js "^6.9.1"
