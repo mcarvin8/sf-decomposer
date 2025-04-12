@@ -5,6 +5,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.6.0](https://github.com/mcarvin8/sf-decomposer/compare/v5.5.0...v5.6.0) (2025-04-12)
+
+
+### Features
+
+* add toml support ([37f61fb](https://github.com/mcarvin8/sf-decomposer/commit/37f61fbbf67e2a92625d90ca2642696cd1a35662))
+
+
+### Bug Fixes
+
+* **deps:** bump @salesforce/core from 8.8.7 to 8.9.0 ([c5b654d](https://github.com/mcarvin8/sf-decomposer/commit/c5b654d44dfc302d698654b7279a9f17a355afc5))
+* **deps:** bump xml-disassembler from 1.5.0 to 1.5.1 ([bd8a4cf](https://github.com/mcarvin8/sf-decomposer/commit/bd8a4cf2a91b75ca55353ef6e5349535d5914102))
+
 ## [5.5.0](https://github.com/mcarvin8/sf-decomposer/compare/v5.4.6...v5.5.0) (2025-04-11)
 
 
