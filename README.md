@@ -26,7 +26,7 @@
 - [License](#license)
 </details>
 
-Break down large Salesforce metadata files (XML) into smaller, more manageable files (XML/JSON/YAML/TOML/JSON5) for version control and then recreate deployment-compatible files.
+Break down large Salesforce metadata files (XML) into smaller, more manageable files (XML/JSON/YAML/TOML/JSON5/INI) for version control and then recreate deployment-compatible files.
 
 ## Quick Start
 
@@ -67,8 +67,8 @@ Salesforce's built-in decomposition has limitations. `sf-decomposer` offers more
   - See [.sfdecomposerignore](#.sfdecomposerignore)
 - **Fully Decomposes Metadata** – Ensures complete decomposition for types that Salesforce only partially decomposes (e.g., `decomposePermissionSetBeta2`).
 - **Consistent Sorting** – Keeps elements in a predictable order to reduce unnecessary version control noise.
-  > DISCLAIMER: If you use "toml" format for decomposed files, the element sorting will vary compared to the other formats
-- **Multiple Output Formats** – Supports XML, JSON, JSON5, TOML, and YAML for greater flexibility.
+  > DISCLAIMER: If you use "toml" or "ini" format for decomposed files, the element sorting will vary compared to the other formats
+- **Multiple Output Formats** – Supports XML, JSON, JSON5, TOML, INI, and YAML for greater flexibility.
 - **CI/CD Integration** – Hooks enable seamless decomposition and recomposition in automated workflows.
 - **Improved Version Control** – Smaller, structured files make pull requests easier to review and reduce merge conflicts.
 
@@ -96,7 +96,7 @@ FLAGS
   -m, --metadata-type=<value>             The metadata suffix to process, such as 'flow', 'labels', etc.
                                           Can be declared multiple times.
   -f, --format=<value>                    The file type for the decomposed files.
-                                          Options: ['xml', 'yaml', 'json', 'toml', 'json5']
+                                          Options: ['xml', 'yaml', 'json', 'toml', 'ini', 'json5']
                                           [default: 'xml']
   -i, --ignore-package-directory=<value>  Package directory to ignore.
                                           Should be as they appear in the "sfdx-project.json".
@@ -177,6 +177,7 @@ When the original metadata files are decomposed, this structure is followed for 
 | **JSON**  | ![JSON](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-json.png)<br>   |
 | **JSON5** | ![JSON5](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-json5.png)<br> |
 | **TOML**  | ![TOML](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-toml.png)<br>   |
+| **INI**   | ![INI](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-ini.png)<br>     |
 
 When custom labels are decomposed, each custom label will have its own file in the original labels directory.
 
@@ -246,7 +247,7 @@ You can copy and update the sample [.sfdecomposer.config.json](https://raw.githu
 | `ignorePackageDirectories` | No       | Comma-separated string of package directories to ignore.                                                                                       |
 | `prePurge`                 | No       | `true` or `false`. If `true`, deletes existing decomposed files before decomposing. Defaults to `false`.                                       |
 | `postPurge`                | No       | `true` or `false`. If `true`, deletes the retrieval file after decomposing or deletes decomposed files after recomposing. Defaults to `false`. |
-| `decomposedFormat`         | No       | Format of decomposed files: `xml`, `json`, `json5`, `toml`, or `yaml`. Defaults to `xml`.                                                      |
+| `decomposedFormat`         | No       | Format of decomposed files: `xml`, `json`, `json5`, `toml`, `ini`, or `yaml`. Defaults to `xml`.                                               |
 
 If `.sfdecomposer.config.json` is found, the hooks will run:
 
@@ -259,7 +260,7 @@ If `.sfdecomposer.config.json` is found, the hooks will run:
 
 The Salesforce CLI **must** ignore the decomposed files and allow the recomposed files.
 
-You can use the sample [.forceignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.forceignore). Update the decomposed file extensions based on what format you're using (`.xml`, `.json`, `.json5`, `.toml`, or `.yaml`).
+You can use the sample [.forceignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.forceignore). Update the decomposed file extensions based on what format you're using (`.xml`, `.json`, `.json5`, `.toml`, `.ini`, or `.yaml`).
 
 ### `.sfdecomposerignore`
 
