@@ -6,13 +6,13 @@ export const LOG_FILE = 'disassemble.log';
 export const DECOMPOSED_FILE_TYPES: string[] = ['xml', 'json', 'yaml', 'json5', 'toml', 'ini'];
 export const IGNORE_FILE = '.sfdecomposerignore';
 export const WORKFLOW_SUFFIX_MAPPING: { [key: string]: string } = {
-  'alerts-meta.xml': 'workflowAlert-meta.xml',
-  'fieldUpdates-meta.xml': 'workflowFieldUpdate-meta.xml',
-  'flowActions-meta.xml': 'workflowFlowAction-meta.xml',
-  'knowledgePublishes-meta.xml': 'workflowKnowledgePublish-meta.xml',
-  'outboundMessages-meta.xml': 'workflowOutboundMessage-meta.xml',
-  'rules-meta.xml': 'workflowRule-meta.xml',
-  'tasks-meta.xml': 'workflowTask-meta.xml',
-  'send-meta.xml': 'workflowSend-meta.xml',
+  'alerts-meta': 'workflowAlert-meta',
+  'fieldUpdates-meta': 'workflowFieldUpdate-meta',
+  'flowActions-meta': 'workflowFlowAction-meta',
+  'knowledgePublishes-meta': 'workflowKnowledgePublish-meta',
+  'outboundMessages-meta': 'workflowOutboundMessage-meta',
+  'rules-meta': 'workflowRule-meta',
+  'tasks-meta': 'workflowTask-meta',
+  'send-meta': 'workflowSend-meta',
 };
 export const HOOK_CONFIG_JSON = '.sfdecomposer.config.json';

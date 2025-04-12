@@ -15,7 +15,7 @@ export async function renameBotVersionFile(metadataPath: string): Promise<void> 
         // Check if the bot meta file name contains "v" followed by a number
         if (/v\d+\.bot-meta\.xml$/.test(file)) {
           const sourcePath = join(subDirectoryPath, file);
-          const destinationPath = join(subDirectoryPath, file.replace('bot-meta.xml', 'botVersion-meta.xml'));
+          const destinationPath = join(subDirectoryPath, file.replace('bot-meta', 'botVersion-meta'));
           await rename(sourcePath, destinationPath);
         }
       }
