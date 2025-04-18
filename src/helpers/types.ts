@@ -13,6 +13,7 @@ export type ConfigFile = {
   postPurge: boolean;
   decomposedFormat: string;
   ignorePackageDirectories: string;
+  strategy: string;
 };
 
 export type SfdxProject = {

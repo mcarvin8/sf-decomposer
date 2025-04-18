@@ -34,6 +34,7 @@ export const scopedPostRetrieve: HookFunction = async function (options) {
   const prepurge: boolean = configFile.prePurge || false;
   const postpurge: boolean = configFile.postPurge || false;
   const ignorePackageDirs: string = configFile.ignorePackageDirectories || '';
+  const strategy: string = configFile.strategy || 'unique-id';
 
   if (metadataTypes.trim() === '.') {
     return;
@@ -63,5 +64,7 @@ export const scopedPostRetrieve: HookFunction = async function (options) {
   if (postpurge) {
     commandArgs.push('--postpurge');
   }
+  commandArgs.push('--strategy');
+  commandArgs.push(strategy);
   await DecomposerDecompose.run(commandArgs);
 };

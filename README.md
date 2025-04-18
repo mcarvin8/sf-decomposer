@@ -283,6 +283,7 @@ You can copy and update the sample [.sfdecomposer.config.json](https://raw.githu
 | `prePurge`                 | No       | `true` or `false`. If `true`, deletes existing decomposed files before decomposing. Defaults to `false`.                                       |
 | `postPurge`                | No       | `true` or `false`. If `true`, deletes the retrieval file after decomposing or deletes decomposed files after recomposing. Defaults to `false`. |
 | `decomposedFormat`         | No       | Format of decomposed files: `xml`, `json`, `json5`, `toml`, `ini`, or `yaml`. Defaults to `xml`.                                               |
+| `strategy`                 | No       | Strategy for decomposing the files: `unique-id` or `grouped-by-tag`. Defaults to `unique-id`.                                                  |
 
 If `.sfdecomposer.config.json` is found, the hooks will run:
 
