@@ -37,3 +37,7 @@ File format for the decomposed files.
 # flags.ignore-package-directory.summary
 
 Ignore a package directory.
+
+# flags.strategy.summary
+
+Strategy to follow when decomposing files.

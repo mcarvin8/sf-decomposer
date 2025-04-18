@@ -4,7 +4,7 @@
 import { SfCommand, Flags } from '@salesforce/sf-plugins-core';
 import { Messages } from '@salesforce/core';
 
-import { LOG_FILE, DECOMPOSED_FILE_TYPES } from '../../helpers/constants.js';
+import { LOG_FILE, DECOMPOSED_FILE_TYPES, DECOMPOSED_STRATEGIES } from '../../helpers/constants.js';
 import { decomposeFileHandler } from '../../service/decomposeFileHandler.js';
 import { getRegistryValuesBySuffix } from '../../metadata/getRegistryValuesBySuffix.js';
 import { readOriginalLogFile, checkLogForErrors } from '../../service/checkLogforErrors.js';
@@ -54,6 +54,14 @@ export default class DecomposerDecompose extends SfCommand<DecomposerResult> {
       required: false,
       multiple: true,
     }),
+    strategy: Flags.string({
+      summary: messages.getMessage('flags.strategy.summary'),
+      char: 's',
+      required: true,
+      multiple: false,
+      default: 'unique-id',
+      options: DECOMPOSED_STRATEGIES,
+    }),
   };
 
   public async run(): Promise<DecomposerResult> {
@@ -64,11 +72,18 @@ export default class DecomposerDecompose extends SfCommand<DecomposerResult> {
     const debug = flags['debug'];
     const format = flags['format'];
     const ignoreDirs = flags['ignore-package-directory'];
+    const strategy = flags['strategy'];
     for (const metadataType of metadataTypes) {
       const { metaAttributes, ignorePath } = await getRegistryValuesBySuffix(metadataType, 'decompose', ignoreDirs);
 
+      if (metadataType === 'labels' && strategy === 'grouped-by-tag') {
+        this.warn(
+          'You cannot decompose custom labels using the grouped-by-tag strategy. Please switch strategies and try again for labels.'
+        );
+        continue;
+      }
       const currentLogFile = await readOriginalLogFile(LOG_FILE);
-      await decomposeFileHandler(metaAttributes, prepurge, postpurge, debug, format, ignorePath);
+      await decomposeFileHandler(metaAttributes, prepurge, postpurge, debug, format, ignorePath, strategy);
       const decomposeErrors = await checkLogForErrors(LOG_FILE, currentLogFile);
       if (decomposeErrors.length > 0) {
         decomposeErrors.forEach((error) => {
