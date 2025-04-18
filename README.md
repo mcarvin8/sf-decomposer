@@ -69,7 +69,7 @@ Salesforce's built-in decomposition has limitations. `sf-decomposer` offers more
   - See [.sfdecomposerignore](#.sfdecomposerignore)
 - **Multiple Decomposition Strategies** – Choose between:
   - `unique-id` (default): disassembles each nested element into its own uniquely named file based on XML content or hash.
-  - `grouped-by-tag`: groups all nested elements by tag into a single file per tag (e.g., all <fieldPermissions> into `fieldPermissions.xml`).
+  - `grouped-by-tag`: groups all nested elements by tag into a single file per tag (e.g., all `<fieldPermissions>` in a permission set into `fieldPermissions.xml`).
     - Both strategies decompose leaf elements into the same file named after the original XML.
 - **Fully Decomposes Metadata** – Allow complete decomposition for types that Salesforce only partially decomposes (e.g., `decomposePermissionSetBeta2`).
 - **Consistent Sorting** – Keeps elements in a predictable order to reduce unnecessary version control noise.
