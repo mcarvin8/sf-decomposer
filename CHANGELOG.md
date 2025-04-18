@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.8.0](https://github.com/mcarvin8/sf-decomposer/compare/v5.7.2...v5.8.0) (2025-04-18)
+
+
+### Features
+
+* add new decompose strategy ([a2b27d9](https://github.com/mcarvin8/sf-decomposer/commit/a2b27d9dc8a76a763946bda9402a7a0cc9f71173))
+
 ## [5.7.2](https://github.com/mcarvin8/sf-decomposer/compare/v5.7.1...v5.7.2) (2025-04-12)
 
 
