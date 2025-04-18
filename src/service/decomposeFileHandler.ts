@@ -19,25 +19,26 @@ export async function decomposeFileHandler(
   postpurge: boolean,
   debug: boolean,
   format: string,
-  ignorePath: string
+  ignorePath: string,
+  strategy: string
 ): Promise<void> {
   const { metadataPaths, metaSuffix, strictDirectoryName, folderType, uniqueIdElements } = metaAttributes;
   if (debug) setLogLevel('debug');
 
   for (const metadataPath of metadataPaths) {
     if (strictDirectoryName || folderType) {
-      await subDirectoryHandler(metadataPath, uniqueIdElements, prepurge, postpurge, format, ignorePath);
+      await subDirectoryHandler(metadataPath, uniqueIdElements, prepurge, postpurge, format, ignorePath, strategy);
     } else if (metaSuffix === 'labels') {
       // do not use the prePurge flag in the xml-disassembler package for labels due to file moving
       if (prepurge) await prePurgeLabels(metadataPath);
       const absoluteLabelFilePath = resolve(metadataPath, CUSTOM_LABELS_FILE);
       const relativeLabelFilePath = relative(process.cwd(), absoluteLabelFilePath);
 
-      await disassembleHandler(relativeLabelFilePath, uniqueIdElements, false, postpurge, format, ignorePath);
+      await disassembleHandler(relativeLabelFilePath, uniqueIdElements, false, postpurge, format, ignorePath, strategy);
       // move labels from the directory they are created in
       await moveAndRenameLabels(metadataPath);
     } else {
-      await disassembleHandler(metadataPath, uniqueIdElements, prepurge, postpurge, format, ignorePath);
+      await disassembleHandler(metadataPath, uniqueIdElements, prepurge, postpurge, format, ignorePath, strategy);
     }
     if (metaSuffix === 'workflow') {
       await renameWorkflows(metadataPath);
@@ -51,7 +52,8 @@ async function disassembleHandler(
   prePurge: boolean,
   postPurge: boolean,
   format: string,
-  ignorePath: string
+  ignorePath: string,
+  strategy: string
 ): Promise<void> {
   const handler: DisassembleXMLFileHandler = new DisassembleXMLFileHandler();
 
@@ -62,6 +64,7 @@ async function disassembleHandler(
     postPurge,
     ignorePath,
     format,
+    strategy,
   });
 }
 
@@ -97,13 +100,14 @@ async function subDirectoryHandler(
   prepurge: boolean,
   postpurge: boolean,
   format: string,
-  ignorePath: string
+  ignorePath: string,
+  strategy: string
 ): Promise<void> {
   const subFiles = await readdir(metadataPath);
   for (const subFile of subFiles) {
     const subFilePath = join(metadataPath, subFile);
     if ((await stat(subFilePath)).isDirectory()) {
-      await disassembleHandler(subFilePath, uniqueIdElements, prepurge, postpurge, format, ignorePath);
+      await disassembleHandler(subFilePath, uniqueIdElements, prepurge, postpurge, format, ignorePath, strategy);
     }
   }
 }

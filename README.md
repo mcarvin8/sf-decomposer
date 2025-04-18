@@ -67,7 +67,11 @@ Salesforce's built-in decomposition has limitations. `sf-decomposer` offers more
 - **Supports More Metadata** – Works with most Metadata API types, unlike Salesforce’s limited decomposition.
 - **Selective Decomposition** – Decompose only what you need, avoiding Salesforce’s all-or-nothing approach.
   - See [.sfdecomposerignore](#.sfdecomposerignore)
-- **Fully Decomposes Metadata** – Ensures complete decomposition for types that Salesforce only partially decomposes (e.g., `decomposePermissionSetBeta2`).
+- **Multiple Decomposition Strategies** – Choose between:
+  - `unique-id` (default): disassembles each nested element into its own uniquely named file based on XML content or hash.
+  - `grouped-by-tag`: groups all nested elements by tag into a single file per tag (e.g., all <fieldPermissions> into `fieldPermissions.xml`).
+    - Both strategies decompose leaf elements into the same file named after the original XML.
+- **Fully Decomposes Metadata** – Allow complete decomposition for types that Salesforce only partially decomposes (e.g., `decomposePermissionSetBeta2`).
 - **Consistent Sorting** – Keeps elements in a predictable order to reduce unnecessary version control noise.
   > DISCLAIMER: If you use "toml" or "ini" format for decomposed files, the element sorting will vary compared to the other formats
 - **Multiple Output Formats** – Supports XML, JSON, JSON5, TOML, INI, and YAML for greater flexibility.
@@ -92,7 +96,7 @@ Decomposes the original metadata files in all local package directories into sma
 
 ```
 USAGE
-  $ sf decomposer decompose -m <value> -f <value> -i <value> [--prepurge --postpurge --debug --json]
+  $ sf decomposer decompose -m <value> -f <value> -i <value> -s <value> [--prepurge --postpurge --debug --json]
 
 FLAGS
   -m, --metadata-type=<value>             The metadata suffix to process, such as 'flow', 'labels', etc.
@@ -103,6 +107,9 @@ FLAGS
   -i, --ignore-package-directory=<value>  Package directory to ignore.
                                           Should be as they appear in the "sfdx-project.json".
                                           Can be declared multiple times.
+  -s, --strategy=<value>                  The decompose strategy to use.
+                                          Options: ['unique-id', 'grouped-by-tag']
+                                          [default: 'unique-id']
   --prepurge                              Purgd directories of pre-existing decomposed files.
                                           [default: false]
   --postpurge                             Purge the original files after decomposing them.
@@ -163,14 +170,15 @@ EXAMPLES
 
 ## Decompose Structure
 
-When the original metadata files are decomposed, this structure is followed for all metadata types except for custom labels:
+> Ensure you do not MIX strategies on the same metadata type. If you have previously decomposed metadata with a past verson of `sf-decomposer`, which uses the unique-id strategy, and would like to switch over to the grouped-by-tag strategy, you will need to supply the decompose command with the `--prepurge` flag and `-s "grouped-by-tag"` flag to re-create decomposed files with the new strategy.
 
-- Leaf elements (i.e. `<userLicense>Salesforce</userLicense>`) will be decomposed in the same file in the root of the decomposed directory. The leaf file-name will match the original file-name.
-- Nested elements will be decomposed into their own files under sub-directories by the element type, i.e. custom permissions in a permission set will have their own decomposed file under a custom permissions sub-folder.
-  - If unique ID elements are found, the decomposed nested files will be named using them. Otherwise, the decomposed nested files will be named with the SHA-256 hash of the element contents.
-  - See [Contributing](#contributing) for more information on unique ID elements.
+You can decompose all metadata, except for custom labels, via 1 of 2 strategies:
 
-**Decomposed Permission Set Example**
+- **unique-id** (default): Each nested element is written to its own file. File names are derived from specified unique ID elements or hashed content.
+- **grouped-by-tag**: All nested elements with the same tag are grouped into a single file, named after the tag (e.g., `fieldPermissions.xml`).
+- Leaf elements (like `<userLicense>Salesforce</userLicense>`) are always grouped in a file named after the original source XML in both strategies.
+
+**Decomposed Permission Set Example - Unique ID Strategy**
 
 | Format    | Example                                                                                                         |
 | --------- | --------------------------------------------------------------------------------------------------------------- |
@@ -181,7 +189,20 @@ When the original metadata files are decomposed, this structure is followed for 
 | **TOML**  | ![TOML](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-toml.png)<br>   |
 | **INI**   | ![INI](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-ini.png)<br>     |
 
-When custom labels are decomposed, each custom label will have its own file in the original labels directory.
+**Decomposed Permission Set Example - Grouped by Tag Strategy**
+
+| Format    | Example                                                                                                              |
+| --------- | -------------------------------------------------------------------------------------------------------------------- |
+| **XML**   | ![XML](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-tags-xml.png)<br>     |
+| **YAML**  | ![YAML](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-tags-yaml.png)<br>   |
+| **JSON**  | ![JSON](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-tags-json.png)<br>   |
+| **JSON5** | ![JSON5](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-tags-json5.png)<br> |
+| **TOML**  | ![TOML](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-tags-toml.png)<br>   |
+| **INI**   | ![INI](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-tags-ini.png)<br>     |
+
+Custom labels can only be decomposed via the `unique-id` strategy. If you attempt to decompose custom labels with the `grouped-by-tag` strategy, it will warn and skip decomposing custom labels.
+
+Custom labels decomposed under the `unique-id` strategy will look like such, each label will have its own file:
 
 ![Decomposed Custom Labels](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-labels.png)<br>
 
@@ -233,6 +254,12 @@ To add debugging to the log, provide the `--debug` flag to the decompose or reco
 
 ```
 [2024-03-30T14:28:37.959] [DEBUG] default - Created disassembled file: mock\no-nested-elements\HR_Admin\HR_Admin.permissionset-meta.xml
+```
+
+Custom labels can only be decomposed via the `unique-id` strategy. If the other one is provided, it will print this warning and skip to the next metadata entry.
+
+```
+Warning: You cannot decompose custom labels using the grouped-by-tag strategy. Please switch strategies and try again for labels.
 ```
 
 ## Hooks
