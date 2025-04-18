@@ -256,6 +256,12 @@ To add debugging to the log, provide the `--debug` flag to the decompose or reco
 [2024-03-30T14:28:37.959] [DEBUG] default - Created disassembled file: mock\no-nested-elements\HR_Admin\HR_Admin.permissionset-meta.xml
 ```
 
+If a file only contains leaf elements, the decomposer has nothing to decompose so it will print this warning and skip processing the file:
+
+```
+Warning: The XML file force-app\main\default\permissionsets\view_of_projects_tab_on_opportunity.permissionset-meta.xml only has leaf elements. This file will not be disassembled.
+```
+
 Custom labels can only be decomposed via the `unique-id` strategy. If the other one is provided, it will print this warning and skip to the next metadata entry.
 
 ```
