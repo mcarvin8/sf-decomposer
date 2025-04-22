@@ -41,3 +41,9 @@ export type PostRetrieveHookOptions = {
   result?: ScopedPostRetrieve;
   config: Config;
 };
+
+export type FieldPermission = {
+  editable?: boolean;
+  readable?: boolean;
+  field: string;
+};
