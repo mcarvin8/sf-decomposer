@@ -14,6 +14,7 @@ export type ConfigFile = {
   decomposedFormat: string;
   ignorePackageDirectories: string;
   strategy: string;
+  decomposeNestedPermissions: boolean;
 };
 
 export type SfdxProject = {

@@ -35,6 +35,7 @@ export const scopedPostRetrieve: HookFunction = async function (options) {
   const postpurge: boolean = configFile.postPurge || false;
   const ignorePackageDirs: string = configFile.ignorePackageDirectories || '';
   const strategy: string = configFile.strategy || 'unique-id';
+  const decomposeNestedPermissions: boolean = configFile.decomposeNestedPermissions || false;
 
   if (metadataTypes.trim() === '.') {
     return;
@@ -63,6 +64,9 @@ export const scopedPostRetrieve: HookFunction = async function (options) {
   }
   if (postpurge) {
     commandArgs.push('--postpurge');
+  }
+  if (decomposeNestedPermissions) {
+    commandArgs.push('--decompose-nested-permissions');
   }
   commandArgs.push('--strategy');
   commandArgs.push(strategy);
