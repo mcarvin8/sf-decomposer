@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.9.1](https://github.com/mcarvin8/sf-decomposer/compare/v5.9.0...v5.9.1) (2025-04-22)
+
+
+### Bug Fixes
+
+* re-sort field permissions to match salesforce doc ([4770bee](https://github.com/mcarvin8/sf-decomposer/commit/4770beeb60ccfae9e8f45ce7aac9c2ab1862c20d))
+
 ## [5.9.0](https://github.com/mcarvin8/sf-decomposer/compare/v5.8.1...v5.9.0) (2025-04-22)
 
 
