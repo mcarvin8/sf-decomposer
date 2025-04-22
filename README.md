@@ -216,6 +216,8 @@ When using the `grouped-by-tag` strategy, you can opt into additional decomposit
 
 When you run `sf decomposer decompose -m "permissionset" -s "grouped-by-tag" -p`, it will decompose all `<objectPermissions>` into their own files in a sub-directory, i.e. `permissionsets\HR_Admin\objectPermissions\Account.objectPermissions-meta.xml` and decompose `<fieldPermisisons>` into separate files in a sub-directory for each Object, i.e. `permissionsets\HR_Admin\fieldPermissions\Account.fieldPermissions.xml`. This is similar to the `decomposePermissionSetBeta2` behavior provided natively by Salesforce.
 
+![Decomposed Perm Set](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/additional-perm-set-decomposed.png)<br>
+
 ## Supported Metadata
 
 All parent metadata types imported from this plugin's version of `@salesforce/source-deploy-retrieve` (SDR) toolkit are supported except for certain types.
