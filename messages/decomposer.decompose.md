@@ -41,3 +41,7 @@ Ignore a package directory.
 # flags.strategy.summary
 
 Strategy to follow when decomposing files.
+
+# flags.decompose-nested-permissions.summary
+
+Additionally decompose object and field permissions on a permission set when strategy is set to "grouped-by-tag".

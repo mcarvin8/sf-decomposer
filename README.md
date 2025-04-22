@@ -71,6 +71,7 @@ Salesforce's built-in decomposition has limitations. `sf-decomposer` offers more
   - `unique-id` (default): disassembles each nested element into its own uniquely named file based on XML content or hash.
   - `grouped-by-tag`: groups all nested elements by tag into a single file per tag (e.g., all `<fieldPermissions>` in a permission set into `fieldPermissions.xml`).
     - Both strategies decompose leaf elements into the same file named after the original XML.
+    - Additionally opt into further decomposition on permisison sets by using the `grouped-by-tag` strategy with the `--decompose-nested-permissions` flag.
 - **Fully Decomposes Metadata** – Allow complete decomposition for types that Salesforce only partially decomposes (e.g., `decomposePermissionSetBeta2`).
 - **Consistent Sorting** – Keeps elements in a predictable order to reduce unnecessary version control noise.
   > DISCLAIMER: If you use "toml" or "ini" format for decomposed files, the element sorting will vary compared to the other formats
@@ -96,7 +97,7 @@ Decomposes the original metadata files in all local package directories into sma
 
 ```
 USAGE
-  $ sf decomposer decompose -m <value> -f <value> -i <value> -s <value> [--prepurge --postpurge --debug --json]
+  $ sf decomposer decompose -m <value> -f <value> -i <value> -s <value> [--prepurge --postpurge --debug -p --json]
 
 FLAGS
   -m, --metadata-type=<value>             The metadata suffix to process, such as 'flow', 'labels', etc.
@@ -116,6 +117,8 @@ FLAGS
                                           [default: false]
   --debug                                 Log debugging results to a text file (disassemble.log).
                                           [default: false]
+  -p, --decompose-nested-permissions      If strategy is "grouped-by-tag", opt into further decomposition
+                                          on object and field permissions on permission sets.
 
 GLOBAL FLAGS
   --json  Format output as json.
@@ -205,6 +208,12 @@ Custom labels can only be decomposed via the `unique-id` strategy. If you attemp
 Custom labels decomposed under the `unique-id` strategy will look like such, each label will have its own file:
 
 ![Decomposed Custom Labels](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-labels.png)<br>
+
+### Additional Permisison Set Decomposition
+
+When using the `grouped-by-tag` strategy, you can opt into additional decomposition on `<objectPermissions>` and `<fieldPermissions>` on permission sets by supplying the `--decompose-nested-permissions` flag.
+
+When you run `sf decompose decompose -m "permissionset" -s "grouped-by-tag" -p`, it will decompose all `<objectPermissions>` into their own files in a sub-directory and decompose `<fieldPermisisons>` into separate files for each Object, i.e. `permissionsets\HR_Admin\fieldPermissions\Account.fieldPermissions.xml`. This is similar to the `decomposePermissionSetBeta2` behavior provided natively by Salesforce.
 
 ## Supported Metadata
 

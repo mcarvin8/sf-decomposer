@@ -62,6 +62,12 @@ export default class DecomposerDecompose extends SfCommand<DecomposerResult> {
       default: 'unique-id',
       options: DECOMPOSED_STRATEGIES,
     }),
+    'decompose-nested-permissions': Flags.boolean({
+      summary: messages.getMessage('flags.decompose-nested-permissions.summary'),
+      char: 'p',
+      required: false,
+      default: false,
+    }),
   };
 
   public async run(): Promise<DecomposerResult> {
@@ -73,6 +79,7 @@ export default class DecomposerDecompose extends SfCommand<DecomposerResult> {
     const format = flags['format'];
     const ignoreDirs = flags['ignore-package-directory'];
     const strategy = flags['strategy'];
+    const decomposeNestedPerms = flags['decompose-nested-permissions'];
     for (const metadataType of metadataTypes) {
       const { metaAttributes, ignorePath } = await getRegistryValuesBySuffix(metadataType, 'decompose', ignoreDirs);
 
@@ -83,7 +90,16 @@ export default class DecomposerDecompose extends SfCommand<DecomposerResult> {
         continue;
       }
       const currentLogFile = await readOriginalLogFile(LOG_FILE);
-      await decomposeFileHandler(metaAttributes, prepurge, postpurge, debug, format, ignorePath, strategy);
+      await decomposeFileHandler(
+        metaAttributes,
+        prepurge,
+        postpurge,
+        debug,
+        format,
+        ignorePath,
+        strategy,
+        decomposeNestedPerms
+      );
       const decomposeErrors = await checkLogForErrors(LOG_FILE, currentLogFile);
       if (decomposeErrors.length > 0) {
         decomposeErrors.forEach((error) => {

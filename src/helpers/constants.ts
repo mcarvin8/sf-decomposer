@@ -17,3 +17,4 @@ export const WORKFLOW_SUFFIX_MAPPING: { [key: string]: string } = {
   'send-meta': 'workflowSend-meta',
 };
 export const HOOK_CONFIG_JSON = '.sfdecomposer.config.json';
+export const XML_DECLARATION = '<?xml version="1.0" encoding="UTF-8"?>';
