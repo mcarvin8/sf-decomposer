@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.9.0](https://github.com/mcarvin8/sf-decomposer/compare/v5.8.1...v5.9.0) (2025-04-22)
+
+
+### Features
+
+* provide further decomposition on perm sets with grouped by tag strategy ([e5f28ad](https://github.com/mcarvin8/sf-decomposer/commit/e5f28ade9ec96d49b5dd0b4235b83e2d21546bbc))
+
 ## [5.8.1](https://github.com/mcarvin8/sf-decomposer/compare/v5.8.0...v5.8.1) (2025-04-18)
 
 
