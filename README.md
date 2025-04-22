@@ -214,7 +214,7 @@ Custom labels decomposed under the `unique-id` strategy will look like such, eac
 
 When using the `grouped-by-tag` strategy, you can opt into additional decomposition on `<objectPermissions>` and `<fieldPermissions>` on permission sets by supplying the `--decompose-nested-permissions` flag.
 
-When you run `sf decompose decompose -m "permissionset" -s "grouped-by-tag" -p`, it will decompose all `<objectPermissions>` into their own files in a sub-directory, i.e. `permissionsets\HR_Admin\objectPermissions\Account.objectPermissions-meta.xml` and decompose `<fieldPermisisons>` into separate files in a sub-directory for each Object, i.e. `permissionsets\HR_Admin\fieldPermissions\Account.fieldPermissions.xml`. This is similar to the `decomposePermissionSetBeta2` behavior provided natively by Salesforce.
+When you run `sf decomposer decompose -m "permissionset" -s "grouped-by-tag" -p`, it will decompose all `<objectPermissions>` into their own files in a sub-directory, i.e. `permissionsets\HR_Admin\objectPermissions\Account.objectPermissions-meta.xml` and decompose `<fieldPermisisons>` into separate files in a sub-directory for each Object, i.e. `permissionsets\HR_Admin\fieldPermissions\Account.fieldPermissions.xml`. This is similar to the `decomposePermissionSetBeta2` behavior provided natively by Salesforce.
 
 ## Supported Metadata
 
