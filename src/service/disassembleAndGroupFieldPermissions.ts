@@ -38,8 +38,8 @@ export async function disassembleAndGroupFieldPermissions(filePath: string, form
         '@_xmlns': 'http://soap.sforce.com/2006/04/metadata',
         fieldPermissions: perms.map<XmlElement>((perm) => ({
           editable: String(perm.editable ?? 'false'),
-          readable: String(perm.readable ?? 'false'),
           field: perm.field,
+          readable: String(perm.readable ?? 'false'),
         })),
       },
     };

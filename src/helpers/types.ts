@@ -45,6 +45,6 @@ export type PostRetrieveHookOptions = {
 
 export type FieldPermission = {
   editable?: boolean;
-  readable?: boolean;
   field: string;
+  readable?: boolean;
 };
