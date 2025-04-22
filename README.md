@@ -12,7 +12,7 @@
   - [`sf decomposer decompose`](#sf-decomposer-decompose)
   - [`sf decomposer recompose`](#sf-decomposer-recompose)
 - [Decompose Structure](#decompose-structure)
-  - [Additional Permisison Set Decomposition](#additional-permission-set-decomposition)
+  - [Additional Permission Set Decomposition](#additional-permission-set-decomposition)
 - [Supported Metadata](#supported-metadata)
   - [Exceptions](#exceptions)
 - [Troubleshooting](#troubleshooting)
@@ -210,7 +210,7 @@ Custom labels decomposed under the `unique-id` strategy will look like such, eac
 
 ![Decomposed Custom Labels](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-labels.png)<br>
 
-### Additional Permisison Set Decomposition
+### Additional Permission Set Decomposition
 
 When using the `grouped-by-tag` strategy, you can opt into additional decomposition on `<objectPermissions>` and `<fieldPermissions>` on permission sets by supplying the `--decompose-nested-permissions` flag.
 
