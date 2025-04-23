@@ -297,7 +297,7 @@ You can copy and update the sample [.sfdecomposer.config.json](https://raw.githu
 | `postPurge`                  | No       | `true` or `false`. If `true`, deletes the retrieval file after decomposing or deletes decomposed files after recomposing. Defaults to `false`.      |
 | `decomposedFormat`           | No       | Format of decomposed files: `xml`, `json`, `json5`, `toml`, `ini`, or `yaml`. Defaults to `xml`.                                                    |
 | `strategy`                   | No       | Strategy for decomposing the files: `unique-id` or `grouped-by-tag`. Defaults to `unique-id`.                                                       |
-| `decomposeNestedPermissions` | No       | If strategy is `grouped-by-tag` and this is set to `true`, optionally opt into decomposing permission sets further by object and field permissions. |
+| `decomposeNestedPermissions` | No       | If strategy is `grouped-by-tag` and this is set to `true`, decompose permission sets further by object and field permissions. |
 
 If `.sfdecomposer.config.json` is found, the hooks will run:
 
