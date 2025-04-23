@@ -71,8 +71,8 @@ Salesforce's built-in decomposition has limitations. `sf-decomposer` offers more
 - **Multiple Decomposition Strategies** – Choose between:
   - `unique-id` (default): disassembles each nested element into its own uniquely named file based on XML content or hash.
   - `grouped-by-tag`: groups all nested elements by tag into a single file per tag (e.g., all `<fieldPermissions>` in a permission set into `fieldPermissions.xml`).
-    - Both strategies decompose leaf elements into the same file named after the original XML.
     - Additionally opt into further decomposition on permisison sets by using the `grouped-by-tag` strategy with the `--decompose-nested-permissions` flag.
+  - Both strategies decompose leaf elements into the same file named after the original XML.
 - **Fully Decomposes Metadata** – Allow complete decomposition for types that Salesforce only partially decomposes (e.g., `decomposePermissionSetBeta2`).
 - **Consistent Sorting** – Keeps elements in a predictable order to reduce unnecessary version control noise.
   > DISCLAIMER: If you use "toml" or "ini" format for decomposed files, the element sorting will vary compared to the other formats
@@ -179,8 +179,9 @@ EXAMPLES
 You can decompose all metadata, except for custom labels, via 1 of 2 strategies:
 
 - **unique-id** (default): Each nested element is written to its own file. File names are derived from specified unique ID elements or hashed content.
-- **grouped-by-tag**: All nested elements with the same tag are grouped into a single file, named after the tag (e.g., `fieldPermissions.xml`).
-- Leaf elements (like `<userLicense>Salesforce</userLicense>`) are always grouped in a file named after the original source XML in both strategies.
+- **grouped-by-tag**: All nested elements with the same tag, e.g. `<fieldPermissions>`, are grouped into a single file, named after the tag (e.g., `fieldPermissions.xml`).
+
+Leaf elements (like `<userLicense>Salesforce</userLicense>`) are always grouped in a file named after the original source XML in both strategies.
 
 **Decomposed Permission Set Example - Unique ID Strategy**
 
