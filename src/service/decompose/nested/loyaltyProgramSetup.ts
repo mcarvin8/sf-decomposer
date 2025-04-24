@@ -27,7 +27,7 @@ export async function handleNestedLoyaltyProgramSetupDecomposition(
         // Add conditional handling for loyalty program-related nested files
         if (entry.name.includes('programProcesses-meta')) {
           await stripRootAndDisassemble(fullPath, handler, format);
-        } else if (dirname(fullPath) !== filePath) {
+        } else if (dirname(fullPath) !== filePath && fullPath.endsWith('.xml')) {
           await transformAndCleanup(fullPath, format);
         }
       }
