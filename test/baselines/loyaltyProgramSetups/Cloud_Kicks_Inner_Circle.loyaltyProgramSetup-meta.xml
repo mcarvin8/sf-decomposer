@@ -3,6 +3,9 @@
     <label>Cloud Kicks Inner Circle</label>
     <programProcesses>
         <executionType>RealTime</executionType>
+        <processName>Issue Vouchers</processName>
+        <processType>Transaction Journal</aprocessType>
+        <status>Draft</status>
         <parameters>
             <dataType>Numeric</dataType>
             <decimalPlaces>0</decimalPlaces>
@@ -13,11 +16,24 @@
             <parameterType>Constant</parameterType>
             <value>50</value>
         </parameters>
-        <processName>Issue Vouchers</processName>
-        <processType>Transaction Journal</processType>
+        <parameters>
+            <dataType>Numeric</dataType>
+            <decimalPlaces>0</decimalPlaces>
+            <isCollection>false</isCollection>
+            <isInput>false</isInput>
+            <isOutput>false</isOutput>
+            <parameterName>VoucherValue</parameterName>
+            <parameterType>Constant</parameterType>
+            <value>50</value>
+        </parameters>
         <rules>
+            <endDate>2022-01-01</endDate>
+            <ruleName>Issue Voucher for Transactions Above $100</ruleName>
+            <startDate>2021-11-21</startDate>
+            <status>Draft</status>
             <actions>
                 <actionName>Issue High Transaction Value Voucher</actionName>
+                <actionType>IssueVoucher</actionType>
                 <actionParameters>
                     <operator>Equals</operator>
                     <parameterName>VoucherDefinitionName</parameterName>
@@ -49,10 +65,11 @@
                     <sequenceNumber>5</sequenceNumber>
                     <value>{!VoucherValue}</value>
                 </actionParameters>
-                <actionType>IssueVoucher</actionType>
             </actions>
             <conditions>
                 <conditionCriteria>1</conditionCriteria>
+                <conditionName>New Condition</conditionName>
+                <conditionType>Condition</conditionType>
                 <conditionFilterCriteria>
                     <operator>GreaterThanOrEquals</operator>
                     <sequence>1</sequence>
@@ -60,13 +77,7 @@
                     <value>100</value>
                     <valueType>Literal</valueType>
                 </conditionFilterCriteria>
-                <conditionName>New Condition</conditionName>
-                <conditionType>Condition</conditionType>
             </conditions>
-            <endDate>2022-01-01</endDate>
-            <ruleName>Issue Voucher for Transactions Above $100</ruleName>
-            <startDate>2021-11-21</startDate>
-            <status>Draft</status>
             <stepMappings>
                 <associatedStep>New Condition</associatedStep>
                 <sequence>1</sequence>
@@ -77,6 +88,67 @@
                 <sequence>1</sequence>
             </stepMappings>
         </rules>
-        <status>Draft</status>
+        <rules>
+            <endDate>2022-01-01</endDate>
+            <ruleName>Issue Voucher for Transactions Above $100</ruleName>
+            <startDate>2021-11-21</startDate>
+            <status>Draft</status>
+            <actions>
+                <actionName>Issue High Transaction Value Voucher</actionName>
+                <actionType>IssueVoucher</actionType>
+                <actionParameters>
+                    <operator>Equals</operator>
+                    <parameterName>VoucherDefinitionName</parameterName>
+                    <sequenceNumber>1</sequenceNumber>
+                    <value>Voucher for High Value Transactions</value>
+                    <valueType>Literal</valueType>
+                </actionParameters>
+                <actionParameters>
+                    <operator>Equals</operator>
+                    <parameterName>VoucherCode</parameterName>
+                    <sequenceNumber>2</sequenceNumber>
+                    <value>{!TransactionJournal.Order.Id}</value>
+                </actionParameters>
+                <actionParameters>
+                    <operator>Equals</operator>
+                    <parameterName>VoucherEffectiveDate</parameterName>
+                    <sequenceNumber>3</sequenceNumber>
+                    <value>DATEVALUE(&quot;2021-11-21 00:00:00&quot;)</value>
+                </actionParameters>
+                <actionParameters>
+                    <operator>Equals</operator>
+                    <parameterName>VoucherExpirationDate</parameterName>
+                    <sequenceNumber>4</sequenceNumber>
+                    <value>DATEVALUE(&quot;2022-01-01 00:00:00&quot;)</value>
+                </actionParameters>
+                <actionParameters>
+                    <operator>Equals</operator>
+                    <parameterName>VoucherFaceValue</parameterName>
+                    <sequenceNumber>5</sequenceNumber>
+                    <value>{!VoucherValue}</value>
+                </actionParameters>
+            </actions>
+            <conditions>
+                <conditionCriteria>1</conditionCriteria>
+                <conditionName>New Condition</conditionName>
+                <conditionType>Condition</conditionType>
+                <conditionFilterCriteria>
+                    <operator>GreaterThanOrEquals</operator>
+                    <sequence>1</sequence>
+                    <sourceFieldName>TransactionJournal.TransactionAmount</sourceFieldName>
+                    <value>100</value>
+                    <valueType>Literal</valueType>
+                </conditionFilterCriteria>
+            </conditions>
+            <stepMappings>
+                <associatedStep>New Condition</associatedStep>
+                <sequence>1</sequence>
+            </stepMappings>
+            <stepMappings>
+                <associatedStep>Issue High Transaction Value Voucher</associatedStep>
+                <parentStep>New Condition</parentStep>
+                <sequence>1</sequence>
+            </stepMappings>
+        </rules>
     </programProcesses>
 </LoyaltyProgramSetup>

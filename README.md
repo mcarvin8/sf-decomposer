@@ -219,6 +219,12 @@ When you run `sf decomposer decompose -m "permissionset" -s "grouped-by-tag" -p`
 
 ![Decomposed Perm Set](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/additional-perm-set-decomposed.png)<br>
 
+### Additional Loyalty Program Setup Decomposition
+
+When using the `unique-id` strategy, the loyalty program setup metadata type (`-m loyaltyProgramSetup`) will be additionally decomposed by default by program processses and each program process will be decomposed additionally by each parameters and rules.
+
+**NOTE**: I would suggest only recomposing loyalty program setup metadata decomposed this way in a version control system or in a CI/CD pipeline where changes can easily be discarded. In order to recomposed correctly, I have to delete the decomposed files (ignoring whatever value the `--postpurge` flag is set to) since it requires multi-level recomposition. Using a VCS or a CI pipeline will allow you to easily restore the decomposed files in your repo.
+
 ## Supported Metadata
 
 All parent metadata types imported from this plugin's version of `@salesforce/source-deploy-retrieve` (SDR) toolkit are supported except for certain types.
@@ -289,15 +295,15 @@ Warning: You cannot decompose custom labels using the grouped-by-tag strategy. P
 
 You can copy and update the sample [.sfdecomposer.config.json](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.sfdecomposer.config.json).
 
-| Configuration Option         | Required | Description                                                                                                                                         |
-| ---------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `metadataSuffixes`           | Yes      | Comma-separated string of metadata suffixes to decompose and recompose based on the CLI command.                                                    |
-| `ignorePackageDirectories`   | No       | Comma-separated string of package directories to ignore.                                                                                            |
-| `prePurge`                   | No       | `true` or `false`. If `true`, deletes existing decomposed files before decomposing. Defaults to `false`.                                            |
-| `postPurge`                  | No       | `true` or `false`. If `true`, deletes the retrieval file after decomposing or deletes decomposed files after recomposing. Defaults to `false`.      |
-| `decomposedFormat`           | No       | Format of decomposed files: `xml`, `json`, `json5`, `toml`, `ini`, or `yaml`. Defaults to `xml`.                                                    |
-| `strategy`                   | No       | Strategy for decomposing the files: `unique-id` or `grouped-by-tag`. Defaults to `unique-id`.                                                       |
-| `decomposeNestedPermissions` | No       | If strategy is `grouped-by-tag` and this is set to `true`, decompose permission sets further by object and field permissions. |
+| Configuration Option         | Required | Description                                                                                                                                    |
+| ---------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `metadataSuffixes`           | Yes      | Comma-separated string of metadata suffixes to decompose and recompose based on the CLI command.                                               |
+| `ignorePackageDirectories`   | No       | Comma-separated string of package directories to ignore.                                                                                       |
+| `prePurge`                   | No       | `true` or `false`. If `true`, deletes existing decomposed files before decomposing. Defaults to `false`.                                       |
+| `postPurge`                  | No       | `true` or `false`. If `true`, deletes the retrieval file after decomposing or deletes decomposed files after recomposing. Defaults to `false`. |
+| `decomposedFormat`           | No       | Format of decomposed files: `xml`, `json`, `json5`, `toml`, `ini`, or `yaml`. Defaults to `xml`.                                               |
+| `strategy`                   | No       | Strategy for decomposing the files: `unique-id` or `grouped-by-tag`. Defaults to `unique-id`.                                                  |
+| `decomposeNestedPermissions` | No       | If strategy is `grouped-by-tag` and this is set to `true`, decompose permission sets further by object and field permissions.                  |
 
 If `.sfdecomposer.config.json` is found, the hooks will run:
 

@@ -45,5 +45,4 @@ export const METADATA_UNDER_TEST_FOR_TAGS = [
   'aiScoringModelDefinition',
   'marketingappextension',
   'app',
-  'loyaltyProgramSetup',
 ];

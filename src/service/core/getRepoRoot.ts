@@ -2,7 +2,7 @@
 import { access } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
 
-import { SFDX_PROJECT_FILE_NAME } from '../helpers/constants.js';
+import { SFDX_PROJECT_FILE_NAME } from '../../helpers/constants.js';
 
 async function findRepoRoot(
   dir: string

@@ -5,9 +5,9 @@ import { SfCommand, Flags } from '@salesforce/sf-plugins-core';
 import { Messages } from '@salesforce/core';
 
 import { LOG_FILE } from '../../helpers/constants.js';
-import { recomposeFileHandler } from '../../service/recomposeFileHandler.js';
+import { recomposeFileHandler } from '../../service/recompose/recomposeFileHandler.js';
 import { getRegistryValuesBySuffix } from '../../metadata/getRegistryValuesBySuffix.js';
-import { readOriginalLogFile, checkLogForErrors } from '../../service/checkLogforErrors.js';
+import { readOriginalLogFile, checkLogForErrors } from '../../service/core/checkLogforErrors.js';
 import { DecomposerResult } from '../../helpers/types.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
