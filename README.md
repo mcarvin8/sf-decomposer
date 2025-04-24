@@ -229,6 +229,8 @@ The `grouped-by-id` strategy isn't an ideal strategy to decompose loyalty progra
 
 **NOTE**: I would suggest only recomposing loyalty program setup metadata decomposed this way in a version control system or in a CI/CD pipeline where changes can easily be discarded. In order to recomposed correctly, I have to delete the decomposed files (ignoring whatever value the `--postpurge` flag is set to) since it requires multi-level recomposition. Using a VCS or a CI pipeline will allow you to easily restore the decomposed files in your repo.
 
+![Decomposed Loyalty Program Setup](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-loyalty-program.png)<br>
+
 ## Supported Metadata
 
 All parent metadata types imported from this plugin's version of `@salesforce/source-deploy-retrieve` (SDR) toolkit are supported except for certain types.
