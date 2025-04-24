@@ -89,6 +89,12 @@ export default class DecomposerDecompose extends SfCommand<DecomposerResult> {
         );
         continue;
       }
+      if (metadataType === 'loyaltyProgramSetup' && strategy === 'grouped-by-tag') {
+        this.warn(
+          'You cannot decompose loyaltyProgramSetup using the grouped-by-tag strategy. Please switch strategies and try again for loyaltyProgramSetup.'
+        );
+        continue;
+      }
       const currentLogFile = await readOriginalLogFile(LOG_FILE);
       await decomposeFileHandler(
         metaAttributes,
