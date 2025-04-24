@@ -112,7 +112,7 @@ async function reassembleLoyaltyProgramSetup(basePath: string): Promise<void> {
 
       for (const subDir of subDirs) {
         if (subDir.isDirectory()) {
-          await reassembleHandler(join(processPath, subDir.name), 'xml', false);
+          await reassembleHandler(join(processPath, subDir.name), 'xml', true);
         }
       }
 

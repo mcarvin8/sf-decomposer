@@ -4149,9 +4149,9 @@
                     <parameterName>returnPerOrderChannel</parameterName>
                     <sequenceNumber>1</sequenceNumber>
                     <value>MID(    {!ConcatenatedreturnChannelValue}  ,    
-                FIND({!returnPerOrderChannelKey}   , {!ConcatenatedreturnChannelValue}  ) + LEN({!returnPerOrderChannelKey} ), 
-                FIND(&apos;@&apos; , RIGHT({!ConcatenatedreturnChannelValue} ,  LEN({!ConcatenatedreturnChannelValue} )  - (FIND({!returnPerOrderChannelKey} ,{!ConcatenatedreturnChannelValue} ) +LEN({!returnPerOrderChannelKey} )) ))  
-                )</value>
+                                FIND({!returnPerOrderChannelKey}   , {!ConcatenatedreturnChannelValue}  ) + LEN({!returnPerOrderChannelKey} ), 
+                                FIND(&apos;@&apos; , RIGHT({!ConcatenatedreturnChannelValue} ,  LEN({!ConcatenatedreturnChannelValue} )  - (FIND({!returnPerOrderChannelKey} ,{!ConcatenatedreturnChannelValue} ) +LEN({!returnPerOrderChannelKey} )) ))  
+                                )</value>
                 </actionParameters>
                 <actionType>AssignParameterValues</actionType>
             </actions>
@@ -4177,9 +4177,9 @@
                     <parameterName>OrderIdItemChannelKey</parameterName>
                     <sequenceNumber>1</sequenceNumber>
                     <value>{!TransactionJournal.Order_ID__c} &amp;
-                {!TransactionJournal.Order_Item_ID__c} &amp;
-                {!returnPerOrderChannel} &amp;
-                {!TransactionJournal.Original_Order_ID__c} &amp;{!TransactionJournal.Original_Order_Item_ID__c} &amp; {!TransactionJournal.Original_Channel__c} &amp; &apos;@&apos;</value>
+                                {!TransactionJournal.Order_Item_ID__c} &amp;
+                                {!returnPerOrderChannel} &amp;
+                                {!TransactionJournal.Original_Order_ID__c} &amp;{!TransactionJournal.Original_Order_Item_ID__c} &amp; {!TransactionJournal.Original_Channel__c} &amp; &apos;@&apos;</value>
                 </actionParameters>
                 <actionParameters>
                     <operator>Equals</operator>
@@ -4206,28 +4206,28 @@
                     <parameterName>EachLineItemPointsToReverse</parameterName>
                     <sequenceNumber>1</sequenceNumber>
                     <value>VALUE(
-                  MID(
-                    {!ConcatenatedPointsCreditedOutput} , 
-                    FIND({!OrderIdItemChannelKey}  , {!ConcatenatedPointsCreditedOutput} ) + LEN({!OrderIdItemChannelKey} ), 
-                    FIND(&apos;@&apos; , RIGHT({!ConcatenatedPointsCreditedOutput} ,
-                               LEN({!ConcatenatedPointsCreditedOutput})  - (FIND({!OrderIdItemChannelKey},{!ConcatenatedPointsCreditedOutput} )
-                                +LEN({!OrderIdItemChannelKey}))  ))
-                    )
-                  )</value>
+                                  MID(
+                                    {!ConcatenatedPointsCreditedOutput} , 
+                                    FIND({!OrderIdItemChannelKey}  , {!ConcatenatedPointsCreditedOutput} ) + LEN({!OrderIdItemChannelKey} ), 
+                                    FIND(&apos;@&apos; , RIGHT({!ConcatenatedPointsCreditedOutput} ,
+                                               LEN({!ConcatenatedPointsCreditedOutput})  - (FIND({!OrderIdItemChannelKey},{!ConcatenatedPointsCreditedOutput} )
+                                                +LEN({!OrderIdItemChannelKey}))  ))
+                                    )
+                                  )</value>
                 </actionParameters>
                 <actionParameters>
                     <operator>Equals</operator>
                     <parameterName>perOrderReturnAmount</parameterName>
                     <sequenceNumber>2</sequenceNumber>
                     <value>VALUE(
-                  MID(
-                    {!ConcatenatedTotalReturnAmount} , 
-                    FIND({!returnPerOrderTotalAmountKey}   , {!ConcatenatedTotalReturnAmount}  ) + LEN({!returnPerOrderTotalAmountKey}  ), 
-                    FIND(&apos;@&apos; , RIGHT({!ConcatenatedTotalReturnAmount}  ,
-                               LEN({!ConcatenatedTotalReturnAmount} )  - (FIND({!returnPerOrderTotalAmountKey} ,{!ConcatenatedTotalReturnAmount}  )
-                                +LEN({!returnPerOrderTotalAmountKey} ))  ))
-                    )
-                  )</value>
+                                  MID(
+                                    {!ConcatenatedTotalReturnAmount} , 
+                                    FIND({!returnPerOrderTotalAmountKey}   , {!ConcatenatedTotalReturnAmount}  ) + LEN({!returnPerOrderTotalAmountKey}  ), 
+                                    FIND(&apos;@&apos; , RIGHT({!ConcatenatedTotalReturnAmount}  ,
+                                               LEN({!ConcatenatedTotalReturnAmount} )  - (FIND({!returnPerOrderTotalAmountKey} ,{!ConcatenatedTotalReturnAmount}  )
+                                                +LEN({!returnPerOrderTotalAmountKey} ))  ))
+                                    )
+                                  )</value>
                 </actionParameters>
                 <actionType>AssignParameterValues</actionType>
             </actions>
@@ -4237,12 +4237,12 @@
                     <operator>Equals</operator>
                     <parameterName>Message5</parameterName>
                     <value>&apos;Starting position of digit =&apos; &amp;
-                TEXT(FIND({!returnPerOrderChannelKey}  , {!ConcatenatedreturnChannelValue} ) + LEN({!returnPerOrderChannelKey}  )) &amp; &apos; ; &apos; &amp;
-                &apos;Ending position digit =&apos; &amp;
-                 TEXT(   FIND(&apos;@&apos; , RIGHT({!ConcatenatedreturnChannelValue}   ,
-                               LEN({!ConcatenatedreturnChannelValue} )  - (FIND({!returnPerOrderChannelKey} ,{!ConcatenatedreturnChannelValue}   )
-                                +LEN({!returnPerOrderChannelKey}  ))  ))
-                )</value>
+                                TEXT(FIND({!returnPerOrderChannelKey}  , {!ConcatenatedreturnChannelValue} ) + LEN({!returnPerOrderChannelKey}  )) &amp; &apos; ; &apos; &amp;
+                                &apos;Ending position digit =&apos; &amp;
+                                 TEXT(   FIND(&apos;@&apos; , RIGHT({!ConcatenatedreturnChannelValue}   ,
+                                               LEN({!ConcatenatedreturnChannelValue} )  - (FIND({!returnPerOrderChannelKey} ,{!ConcatenatedreturnChannelValue}   )
+                                                +LEN({!returnPerOrderChannelKey}  ))  ))
+                                )</value>
                 </actionParameters>
                 <actionParameters>
                     <operator>Equals</operator>
@@ -4348,13 +4348,13 @@
                     <operator>Equals</operator>
                     <parameterName>Message5</parameterName>
                     <value>&apos;TotalOriginalOrderAmt = &apos; &amp; TEXT({!TotalOriginalOrderAmt} ) &amp; &apos; ; &apos; &amp;
-                &apos;TotalAmountOfOriginalOrderIdFromTJ = &apos; &amp; TEXT({!TotalAmountOfOriginalOrderIdFromTJ} )</value>
+                                &apos;TotalAmountOfOriginalOrderIdFromTJ = &apos; &amp; TEXT({!TotalAmountOfOriginalOrderIdFromTJ} )</value>
                 </actionParameters>
                 <actionParameters>
                     <operator>Equals</operator>
                     <parameterName>Message4</parameterName>
                     <value>&apos;OriginalOrderId = &apos; &amp; {!OriginalOrderId} &amp;
-                &apos;TotalOriginalOrderAmt = &apos; &amp;  TEXT({!TotalOriginalOrderAmt} )</value>
+                                &apos;TotalOriginalOrderAmt = &apos; &amp;  TEXT({!TotalOriginalOrderAmt} )</value>
                 </actionParameters>
                 <actionParameters>
                     <operator>Equals</operator>
