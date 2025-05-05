@@ -18,7 +18,7 @@
     "@salesforce/dev-scripts": "^11",
     "@types/fs-extra": "^11.0.4",
     "@types/mocha": "^10.0.10",
-    "eslint-plugin-sf-plugin": "^1.20.18",
+    "eslint-plugin-sf-plugin": "^1.20.21",
     "husky": "^9.1.7",
     "mocha": "^11.2.2",
     "oclif": "^4.17.43",
