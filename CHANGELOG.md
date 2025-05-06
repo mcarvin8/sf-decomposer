@@ -5,6 +5,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.9.2](https://github.com/mcarvin8/sf-decomposer/compare/v5.9.1...v5.9.2) (2025-05-06)
+
+
+### Bug Fixes
+
+* **deps:** bump @salesforce/core from 8.9.0 to 8.10.1 ([5e88776](https://github.com/mcarvin8/sf-decomposer/commit/5e887761b87305daf8d7bd27b2ed692844608ac3))
+* **deps:** bump @salesforce/source-deploy-retrieve ([3b6f496](https://github.com/mcarvin8/sf-decomposer/commit/3b6f496cfe460eeb567f50363723402863eb57e0))
+* **deps:** bump @salesforce/source-deploy-retrieve from 12.19.0 to 12.19.3 ([d09dd7d](https://github.com/mcarvin8/sf-decomposer/commit/d09dd7dfc8a1b9d05bb4d00663fa2fb311625b54))
+
 ## [5.9.1](https://github.com/mcarvin8/sf-decomposer/compare/v5.9.0...v5.9.1) (2025-04-22)
 
 
