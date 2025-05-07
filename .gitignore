@@ -51,3 +51,6 @@ disassemble.log
 
 stderr*.txt
 stdout*.txt
+
+.sf/
+.sfdx/

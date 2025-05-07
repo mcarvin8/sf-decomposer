@@ -6,7 +6,7 @@ import { Hook } from '@oclif/core';
 
 import DecomposerRecompose from '../commands/decomposer/recompose.js';
 import { ConfigFile } from '../helpers/types.js';
-import { getRepoRoot } from '../service/getRepoRoot.js';
+import { getRepoRoot } from '../service/core/getRepoRoot.js';
 import { HOOK_CONFIG_JSON } from '../helpers/constants.js';
 
 export const prerun: Hook<'prerun'> = async function (options) {

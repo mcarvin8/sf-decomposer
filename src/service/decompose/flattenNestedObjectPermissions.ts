@@ -3,7 +3,7 @@
 import { join } from 'node:path';
 import { readdir, rm, rename } from 'node:fs/promises';
 
-import { transformAndCleanup } from './transformers.js';
+import { transformAndCleanup } from '../core/transformers.js';
 
 export async function flattenNestedObjectPermissions(disassembledDir: string, format: string): Promise<void> {
   const outerDir = join(disassembledDir, 'objectPermissions');

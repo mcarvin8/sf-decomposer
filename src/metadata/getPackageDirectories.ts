@@ -3,7 +3,7 @@
 import { resolve, join, basename } from 'node:path';
 import { readFile, readdir, stat } from 'node:fs/promises';
 
-import { getRepoRoot } from '../service/getRepoRoot.js';
+import { getRepoRoot } from '../service/core/getRepoRoot.js';
 import { SfdxProject } from '../helpers/types.js';
 import { IGNORE_FILE } from '../helpers/constants.js';
 

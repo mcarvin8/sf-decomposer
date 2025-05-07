@@ -6,7 +6,7 @@ import { Hook } from '@oclif/core';
 
 import DecomposerDecompose from '../commands/decomposer/decompose.js';
 import { ConfigFile, PostRetrieveHookOptions } from '../helpers/types.js';
-import { getRepoRoot } from '../service/getRepoRoot.js';
+import { getRepoRoot } from '../service/core/getRepoRoot.js';
 import { HOOK_CONFIG_JSON } from '../helpers/constants.js';
 
 type HookFunction = (this: Hook.Context, options: PostRetrieveHookOptions) => Promise<void>;

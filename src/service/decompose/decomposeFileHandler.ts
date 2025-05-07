@@ -1,15 +1,13 @@
 'use strict';
 /* eslint-disable no-await-in-loop */
-import { existsSync } from 'node:fs';
-import { resolve, relative, join, dirname } from 'node:path';
+import { resolve, relative, join } from 'node:path';
 import { readdir, stat, rm, rename } from 'node:fs/promises';
 import { DisassembleXMLFileHandler, setLogLevel } from 'xml-disassembler';
 
-import { CUSTOM_LABELS_FILE, WORKFLOW_SUFFIX_MAPPING } from '../helpers/constants.js';
-import { moveFiles } from './moveFiles.js';
-import { disassembleAndGroupFieldPermissions } from './disassembleAndGroupFieldPermissions.js';
-import { flattenNestedObjectPermissions } from './flattenNestedObjectPermissions.js';
-import { transformAndCleanup } from './transformers.js';
+import { CUSTOM_LABELS_FILE, WORKFLOW_SUFFIX_MAPPING } from '../../helpers/constants.js';
+import { moveFiles } from '../core/moveFiles.js';
+import { handleNestedLoyaltyProgramSetupDecomposition } from './nested/loyaltyProgramSetup.js';
+import { handleNestedPermissionSetDecomposition } from './nested/permSets.js';
 
 export async function decomposeFileHandler(
   metaAttributes: {
@@ -95,7 +93,10 @@ async function disassembleHandler(
   const handler: DisassembleXMLFileHandler = new DisassembleXMLFileHandler();
   let decomposeFormat;
   let decomposePostPurge;
-  if (decomposeNestedPerms && metaSuffix === 'permissionset' && strategy === 'grouped-by-tag') {
+  const decomposePermSets: boolean =
+    decomposeNestedPerms && metaSuffix === 'permissionset' && strategy === 'grouped-by-tag';
+  const decomposeLoyalyProgram: boolean = metaSuffix === 'loyaltyProgramSetup' && strategy === 'unique-id';
+  if (decomposePermSets || decomposeLoyalyProgram) {
     decomposeFormat = 'xml';
     decomposePostPurge = false;
   } else {
@@ -113,38 +114,13 @@ async function disassembleHandler(
     strategy,
   });
 
-  // If permission set, disassemble any objectSettings.xml found recursively
-  if (decomposeNestedPerms && metaSuffix === 'permissionset' && strategy === 'grouped-by-tag') {
-    const disassembledDir = filePath.replace(/\.xml$/, '');
+  // Dispatch recursive decomposition based on type
+  if (decomposePermSets) {
+    await handleNestedPermissionSetDecomposition(filePath, uniqueIdElements, handler, format);
+  }
 
-    const recursivelyDisassembleObjectSettings = async (dir: string): Promise<void> => {
-      const entries = await readdir(dir, { withFileTypes: true });
-      for (const entry of entries) {
-        const fullPath = join(dir, entry.name);
-
-        if (entry.isDirectory()) {
-          await recursivelyDisassembleObjectSettings(fullPath);
-        } else if (entry.isFile() && entry.name === 'objectPermissions.xml') {
-          await handler.disassemble({
-            filePath: fullPath,
-            uniqueIdElements,
-            prePurge: false,
-            postPurge: true,
-            format: 'xml',
-            strategy: 'unique-id',
-          });
-          await flattenNestedObjectPermissions(dirname(fullPath), format);
-        } else if (entry.isFile() && entry.name === 'fieldPermissions.xml') {
-          await disassembleAndGroupFieldPermissions(fullPath, format);
-        } else if (entry.isFile() && dirname(fullPath) !== filePath && fullPath.endsWith('.xml')) {
-          await transformAndCleanup(fullPath, format);
-        }
-      }
-    };
-
-    if (existsSync(disassembledDir)) {
-      await recursivelyDisassembleObjectSettings(disassembledDir);
-    }
+  if (decomposeLoyalyProgram) {
+    await handleNestedLoyaltyProgramSetupDecomposition(filePath, handler, format);
   }
 }
 

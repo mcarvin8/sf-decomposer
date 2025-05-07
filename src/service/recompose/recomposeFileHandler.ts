@@ -1,12 +1,15 @@
+/* eslint-disable no-console */
 'use strict';
 /* eslint-disable no-await-in-loop */
+import { existsSync } from 'node:fs';
 import { readdir, stat, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { ReassembleXMLFileHandler, setLogLevel } from 'xml-disassembler';
 
-import { CUSTOM_LABELS_FILE } from '../helpers/constants.js';
+import { CUSTOM_LABELS_FILE } from '../../helpers/constants.js';
+import { moveFiles } from '../core/moveFiles.js';
 import { renameBotVersionFile } from './renameBotVersionFiles.js';
-import { moveFiles } from './moveFiles.js';
+import { wrapAllFilesWithLoyaltyRoot } from './wrapAllFilesWithLoyaltyRoot.js';
 
 export async function recomposeFileHandler(
   metaAttributes: {
@@ -23,6 +26,8 @@ export async function recomposeFileHandler(
   for (const metadataPath of metadataPaths) {
     if (metaSuffix === 'labels') {
       await reassembleLabels(metadataPath, metaSuffix, postpurge);
+    } else if (metaSuffix === 'loyaltyProgramSetup') {
+      await reassembleLoyaltyProgramSetup(metadataPath);
     } else {
       let recurse: boolean = false;
       if (strictDirectoryName || folderType) recurse = true;
@@ -86,5 +91,35 @@ async function reassembleDirectories(
     } else if (subDirStat.isDirectory()) {
       await reassembleHandler(subdirectory, `${metaSuffix}-meta.xml`, postpurge);
     }
+  }
+}
+
+async function reassembleLoyaltyProgramSetup(basePath: string): Promise<void> {
+  const children = await readdir(basePath, { withFileTypes: true });
+
+  for (const entry of children) {
+    if (!entry.isDirectory()) continue;
+
+    const metadataFolder = join(basePath, entry.name);
+    const programProcessesPath = join(metadataFolder, 'programProcesses');
+
+    if (!existsSync(programProcessesPath)) continue;
+
+    const processDirs = await readdir(programProcessesPath);
+    for (const process of processDirs) {
+      const processPath = join(programProcessesPath, process);
+      const subDirs = await readdir(processPath, { withFileTypes: true });
+
+      for (const subDir of subDirs) {
+        if (subDir.isDirectory()) {
+          await reassembleHandler(join(processPath, subDir.name), 'xml', true);
+        }
+      }
+
+      await reassembleHandler(processPath, 'xml', true);
+    }
+
+    await wrapAllFilesWithLoyaltyRoot(programProcessesPath);
+    await reassembleHandler(metadataFolder, 'loyaltyProgramSetup-meta.xml', true);
   }
 }
