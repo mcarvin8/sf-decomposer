@@ -13,6 +13,7 @@
   - [`sf decomposer recompose`](#sf-decomposer-recompose)
 - [Decompose Structure](#decompose-structure)
   - [Additional Permission Set Decomposition](#additional-permission-set-decomposition)
+  - [Additional Loyalty Program Setup Decomposition](#additional-loyalty-program-setup-decomposition)
 - [Supported Metadata](#supported-metadata)
   - [Exceptions](#exceptions)
 - [Troubleshooting](#troubleshooting)
