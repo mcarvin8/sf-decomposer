@@ -13,7 +13,7 @@
   "devDependencies": {
     "@commitlint/cli": "^19.8.0",
     "@commitlint/config-conventional": "^19.8.0",
-    "@oclif/plugin-command-snapshot": "^5.2.38",
+    "@oclif/plugin-command-snapshot": "^5.2.39",
     "@salesforce/cli-plugins-testkit": "^5.3.10",
     "@salesforce/dev-scripts": "^11",
     "@types/fs-extra": "^11.0.4",
