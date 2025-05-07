@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.10.0](https://github.com/mcarvin8/sf-decomposer/compare/v5.9.2...v5.10.0) (2025-05-07)
+
+
+### Features
+
+* allow multi-level decomposition of loyalty program setup ([9fe1195](https://github.com/mcarvin8/sf-decomposer/commit/9fe1195f64acdbb670c0fb89fac3d39d151143c9))
+
 ## [5.9.2](https://github.com/mcarvin8/sf-decomposer/compare/v5.9.1...v5.9.2) (2025-05-06)
 
 
