@@ -34,7 +34,7 @@ export async function wrapAllFilesWithLoyaltyRoot(folderPath: string): Promise<v
       },
     };
 
-    const xmlString = buildXMLString(wrapped, 0);
+    const xmlString = buildXMLString(wrapped);
     const cleanXmlString = stripXmlDeclarationFromString(xmlString);
     await writeFile(xmlPath, `${XML_DECLARATION}\n${cleanXmlString}`, 'utf-8');
   }

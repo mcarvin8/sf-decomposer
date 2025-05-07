@@ -19,7 +19,7 @@ export async function stripRootAndDisassemble(
     stripped[key] = value;
   }
 
-  const newXml = buildXMLString(stripped, 0);
+  const newXml = buildXMLString(stripped);
   await writeFile(fullPath, `${XML_DECLARATION}\n${newXml}`, 'utf-8');
 
   await handler.disassemble({

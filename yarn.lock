@@ -5066,6 +5066,11 @@ ignore@^7.0.3:
   resolved "https://registry.yarnpkg.com/ignore/-/ignore-7.0.3.tgz#397ef9315dfe0595671eefe8b633fec6943ab733"
   integrity sha512-bAH5jbK/F3T3Jls4I0SO1hmPR0dKU0a7+SY6n1yzRtG54FLO8d6w/nxLFX2Nb7dBu6cCWXPaAME6cYqFUMmuCA==
 
+ignore@^7.0.4:
+  version "7.0.4"
+  resolved "https://registry.yarnpkg.com/ignore/-/ignore-7.0.4.tgz#a12c70d0f2607c5bf508fb65a40c75f037d7a078"
+  integrity sha512-gJzzk+PQNznz8ysRrC0aOkBNVRBDtE1n53IqyqEf3PXrYwomFs5q4pGMizBMJF+ykh03insJ27hB8gSrD2Hn8A==
+
 immediate@~3.0.5:
   version "3.0.6"
   resolved "https://registry.npmjs.org/immediate/-/immediate-3.0.6.tgz"
@@ -7405,10 +7410,10 @@ smart-buffer@^4.2.0:
   resolved "https://registry.npmjs.org/smart-buffer/-/smart-buffer-4.2.0.tgz"
   integrity sha512-94hK0Hh8rPqQl2xXc3HsaBoOXKV20MToPkcXvwbISWLEs+64sBq5kFgn2kJDHb1Pry9yrP0dxrCI9RRci7RXKg==
 
-smol-toml@^1.3.1:
-  version "1.3.1"
-  resolved "https://registry.yarnpkg.com/smol-toml/-/smol-toml-1.3.1.tgz#d9084a9e212142e3cab27ef4e2b8e8ba620bfe15"
-  integrity sha512-tEYNll18pPKHroYSmLLrksq233j021G0giwW7P3D24jC54pQ5W5BXMsQ/Mvw1OJCmEYDgY+lrzT+3nNUtoNfXQ==
+smol-toml@^1.3.4:
+  version "1.3.4"
+  resolved "https://registry.yarnpkg.com/smol-toml/-/smol-toml-1.3.4.tgz#4ec76e0e709f586bc50ba30eb79024173c2b2221"
+  integrity sha512-UOPtVuYkzYGee0Bd2Szz8d2G3RfMfJ2t3qVdZUAozZyAk+a0Sxa+QKix0YCwjL/A1RR0ar44nCxaoN9FxdJGwA==
 
 snake-case@^3.0.4:
   version "3.0.4"
@@ -8273,17 +8278,17 @@ write-file-atomic@^3.0.0:
     signal-exit "^3.0.2"
     typedarray-to-buffer "^3.1.5"
 
-xml-disassembler@^1.9.0:
-  version "1.9.0"
-  resolved "https://registry.yarnpkg.com/xml-disassembler/-/xml-disassembler-1.9.0.tgz#788a5a924981c11f8dbf15fbe01059e540478ae6"
-  integrity sha512-t3/i51IfTx1EFWeDx0zpleehuWExZcfF7QeLWqx82mTDeEfCb+SxSENzj4P5gp1qy3tgk8u0w67Q9YI0tE4V3w==
+xml-disassembler@^1.9.2:
+  version "1.9.2"
+  resolved "https://registry.yarnpkg.com/xml-disassembler/-/xml-disassembler-1.9.2.tgz#2f375d3309bcf80fdf373f6813ba42de99c86633"
+  integrity sha512-YsDHv3Z5GxSgt8/XCb3STi7AmviPi9sFm8L0g/taFfI4jCwL5k5P/AsMxkplT+DSzUvDh3eY1nEObt9AUCtIDg==
   dependencies:
     fast-xml-parser "^5.2.0"
-    ignore "^7.0.3"
+    ignore "^7.0.4"
     ini "^5.0.0"
     json5 "^2.2.3"
     log4js "^6.9.1"
-    smol-toml "^1.3.1"
+    smol-toml "^1.3.4"
     tslib "^2.6.2"
     yaml "^2.7.1"
 

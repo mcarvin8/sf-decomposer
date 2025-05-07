@@ -45,7 +45,7 @@ export async function disassembleAndGroupFieldPermissions(filePath: string, form
       },
     };
 
-    const xmlString = buildXMLString(groupedElement, 0);
+    const xmlString = buildXMLString(groupedElement);
     const outPath = join(outputDir, `${objectName}.fieldPermissions.xml`);
     await writeFile(outPath, `${XML_DECLARATION}\n${xmlString}`, 'utf-8');
     await transformAndCleanup(outPath, format);
