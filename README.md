@@ -11,7 +11,7 @@
 - [Commands](#commands)
   - [`sf decomposer decompose`](#sf-decomposer-decompose)
   - [`sf decomposer recompose`](#sf-decomposer-recompose)
-- [Decompose Structure](#decompose-structure)
+- [Decompose Strategies](#decompose-strategies)
   - [Custom Labels Decomposition](#custom-labels-decomposition)
   - [Additional Permission Set Decomposition](#additional-permission-set-decomposition)
   - [Additional Loyalty Program Setup Decomposition](#additional-loyalty-program-setup-decomposition)
@@ -70,7 +70,7 @@ Salesforce's built-in decomposition has limitations. `sf-decomposer` offers more
 - **Supports More Metadata** – Works with most Metadata API types, unlike Salesforce’s limited decomposition.
 - **Selective Decomposition** – Decompose only what you need, avoiding Salesforce’s all-or-nothing approach.
   - See [.sfdecomposerignore](#.sfdecomposerignore)
-- **Multiple [Decompose Strategies](#decompose-structure)** – Choose between:
+- **Multiple [Decompose Strategies](#decompose-strategies)** – Choose between:
   - `unique-id` (default): disassembles each nested element into its own uniquely named file based on XML content or hash.
   - `grouped-by-tag`: groups all nested elements by tag into a single file per tag (e.g., all `<fieldPermissions>` in a permission set into `fieldPermissions.xml`).
     - Additionally opt into further decomposition on permisison sets by using the `grouped-by-tag` strategy with the `--decompose-nested-permissions` flag.
@@ -174,7 +174,7 @@ EXAMPLES
 
 ```
 
-## Decompose Structure
+## Decompose Strategies
 
 > Ensure you do not MIX strategies on the same metadata type. If you have previously decomposed metadata with a past verson of `sf-decomposer`, which uses the unique-id strategy, and would like to switch over to the grouped-by-tag strategy, you will need to supply the decompose command with the `--prepurge` flag and `-s "grouped-by-tag"` flag to re-create decomposed files with the new strategy.
 
