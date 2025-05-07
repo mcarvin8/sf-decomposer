@@ -12,6 +12,7 @@
   - [`sf decomposer decompose`](#sf-decomposer-decompose)
   - [`sf decomposer recompose`](#sf-decomposer-recompose)
 - [Decompose Structure](#decompose-structure)
+  - [Custom Labels Decomposition](#custom-labels-decomposition)
   - [Additional Permission Set Decomposition](#additional-permission-set-decomposition)
   - [Additional Loyalty Program Setup Decomposition](#additional-loyalty-program-setup-decomposition)
 - [Supported Metadata](#supported-metadata)
@@ -69,7 +70,7 @@ Salesforce's built-in decomposition has limitations. `sf-decomposer` offers more
 - **Supports More Metadata** – Works with most Metadata API types, unlike Salesforce’s limited decomposition.
 - **Selective Decomposition** – Decompose only what you need, avoiding Salesforce’s all-or-nothing approach.
   - See [.sfdecomposerignore](#.sfdecomposerignore)
-- **Multiple Decomposition Strategies** – Choose between:
+- **Multiple [Decompose Strategies](#decompose-structure)** – Choose between:
   - `unique-id` (default): disassembles each nested element into its own uniquely named file based on XML content or hash.
   - `grouped-by-tag`: groups all nested elements by tag into a single file per tag (e.g., all `<fieldPermissions>` in a permission set into `fieldPermissions.xml`).
     - Additionally opt into further decomposition on permisison sets by using the `grouped-by-tag` strategy with the `--decompose-nested-permissions` flag.
@@ -205,6 +206,8 @@ Leaf elements (like `<userLicense>Salesforce</userLicense>`) are always grouped 
 | **JSON5** | ![JSON5](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-tags-json5.png)<br> |
 | **TOML**  | ![TOML](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-tags-toml.png)<br>   |
 | **INI**   | ![INI](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-tags-ini.png)<br>     |
+
+### Custom Labels Decomposition
 
 Custom labels can only be decomposed via the `unique-id` strategy. If you attempt to decompose custom labels with the `grouped-by-tag` strategy, it will warn and skip decomposing custom labels.
 
