@@ -4,10 +4,6 @@ import { readdir, writeFile, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parseXML, buildXMLString, XmlElement } from 'xml-disassembler';
 
-function stripXmlDeclarationFromString(xml: string): string {
-  return xml.replace(/<\?xml.*?\?>\s*/g, '').trim();
-}
-
 export async function wrapAllFilesWithLoyaltyRoot(folderPath: string): Promise<void> {
   const files = await readdir(folderPath);
 
@@ -38,7 +34,6 @@ export async function wrapAllFilesWithLoyaltyRoot(folderPath: string): Promise<v
     };
 
     const xmlString = buildXMLString(wrapped);
-    const cleanXmlString = stripXmlDeclarationFromString(xmlString);
-    await writeFile(xmlPath, cleanXmlString, 'utf-8');
+    await writeFile(xmlPath, xmlString, 'utf-8');
   }
 }
