@@ -6,8 +6,8 @@ import { DisassembleXMLFileHandler, setLogLevel } from 'xml-disassembler';
 
 import { CUSTOM_LABELS_FILE, WORKFLOW_SUFFIX_MAPPING } from '../../helpers/constants.js';
 import { moveFiles } from '../core/moveFiles.js';
-import { handleNestedLoyaltyProgramSetupDecomposition } from './nested/loyaltyProgramSetup.js';
-import { handleNestedPermissionSetDecomposition } from './nested/permSets.js';
+import { handleNestedLoyaltyProgramSetupDecomposition } from './lps/loyaltyProgramSetup.js';
+import { handleNestedPermissionSetDecomposition } from './perm-set/permSets.js';
 
 export async function decomposeFileHandler(
   metaAttributes: {

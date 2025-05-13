@@ -5,9 +5,9 @@ import { join, dirname } from 'node:path';
 import { readdir } from 'node:fs/promises';
 import { DisassembleXMLFileHandler } from 'xml-disassembler';
 
-import { disassembleAndGroupFieldPermissions } from '../disassembleAndGroupFieldPermissions.js';
-import { flattenNestedObjectPermissions } from '../flattenNestedObjectPermissions.js';
 import { transformAndCleanup } from '../../core/transformers.js';
+import { disassembleAndGroupFieldPermissions } from './disassembleAndGroupFieldPermissions.js';
+import { flattenNestedObjectPermissions } from './flattenNestedObjectPermissions.js';
 
 export async function handleNestedPermissionSetDecomposition(
   filePath: string,
