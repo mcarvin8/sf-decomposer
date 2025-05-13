@@ -23,12 +23,17 @@ export async function wrapAllFilesWithLoyaltyRoot(folderPath: string): Promise<v
     }
 
     // Remove '?xml' declaration if it exists
-    const { ['?xml']: _, ...contentWithoutDeclaration } = parsed;
+    const rootKey = Object.keys(parsed).find(k => k !== '?xml');
+    if (!rootKey) continue;
 
     const wrapped: XmlElement = {
+      '?xml': {
+        '@_version': '1.0',
+        '@_encoding': 'UTF-8',
+      },
       LoyaltyProgramSetup: {
         '@_xmlns': 'http://soap.sforce.com/2006/04/metadata',
-        ...contentWithoutDeclaration,
+        [rootKey]: parsed[rootKey],
       },
     };
 
