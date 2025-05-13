@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.10.3](https://github.com/mcarvin8/sf-decomposer/compare/v5.10.2...v5.10.3) (2025-05-13)
+
+
+### Bug Fixes
+
+* add declarations to xmlelement type ([933e21c](https://github.com/mcarvin8/sf-decomposer/commit/933e21c3bd3cb3c7006ebd0dd2d9ddfa260f4ec5))
+
 ## [5.10.2](https://github.com/mcarvin8/sf-decomposer/compare/v5.10.1...v5.10.2) (2025-05-13)
 
 
