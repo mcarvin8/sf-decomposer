@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.10.4](https://github.com/mcarvin8/sf-decomposer/compare/v5.10.3...v5.10.4) (2025-05-13)
+
+
+### Bug Fixes
+
+* remove extra declaration delete function ([#275](https://github.com/mcarvin8/sf-decomposer/issues/275)) ([2bd1398](https://github.com/mcarvin8/sf-decomposer/commit/2bd139837672036ec8341f09c208da353f6e32ec))
+
 ## [5.10.3](https://github.com/mcarvin8/sf-decomposer/compare/v5.10.2...v5.10.3) (2025-05-13)
 
 
