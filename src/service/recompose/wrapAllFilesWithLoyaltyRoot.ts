@@ -23,7 +23,7 @@ export async function wrapAllFilesWithLoyaltyRoot(folderPath: string): Promise<v
     }
 
     // Remove '?xml' declaration if it exists
-    const { ['?xml']: _omit, ...contentWithoutDeclaration } = parsed;
+    const { ['?xml']: _, ...contentWithoutDeclaration } = parsed;
 
     const wrapped: XmlElement = {
       LoyaltyProgramSetup: {
