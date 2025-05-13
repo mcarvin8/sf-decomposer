@@ -22,14 +22,13 @@ export async function wrapAllFilesWithLoyaltyRoot(folderPath: string): Promise<v
       continue;
     }
 
+    // Remove '?xml' declaration if it exists
+    const { ['?xml']: _omit, ...contentWithoutDeclaration } = parsed;
+
     const wrapped: XmlElement = {
-      '?xml': {
-        '@_version': '1.0',
-        '@_encoding': 'UTF-8',
-      },
       LoyaltyProgramSetup: {
         '@_xmlns': 'http://soap.sforce.com/2006/04/metadata',
-        ...parsed,
+        ...contentWithoutDeclaration,
       },
     };
 
