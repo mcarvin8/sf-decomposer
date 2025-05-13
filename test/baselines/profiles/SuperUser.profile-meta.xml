@@ -8,6 +8,9 @@
     <objectPermissions>
         <object>TestWeblinks__c</object>
     </objectPermissions>
+    <objectPermissions>
+        <object>Weblinks__c</object>
+    </objectPermissions>
     <recordTypeVisibilities>
         <default>true</default>
         <recordType>TestWeblinks__c.My First Recordtype</recordType>
