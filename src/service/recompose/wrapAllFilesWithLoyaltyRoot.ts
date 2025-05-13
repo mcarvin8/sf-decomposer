@@ -4,10 +4,6 @@ import { readdir, writeFile, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parseXML, buildXMLString, XmlElement } from 'xml-disassembler';
 
-function stripXmlDeclarationFromString(xml: string): string {
-  return xml.replace(/<\?xml.*?\?>\s*/g, '').trim();
-}
-
 export async function wrapAllFilesWithLoyaltyRoot(folderPath: string): Promise<void> {
   const files = await readdir(folderPath);
 
@@ -26,6 +22,10 @@ export async function wrapAllFilesWithLoyaltyRoot(folderPath: string): Promise<v
       continue;
     }
 
+    // Remove '?xml' declaration if it exists
+    const rootKey = Object.keys(parsed).find(k => k !== '?xml');
+    if (!rootKey) continue;
+
     const wrapped: XmlElement = {
       '?xml': {
         '@_version': '1.0',
@@ -33,12 +33,11 @@ export async function wrapAllFilesWithLoyaltyRoot(folderPath: string): Promise<v
       },
       LoyaltyProgramSetup: {
         '@_xmlns': 'http://soap.sforce.com/2006/04/metadata',
-        ...parsed,
+        [rootKey]: parsed[rootKey],
       },
     };
 
     const xmlString = buildXMLString(wrapped);
-    const cleanXmlString = stripXmlDeclarationFromString(xmlString);
-    await writeFile(xmlPath, cleanXmlString, 'utf-8');
+    await writeFile(xmlPath, xmlString, 'utf-8');
   }
 }
