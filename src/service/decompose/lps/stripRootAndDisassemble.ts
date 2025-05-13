@@ -1,6 +1,5 @@
 import { writeFile } from 'node:fs/promises';
 import { parseXML, buildXMLString, DisassembleXMLFileHandler, XmlElement } from 'xml-disassembler';
-import { XML_DECLARATION } from '../../../helpers/constants.js';
 
 export async function stripRootAndDisassemble(
   fullPath: string,
@@ -13,14 +12,19 @@ export async function stripRootAndDisassemble(
   if (!contents) return;
 
   // Remove the root and build XML with just the inner nodes (programProcesses)
-  const stripped: XmlElement = {};
+  const stripped: XmlElement = {
+    '?xml': {
+      '@_version': '1.0',
+      '@_encoding': 'UTF-8',
+    },
+  };
 
   for (const [key, value] of Object.entries(contents)) {
     stripped[key] = value;
   }
 
   const newXml = buildXMLString(stripped);
-  await writeFile(fullPath, `${XML_DECLARATION}\n${newXml}`, 'utf-8');
+  await writeFile(fullPath, newXml, 'utf-8');
 
   await handler.disassemble({
     filePath: fullPath,
