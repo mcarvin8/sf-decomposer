@@ -1,9 +1,9 @@
 'use strict';
 /* eslint-disable no-await-in-loop */
 import { existsSync } from 'node:fs';
-import { join, dirname } from 'node:path';
-import { readdir } from 'node:fs/promises';
-import { DisassembleXMLFileHandler } from 'xml-disassembler';
+import { join, dirname, basename } from 'node:path';
+import { readdir, writeFile, rm } from 'node:fs/promises';
+import { parseXML, DisassembleXMLFileHandler, XmlElement } from 'xml-disassembler';
 
 import { transformAndCleanup } from '../../core/transformers.js';
 import { stripRootAndDisassemble } from './stripRootAndDisassemble.js';
@@ -24,11 +24,18 @@ export async function handleNestedLoyaltyProgramSetupDecomposition(
       if (entry.isDirectory()) {
         await recursivelyDisassembleLoyaltyProgramSetup(fullPath);
       } else if (entry.isFile() && fullPath.endsWith('.xml')) {
-        // Add conditional handling for loyalty program-related nested files
         if (entry.name.includes('programProcesses-meta')) {
           await stripRootAndDisassemble(fullPath, handler, format);
-        } else if (dirname(fullPath) !== filePath && fullPath.endsWith('.xml')) {
-          await transformAndCleanup(fullPath, format);
+        } else if (dirname(fullPath) !== filePath && format !== 'xml') {
+          const xmlContent = await parseXML(fullPath);
+          const finalContent = await transformAndCleanup(xmlContent as XmlElement, format);
+
+          const baseName = basename(fullPath, '.xml');
+          const newDest = join(dirname(fullPath), `${baseName}.${format}`);
+          await writeFile(newDest, finalContent, 'utf-8');
+
+          // Remove the original .xml file
+          await rm(fullPath);
         }
       }
     }
