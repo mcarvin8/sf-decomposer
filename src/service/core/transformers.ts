@@ -1,25 +1,26 @@
-import { rm } from 'node:fs/promises';
-import { transformToJson, transformToJson5, transformToToml, transformToYaml, transformToIni } from 'xml-disassembler';
+import {
+  transformToJson,
+  transformToJson5,
+  transformToToml,
+  transformToYaml,
+  transformToIni,
+  XmlElement,
+  buildXMLString,
+} from 'xml-disassembler';
 
-export async function transformAndCleanup(filePath: string, format: string): Promise<void> {
+export async function transformAndCleanup(xmlContent: XmlElement, format: string): Promise<string> {
   switch (format) {
     case 'json':
-      await transformToJson(filePath);
-      break;
+      return transformToJson(xmlContent);
     case 'yaml':
-      await transformToYaml(filePath);
-      break;
+      return transformToYaml(xmlContent);
     case 'json5':
-      await transformToJson5(filePath);
-      break;
+      return transformToJson5(xmlContent);
     case 'ini':
-      await transformToIni(filePath);
-      break;
+      return transformToIni(xmlContent);
     case 'toml':
-      await transformToToml(filePath);
-      break;
+      return transformToToml(xmlContent);
     default:
-      return; // Skip if 'xml' or unknown
+      return buildXMLString(xmlContent);
   }
-  await rm(filePath, { force: true });
 }

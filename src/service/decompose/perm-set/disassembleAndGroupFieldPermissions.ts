@@ -1,7 +1,7 @@
 /* eslint-disable no-await-in-loop */
 import { writeFile, rm, mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
-import { buildXMLString, parseXML, XmlElement } from 'xml-disassembler';
+import { parseXML, XmlElement } from 'xml-disassembler';
 
 import { FieldPermission } from '../../../helpers/types.js';
 import { transformAndCleanup } from '../../core/transformers.js';
@@ -48,10 +48,9 @@ export async function disassembleAndGroupFieldPermissions(filePath: string, form
       },
     };
 
-    const xmlString = buildXMLString(groupedElement);
-    const outPath = join(outputDir, `${objectName}.fieldPermissions.xml`);
-    await writeFile(outPath, xmlString, 'utf-8');
-    await transformAndCleanup(outPath, format);
+    const outPath = join(outputDir, `${objectName}.fieldPermissions.${format}`);
+    const outString = await transformAndCleanup(groupedElement, format);
+    await writeFile(outPath, outString, 'utf-8');
   }
   await rm(filePath, { force: true });
 }
