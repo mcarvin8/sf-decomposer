@@ -8,6 +8,7 @@ import { CUSTOM_LABELS_FILE, WORKFLOW_SUFFIX_MAPPING } from '../../helpers/const
 import { moveFiles } from '../core/moveFiles.js';
 import { handleNestedLoyaltyProgramSetupDecomposition } from './lps/loyaltyProgramSetup.js';
 import { handleNestedPermissionSetDecomposition } from './perm-set/permSets.js';
+import { handleNestedBotDecomposition } from './bots/bots.js';
 
 export async function decomposeFileHandler(
   metaAttributes: {
@@ -96,7 +97,9 @@ async function disassembleHandler(
   const decomposePermSets: boolean =
     decomposeNestedPerms && metaSuffix === 'permissionset' && strategy === 'grouped-by-tag';
   const decomposeLoyalyProgram: boolean = metaSuffix === 'loyaltyProgramSetup' && strategy === 'unique-id';
-  if (decomposePermSets || decomposeLoyalyProgram) {
+  const decomposeBots: boolean = metaSuffix === 'bot' && strategy === 'unique-id';
+
+  if (decomposePermSets || decomposeLoyalyProgram || decomposeBots) {
     decomposeFormat = 'xml';
     decomposePostPurge = false;
   } else {
@@ -121,6 +124,19 @@ async function disassembleHandler(
 
   if (decomposeLoyalyProgram) {
     await handleNestedLoyaltyProgramSetupDecomposition(filePath, handler, format);
+  }
+
+  if (decomposeBots) {
+    await handleNestedBotDecomposition(filePath, handler, format);
+    if (postPurge) {
+      const entries = await readdir(filePath, { withFileTypes: true });
+
+      for (const entry of entries) {
+        if (entry.isFile()) {
+          await rm(join(filePath, entry.name));
+        }
+      }
+    }
   }
 }
 

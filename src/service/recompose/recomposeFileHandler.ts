@@ -7,6 +7,7 @@ import { ReassembleXMLFileHandler, setLogLevel } from 'xml-disassembler';
 import { reassembleLabels } from './reassembleLabels.js';
 import { renameBotVersionFile } from './renameBotVersionFiles.js';
 import { reassembleLoyaltyProgramSetup } from './resssembleLoyaltyProgramSetup.js';
+import { reassembleBots } from './reassembleBots.js';
 
 export async function recomposeFileHandler(
   metaAttributes: {
@@ -57,7 +58,11 @@ async function reassembleDirectories(
       // recursively call this function and set recurse to false
       await reassembleDirectories(subdirectory, metaSuffix, false, postpurge);
     } else if (subDirStat.isDirectory()) {
-      await reassembleHandler(subdirectory, `${metaSuffix}-meta.xml`, postpurge);
+      if (metaSuffix === 'bot') {
+        await reassembleBots(subdirectory);
+      } else {
+        await reassembleHandler(subdirectory, `${metaSuffix}-meta.xml`, postpurge);
+      }
     }
   }
 }
