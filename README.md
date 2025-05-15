@@ -209,9 +209,9 @@ Leaf elements (like `<userLicense>Salesforce</userLicense>`) are always grouped 
 
 ### Custom Labels Decomposition
 
-Custom labels can only be decomposed via the unique-id strategy.
+Custom labels can only be decomposed via the `unique-id`strategy.
 
-If you attempt to decompose custom labels using the grouped-by-tag strategy, sf-decomposer will automatically override the strategy to unique-id and continue. You will see a warning in the terminal, but the operation will not be skipped:
+If you attempt to decompose custom labels using the `grouped-by-tag` strategy, `sf-decomposer` will automatically override the strategy to `unique-id` and continue. You will see a warning in the terminal, but the operation will not be skipped:
 
 ```
 Warning: Overriding strategy to "unique-id" for custom labels, as "grouped-by-tag" is not supported.
@@ -231,13 +231,13 @@ When you run `sf decomposer decompose -m "permissionset" -s "grouped-by-tag" -p`
 
 ### Loyalty Program Setup Decomposition
 
-Loyalty Program Setup metadata (-m loyaltyProgramSetup) is only supported with the unique-id strategy.
+Loyalty Program Setup metadata (`-m loyaltyProgramSetup`) is only supported with the `unique-id` strategy.
 
-If the grouped-by-tag strategy is provided, sf-decomposer will automatically override the strategy to unique-id and continue. You will see a warning like this:
+If the `grouped-by-tag` strategy is provided, `sf-decomposer` will automatically override the strategy to `unique-id` and continue. You will see a warning like this:
 
 `Warning: Overriding strategy to "unique-id" for loyaltyProgramSetup, as "grouped-by-tag" is not supported.`
 
-Under the unique-id strategy, the loyalty program setup metadata is further decomposed:
+Under the `unique-id` strategy, the loyalty program setup metadata is further decomposed:
 - Each `<programProcesses>` element is written to its own file.
 - Each `<parameters>` and `<rules>` child within a process is further broken out into its own file.
 
