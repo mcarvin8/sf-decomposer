@@ -284,27 +284,45 @@ Here are some examples:
 
 ## Troubleshooting
 
-`sf-decomposer` searches the current working directory for the `sfdx-project.json`, and if it's not found in the current working directory, it will search upwards for it until it hits your root drive. If the `sfdx-project.json` file isn't found, the plugin will fail with:
+### Missing `sfdx-project.json`
+
+`sf-decomposer` requires an `sfdx-project.json` file to function. It starts by checking the current working directory and will search upward through parent directories until it reaches the root of your drive. If the file isn't found, the command will fail with:
 
 ```
 Error (1): sfdx-project.json not found in any parent directory.
 ```
 
-The `xml-disassembler` package will create a log file, `disassemble.log`, at all times. By default, the log will only contain XML decomposing/recomposing errors. XML decomposing/recomposing errors do not cause the Salesforce CLI to fail. The CLI will proceed to decompose/recompose all remaining metadata.
+---
 
-The Salesforce CLI will print XML errors as warnings in the terminal:
+### Understanding the Log File
+
+The plugin always generates a `disassemble.log` file using the `xml-disassembler` engine.
+
+By default, this log will contain only errors related to XML decomposition or recomposition. These errors **do not stop** the CLI command — the tool will continue processing all other metadata files.
+
+Example warning printed in the terminal:
 
 ```
 Warning: C:\Users\matth\Documents\sf-decomposer\test\baselines\flows\Get_Info\actionCalls\Get_Info.actionCalls-meta.xml was unabled to be parsed and will not be processed. Confirm formatting and try again.
 ```
 
-To add debugging to the log, provide the `--debug` flag to the decompose or recompose command.
+---
+
+### Enabling Debug Output
+
+To capture more detailed output (including processed files), use the `--debug` flag with either `decompose` or `recompose`.
+
+Example log entry:
 
 ```
 [2024-03-30T14:28:37.959] [DEBUG] default - Created disassembled file: mock\no-nested-elements\HR_Admin\HR_Admin.permissionset-meta.xml
 ```
 
-If a file only contains leaf elements, the decomposer has nothing to decompose so it will print this warning and skip processing the file:
+---
+
+### Skipped Files with Only Leaf Elements
+
+If a metadata file contains only leaf elements (e.g. strings, booleans, or primitives), there’s nothing to decompose. The CLI will warn and skip the file:
 
 ```
 Warning: The XML file force-app\main\default\permissionsets\view_of_projects_tab_on_opportunity.permissionset-meta.xml only has leaf elements. This file will not be disassembled.
