@@ -223,8 +223,6 @@ Each label will be decomposed into its own file:
 
 ### Additional Permission Set Decomposition
 
-### Additional Permission Set Decomposition
-
 When using the `grouped-by-tag` strategy, you can enable deeper decomposition of permission sets by including the `--decompose-nested-permissions` (`-p`) flag.
 
 This flag decomposes:
