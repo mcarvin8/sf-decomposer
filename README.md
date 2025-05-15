@@ -301,12 +301,6 @@ If a file only contains leaf elements, the decomposer has nothing to decompose s
 Warning: The XML file force-app\main\default\permissionsets\view_of_projects_tab_on_opportunity.permissionset-meta.xml only has leaf elements. This file will not be disassembled.
 ```
 
-Custom labels can only be decomposed via the `unique-id` strategy. If the other one is provided, it will print this warning and skip to the next metadata entry.
-
-```
-Warning: You cannot decompose custom labels using the grouped-by-tag strategy. Please switch strategies and try again for labels.
-```
-
 ## Hooks
 
 > **NOTE:** In order to avoid errors when running `sf` commands, you must configure your `.forceignore` file to have the Salesforce CLI ignore the decomposed files. See [Ignore Files](#ignore-files).
