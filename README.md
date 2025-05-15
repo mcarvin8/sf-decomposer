@@ -223,9 +223,20 @@ Each label will be decomposed into its own file:
 
 ### Additional Permission Set Decomposition
 
-When using the `grouped-by-tag` strategy, you can opt into additional decomposition on `<objectPermissions>` and `<fieldPermissions>` on permission sets by supplying the `--decompose-nested-permissions`/`-p` flag.
+### Additional Permission Set Decomposition
 
-When you run `sf decomposer decompose -m "permissionset" -s "grouped-by-tag" -p`, it will decompose all `<objectPermissions>` into their own files in a sub-directory, i.e. `permissionsets\HR_Admin\objectPermissions\Account.objectPermissions-meta.xml` and decompose `<fieldPermisisons>` into separate files in a sub-directory for each Object, i.e. `permissionsets\HR_Admin\fieldPermissions\Account.fieldPermissions.xml`. This is similar to the `decomposePermissionSetBeta2` behavior provided natively by Salesforce.
+When using the `grouped-by-tag` strategy, you can enable deeper decomposition of permission sets by including the `--decompose-nested-permissions` (`-p`) flag.
+
+This flag decomposes:
+
+- All `<objectPermissions>` into individual files within an `objectPermissions/` subdirectory.
+- All `<fieldPermissions>` into grouped files by object name within a `fieldPermissions/` subdirectory.
+
+This mirrors the behavior of Salesforce's `decomposePermissionSetBeta2` feature, but provides better control and formatting options.
+
+```bash
+sf decomposer decompose -m "permissionset" -s "grouped-by-tag" -p
+```
 
 ![Decomposed Perm Set](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/additional-perm-set-decomposed.png)<br>
 
