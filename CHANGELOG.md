@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.10.6](https://github.com/mcarvin8/sf-decomposer/compare/v5.10.5...v5.10.6) (2025-05-15)
+
+
+### Bug Fixes
+
+* auto-adjust strategy for custom labels and loyalty program ([11e6349](https://github.com/mcarvin8/sf-decomposer/commit/11e63499dba62384e730c4df017298e2259c41fe))
+
 ## [5.10.5](https://github.com/mcarvin8/sf-decomposer/compare/v5.10.4...v5.10.5) (2025-05-14)
 
 
