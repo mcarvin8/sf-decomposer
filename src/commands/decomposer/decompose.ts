@@ -89,9 +89,13 @@ export default class DecomposerDecompose extends SfCommand<DecomposerResult> {
         this.warn('Overriding strategy to "unique-id" for custom labels, as "grouped-by-tag" is not supported.');
         effectiveStrategy = 'unique-id';
       }
-      
+
       if (metadataType === 'loyaltyProgramSetup' && strategy === 'grouped-by-tag') {
         this.warn('Overriding strategy to "unique-id" for loyaltyProgramSetup, as "grouped-by-tag" is not supported.');
+        effectiveStrategy = 'unique-id';
+      }
+      if (metadataType === 'bot' && strategy === 'grouped-by-tag') {
+        this.warn('Overriding strategy to "unique-id" for bot, as "grouped-by-tag" is not supported.');
         effectiveStrategy = 'unique-id';
       }
       const currentLogFile = await readOriginalLogFile(LOG_FILE);
