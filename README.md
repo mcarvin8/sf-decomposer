@@ -250,7 +250,7 @@ Under the `unique-id` strategy, the loyalty program setup metadata is further de
 - Each `<programProcesses>` element is written to its own file.
 - Each `<parameters>` and `<rules>` child within a process is further broken out into its own file.
 
-> **NOTE**: Recomposition for loyalty program setup deletes the decomposed files regardless of --postpurge. To preserve them, use version control or a CI/CD pipeline.
+> **NOTE**: Recomposition for loyalty program setup deletes the decomposed files regardless of `--postpurge`. To preserve them, use version control or a CI/CD pipeline.
 
 ![Decomposed Loyalty Program Setup](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-loyalty-program.png)<br>
 
