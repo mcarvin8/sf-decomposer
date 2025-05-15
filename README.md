@@ -296,7 +296,7 @@ Error (1): sfdx-project.json not found in any parent directory.
 
 ### Understanding the Log File
 
-The plugin always generates a `disassemble.log` file using the `xml-disassembler` engine.
+The plugin always generates a `disassemble.log` file using the `xml-disassembler` dependency.
 
 By default, this log will contain only errors related to XML decomposition or recomposition. These errors **do not stop** the CLI command — the tool will continue processing all other metadata files.
 
