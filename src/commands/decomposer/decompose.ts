@@ -83,17 +83,16 @@ export default class DecomposerDecompose extends SfCommand<DecomposerResult> {
     for (const metadataType of metadataTypes) {
       const { metaAttributes, ignorePath } = await getRegistryValuesBySuffix(metadataType, 'decompose', ignoreDirs);
 
+      let effectiveStrategy = strategy;
+
       if (metadataType === 'labels' && strategy === 'grouped-by-tag') {
-        this.warn(
-          'You cannot decompose custom labels using the grouped-by-tag strategy. Please switch strategies and try again for labels.'
-        );
-        continue;
+        this.warn('Overriding strategy to "unique-id" for custom labels, as "grouped-by-tag" is not supported.');
+        effectiveStrategy = 'unique-id';
       }
+      
       if (metadataType === 'loyaltyProgramSetup' && strategy === 'grouped-by-tag') {
-        this.warn(
-          'You cannot decompose loyaltyProgramSetup using the grouped-by-tag strategy. Please switch strategies and try again for loyaltyProgramSetup.'
-        );
-        continue;
+        this.warn('Overriding strategy to "unique-id" for loyaltyProgramSetup, as "grouped-by-tag" is not supported.');
+        effectiveStrategy = 'unique-id';
       }
       const currentLogFile = await readOriginalLogFile(LOG_FILE);
       await decomposeFileHandler(
@@ -103,7 +102,7 @@ export default class DecomposerDecompose extends SfCommand<DecomposerResult> {
         debug,
         format,
         ignorePath,
-        strategy,
+        effectiveStrategy,
         decomposeNestedPerms
       );
       const decomposeErrors = await checkLogForErrors(LOG_FILE, currentLogFile);
