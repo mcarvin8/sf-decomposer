@@ -14,7 +14,7 @@
 - [Decompose Strategies](#decompose-strategies)
   - [Custom Labels Decomposition](#custom-labels-decomposition)
   - [Additional Permission Set Decomposition](#additional-permission-set-decomposition)
-  - [Additional Loyalty Program Setup Decomposition](#additional-loyalty-program-setup-decomposition)
+  - [Loyalty Program Setup Decomposition](#loyalty-program-setup-decomposition)
 - [Supported Metadata](#supported-metadata)
   - [Exceptions](#exceptions)
 - [Troubleshooting](#troubleshooting)
@@ -229,7 +229,7 @@ When you run `sf decomposer decompose -m "permissionset" -s "grouped-by-tag" -p`
 
 ![Decomposed Perm Set](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/additional-perm-set-decomposed.png)<br>
 
-### Additional Loyalty Program Setup Decomposition
+### Loyalty Program Setup Decomposition
 
 Loyalty Program Setup metadata (-m loyaltyProgramSetup) is only supported with the unique-id strategy.
 
