@@ -209,9 +209,15 @@ Leaf elements (like `<userLicense>Salesforce</userLicense>`) are always grouped 
 
 ### Custom Labels Decomposition
 
-Custom labels can only be decomposed via the `unique-id` strategy. If you attempt to decompose custom labels with the `grouped-by-tag` strategy, it will warn and skip decomposing custom labels.
+Custom labels can only be decomposed via the unique-id strategy.
 
-Custom labels decomposed under the `unique-id` strategy will look like such, each label will have its own file:
+If you attempt to decompose custom labels using the grouped-by-tag strategy, sf-decomposer will automatically override the strategy to unique-id and continue. You will see a warning in the terminal, but the operation will not be skipped:
+
+```
+Warning: Overriding strategy to "unique-id" for custom labels, as "grouped-by-tag" is not supported.
+```
+
+Each label will be decomposed into its own file:
 
 ![Decomposed Custom Labels](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-labels.png)<br>
 
@@ -225,13 +231,17 @@ When you run `sf decomposer decompose -m "permissionset" -s "grouped-by-tag" -p`
 
 ### Additional Loyalty Program Setup Decomposition
 
-When using the `unique-id` strategy, the loyalty program setup metadata type (`-m loyaltyProgramSetup`) will be additionally decomposed by default by program processses and each program process will be decomposed additionally by each parameters and rules.
+Loyalty Program Setup metadata (-m loyaltyProgramSetup) is only supported with the unique-id strategy.
 
-The `grouped-by-id` strategy isn't an ideal strategy to decompose loyalty program setup and will be blocked by the command. You'll get this warning and it will skip decomposing loyalty program setup metadata.
+If the grouped-by-tag strategy is provided, sf-decomposer will automatically override the strategy to unique-id and continue. You will see a warning like this:
 
-`You cannot decompose loyaltyProgramSetup using the grouped-by-tag strategy. Please switch strategies and try again for loyaltyProgramSetup.`
+`Warning: Overriding strategy to "unique-id" for loyaltyProgramSetup, as "grouped-by-tag" is not supported.`
 
-**NOTE**: I would suggest only recomposing loyalty program setup metadata in a version control system or in a CI/CD pipeline where changes can easily be discarded. In order to recompose them correctly, I have to delete the decomposed files (ignoring whatever value the `--postpurge` flag is set to) since it requires multi-level recomposition. Using a VCS or a CI pipeline will allow you to easily restore the decomposed files in your repo.
+Under the unique-id strategy, the loyalty program setup metadata is further decomposed:
+	•	Each <programProcesses> element is written to its own file.
+	•	Each <parameters> and <rules> child within a process is further broken out into its own file.
+
+> **NOTE**: Recomposition for loyalty program setup deletes the decomposed files regardless of --postpurge. To preserve them, use version control or a CI/CD pipeline.
 
 ![Decomposed Loyalty Program Setup](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-loyalty-program.png)<br>
 
