@@ -238,8 +238,8 @@ If the grouped-by-tag strategy is provided, sf-decomposer will automatically ove
 `Warning: Overriding strategy to "unique-id" for loyaltyProgramSetup, as "grouped-by-tag" is not supported.`
 
 Under the unique-id strategy, the loyalty program setup metadata is further decomposed:
-- Each <programProcesses> element is written to its own file.
-- Each <parameters> and <rules> child within a process is further broken out into its own file.
+- Each `<programProcesses>` element is written to its own file.
+- Each `<parameters>` and `<rules>` child within a process is further broken out into its own file.
 
 > **NOTE**: Recomposition for loyalty program setup deletes the decomposed files regardless of --postpurge. To preserve them, use version control or a CI/CD pipeline.
 
