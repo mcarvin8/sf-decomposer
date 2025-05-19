@@ -1622,7 +1622,7 @@
     strip-ansi "6.0.1"
     ts-retry-promise "^0.8.1"
 
-"@salesforce/core@^8.1.1", "@salesforce/core@^8.10.1", "@salesforce/core@^8.10.2", "@salesforce/core@^8.10.3", "@salesforce/core@^8.2.3":
+"@salesforce/core@^8.1.1", "@salesforce/core@^8.10.1", "@salesforce/core@^8.10.3", "@salesforce/core@^8.2.3":
   version "8.10.3"
   resolved "https://registry.yarnpkg.com/@salesforce/core/-/core-8.10.3.tgz#3cc2c99d097757cb4b08dab921254cfa3a00c7c1"
   integrity sha512-juqbU304TBrrjb8sZGw+QkeAJISKu4+v2XIMTCxGJoEjs4LLhsyI7/drxCUY+7FNye+veAGeJdn/PCxkKhSgcA==
@@ -1718,12 +1718,12 @@
     string-width "^7.2.0"
     terminal-link "^3.0.0"
 
-"@salesforce/source-deploy-retrieve@^12.19.5":
-  version "12.19.5"
-  resolved "https://registry.yarnpkg.com/@salesforce/source-deploy-retrieve/-/source-deploy-retrieve-12.19.5.tgz#d4df6173375455b18442402ea5d7807f44e10f91"
-  integrity sha512-dStjURpM45zTYJJcPrV7dnNvcFMxNvpZY2RJ7jg8n3gmz+M9xf8B3DOywQ9IQ8nGwbYZOl+asziMIsAAUdB2KA==
+"@salesforce/source-deploy-retrieve@^12.19.6":
+  version "12.19.6"
+  resolved "https://registry.yarnpkg.com/@salesforce/source-deploy-retrieve/-/source-deploy-retrieve-12.19.6.tgz#0c208d2dfef6944e24afcea74ed05aa823e966aa"
+  integrity sha512-A/886Ht23G1snfyUj26pNDjaRWuMmiWIk5ckp+d9mdQjV8i45kPiOFJj5aHzAQ8071i/JgfnDYEhnk1voDujUA==
   dependencies:
-    "@salesforce/core" "^8.10.2"
+    "@salesforce/core" "^8.10.3"
     "@salesforce/kit" "^3.2.3"
     "@salesforce/ts-types" "^2.0.12"
     "@salesforce/types" "^1.3.0"
@@ -8237,10 +8237,10 @@ write-file-atomic@^3.0.0:
     signal-exit "^3.0.2"
     typedarray-to-buffer "^3.1.5"
 
-xml-disassembler@1.10.7:
-  version "1.10.7"
-  resolved "https://registry.yarnpkg.com/xml-disassembler/-/xml-disassembler-1.10.7.tgz#fa73a6b6f12048b5b8b02115f199da8ce078693a"
-  integrity sha512-yrNWK6O9WYViIx2DX+gxsztGasuZTmlt9YRX1aALPsBeY60HfoyHYF3bruN0XWQschlZtK6sdZCv2faQzx9zOw==
+xml-disassembler@^1.10.11:
+  version "1.10.11"
+  resolved "https://registry.yarnpkg.com/xml-disassembler/-/xml-disassembler-1.10.11.tgz#81f4b13f45c2e40ff173768d80f8b67837c289d1"
+  integrity sha512-URnG+p7J/IIOH/Zz92Q5lWUh+kbJP2areqmpB4J0qFkmcOwCm5ZKN5k7GRI/pyEf1P9OBuJg7AG/mmz4TBPHCA==
   dependencies:
     fast-xml-parser "^5.2.0"
     ignore "^7.0.4"
