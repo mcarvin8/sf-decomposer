@@ -5,6 +5,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.10.7](https://github.com/mcarvin8/sf-decomposer/compare/v5.10.6...v5.10.7) (2025-05-19)
+
+
+### Bug Fixes
+
+* update source-deploy-retrieve ([4aa8309](https://github.com/mcarvin8/sf-decomposer/commit/4aa8309f77acf994f95b37863e45cc812968fb1e))
+* update xml-disassembler ([8e2ebec](https://github.com/mcarvin8/sf-decomposer/commit/8e2ebece5fc5fd272aaaeef8f17b8de2042b874a))
+
 ## [5.10.6](https://github.com/mcarvin8/sf-decomposer/compare/v5.10.5...v5.10.6) (2025-05-15)
 
 
