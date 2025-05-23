@@ -9,18 +9,28 @@ import {
 } from 'xml-disassembler';
 
 export async function transformAndCleanup(xmlContent: XmlElement, format: string): Promise<string> {
+  let result: string;
+
   switch (format) {
     case 'json':
-      return transformToJson(xmlContent);
+      result = transformToJson(xmlContent);
+      break;
     case 'yaml':
-      return transformToYaml(xmlContent);
+      result = transformToYaml(xmlContent);
+      break;
     case 'json5':
-      return transformToJson5(xmlContent);
+      result = transformToJson5(xmlContent);
+      break;
     case 'ini':
-      return transformToIni(xmlContent);
+      result = transformToIni(xmlContent);
+      break;
     case 'toml':
-      return transformToToml(xmlContent);
+      result = transformToToml(xmlContent);
+      break;
     default:
-      return buildXMLString(xmlContent);
+      result = buildXMLString(xmlContent);
+      break;
   }
+
+  return result;
 }
