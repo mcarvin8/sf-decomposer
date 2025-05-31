@@ -151,14 +151,7 @@
       "output": []
     },
     "test": {
-      "dependencies": [
-        "test:compile",
-        "test:only",
-        "lint"
-      ]
-    },
-    "test:only": {
-      "command": "nyc mocha \"test/**/*.test.ts\"",
+      "command": "nyc --reporter=lcov mocha \"test/**/*.test.ts\"",
       "env": {
         "FORCE_COLOR": "2"
       },
