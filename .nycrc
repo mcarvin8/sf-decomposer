@@ -4,7 +4,7 @@
   "statements": 75,
   "functions": 75,
   "branches": 75,
-  "source-map": true
+  "source-map": true,
   "produce-source-map": true,
   "report-dir": "./coverage/",
   "exclude-after-remap": false
