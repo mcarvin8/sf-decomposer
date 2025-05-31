@@ -3,7 +3,8 @@
   "compilerOptions": {
     "outDir": "lib",
     "rootDir": "src",
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "sourceMap": true,
   },
   "include": ["./src/**/*.ts", "./src/**/*.json"],
   "exclude": ["node_modules"]
