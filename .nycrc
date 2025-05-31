@@ -6,5 +6,6 @@
   "branches": 75,
   "source-map": true
   "produce-source-map": true,
-  "report-dir": "./coverage/"
+  "report-dir": "./coverage/",
+  "exclude-after-remap": false
 }
