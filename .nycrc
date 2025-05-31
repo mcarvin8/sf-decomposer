@@ -7,5 +7,6 @@
   "source-map": true,
   "produce-source-map": true,
   "report-dir": "./coverage/",
-  "exclude-after-remap": false
+  "exclude-after-remap": false,
+  "all": true
 }
