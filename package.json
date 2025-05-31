@@ -151,7 +151,7 @@
       "output": []
     },
     "test": {
-      "command": "nyc --reporter=lcov mocha \"test/**/*.test.ts\"",
+      "command": "nyc --reporter=lcov --show-process-tree mocha \"test/**/*.test.ts\"",
       "env": {
         "FORCE_COLOR": "2"
       },
