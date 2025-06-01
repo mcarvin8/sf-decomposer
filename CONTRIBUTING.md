@@ -65,4 +65,4 @@ This plugin's code-base primarily handles Salesforce metadata specific functions
 
 Please fork and raise PRs in this repo for any issues related to XML decomposing or recomposing. You must install `pnpm` to contribute to this repo.
 
-`src/service/recomposeFileHandler.ts` and `src/service/decomposeFileHandler.ts` in this plugin handles calling `xml-disassembler`.
+`src/service/recompose/recomposeFileHandler.ts` and `src/service/decompose/decomposeFileHandler.ts` in this plugin handles calling `xml-disassembler`.
