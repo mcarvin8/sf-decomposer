@@ -186,7 +186,7 @@ async function renameWorkflows(directory: string): Promise<void> {
   for (const file of files) {
     // Check if the file matches any suffix in WORKFLOW_SUFFIX_MAPPING
     for (const [suffix, newSuffix] of Object.entries(WORKFLOW_SUFFIX_MAPPING)) {
-      if (file.endsWith(suffix)) {
+      if (file.includes(suffix)) {
         const oldFilePath = join(directory, file);
         const newFilePath = join(directory, file.replace(suffix, newSuffix));
         await rename(oldFilePath, newFilePath);
