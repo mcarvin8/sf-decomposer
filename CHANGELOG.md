@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.10.10](https://github.com/mcarvin8/sf-decomposer/compare/v5.10.9...v5.10.10) (2025-06-13)
+
+
+### Bug Fixes
+
+* convert uid json file to a ts file ([#295](https://github.com/mcarvin8/sf-decomposer/issues/295)) ([ce0ae06](https://github.com/mcarvin8/sf-decomposer/commit/ce0ae060b7d88755e992096975e5d925d2e10e73))
+
 ## [5.10.9](https://github.com/mcarvin8/sf-decomposer/compare/v5.10.8...v5.10.9) (2025-06-13)
 
 
