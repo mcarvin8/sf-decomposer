@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.10.12](https://github.com/mcarvin8/sf-decomposer/compare/v5.10.11...v5.10.12) (2025-06-13)
+
+
+### Bug Fixes
+
+* correct workflow suffix renaming when decomposing ([7a350ca](https://github.com/mcarvin8/sf-decomposer/commit/7a350ca4ec08229d49e1419576e2b421475f46a2))
+
 ## [5.10.11](https://github.com/mcarvin8/sf-decomposer/compare/v5.10.10...v5.10.11) (2025-06-13)
 
 
