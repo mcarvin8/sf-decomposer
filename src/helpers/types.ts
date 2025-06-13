@@ -48,3 +48,25 @@ export type FieldPermission = {
   field: string;
   readable?: boolean;
 };
+
+export type DecomposeOptions = {
+  metadataTypes: string[];
+  prepurge: boolean;
+  postpurge: boolean;
+  debug: boolean;
+  format: string;
+  ignoreDirs?: string[];
+  strategy: string;
+  decomposeNestedPerms: boolean;
+  log: (msg: string) => void;
+  warn: (msg: string) => void;
+};
+
+export type RecomposeOptions = {
+  metadataTypes: string[];
+  postpurge: boolean;
+  debug: boolean;
+  ignoreDirs?: string[];
+  log: (msg: string) => void;
+  warn: (msg: string) => void;
+};

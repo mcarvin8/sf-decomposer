@@ -7,8 +7,8 @@ import { TestContext } from '@salesforce/core/testSetup';
 import { expect } from 'chai';
 import { stubSfCommandUx } from '@salesforce/sf-plugins-core';
 import { setLogLevel } from 'xml-disassembler';
-import DecomposerRecompose from '../../../src/commands/decomposer/recompose.js';
-import DecomposerDecompose from '../../../src/commands/decomposer/decompose.js';
+import { decomposeMetadataTypes } from '../../../src/core/decomposeMetadataTypes.js';
+import { recomposeMetadataTypes } from '../../../src/core/recomposeMetadataTypes.js';
 import { METADATA_UNDER_TEST, SFDX_CONFIG_FILE } from './constants.js';
 import { compareDirectories } from './compareDirectories.js';
 
@@ -47,224 +47,55 @@ describe('decomposer unit tests', () => {
     await rm(SFDX_CONFIG_FILE);
   });
 
-  it('should decompose all metadata types under test in XML format', async () => {
-    await DecomposerDecompose.run([
-      '--postpurge',
-      '--prepurge',
-      ...METADATA_UNDER_TEST.map((metadataType) => `--metadata-type=${metadataType}`),
-    ]);
+  const formats = ['xml', 'json', 'json5', 'yaml', 'toml', 'ini'];
+  for (const format of formats) {
+    it(`should decompose all metadata types under test in ${format.toUpperCase()} format`, async () => {
+      await decomposeMetadataTypes({
+        metadataTypes: METADATA_UNDER_TEST,
+        prepurge: true,
+        postpurge: true,
+        debug: false,
+        format,
+        strategy: 'unique-id',
+        decomposeNestedPerms: false,
+        ignoreDirs: undefined,
+        log: sfCommandStubs.log,
+        warn: sfCommandStubs.warn,
+      });
 
-    const output = sfCommandStubs.log
-      .getCalls()
-      .flatMap((c) => c.args)
-      .join('\n');
-    METADATA_UNDER_TEST.forEach((metadataType) => {
-      expect(output).to.include(`All metadata files have been decomposed for the metadata type: ${metadataType}`);
+      const output = sfCommandStubs.log
+        .getCalls()
+        .flatMap((c) => c.args)
+        .join('\n');
+      METADATA_UNDER_TEST.forEach((metadataType) => {
+        expect(output).to.include(`All metadata files have been decomposed for the metadata type: ${metadataType}`);
+      });
     });
-  });
 
-  it('should recompose all decomposed XML files for all metadata types under test', async () => {
-    await DecomposerRecompose.run([
-      '--postpurge',
-      ...METADATA_UNDER_TEST.map((metadataType) => `--metadata-type=${metadataType}`),
-    ]);
+    it(`should recompose all decomposed ${format.toUpperCase()} files for all metadata types under test`, async () => {
+      await recomposeMetadataTypes({
+        metadataTypes: METADATA_UNDER_TEST,
+        postpurge: true,
+        debug: false,
+        ignoreDirs: undefined,
+        log: sfCommandStubs.log,
+        warn: sfCommandStubs.warn,
+      });
 
-    // Check if there are no errors in the log
-    const errorOutput = sfCommandStubs.log
-      .getCalls()
-      .flatMap((c) => c.args)
-      .join('\n');
-    expect(errorOutput).to.not.include('Error');
-  });
-
-  it('should confirm the recomposed files in a mock directory match the reference files', async () => {
-    await compareDirectories(originalDirectory, mockDirectory);
-    await compareDirectories(originalDirectory2, mockDirectory2);
-  });
-
-  it('should decompose all metadata types under test in JSON format', async () => {
-    await DecomposerDecompose.run([
-      '--postpurge',
-      '--prepurge',
-      '--format',
-      'json',
-      ...METADATA_UNDER_TEST.map((metadataType) => `--metadata-type=${metadataType}`),
-    ]);
-
-    const output = sfCommandStubs.log
-      .getCalls()
-      .flatMap((c) => c.args)
-      .join('\n');
-    METADATA_UNDER_TEST.forEach((metadataType) => {
-      expect(output).to.include(`All metadata files have been decomposed for the metadata type: ${metadataType}`);
+      const output = sfCommandStubs.log
+        .getCalls()
+        .flatMap((c) => c.args)
+        .join('\n');
+      METADATA_UNDER_TEST.forEach((metadataType) => {
+        expect(output).to.include(`All metadata files have been recomposed for the metadata type: ${metadataType}`);
+      });
     });
-  });
 
-  it('should recompose all decomposed JSON files for all metadata types under test', async () => {
-    await DecomposerRecompose.run([
-      '--postpurge',
-      ...METADATA_UNDER_TEST.map((metadataType) => `--metadata-type=${metadataType}`),
-    ]);
-
-    // Check if there are no errors in the log
-    const errorOutput = sfCommandStubs.log
-      .getCalls()
-      .flatMap((c) => c.args)
-      .join('\n');
-    expect(errorOutput).to.not.include('Error');
-  });
-
-  it('should confirm the recomposed files in a mock directory match the reference files', async () => {
-    await compareDirectories(originalDirectory, mockDirectory);
-    await compareDirectories(originalDirectory2, mockDirectory2);
-  });
-
-  it('should decompose all metadata types under test in JSON5 format', async () => {
-    await DecomposerDecompose.run([
-      '--postpurge',
-      '--prepurge',
-      '--format',
-      'json5',
-      ...METADATA_UNDER_TEST.map((metadataType) => `--metadata-type=${metadataType}`),
-    ]);
-
-    const output = sfCommandStubs.log
-      .getCalls()
-      .flatMap((c) => c.args)
-      .join('\n');
-    METADATA_UNDER_TEST.forEach((metadataType) => {
-      expect(output).to.include(`All metadata files have been decomposed for the metadata type: ${metadataType}`);
-    });
-  });
-
-  it('should recompose all decomposed JSON5 files for all metadata types under test', async () => {
-    await DecomposerRecompose.run([
-      '--postpurge',
-      ...METADATA_UNDER_TEST.map((metadataType) => `--metadata-type=${metadataType}`),
-    ]);
-
-    // Check if there are no errors in the log
-    const errorOutput = sfCommandStubs.log
-      .getCalls()
-      .flatMap((c) => c.args)
-      .join('\n');
-    expect(errorOutput).to.not.include('Error');
-  });
-
-  it('should confirm the recomposed files in a mock directory match the reference files', async () => {
-    await compareDirectories(originalDirectory, mockDirectory);
-    await compareDirectories(originalDirectory2, mockDirectory2);
-  });
-
-  it('should decompose all metadata types under test in YAML format', async () => {
-    await DecomposerDecompose.run([
-      '--postpurge',
-      '--prepurge',
-      '--format',
-      'yaml',
-      ...METADATA_UNDER_TEST.map((metadataType) => `--metadata-type=${metadataType}`),
-    ]);
-
-    const output = sfCommandStubs.log
-      .getCalls()
-      .flatMap((c) => c.args)
-      .join('\n');
-    METADATA_UNDER_TEST.forEach((metadataType) => {
-      expect(output).to.include(`All metadata files have been decomposed for the metadata type: ${metadataType}`);
-    });
-  });
-
-  it('should recompose all decomposed YAML files for all metadata types under test', async () => {
-    await DecomposerRecompose.run([
-      '--postpurge',
-      ...METADATA_UNDER_TEST.map((metadataType) => `--metadata-type=${metadataType}`),
-    ]);
-
-    // Check if there are no errors in the log
-    const errorOutput = sfCommandStubs.log
-      .getCalls()
-      .flatMap((c) => c.args)
-      .join('\n');
-    expect(errorOutput).to.not.include('Error');
-  });
-
-  it('should confirm the recomposed files in a mock directory match the reference files', async () => {
-    await compareDirectories(originalDirectory, mockDirectory);
-    await compareDirectories(originalDirectory2, mockDirectory2);
-  });
-  it('should decompose all metadata types under test in TOML format', async () => {
-    await DecomposerDecompose.run([
-      '--postpurge',
-      '--prepurge',
-      '--format',
-      'toml',
-      ...METADATA_UNDER_TEST.map((metadataType) => `--metadata-type=${metadataType}`),
-    ]);
-
-    const output = sfCommandStubs.log
-      .getCalls()
-      .flatMap((c) => c.args)
-      .join('\n');
-    METADATA_UNDER_TEST.forEach((metadataType) => {
-      expect(output).to.include(`All metadata files have been decomposed for the metadata type: ${metadataType}`);
-    });
-  });
-
-  it('should recompose all decomposed TOML files for all metadata types under test', async () => {
-    await DecomposerRecompose.run([
-      '--postpurge',
-      ...METADATA_UNDER_TEST.map((metadataType) => `--metadata-type=${metadataType}`),
-    ]);
-
-    // Check if there are no errors in the log
-    const errorOutput = sfCommandStubs.log
-      .getCalls()
-      .flatMap((c) => c.args)
-      .join('\n');
-    expect(errorOutput).to.not.include('Error');
-  });
-  // can't compare TOML recomposed files to reference files due to differences in key-order pairing
-  // TOML re-generated files contains the same elements, but the ordering varies compared to the other file formats
-  /* it('should confirm the recomposed files in a mock directory match the reference files', async () => {
-    await compareDirectories(originalDirectory, mockDirectory);
-    await compareDirectories(originalDirectory2, mockDirectory2);
-  }); */
-  it('should decompose all metadata types under test in INI format', async () => {
-    await DecomposerDecompose.run([
-      '--postpurge',
-      '--prepurge',
-      '--format',
-      'ini',
-      ...METADATA_UNDER_TEST.map((metadataType) => `--metadata-type=${metadataType}`),
-    ]);
-
-    const output = sfCommandStubs.log
-      .getCalls()
-      .flatMap((c) => c.args)
-      .join('\n');
-    METADATA_UNDER_TEST.forEach((metadataType) => {
-      expect(output).to.include(`All metadata files have been decomposed for the metadata type: ${metadataType}`);
-    });
-  });
-
-  it('should recompose all decomposed INI files for all metadata types under test', async () => {
-    await DecomposerRecompose.run([
-      '--postpurge',
-      ...METADATA_UNDER_TEST.map((metadataType) => `--metadata-type=${metadataType}`),
-    ]);
-
-    // Check if there are no errors in the log
-    const errorOutput = sfCommandStubs.log
-      .getCalls()
-      .flatMap((c) => c.args)
-      .join('\n');
-    expect(errorOutput).to.not.include('Error');
-  });
-
-  // can't compare INI recomposed files to reference files due to differences in key-order pairing
-  // INI re-generated files contains the same elements, but the ordering varies compared to the other file formats
-  /* it('should confirm the recomposed files in a mock directory match the reference files', async () => {
-    await compareDirectories(originalDirectory, mockDirectory);
-    await compareDirectories(originalDirectory2, mockDirectory2);
-  }); */
+    if (!['toml', 'ini'].includes(format)) {
+      it(`should confirm the recomposed ${format.toUpperCase()} files match the reference files`, async () => {
+        await compareDirectories(originalDirectory, mockDirectory);
+        await compareDirectories(originalDirectory2, mockDirectory2);
+      });
+    }
+  }
 });

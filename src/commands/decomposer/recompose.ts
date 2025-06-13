@@ -4,21 +4,18 @@
 import { SfCommand, Flags } from '@salesforce/sf-plugins-core';
 import { Messages } from '@salesforce/core';
 
-import { LOG_FILE } from '../../helpers/constants.js';
-import { recomposeFileHandler } from '../../service/recompose/recomposeFileHandler.js';
-import { getRegistryValuesBySuffix } from '../../metadata/getRegistryValuesBySuffix.js';
-import { readOriginalLogFile, checkLogForErrors } from '../../service/core/checkLogforErrors.js';
+import { recomposeMetadataTypes } from '../../core/recomposeMetadataTypes.js';
 import { DecomposerResult } from '../../helpers/types.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('sf-decomposer', 'decomposer.recompose');
 
 export default class DecomposerRecompose extends SfCommand<DecomposerResult> {
-  public static readonly summary = messages.getMessage('summary');
-  public static readonly description = messages.getMessage('description');
-  public static readonly examples = messages.getMessages('examples');
+  public static override readonly summary = messages.getMessage('summary');
+  public static override readonly description = messages.getMessage('description');
+  public static override readonly examples = messages.getMessages('examples');
 
-  public static readonly flags = {
+  public static override readonly flags = {
     'metadata-type': Flags.string({
       summary: messages.getMessage('flags.metadata-type.summary'),
       char: 'm',
@@ -45,25 +42,14 @@ export default class DecomposerRecompose extends SfCommand<DecomposerResult> {
 
   public async run(): Promise<DecomposerResult> {
     const { flags } = await this.parse(DecomposerRecompose);
-    const metadataTypes = flags['metadata-type'];
-    const postpurge = flags['postpurge'];
-    const debug = flags['debug'];
-    const ignoreDirs = flags['ignore-package-directory'];
-    for (const metadataType of metadataTypes) {
-      const { metaAttributes } = await getRegistryValuesBySuffix(metadataType, 'recompose', ignoreDirs);
 
-      const currentLogFile = await readOriginalLogFile(LOG_FILE);
-      await recomposeFileHandler(metaAttributes, postpurge, debug);
-      const recomposeErrors = await checkLogForErrors(LOG_FILE, currentLogFile);
-      if (recomposeErrors.length > 0) {
-        recomposeErrors.forEach((error) => {
-          this.warn(error);
-        });
-      }
-      this.log(`All metadata files have been recomposed for the metadata type: ${metadataType}`);
-    }
-    return {
-      metadata: metadataTypes,
-    };
+    return recomposeMetadataTypes({
+      metadataTypes: flags['metadata-type'],
+      postpurge: flags['postpurge'],
+      debug: flags['debug'],
+      ignoreDirs: flags['ignore-package-directory'],
+      log: this.log.bind(this),
+      warn: this.warn.bind(this),
+    });
   }
 }
