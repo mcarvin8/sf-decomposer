@@ -29,12 +29,6 @@ export type MetaAttributes = {
   uniqueIdElements: string;
 };
 
-export type UniqueIdElements = {
-  [key: string]: {
-    uniqueIdElements: string[];
-  };
-};
-
 export type PostRetrieveHookOptions = {
   Command: Command;
   argv: string[];
