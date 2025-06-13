@@ -5,6 +5,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.10.9](https://github.com/mcarvin8/sf-decomposer/compare/v5.10.8...v5.10.9) (2025-06-13)
+
+
+### Bug Fixes
+
+* **deps:** bump @oclif/core from 4.3.0 to 4.3.3 ([#291](https://github.com/mcarvin8/sf-decomposer/issues/291)) ([2e0a3c9](https://github.com/mcarvin8/sf-decomposer/commit/2e0a3c971033d7b23111673204ffb1d92b34719e))
+* **deps:** bump @salesforce/core from 8.11.4 to 8.13.0 ([#290](https://github.com/mcarvin8/sf-decomposer/issues/290)) ([a6b3a5a](https://github.com/mcarvin8/sf-decomposer/commit/a6b3a5ae2798799cc00da28e2b1578a3bb1cfad6))
+* **deps:** bump xml-disassembler from 1.10.13 to 1.10.15 ([e499086](https://github.com/mcarvin8/sf-decomposer/commit/e4990866f5eaef45e74b6b96dec6b307a84d84c5))
+* move command logic into functions ([#288](https://github.com/mcarvin8/sf-decomposer/issues/288)) ([2e763a9](https://github.com/mcarvin8/sf-decomposer/commit/2e763a9ac4a9a0963c0af67cc3428661e6e20482))
+
 ## [5.10.8](https://github.com/mcarvin8/sf-decomposer/compare/v5.10.7...v5.10.8) (2025-05-31)
 
 
