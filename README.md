@@ -1,9 +1,10 @@
 # `sf-decomposer`
 
-[![NPM](https://img.shields.io/npm/v/sf-decomposer.svg?label=sf-decomposer)](https://www.npmjs.com/package/sf-decomposer) 
-[![Downloads/week](https://img.shields.io/npm/dw/sf-decomposer.svg)](https://npmjs.org/package/sf-decomposer) 
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/LICENSE.md) 
+[![NPM](https://img.shields.io/npm/v/sf-decomposer.svg?label=sf-decomposer)](https://www.npmjs.com/package/sf-decomposer)
+[![Downloads/week](https://img.shields.io/npm/dw/sf-decomposer.svg)](https://npmjs.org/package/sf-decomposer)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/LICENSE.md)
 [![Maintainability](https://qlty.sh/badges/8492c1c6-0f93-4d37-bfad-32fd3b788a2d/maintainability.svg)](https://qlty.sh/gh/mcarvin8/projects/sf-decomposer)
+[![Code Coverage](https://qlty.sh/badges/8492c1c6-0f93-4d37-bfad-32fd3b788a2d/test_coverage.svg)](https://qlty.sh/gh/mcarvin8/projects/sf-decomposer)
 [![Known Vulnerabilities](https://snyk.io//test/github/mcarvin8/sf-decomposer/badge.svg?targetFile=package.json)](https://snyk.io//test/github/mcarvin8/sf-decomposer?targetFile=package.json)
 
 <!-- TABLE OF CONTENTS -->
@@ -251,6 +252,7 @@ If the `grouped-by-tag` strategy is provided, `sf-decomposer` will automatically
 `Warning: Overriding strategy to "unique-id" for loyaltyProgramSetup, as "grouped-by-tag" is not supported.`
 
 Under the `unique-id` strategy, the loyalty program setup metadata is further decomposed:
+
 - Each `<programProcesses>` element is written to its own file.
 - Each `<parameters>` and `<rules>` child within a process is further broken out into its own file.
 
