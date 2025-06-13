@@ -1494,7 +1494,7 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@oclif/core@^4", "@oclif/core@^4.2.10", "@oclif/core@^4.3.0":
+"@oclif/core@^4", "@oclif/core@^4.3.0", "@oclif/core@^4.3.2":
   version "4.3.3"
   resolved "https://registry.yarnpkg.com/@oclif/core/-/core-4.3.3.tgz#a527536b62ef202c58d2b69ce9cd1e64eb3a94b1"
   integrity sha512-A0mk4nlVE+r34fl91OdglXVPwhhfzM59IhSxnOigqMkwxFgT8z3i2WlUgzmazzvzSccs2KM4N2HkTS3NEvW96g==
@@ -2803,7 +2803,7 @@ ansi-styles@^6.0.0, ansi-styles@^6.1.0, ansi-styles@^6.2.1:
   resolved "https://registry.yarnpkg.com/ansi-styles/-/ansi-styles-6.2.1.tgz#0e62320cf99c21afff3b3012192546aacbfb05c5"
   integrity sha512-bN798gFfQX+viw3R7yrGWRqnrN2oRkEkUjjl4JNn4E8GxxbjtG3FbrEIIY3l8/hrwUwIeCZvi4QuOTP4MErVug==
 
-ansis@^3.17.0, ansis@^3.3.2:
+ansis@^3.16.0, ansis@^3.17.0, ansis@^3.3.2:
   version "3.17.0"
   resolved "https://registry.yarnpkg.com/ansis/-/ansis-3.17.0.tgz#fa8d9c2a93fe7d1177e0c17f9eeb562a58a832d7"
   integrity sha512-0qWUglt9JEqLFr3w1I1pbrChn1grhaiAR2ocX1PP/flRmxgtwTzPFFFnfIlD6aMOLQZgSuCRlidD70lvx8yhzg==
@@ -3224,7 +3224,7 @@ chalk@^2.4.2:
     escape-string-regexp "^1.0.5"
     supports-color "^5.3.0"
 
-chalk@^4, chalk@^4.0.0, chalk@^4.0.2, chalk@^4.1.0:
+chalk@^4.0.0, chalk@^4.0.2, chalk@^4.1.0:
   version "4.1.2"
   resolved "https://registry.npmjs.org/chalk/-/chalk-4.1.2.tgz"
   integrity sha512-oKnbhFyRIXpUuez8iBMmyEa4nbj4IOQyuhc/wy9kY7/WVPcwIO9VA668Pu8RkO7+0G76SLROeyw9CpQ061i4mA==
@@ -6521,22 +6521,22 @@ object.values@^1.1.7:
     define-properties "^1.2.0"
     es-abstract "^1.22.1"
 
-oclif@^4.17.46:
-  version "4.17.46"
-  resolved "https://registry.yarnpkg.com/oclif/-/oclif-4.17.46.tgz#c7bd4315ae4903ad5f9893f6d6e7b3b78c4209fb"
-  integrity sha512-huMvamv0zzIXrCbW5sgy40P1L6fJjPe4IfZKSmkmuPNGSpTy+fcNZ0gYwIuMlxiT3RarLYxYie+RVTyJLE3zXw==
+oclif@^4.18.1:
+  version "4.18.1"
+  resolved "https://registry.yarnpkg.com/oclif/-/oclif-4.18.1.tgz#697c10712f022a4d8b596b15868a149fcbca3e8d"
+  integrity sha512-C5w/kUuIH3WxtjSfg3vxbdinT1dZuFoNaU7YhBTRx/FshO4WNHPsRqLgFFdx94dezkbskMJFcESS6i5RM96YSw==
   dependencies:
     "@aws-sdk/client-cloudfront" "^3.787.0"
     "@aws-sdk/client-s3" "^3.787.0"
     "@inquirer/confirm" "^3.1.22"
     "@inquirer/input" "^2.2.4"
     "@inquirer/select" "^2.5.0"
-    "@oclif/core" "^4.2.10"
+    "@oclif/core" "^4.3.2"
     "@oclif/plugin-help" "^6.2.27"
     "@oclif/plugin-not-found" "^3.2.48"
     "@oclif/plugin-warn-if-update-available" "^3.1.38"
+    ansis "^3.16.0"
     async-retry "^1.3.3"
-    chalk "^4"
     change-case "^4"
     debug "^4.4.0"
     ejs "^3.1.10"
