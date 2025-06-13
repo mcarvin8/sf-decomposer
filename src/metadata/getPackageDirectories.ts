@@ -11,10 +11,10 @@ export async function getPackageDirectories(
   metaDirectory: string,
   ignoreDirs: string[] | undefined
 ): Promise<{ metadataPaths: string[]; ignorePath: string }> {
-  const { repoRoot, dxConfigFilePath } = await getRepoRoot();
-  if (!repoRoot || !dxConfigFilePath) {
-    throw new Error('Failed to retrieve repository root or sfdx-project.json path.');
-  }
+  const { repoRoot, dxConfigFilePath } = (await getRepoRoot()) as {
+    repoRoot: string;
+    dxConfigFilePath: string;
+  };
   process.chdir(repoRoot);
   const ignorePath = resolve(repoRoot, IGNORE_FILE);
   const sfdxProjectRaw: string = await readFile(dxConfigFilePath, 'utf-8');

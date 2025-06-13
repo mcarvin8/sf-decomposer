@@ -9,8 +9,6 @@ export async function stripRootAndDisassemble(
   const parsed = await parseXML(fullPath);
   const contents = parsed?.LoyaltyProgramSetup;
 
-  if (!contents) return;
-
   // Remove the root and build XML with just the inner nodes (programProcesses)
   const stripped: XmlElement = {
     '?xml': {
@@ -19,7 +17,7 @@ export async function stripRootAndDisassemble(
     },
   };
 
-  for (const [key, value] of Object.entries(contents)) {
+  for (const [key, value] of Object.entries(contents!)) {
     stripped[key] = value;
   }
 

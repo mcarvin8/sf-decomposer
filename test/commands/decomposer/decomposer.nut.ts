@@ -6,8 +6,8 @@ import { copy } from 'fs-extra';
 import { execCmd, TestSession } from '@salesforce/cli-plugins-testkit';
 import { expect } from 'chai';
 
-import { METADATA_UNDER_TEST, SFDX_CONFIG_FILE } from './constants.js';
-import { compareDirectories } from './compareDirectories.js';
+import { METADATA_UNDER_TEST, SFDX_CONFIG_FILE } from '../../utils/constants.js';
+import { compareDirectories } from '../../utils/compareDirectories.js';
 
 describe('non-unit tests', () => {
   let session: TestSession;

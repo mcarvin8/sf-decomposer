@@ -1,50 +1,56 @@
 'use strict';
 
-import { rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
 import { copy } from 'fs-extra';
+import { describe, it, expect } from '@jest/globals';
 
-import { TestContext } from '@salesforce/core/testSetup';
-import { expect } from 'chai';
-import { stubSfCommandUx } from '@salesforce/sf-plugins-core';
 import { setLogLevel } from 'xml-disassembler';
 import { decomposeMetadataTypes } from '../../../src/core/decomposeMetadataTypes.js';
 import { recomposeMetadataTypes } from '../../../src/core/recomposeMetadataTypes.js';
-import { METADATA_UNDER_TEST_FOR_TAGS, SFDX_CONFIG_FILE } from './constants.js';
-import { compareDirectories } from './compareDirectories.js';
+import { METADATA_UNDER_TEST_FOR_TAGS, SFDX_CONFIG_FILE } from '../../utils/constants.js';
+import { compareDirectories } from '../../utils/compareDirectories.js';
 
 describe('decomposer unit tests - grouped by tag strategy', () => {
-  const $$ = new TestContext();
-  let sfCommandStubs: ReturnType<typeof stubSfCommandUx>;
+  let logMock: jest.Mock;
+  let warnMock: jest.Mock;
+  let tempProjectDir: string;
+  let forceAppDir: string;
+  let packageDir: string;
+  let sfdxConfigPath: string;
+  const originalDirectory: string = resolve('reference/package-dir-1');
+  const originalDirectory2: string = resolve('reference/package-dir-2');
+  const originalCwd = process.cwd();
 
-  const originalDirectory: string = 'reference/package-dir-1';
-  const originalDirectory2: string = 'reference/package-dir-2';
-  const mockDirectory: string = 'force-app-2';
-  const mockDirectory2: string = 'package-2';
   const configFile = {
-    packageDirectories: [{ path: 'force-app-2', default: true }, { path: 'package-2' }],
+    packageDirectories: [{ path: 'force-app', default: true }, { path: 'package' }],
     namespace: '',
     sfdcLoginUrl: 'https://login.salesforce.com',
     sourceApiVersion: '58.0',
   };
-  const configJsonString = JSON.stringify(configFile, null, 2);
 
-  before(async () => {
-    sfCommandStubs = stubSfCommandUx($$.SANDBOX);
+  beforeAll(async () => {
     setLogLevel('debug');
+    logMock = jest.fn();
+    warnMock = jest.fn();
 
-    await copy(originalDirectory, mockDirectory, { overwrite: true });
-    await copy(originalDirectory2, mockDirectory2, { overwrite: true });
-    await writeFile(SFDX_CONFIG_FILE, configJsonString);
+    // Create isolated test workspace
+    tempProjectDir = await mkdtemp(join(tmpdir(), 'tag-test-'));
+    forceAppDir = join(tempProjectDir, 'force-app');
+    packageDir = join(tempProjectDir, 'package');
+    sfdxConfigPath = join(tempProjectDir, SFDX_CONFIG_FILE);
+
+    // Setup isolated test project
+    await copy(originalDirectory, forceAppDir, { overwrite: true });
+    await copy(originalDirectory2, packageDir, { overwrite: true });
+    await writeFile(sfdxConfigPath, JSON.stringify(configFile, null, 2));
+    process.chdir(tempProjectDir);
   });
 
-  afterEach(() => {
-    $$.restore();
-  });
-
-  after(async () => {
-    await rm(mockDirectory, { recursive: true });
-    await rm(mockDirectory2, { recursive: true });
-    await rm(SFDX_CONFIG_FILE);
+  afterAll(async () => {
+    process.chdir(originalCwd);
+    await rm(tempProjectDir, { recursive: true, force: true });
   });
 
   const formats = ['xml', 'json', 'json5', 'yaml', 'toml', 'ini'];
@@ -57,18 +63,16 @@ describe('decomposer unit tests - grouped by tag strategy', () => {
         debug: false,
         format,
         strategy: 'grouped-by-tag',
-        decomposeNestedPerms: false,
+        decomposeNestedPerms: true,
         ignoreDirs: undefined,
-        log: sfCommandStubs.log,
-        warn: sfCommandStubs.warn,
+        log: logMock,
+        warn: warnMock,
       });
 
-      const output = sfCommandStubs.log
-        .getCalls()
-        .flatMap((c) => c.args)
-        .join('\n');
+      const output = logMock.mock.calls.flat().join('\n');
+
       METADATA_UNDER_TEST_FOR_TAGS.forEach((metadataType) => {
-        expect(output).to.include(`All metadata files have been decomposed for the metadata type: ${metadataType}`);
+        expect(output).toContain(`All metadata files have been decomposed for the metadata type: ${metadataType}`);
       });
     });
 
@@ -78,23 +82,20 @@ describe('decomposer unit tests - grouped by tag strategy', () => {
         postpurge: true,
         debug: false,
         ignoreDirs: undefined,
-        log: sfCommandStubs.log,
-        warn: sfCommandStubs.warn,
+        log: logMock,
+        warn: warnMock,
       });
 
-      const output = sfCommandStubs.log
-        .getCalls()
-        .flatMap((c) => c.args)
-        .join('\n');
+      const output = logMock.mock.calls.flat().join('\n');
       METADATA_UNDER_TEST_FOR_TAGS.forEach((metadataType) => {
-        expect(output).to.include(`All metadata files have been recomposed for the metadata type: ${metadataType}`);
+        expect(output).toContain(`All metadata files have been recomposed for the metadata type: ${metadataType}`);
       });
     });
 
     if (!['toml', 'ini'].includes(format)) {
       it(`should confirm the recomposed ${format.toUpperCase()} files match the reference files`, async () => {
-        await compareDirectories(originalDirectory, mockDirectory);
-        await compareDirectories(originalDirectory2, mockDirectory2);
+        await compareDirectories(originalDirectory, forceAppDir);
+        await compareDirectories(originalDirectory2, packageDir);
       });
     }
   }
