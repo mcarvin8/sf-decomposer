@@ -4,7 +4,7 @@
   "version": "5.10.8",
   "dependencies": {
     "@oclif/core": "^4",
-    "@salesforce/core": "^8.11.4",
+    "@salesforce/core": "^8.13.0",
     "@salesforce/sf-plugins-core": "^12.2.2",
     "@salesforce/source-deploy-retrieve": "^12.19.7",
     "fs-extra": "^11.3.0",
