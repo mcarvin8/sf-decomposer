@@ -2,12 +2,12 @@
 
 import { rm, writeFile } from 'node:fs/promises';
 import { copy } from 'fs-extra';
+import { describe, it, expect } from '@jest/globals';
 
 import { execCmd, TestSession } from '@salesforce/cli-plugins-testkit';
-import { expect } from 'chai';
 
-import { METADATA_UNDER_TEST, SFDX_CONFIG_FILE } from './constants.js';
-import { compareDirectories } from './compareDirectories.js';
+import { METADATA_UNDER_TEST, SFDX_CONFIG_FILE } from '../../utils/constants.js';
+import { compareDirectories } from '../../utils/compareDirectories.js';
 
 describe('non-unit tests', () => {
   let session: TestSession;
@@ -24,14 +24,14 @@ describe('non-unit tests', () => {
   };
   const configJsonString = JSON.stringify(configFile, null, 2);
 
-  before(async () => {
+  beforeAll(async () => {
     session = await TestSession.create({ devhubAuthStrategy: 'NONE' });
     await copy(originalDirectory, mockDirectory, { overwrite: true });
     await copy(originalDirectory2, mockDirectory2, { overwrite: true });
     await writeFile(SFDX_CONFIG_FILE, configJsonString);
   });
 
-  after(async () => {
+  afterAll(async () => {
     await session?.clean();
     await rm(mockDirectory, { recursive: true });
     await rm(mockDirectory2, { recursive: true });
@@ -47,7 +47,7 @@ describe('non-unit tests', () => {
       const output = execCmd(command, { ensureExitCode: 0 }).shellOutput.stdout;
 
       METADATA_UNDER_TEST.forEach((metadataType) => {
-        expect(output.replace('\n', '')).to.include(
+        expect(output.replace('\n', '')).toContain(
           `All metadata files have been decomposed for the metadata type: ${metadataType}`
         );
       });
@@ -60,7 +60,7 @@ describe('non-unit tests', () => {
       const output = execCmd(command, { ensureExitCode: 0 }).shellOutput.stdout;
 
       METADATA_UNDER_TEST.forEach((metadataType) => {
-        expect(output.replace('\n', '')).to.include(
+        expect(output.replace('\n', '')).toContain(
           `All metadata files have been recomposed for the metadata type: ${metadataType}`
         );
       });

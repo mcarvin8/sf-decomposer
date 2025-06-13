@@ -1,0 +1,46 @@
+name: Coverage
+on:
+  workflow_call:
+  push:
+    branches-ignore:
+      - main
+
+permissions:
+  contents: read
+  id-token: write # Required for OIDC
+
+jobs:
+  coverage:
+    name: Coverage
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.1.1
+
+      - name: Setup Node
+        uses: actions/setup-node@v4.0.1
+        with:
+          node-version: 18
+          cache: yarn
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install Dependencies
+        run: yarn install
+
+      - name: Build
+        run: yarn build
+
+      - name: Test
+        run: yarn test:only
+
+      - name: Upload coverage
+        if: runner.os == 'Linux'
+        uses: qltysh/qlty-action/coverage@v1
+        with:
+          oidc: true
+          files: coverage/lcov.info
+        continue-on-error: true

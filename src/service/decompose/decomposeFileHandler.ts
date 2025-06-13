@@ -139,7 +139,7 @@ async function moveAndRenameLabels(metadataPath: string): Promise<void> {
   const destinationDirectory = metadataPath;
   const labelFiles = await readdir(sourceDirectory);
   for (const file of labelFiles) {
-    if (file.endsWith('.labels-meta')) {
+    if (file.includes('.labels-meta')) {
       const oldFilePath = join(sourceDirectory, file);
       const newFileName = file.replace('.labels-meta', '.label-meta');
       const newFilePath = join(destinationDirectory, newFileName);

@@ -8,8 +8,12 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  id-token: write # Required for OIDC
 
 jobs:
+  test:
+    uses: ./.github/workflows/coverage.yml
+    secrets: inherit
   release:
     name: Release
     runs-on: ubuntu-latest
