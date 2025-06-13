@@ -9,11 +9,11 @@ import { expect } from 'chai';
 import { METADATA_UNDER_TEST, SFDX_CONFIG_FILE } from './constants.js';
 import { compareDirectories } from './compareDirectories.js';
 
-describe('decomposer NUTs XML format', () => {
+describe('non-unit tests', () => {
   let session: TestSession;
 
-  const originalDirectory: string = 'test/baselines';
-  const originalDirectory2: string = 'test/baselines2';
+  const originalDirectory: string = 'reference/package-dir-1';
+  const originalDirectory2: string = 'reference/package-dir-2';
   const mockDirectory: string = 'force-app';
   const mockDirectory2: string = 'package';
   const configFile = {

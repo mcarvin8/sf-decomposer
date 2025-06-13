@@ -12,12 +12,12 @@ import { recomposeMetadataTypes } from '../../../src/core/recomposeMetadataTypes
 import { METADATA_UNDER_TEST_FOR_TAGS, SFDX_CONFIG_FILE } from './constants.js';
 import { compareDirectories } from './compareDirectories.js';
 
-describe('unit tests for group by tag strategy', () => {
+describe('decomposer unit tests - grouped by tag strategy', () => {
   const $$ = new TestContext();
   let sfCommandStubs: ReturnType<typeof stubSfCommandUx>;
 
-  const originalDirectory: string = 'test/baselines';
-  const originalDirectory2: string = 'test/baselines2';
+  const originalDirectory: string = 'reference/package-dir-1';
+  const originalDirectory2: string = 'reference/package-dir-2';
   const mockDirectory: string = 'force-app-2';
   const mockDirectory2: string = 'package-2';
   const configFile = {

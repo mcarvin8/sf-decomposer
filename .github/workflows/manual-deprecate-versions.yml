@@ -12,7 +12,6 @@ on:
         description: explain why this version is deprecated. No message content will un-deprecate the version
         type: string
 
-
 jobs:
   deprecate:
     runs-on: ubuntu-latest
