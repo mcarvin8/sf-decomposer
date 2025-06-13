@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.10.11](https://github.com/mcarvin8/sf-decomposer/compare/v5.10.10...v5.10.11) (2025-06-13)
+
+
+### Bug Fixes
+
+* switch to jest to hit coverage on unreachable code ([#297](https://github.com/mcarvin8/sf-decomposer/issues/297)) ([1146d1d](https://github.com/mcarvin8/sf-decomposer/commit/1146d1d4f3d555d9f630b803c5bf5c18aea39744))
+
 ## [5.10.10](https://github.com/mcarvin8/sf-decomposer/compare/v5.10.9...v5.10.10) (2025-06-13)
 
 
