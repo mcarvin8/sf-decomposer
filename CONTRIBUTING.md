@@ -13,7 +13,7 @@ Contributions are welcome! If you would like to contribute, please fork the repo
 
 ### 2) Install Dependencies
 
-This will install all the tools needed to contribute
+This will install all the tools needed to contribute:
 
 ```bash
 yarn
@@ -25,15 +25,15 @@ yarn
 yarn build
 ```
 
-Rebuild every time you made a change in the source and you need to test locally
+Rebuild every time you made a change in the source and you need to test locally.
 
 ## Testing
 
-When developing, run the provided tests for new additions.
+When developing, run the provided unit tests for new additions. New additions must meet the jest coverage requirements.
 
 ```bash
 # run unit tests
-yarn test
+yarn test:only
 ```
 
 To run the non-unit test, ensure you re-build the application and then run:
@@ -53,7 +53,7 @@ Unique ID elements are used to name decomposed files with nested elements. The f
 
 The default unique ID elements for all metadata types is `fullName` and `name`.
 
-To add metadata-specific unique ID elements, you can update `src/metadata/uniqueIdElements.json`. The metadata type's suffix should be used as the key.
+To add metadata-specific unique ID elements, you can update `src/metadata/uniqueIdElements.ts`. The metadata type's suffix should be used as the key.
 
 This plugin looks for the 2 default unique ID elements first before searching for any metadata-specific unique ID elements.
 
