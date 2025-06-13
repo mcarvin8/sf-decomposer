@@ -1,8 +1,7 @@
 {
   "extends": "@salesforce/dev-config/tsconfig-test-strict-esm",
-  "include": ["./**/*.ts", "../src/**/*.json"],
+  "include": ["./**/*.ts"],
   "compilerOptions": {
-    "skipLibCheck": true,
-    "resolveJsonModule": true
+    "skipLibCheck": true
   }
 }

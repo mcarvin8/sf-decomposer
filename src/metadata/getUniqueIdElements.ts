@@ -1,14 +1,16 @@
 'use strict';
-import { readFile } from 'node:fs/promises';
+import uniqueElements from './uniqueIdElements.js';
 
-import { UniqueIdElements } from '../helpers/types.js';
+export function getUniqueIdElements(metaSuffix: string): string | undefined {
+  const merged: Record<string, { uniqueIdElements: string[] }> = {};
 
-export async function getUniqueIdElements(metaSuffix: string): Promise<string | undefined> {
-  const fileContent: string = await readFile(new URL('./uniqueIdElements.json', import.meta.url), 'utf-8');
-  const jsonData: UniqueIdElements = JSON.parse(fileContent) as UniqueIdElements;
+  // Merge all top-level objects in the array into a single dictionary
+  for (const obj of uniqueElements) {
+    Object.assign(merged, obj);
+  }
 
-  if (metaSuffix in jsonData) {
-    return jsonData[metaSuffix].uniqueIdElements.join(',');
+  if (metaSuffix in merged) {
+    return merged[metaSuffix].uniqueIdElements.join(',');
   } else {
     return undefined;
   }

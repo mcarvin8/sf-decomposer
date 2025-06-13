@@ -36,7 +36,7 @@ export async function getRegistryValuesBySuffix(
   }
 
   let uniqueIdElements: string | undefined;
-  if (command === 'decompose') uniqueIdElements = await getUniqueIdElements(metaSuffix);
+  if (command === 'decompose') uniqueIdElements = getUniqueIdElements(metaSuffix);
   const { metadataPaths, ignorePath } = await getPackageDirectories(`${metadataTypeEntry.directoryName}`, ignoreDirs);
   if (metadataPaths.length === 0)
     throw Error(`No directories named ${metadataTypeEntry.directoryName} were found in any package directory.`);
