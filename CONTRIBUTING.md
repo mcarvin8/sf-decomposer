@@ -4,7 +4,7 @@ Contributions are welcome! If you would like to contribute, please fork the repo
 
 ## Requirements
 
-- Node >= 18.0.0
+- Node >= 20.0.0
 - yarn
 
 ## Installation
