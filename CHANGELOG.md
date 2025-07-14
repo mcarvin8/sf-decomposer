@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.10.15](https://github.com/mcarvin8/sf-decomposer/compare/v5.10.14...v5.10.15) (2025-07-14)
+
+
+### Bug Fixes
+
+* update node requirement to 20 ([2d90f3c](https://github.com/mcarvin8/sf-decomposer/commit/2d90f3c63ee66879925e7f4e5304ccea11f89594))
+
 ## [5.10.14](https://github.com/mcarvin8/sf-decomposer/compare/v5.10.13...v5.10.14) (2025-07-01)
 
 
