@@ -5318,12 +5318,12 @@ fast-xml-parser@^4.5.3:
   dependencies:
     strnum "^1.1.1"
 
-fast-xml-parser@^5.2.0:
-  version "5.2.0"
-  resolved "https://registry.yarnpkg.com/fast-xml-parser/-/fast-xml-parser-5.2.0.tgz#a1a209c5d8e161989a3bce0942a02aeef460c9ef"
-  integrity sha512-Uw9+Mjt4SBRud1IcaYuW/O0lW8SKKdMl5g7g24HiIuyH5fQSD+AVLybSlJtqLYEbytVFjWQa5DMGcNgeksdRBg==
+fast-xml-parser@^5.2.5:
+  version "5.2.5"
+  resolved "https://registry.yarnpkg.com/fast-xml-parser/-/fast-xml-parser-5.2.5.tgz#4809fdfb1310494e341098c25cb1341a01a9144a"
+  integrity sha512-pfX9uG9Ki0yekDHx2SiuRIyFdyAr1kMIMitPvb0YBo8SUfKvia7w7FIyd/l6av85pFYRhZscS75MwMnbvY+hcQ==
   dependencies:
-    strnum "^2.0.5"
+    strnum "^2.1.0"
 
 fastest-levenshtein@^1.0.7:
   version "1.0.16"
@@ -9291,10 +9291,10 @@ strnum@^1.1.1:
   resolved "https://registry.yarnpkg.com/strnum/-/strnum-1.1.2.tgz#57bca4fbaa6f271081715dbc9ed7cee5493e28e4"
   integrity sha512-vrN+B7DBIoTTZjnPNewwhx6cBA/H+IS7rfW68n7XxC1y7uoiGQBxaKzqucGUgavX15dJgiGztLJ8vxuEzwqBdA==
 
-strnum@^2.0.5:
-  version "2.0.5"
-  resolved "https://registry.yarnpkg.com/strnum/-/strnum-2.0.5.tgz#40700b1b5bf956acdc755e98e90005d7657aaaea"
-  integrity sha512-YAT3K/sgpCUxhxNMrrdhtod3jckkpYwH6JAuwmUdXZsmzH1wUyzTMrrK2wYCEEqlKwrWDd35NeuUkbBy/1iK+Q==
+strnum@^2.1.0:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/strnum/-/strnum-2.1.1.tgz#cf2a6e0cf903728b8b2c4b971b7e36b4e82d46ab"
+  integrity sha512-7ZvoFTiCnGxBtDqJ//Cu6fWtZtc7Y3x+QOirG15wztbdngGSkht27o2pyGWrVy0b4WAy3jbKmnoK6g5VlVNUUw==
 
 supports-color@^5.3.0:
   version "5.5.0"
@@ -10000,12 +10000,12 @@ ws@^8.15.0:
   resolved "https://registry.yarnpkg.com/ws/-/ws-8.18.2.tgz#42738b2be57ced85f46154320aabb51ab003705a"
   integrity sha512-DMricUmwGZUVr++AEAe2uiVM7UoO9MAVZMDu05UQOaUII0lp+zOzLLU4Xqh/JvTqklB1T4uELaaPBKyjE1r4fQ==
 
-xml-disassembler@^1.10.15:
-  version "1.10.15"
-  resolved "https://registry.yarnpkg.com/xml-disassembler/-/xml-disassembler-1.10.15.tgz#7807cade4b061927dbc53acbf80b0f52383d4e5c"
-  integrity sha512-r7H7sp5nWjzkp9wNv6J2snLke2DK8WA+c79+t6eEZgM+0Oox1nojmgRrZg2eIiUclcPf+pjcpY2ffdpKrJP2xw==
+xml-disassembler@^1.10.18:
+  version "1.10.18"
+  resolved "https://registry.yarnpkg.com/xml-disassembler/-/xml-disassembler-1.10.18.tgz#567e4f53c97af908b97922be9067df9c1536ee93"
+  integrity sha512-ygRXjg9vM5J6A/FNfy0NYuYnNPQI85bNJWeTNByvrXh2IX9eZ/kx3+w6oHIrVWFFlAENy86wpMhJgimAlFTEeg==
   dependencies:
-    fast-xml-parser "^5.2.0"
+    fast-xml-parser "^5.2.5"
     ignore "^7.0.4"
     ini "^5.0.0"
     json5 "^2.2.3"
