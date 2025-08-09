@@ -3,7 +3,7 @@
   "description": "Break down large Salesforce metadata files into smaller, more manageable files for version control and then recreate deployment-compatible files.",
   "version": "5.10.15",
   "dependencies": {
-    "@oclif/core": "^4",
+    "@oclif/core": "^4.5.1",
     "@salesforce/core": "^8.15.0",
     "@salesforce/sf-plugins-core": "^12.2.2",
     "@salesforce/source-deploy-retrieve": "^12.21.0",
