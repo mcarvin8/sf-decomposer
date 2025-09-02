@@ -6,7 +6,7 @@
     "@oclif/core": "^4",
     "@salesforce/core": "^8.15.0",
     "@salesforce/sf-plugins-core": "^12.2.2",
-    "@salesforce/source-deploy-retrieve": "^12.21.0",
+    "@salesforce/source-deploy-retrieve": "^12.22.11",
     "fs-extra": "^11.3.0",
     "xml-disassembler": "^1.10.15"
   },
