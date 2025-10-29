@@ -9,39 +9,41 @@ export async function decomposeMetadataTypes(options: DecomposeOptions): Promise
   const { metadataTypes, prepurge, postpurge, debug, format, ignoreDirs, strategy, decomposeNestedPerms, log, warn } =
     options;
 
-  for (const metadataType of metadataTypes) {
-    const { metaAttributes, ignorePath } = await getRegistryValuesBySuffix(metadataType, 'decompose', ignoreDirs);
-    let effectiveStrategy = strategy;
+  await Promise.all(
+    metadataTypes.map(async (metadataType) => {
+      const { metaAttributes, ignorePath } = await getRegistryValuesBySuffix(metadataType, 'decompose', ignoreDirs);
+      let effectiveStrategy = strategy;
 
-    if (metadataType === 'labels' && strategy === 'grouped-by-tag') {
-      warn('Overriding strategy to "unique-id" for custom labels, as "grouped-by-tag" is not supported.');
-      effectiveStrategy = 'unique-id';
-    }
+      if (metadataType === 'labels' && strategy === 'grouped-by-tag') {
+        warn('Overriding strategy to "unique-id" for custom labels, as "grouped-by-tag" is not supported.');
+        effectiveStrategy = 'unique-id';
+      }
 
-    if (metadataType === 'loyaltyProgramSetup' && strategy === 'grouped-by-tag') {
-      warn('Overriding strategy to "unique-id" for loyaltyProgramSetup, as "grouped-by-tag" is not supported.');
-      effectiveStrategy = 'unique-id';
-    }
+      if (metadataType === 'loyaltyProgramSetup' && strategy === 'grouped-by-tag') {
+        warn('Overriding strategy to "unique-id" for loyaltyProgramSetup, as "grouped-by-tag" is not supported.');
+        effectiveStrategy = 'unique-id';
+      }
 
-    const currentLogFile = await readOriginalLogFile(LOG_FILE);
-    await decomposeFileHandler(
-      metaAttributes,
-      prepurge,
-      postpurge,
-      debug,
-      format,
-      ignorePath,
-      effectiveStrategy,
-      decomposeNestedPerms
-    );
+      const currentLogFile = await readOriginalLogFile(LOG_FILE);
+      await decomposeFileHandler(
+        metaAttributes,
+        prepurge,
+        postpurge,
+        debug,
+        format,
+        ignorePath,
+        effectiveStrategy,
+        decomposeNestedPerms
+      );
 
-    const decomposeErrors = await checkLogForErrors(LOG_FILE, currentLogFile);
-    if (decomposeErrors.length > 0) {
-      decomposeErrors.forEach((error) => warn(error));
-    }
+      const decomposeErrors = await checkLogForErrors(LOG_FILE, currentLogFile);
+      if (decomposeErrors.length > 0) {
+        decomposeErrors.forEach((error) => warn(error));
+      }
 
-    log(`All metadata files have been decomposed for the metadata type: ${metadataType}`);
-  }
+      log(`All metadata files have been decomposed for the metadata type: ${metadataType}`);
+    })
+  );
 
   return { metadata: metadataTypes };
 }

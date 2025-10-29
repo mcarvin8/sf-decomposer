@@ -28,55 +28,57 @@ export async function decomposeFileHandler(
   const { metadataPaths, metaSuffix, strictDirectoryName, folderType, uniqueIdElements } = metaAttributes;
   if (debug) setLogLevel('debug');
 
-  for (const metadataPath of metadataPaths) {
-    if (strictDirectoryName || folderType) {
-      await subDirectoryHandler(
-        metadataPath,
-        uniqueIdElements,
-        prepurge,
-        postpurge,
-        format,
-        ignorePath,
-        strategy,
-        metaSuffix,
-        decomposeNestedPerms
-      );
-    } else if (metaSuffix === 'labels') {
-      // do not use the prePurge flag in the xml-disassembler package for labels due to file moving
-      if (prepurge) await prePurgeLabels(metadataPath);
-      const absoluteLabelFilePath = resolve(metadataPath, CUSTOM_LABELS_FILE);
-      const relativeLabelFilePath = relative(process.cwd(), absoluteLabelFilePath);
+  await Promise.all(
+    metadataPaths.map(async (metadataPath) => {
+      if (strictDirectoryName || folderType) {
+        await subDirectoryHandler(
+          metadataPath,
+          uniqueIdElements,
+          prepurge,
+          postpurge,
+          format,
+          ignorePath,
+          strategy,
+          metaSuffix,
+          decomposeNestedPerms
+        );
+      } else if (metaSuffix === 'labels') {
+        // do not use the prePurge flag in the xml-disassembler package for labels due to file moving
+        if (prepurge) await prePurgeLabels(metadataPath);
+        const absoluteLabelFilePath = resolve(metadataPath, CUSTOM_LABELS_FILE);
+        const relativeLabelFilePath = relative(process.cwd(), absoluteLabelFilePath);
 
-      await disassembleHandler(
-        relativeLabelFilePath,
-        uniqueIdElements,
-        false,
-        postpurge,
-        format,
-        ignorePath,
-        strategy,
-        metaSuffix,
-        decomposeNestedPerms
-      );
-      // move labels from the directory they are created in
-      await moveAndRenameLabels(metadataPath);
-    } else {
-      await disassembleHandler(
-        metadataPath,
-        uniqueIdElements,
-        prepurge,
-        postpurge,
-        format,
-        ignorePath,
-        strategy,
-        metaSuffix,
-        decomposeNestedPerms
-      );
-    }
-    if (metaSuffix === 'workflow') {
-      await renameWorkflows(metadataPath);
-    }
-  }
+        await disassembleHandler(
+          relativeLabelFilePath,
+          uniqueIdElements,
+          false,
+          postpurge,
+          format,
+          ignorePath,
+          strategy,
+          metaSuffix,
+          decomposeNestedPerms
+        );
+        // move labels from the directory they are created in
+        await moveAndRenameLabels(metadataPath);
+      } else {
+        await disassembleHandler(
+          metadataPath,
+          uniqueIdElements,
+          prepurge,
+          postpurge,
+          format,
+          ignorePath,
+          strategy,
+          metaSuffix,
+          decomposeNestedPerms
+        );
+      }
+      if (metaSuffix === 'workflow') {
+        await renameWorkflows(metadataPath);
+      }
+    })
+  );
 }
 
 async function disassembleHandler(
@@ -138,14 +140,18 @@ async function moveAndRenameLabels(metadataPath: string): Promise<void> {
   const sourceDirectory = join(metadataPath, 'CustomLabels', 'labels');
   const destinationDirectory = metadataPath;
   const labelFiles = await readdir(sourceDirectory);
-  for (const file of labelFiles) {
-    if (file.includes('.labels-meta')) {
-      const oldFilePath = join(sourceDirectory, file);
-      const newFileName = file.replace('.labels-meta', '.label-meta');
-      const newFilePath = join(destinationDirectory, newFileName);
-      await rename(oldFilePath, newFilePath);
-    }
-  }
+
+  await Promise.all(
+    labelFiles
+      .filter((file) => file.includes('.labels-meta'))
+      .map(async (file) => {
+        const oldFilePath = join(sourceDirectory, file);
+        const newFileName = file.replace('.labels-meta', '.label-meta');
+        const newFilePath = join(destinationDirectory, newFileName);
+        await rename(oldFilePath, newFilePath);
+      })
+  );
+
   await moveFiles(sourceDirectory, destinationDirectory, () => true);
   await rm(join(metadataPath, 'CustomLabels'), { recursive: true });
 }
@@ -162,36 +168,46 @@ async function subDirectoryHandler(
   decomposeNestedPerms: boolean
 ): Promise<void> {
   const subFiles = await readdir(metadataPath);
-  for (const subFile of subFiles) {
-    const subFilePath = join(metadataPath, subFile);
-    if ((await stat(subFilePath)).isDirectory()) {
-      await disassembleHandler(
-        subFilePath,
-        uniqueIdElements,
-        prepurge,
-        postpurge,
-        format,
-        ignorePath,
-        strategy,
-        metaSuffix,
-        decomposeNestedPerms
-      );
-    }
-  }
+  const statPromises = await Promise.all(
+    subFiles.map(async (subFile) => {
+      const subFilePath = join(metadataPath, subFile);
+      const isDir = (await stat(subFilePath)).isDirectory();
+      return { subFilePath, isDir };
+    })
+  );
+
+  await Promise.all(
+    statPromises
+      .filter(({ isDir }) => isDir)
+      .map(({ subFilePath }) =>
+        disassembleHandler(
+          subFilePath,
+          uniqueIdElements,
+          prepurge,
+          postpurge,
+          format,
+          ignorePath,
+          strategy,
+          metaSuffix,
+          decomposeNestedPerms
+        )
+      )
+  );
 }
 
 async function renameWorkflows(directory: string): Promise<void> {
   const files = await readdir(directory, { recursive: true });
 
-  for (const file of files) {
-    // Check if the file matches any suffix in WORKFLOW_SUFFIX_MAPPING
-    for (const [suffix, newSuffix] of Object.entries(WORKFLOW_SUFFIX_MAPPING)) {
-      if (file.includes(suffix)) {
-        const oldFilePath = join(directory, file);
-        const newFilePath = join(directory, file.replace(suffix, newSuffix));
-        await rename(oldFilePath, newFilePath);
-        break;
+  await Promise.all(
+    files.map(async (file) => {
+      for (const [suffix, newSuffix] of Object.entries(WORKFLOW_SUFFIX_MAPPING)) {
+        if (file.includes(suffix)) {
+          const oldFilePath = join(directory, file);
+          const newFilePath = join(directory, file.replace(suffix, newSuffix));
+          await rename(oldFilePath, newFilePath);
+          break;
+        }
       }
-    }
-  }
+    })
+  );
 }

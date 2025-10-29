@@ -20,19 +20,22 @@ export async function recomposeFileHandler(
 ): Promise<void> {
   const { metaSuffix, strictDirectoryName, folderType, metadataPaths } = metaAttributes;
   if (debug) setLogLevel('debug');
-  for (const metadataPath of metadataPaths) {
-    if (metaSuffix === 'labels') {
-      await reassembleLabels(metadataPath, metaSuffix, postpurge);
-    } else if (metaSuffix === 'loyaltyProgramSetup') {
-      await reassembleLoyaltyProgramSetup(metadataPath);
-    } else {
-      let recurse: boolean = false;
-      if (strictDirectoryName || folderType) recurse = true;
-      await reassembleDirectories(metadataPath, metaSuffix, recurse, postpurge);
-    }
 
-    if (metaSuffix === 'bot') await renameBotVersionFile(metadataPath);
-  }
+  await Promise.all(
+    metadataPaths.map(async (metadataPath) => {
+      if (metaSuffix === 'labels') {
+        await reassembleLabels(metadataPath, metaSuffix, postpurge);
+      } else if (metaSuffix === 'loyaltyProgramSetup') {
+        await reassembleLoyaltyProgramSetup(metadataPath);
+      } else {
+        let recurse: boolean = false;
+        if (strictDirectoryName || folderType) recurse = true;
+        await reassembleDirectories(metadataPath, metaSuffix, recurse, postpurge);
+      }
+
+      if (metaSuffix === 'bot') await renameBotVersionFile(metadataPath);
+    })
+  );
 }
 
 export async function reassembleHandler(filePath: string, fileExtension: string, postPurge: boolean): Promise<void> {
@@ -51,13 +54,24 @@ async function reassembleDirectories(
   postpurge: boolean
 ): Promise<void> {
   const subdirectories = (await readdir(metadataPath)).map((file) => join(metadataPath, file));
-  for (const subdirectory of subdirectories) {
-    const subDirStat = await stat(subdirectory);
-    if (subDirStat.isDirectory() && recurse) {
-      // recursively call this function and set recurse to false
-      await reassembleDirectories(subdirectory, metaSuffix, false, postpurge);
-    } else if (subDirStat.isDirectory()) {
-      await reassembleHandler(subdirectory, `${metaSuffix}-meta.xml`, postpurge);
-    }
-  }
+
+  const dirStats = await Promise.all(
+    subdirectories.map(async (subdirectory) => ({
+      subdirectory,
+      isDirectory: (await stat(subdirectory)).isDirectory(),
+    }))
+  );
+
+  await Promise.all(
+    dirStats
+      .filter(({ isDirectory }) => isDirectory)
+      .map(async ({ subdirectory }) => {
+        if (recurse) {
+          // recursively call this function and set recurse to false
+          await reassembleDirectories(subdirectory, metaSuffix, false, postpurge);
+        } else {
+          await reassembleHandler(subdirectory, `${metaSuffix}-meta.xml`, postpurge);
+        }
+      })
+  );
 }

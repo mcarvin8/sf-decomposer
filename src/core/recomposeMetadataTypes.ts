@@ -8,19 +8,21 @@ import { DecomposerResult, RecomposeOptions } from '../helpers/types.js';
 export async function recomposeMetadataTypes(options: RecomposeOptions): Promise<DecomposerResult> {
   const { metadataTypes, postpurge, debug, ignoreDirs, log, warn } = options;
 
-  for (const metadataType of metadataTypes) {
-    const { metaAttributes } = await getRegistryValuesBySuffix(metadataType, 'recompose', ignoreDirs);
+  await Promise.all(
+    metadataTypes.map(async (metadataType) => {
+      const { metaAttributes } = await getRegistryValuesBySuffix(metadataType, 'recompose', ignoreDirs);
 
-    const currentLogFile = await readOriginalLogFile(LOG_FILE);
-    await recomposeFileHandler(metaAttributes, postpurge, debug);
+      const currentLogFile = await readOriginalLogFile(LOG_FILE);
+      await recomposeFileHandler(metaAttributes, postpurge, debug);
 
-    const recomposeErrors = await checkLogForErrors(LOG_FILE, currentLogFile);
-    if (recomposeErrors.length > 0) {
-      recomposeErrors.forEach((error) => warn(error));
-    }
+      const recomposeErrors = await checkLogForErrors(LOG_FILE, currentLogFile);
+      if (recomposeErrors.length > 0) {
+        recomposeErrors.forEach((error) => warn(error));
+      }
 
-    log(`All metadata files have been recomposed for the metadata type: ${metadataType}`);
-  }
+      log(`All metadata files have been recomposed for the metadata type: ${metadataType}`);
+    })
+  );
 
   return {
     metadata: metadataTypes,

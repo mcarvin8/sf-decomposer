@@ -3,7 +3,8 @@
   "compilerOptions": {
     "outDir": "lib",
     "rootDir": "src",
-    "types": ["jest", "chai"]
+    "types": ["jest", "chai"],
+    "resolveJsonModule": true
   },
   "include": ["./src/**/*.ts"],
   "exclude": ["node_modules"]

@@ -1,7 +1,7 @@
 'use strict';
 
 import { resolve, join, basename } from 'node:path';
-import { readFile, readdir, stat } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 
 import { getRepoRoot } from '../service/core/getRepoRoot.js';
 import { SfdxProject } from '../helpers/types.js';
@@ -35,21 +35,24 @@ export async function getPackageDirectories(
 }
 
 async function searchRecursively(dxDirectory: string, subDirectoryName: string): Promise<string | undefined> {
-  const files = await readdir(dxDirectory);
+  try {
+    const files = await readdir(dxDirectory, { withFileTypes: true });
 
-  const searchPromises = files.map(async (file) => {
-    const filePath = join(dxDirectory, file);
-    const stats = await stat(filePath);
-
-    if (stats.isDirectory()) {
-      if (file === subDirectoryName) {
-        return filePath;
-      } else {
-        return searchRecursively(filePath, subDirectoryName);
-      }
+    // First check if the directory we're looking for is at this level
+    const directMatch = files.find((file) => file.isDirectory() && file.name === subDirectoryName);
+    if (directMatch) {
+      return join(dxDirectory, directMatch.name);
     }
-  });
 
-  const results = await Promise.all(searchPromises);
-  return results.find((result) => result !== undefined);
+    // If not found, search recursively in subdirectories in parallel
+    const searchPromises = files
+      .filter((file) => file.isDirectory())
+      .map((file) => searchRecursively(join(dxDirectory, file.name), subDirectoryName));
+
+    const results = await Promise.all(searchPromises);
+    return results.find((result) => result !== undefined);
+  } catch (error) {
+    // Handle permission errors or other filesystem errors gracefully
+    return undefined;
+  }
 }

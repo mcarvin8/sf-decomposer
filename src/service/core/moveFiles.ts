@@ -1,5 +1,5 @@
 'use strict';
-/* eslint-disable no-await-in-loop */
+
 import { readdir, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { move } from 'fs-extra';
@@ -10,12 +10,22 @@ export async function moveFiles(
   predicate: (fileName: string) => boolean
 ): Promise<void> {
   const files = await readdir(sourceDirectory);
-  for (const file of files) {
-    const fileStat = await stat(join(sourceDirectory, file));
-    if (fileStat.isFile() && predicate(file)) {
-      const sourceFile = join(sourceDirectory, file);
-      const destinationFile = join(destinationDirectory, file);
-      await move(sourceFile, destinationFile, { overwrite: true });
-    }
-  }
+
+  const fileStats = await Promise.all(
+    files.map(async (file) => ({
+      file,
+      isFile: (await stat(join(sourceDirectory, file))).isFile(),
+      shouldMove: predicate(file),
+    }))
+  );
+
+  await Promise.all(
+    fileStats
+      .filter(({ isFile, shouldMove }) => isFile && shouldMove)
+      .map(({ file }) => {
+        const sourceFile = join(sourceDirectory, file);
+        const destinationFile = join(destinationDirectory, file);
+        return move(sourceFile, destinationFile, { overwrite: true });
+      })
+  );
 }
