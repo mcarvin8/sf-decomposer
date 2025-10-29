@@ -1,16 +1,20 @@
 /* eslint-disable no-await-in-loop */
+import pLimit from 'p-limit';
 import { getRegistryValuesBySuffix } from '../metadata/getRegistryValuesBySuffix.js';
 import { readOriginalLogFile, checkLogForErrors } from '../service/core/checkLogforErrors.js';
 import { decomposeFileHandler } from '../service/decompose/decomposeFileHandler.js';
-import { LOG_FILE } from '../helpers/constants.js';
+import { LOG_FILE, CONCURRENCY_LIMITS } from '../helpers/constants.js';
 import { DecomposerResult, DecomposeOptions } from '../helpers/types.js';
 
 export async function decomposeMetadataTypes(options: DecomposeOptions): Promise<DecomposerResult> {
   const { metadataTypes, prepurge, postpurge, debug, format, ignoreDirs, strategy, decomposeNestedPerms, log, warn } =
     options;
 
-  await Promise.all(
-    metadataTypes.map(async (metadataType) => {
+  // Limit concurrent metadata type processing to prevent file system overload
+  const limit = pLimit(CONCURRENCY_LIMITS.METADATA_TYPES);
+
+  const tasks = metadataTypes.map((metadataType) =>
+    limit(async () => {
       const { metaAttributes, ignorePath } = await getRegistryValuesBySuffix(metadataType, 'decompose', ignoreDirs);
       let effectiveStrategy = strategy;
 
@@ -44,6 +48,8 @@ export async function decomposeMetadataTypes(options: DecomposeOptions): Promise
       log(`All metadata files have been decomposed for the metadata type: ${metadataType}`);
     })
   );
+
+  await Promise.all(tasks);
 
   return { metadata: metadataTypes };
 }

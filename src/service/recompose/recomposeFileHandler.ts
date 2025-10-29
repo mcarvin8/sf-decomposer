@@ -3,7 +3,9 @@
 import { readdir, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { ReassembleXMLFileHandler, setLogLevel } from 'xml-disassembler';
+import pLimit from 'p-limit';
 
+import { CONCURRENCY_LIMITS } from '../../helpers/constants.js';
 import { reassembleLabels } from './reassembleLabels.js';
 import { renameBotVersionFile } from './renameBotVersionFiles.js';
 import { reassembleLoyaltyProgramSetup } from './resssembleLoyaltyProgramSetup.js';
@@ -21,8 +23,11 @@ export async function recomposeFileHandler(
   const { metaSuffix, strictDirectoryName, folderType, metadataPaths } = metaAttributes;
   if (debug) setLogLevel('debug');
 
-  await Promise.all(
-    metadataPaths.map(async (metadataPath) => {
+  // Limit concurrent package directory processing
+  const limit = pLimit(CONCURRENCY_LIMITS.PACKAGE_DIRS);
+
+  const tasks = metadataPaths.map((metadataPath) =>
+    limit(async () => {
       if (metaSuffix === 'labels') {
         await reassembleLabels(metadataPath, metaSuffix, postpurge);
       } else if (metaSuffix === 'loyaltyProgramSetup') {
@@ -36,6 +41,8 @@ export async function recomposeFileHandler(
       if (metaSuffix === 'bot') await renameBotVersionFile(metadataPath);
     })
   );
+
+  await Promise.all(tasks);
 }
 
 export async function reassembleHandler(filePath: string, fileExtension: string, postPurge: boolean): Promise<void> {
@@ -55,17 +62,23 @@ async function reassembleDirectories(
 ): Promise<void> {
   const subdirectories = (await readdir(metadataPath)).map((file) => join(metadataPath, file));
 
+  // Limit concurrent stat operations
+  const statLimit = pLimit(CONCURRENCY_LIMITS.FILE_OPERATIONS);
   const dirStats = await Promise.all(
-    subdirectories.map(async (subdirectory) => ({
-      subdirectory,
-      isDirectory: (await stat(subdirectory)).isDirectory(),
-    }))
+    subdirectories.map((subdirectory) =>
+      statLimit(async () => ({
+        subdirectory,
+        isDirectory: (await stat(subdirectory)).isDirectory(),
+      }))
+    )
   );
 
-  await Promise.all(
-    dirStats
-      .filter(({ isDirectory }) => isDirectory)
-      .map(async ({ subdirectory }) => {
+  // Limit concurrent subdirectory processing
+  const processLimit = pLimit(CONCURRENCY_LIMITS.SUBDIRECTORIES);
+  const tasks = dirStats
+    .filter(({ isDirectory }) => isDirectory)
+    .map(({ subdirectory }) =>
+      processLimit(async () => {
         if (recurse) {
           // recursively call this function and set recurse to false
           await reassembleDirectories(subdirectory, metaSuffix, false, postpurge);
@@ -73,5 +86,7 @@ async function reassembleDirectories(
           await reassembleHandler(subdirectory, `${metaSuffix}-meta.xml`, postpurge);
         }
       })
-  );
+    );
+
+  await Promise.all(tasks);
 }
