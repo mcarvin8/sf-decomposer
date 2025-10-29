@@ -1,8 +1,10 @@
 'use strict';
-/* eslint-disable no-await-in-loop */
+
 import { readdir, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { move } from 'fs-extra';
+import pLimit from 'p-limit';
+import { CONCURRENCY_LIMITS } from '../../helpers/constants.js';
 
 export async function moveFiles(
   sourceDirectory: string,
@@ -10,12 +12,30 @@ export async function moveFiles(
   predicate: (fileName: string) => boolean
 ): Promise<void> {
   const files = await readdir(sourceDirectory);
-  for (const file of files) {
-    const fileStat = await stat(join(sourceDirectory, file));
-    if (fileStat.isFile() && predicate(file)) {
-      const sourceFile = join(sourceDirectory, file);
-      const destinationFile = join(destinationDirectory, file);
-      await move(sourceFile, destinationFile, { overwrite: true });
-    }
-  }
+
+  // Limit concurrent stat operations
+  const statLimit = pLimit(CONCURRENCY_LIMITS.FILE_OPERATIONS);
+  const fileStats = await Promise.all(
+    files.map((file) =>
+      statLimit(async () => ({
+        file,
+        isFile: (await stat(join(sourceDirectory, file))).isFile(),
+        shouldMove: predicate(file),
+      }))
+    )
+  );
+
+  // Limit concurrent file move operations
+  const moveLimit = pLimit(CONCURRENCY_LIMITS.FILE_OPERATIONS);
+  const moveTasks = fileStats
+    .filter(({ isFile, shouldMove }) => isFile && shouldMove)
+    .map(({ file }) =>
+      moveLimit(() => {
+        const sourceFile = join(sourceDirectory, file);
+        const destinationFile = join(destinationDirectory, file);
+        return move(sourceFile, destinationFile, { overwrite: true });
+      })
+    );
+
+  await Promise.all(moveTasks);
 }

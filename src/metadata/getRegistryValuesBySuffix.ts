@@ -7,6 +7,16 @@ import { MetaAttributes } from '../helpers/types.js';
 import { getUniqueIdElements } from './getUniqueIdElements.js';
 import { getPackageDirectories } from './getPackageDirectories.js';
 
+// Singleton instance for RegistryAccess to avoid repeated instantiation
+let registryAccessInstance: RegistryAccess | null = null;
+
+function getRegistryAccessInstance(): RegistryAccess {
+  if (!registryAccessInstance) {
+    registryAccessInstance = new RegistryAccess();
+  }
+  return registryAccessInstance;
+}
+
 export async function getRegistryValuesBySuffix(
   metaSuffix: string,
   command: string,
@@ -20,7 +30,7 @@ export async function getRegistryValuesBySuffix(
       '`botVersion` suffix should not be used. Please use `bot` to decompose/recompose bot and bot version files.'
     );
   }
-  const registryAccess = new RegistryAccess();
+  const registryAccess = getRegistryAccessInstance();
   const metadataTypeEntry: MetadataType | undefined = registryAccess.getTypeBySuffix(metaSuffix);
   if (metadataTypeEntry === undefined) throw Error(`Metadata type not found for the given suffix: ${metaSuffix}.`);
 

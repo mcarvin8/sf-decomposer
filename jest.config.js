@@ -30,6 +30,8 @@ export default {
       },
     ],
   },
+  // Allow transformation of ESM modules in node_modules
+  transformIgnorePatterns: ['node_modules/(?!(p-limit|yocto-queue)/)'],
   // An array of regexp pattern strings used to skip coverage collection
   coveragePathIgnorePatterns: ['/node_modules/', '/test/utils/', '/coverage/'],
 };
