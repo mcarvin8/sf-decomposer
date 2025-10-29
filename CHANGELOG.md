@@ -5,6 +5,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.11.0](https://github.com/mcarvin8/sf-decomposer/compare/v5.10.15...v5.11.0) (2025-10-29)
+
+
+### Features
+
+* parallelize metadata processing for significant performance gains ([#327](https://github.com/mcarvin8/sf-decomposer/issues/327)) ([8ade593](https://github.com/mcarvin8/sf-decomposer/commit/8ade593d35793c0dd6a4c5daf969503f552bd280))
+
+
+### Bug Fixes
+
+* **deps:** bump @salesforce/sf-plugins-core from 12.2.2 to 12.2.4 ([#320](https://github.com/mcarvin8/sf-decomposer/issues/320)) ([1971545](https://github.com/mcarvin8/sf-decomposer/commit/1971545c7659217df5a1b3035e61d5014dd44550))
+* **deps:** bump xml-disassembler from 1.10.15 to 1.10.18 ([#314](https://github.com/mcarvin8/sf-decomposer/issues/314)) ([31236b8](https://github.com/mcarvin8/sf-decomposer/commit/31236b85efa84de6d45563e40619b4f337e9b7d3))
+
 ## [5.10.15](https://github.com/mcarvin8/sf-decomposer/compare/v5.10.14...v5.10.15) (2025-07-14)
 
 
