@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.11.1](https://github.com/mcarvin8/sf-decomposer/compare/v5.11.0...v5.11.1) (2025-11-02)
+
+
+### Bug Fixes
+
+* **deps:** bump xml-disassembler from 1.10.18 to 1.11.0 ([d0f40cd](https://github.com/mcarvin8/sf-decomposer/commit/d0f40cdaa0adc5ecf241b58e3e5a4371814a39d9))
+
 ## [5.11.0](https://github.com/mcarvin8/sf-decomposer/compare/v5.10.15...v5.11.0) (2025-10-29)
 
 
