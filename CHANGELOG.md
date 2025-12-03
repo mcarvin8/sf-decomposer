@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.11.3](https://github.com/mcarvin8/sf-decomposer/compare/v5.11.2...v5.11.3) (2025-12-03)
+
+
+### Bug Fixes
+
+* **deps:** bump @salesforce/sf-plugins-core from 12.2.5 to 12.2.6 ([#339](https://github.com/mcarvin8/sf-decomposer/issues/339)) ([f4d2e07](https://github.com/mcarvin8/sf-decomposer/commit/f4d2e07179ce326541f576ab04ed10e68273a931))
+
 ## [5.11.2](https://github.com/mcarvin8/sf-decomposer/compare/v5.11.1...v5.11.2) (2025-11-30)
 
 
