@@ -20,6 +20,7 @@ export async function recomposeMetadataTypes(options: RecomposeOptions): Promise
       await recomposeFileHandler(metaAttributes, postpurge, debug);
 
       const recomposeErrors = await checkLogForErrors(LOG_FILE, currentLogFile);
+      /* istanbul ignore if -- @preserve: Requires xml-disassembler to write errors to log file */
       if (recomposeErrors.length > 0) {
         recomposeErrors.forEach((error) => warn(error));
       }
