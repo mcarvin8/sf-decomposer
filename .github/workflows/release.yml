@@ -31,7 +31,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4.0.1
         with:
-          node-version: 20
+          node-version: 24
           cache: yarn
           registry-url: 'https://registry.npmjs.org'
         if: ${{ steps.release.outputs.release_created == 'true' }}
@@ -45,7 +45,5 @@ jobs:
         if: ${{ steps.release.outputs.release_created == 'true' }}
 
       - name: Publish to NPM
-        run: npm publish --access public --tag latest
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: NODE_AUTH_TOKEN="" npm publish --access public --tag latest --provenance
         if: ${{ steps.release.outputs.release_created == 'true' }}
