@@ -5,6 +5,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.11.5](https://github.com/mcarvin8/sf-decomposer/compare/v5.11.4...v5.11.5) (2026-01-03)
+
+
+### Bug Fixes
+
+* **deps:** bump @salesforce/core from 8.23.4 to 8.24.0 ([#345](https://github.com/mcarvin8/sf-decomposer/issues/345)) ([10d44e1](https://github.com/mcarvin8/sf-decomposer/commit/10d44e187a863116201584fc2139ba97f9cf799c))
+* **deps:** bump fs-extra from 11.3.2 to 11.3.3 ([#348](https://github.com/mcarvin8/sf-decomposer/issues/348)) ([48ba5b9](https://github.com/mcarvin8/sf-decomposer/commit/48ba5b9fbe77bd202838bb4f2849995b784c129d))
+* **deps:** bump xml-disassembler from 1.11.3 to 1.11.4 ([#351](https://github.com/mcarvin8/sf-decomposer/issues/351)) ([9f32eac](https://github.com/mcarvin8/sf-decomposer/commit/9f32eac5b207533c5a14aa9ef42c9f6efa59657f))
+
 ## [5.11.4](https://github.com/mcarvin8/sf-decomposer/compare/v5.11.3...v5.11.4) (2025-12-30)
 
 
