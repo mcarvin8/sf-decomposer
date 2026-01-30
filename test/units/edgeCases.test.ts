@@ -218,7 +218,7 @@ describe('Labels prePurge coverage test', () => {
   let tempProjectDir: string;
   let forceAppDir: string;
   let labelsDir: string;
-  const originalDirectory: string = resolve('reference/package-dir-1');
+  const originalDirectory: string = resolve('fixtures/package-dir-1');
   const originalCwd = process.cwd();
 
   const configFile = {
@@ -234,7 +234,7 @@ describe('Labels prePurge coverage test', () => {
     forceAppDir = join(tempProjectDir, 'force-app');
     labelsDir = join(forceAppDir, 'labels');
 
-    // Copy reference files
+    // Copy fixture files
     await copy(originalDirectory, forceAppDir, { overwrite: true });
 
     // Create an extra file in labels directory that should be purged
@@ -280,7 +280,7 @@ describe('Labels prePurge coverage test', () => {
 describe('Recompose error warning coverage test', () => {
   let tempProjectDir: string;
   let forceAppDir: string;
-  const originalDirectory: string = resolve('reference/package-dir-1');
+  const originalDirectory: string = resolve('fixtures/package-dir-1');
   const originalCwd = process.cwd();
 
   const configFile = {
@@ -295,7 +295,7 @@ describe('Recompose error warning coverage test', () => {
     tempProjectDir = await mkdtemp(join(tmpdir(), 'recompose-warn-test-'));
     forceAppDir = join(tempProjectDir, 'force-app');
 
-    // Copy reference files
+    // Copy fixture files
     await copy(originalDirectory, forceAppDir, { overwrite: true });
 
     await writeFile(join(tempProjectDir, SFDX_CONFIG_FILE), JSON.stringify(configFile, null, 2));

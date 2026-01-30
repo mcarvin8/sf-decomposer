@@ -12,8 +12,8 @@ import { compareDirectories } from '../../utils/compareDirectories.js';
 describe('non-unit tests', () => {
   let session: TestSession;
 
-  const originalDirectory: string = 'reference/package-dir-1';
-  const originalDirectory2: string = 'reference/package-dir-2';
+  const originalDirectory: string = 'fixtures/package-dir-1';
+  const originalDirectory2: string = 'fixtures/package-dir-2';
   const mockDirectory: string = 'force-app';
   const mockDirectory2: string = 'package';
   const configFile = {
@@ -67,7 +67,7 @@ describe('non-unit tests', () => {
     });
 
     if (!['toml', 'ini'].includes(format)) {
-      it(`should confirm the recomposed ${format.toUpperCase()} files match the reference files`, async () => {
+      it(`should confirm the recomposed ${format.toUpperCase()} files match the fixture files`, async () => {
         await compareDirectories(originalDirectory, mockDirectory);
         await compareDirectories(originalDirectory2, mockDirectory2);
       });

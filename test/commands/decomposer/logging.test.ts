@@ -11,8 +11,8 @@ import { SFDX_CONFIG_FILE } from '../../utils/constants.js';
 describe('logging test suite', () => {
   let logMock: jest.Mock;
   let warnMock: jest.Mock;
-  const originalDirectory: string = 'reference/package-dir-1';
-  const originalDirectory2: string = 'reference/package-dir-2';
+  const originalDirectory: string = 'fixtures/package-dir-1';
+  const originalDirectory2: string = 'fixtures/package-dir-2';
   const mockDirectory: string = 'force-app';
   const mockDirectory2: string = 'package';
 

@@ -1,6 +1,6 @@
 {
   "metadataSuffixes": "labels,workflow,profile",
-  "ignorePackageDirectories": "force-app,samples",
+  "ignorePackageDirectories": "force-app,examples",
   "prePurge": true,
   "postPurge": true,
   "decomposedFormat": "xml"

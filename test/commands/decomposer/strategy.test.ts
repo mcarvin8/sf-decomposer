@@ -19,8 +19,8 @@ describe('decomposer unit tests - grouped by tag strategy', () => {
   let forceAppDir: string;
   let packageDir: string;
   let sfdxConfigPath: string;
-  const originalDirectory: string = resolve('reference/package-dir-1');
-  const originalDirectory2: string = resolve('reference/package-dir-2');
+  const originalDirectory: string = resolve('fixtures/package-dir-1');
+  const originalDirectory2: string = resolve('fixtures/package-dir-2');
   const originalCwd = process.cwd();
 
   const configFile = {
@@ -93,7 +93,7 @@ describe('decomposer unit tests - grouped by tag strategy', () => {
     });
 
     if (!['toml', 'ini'].includes(format)) {
-      it(`should confirm the recomposed ${format.toUpperCase()} files match the reference files`, async () => {
+      it(`should confirm the recomposed ${format.toUpperCase()} files match the fixture files`, async () => {
         await compareDirectories(originalDirectory, forceAppDir);
         await compareDirectories(originalDirectory2, packageDir);
       });

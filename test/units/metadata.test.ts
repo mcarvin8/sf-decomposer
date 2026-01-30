@@ -17,8 +17,8 @@ describe('decomposer unit tests - unique id strategy', () => {
   let forceAppDir: string;
   let packageDir: string;
   let sfdxConfigPath: string;
-  const originalDirectory: string = resolve('reference/package-dir-1');
-  const originalDirectory2: string = resolve('reference/package-dir-2');
+  const originalDirectory: string = resolve('fixtures/package-dir-1');
+  const originalDirectory2: string = resolve('fixtures/package-dir-2');
   const originalCwd = process.cwd();
 
   const configFile = {

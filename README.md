@@ -55,7 +55,7 @@ A Salesforce CLI plugin that **decomposes** large metadata XML files into smalle
    ```
 
 4. **Add decomposed paths to [.forceignore](#forceignore)**  
-   This is **required** so the Salesforce CLI does not treat decomposed files as source. Use the [sample .forceignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.forceignore) and adjust extensions for your chosen format (`.xml`, `.json`, `.yaml`, etc.).
+   This is **required** so the Salesforce CLI does not treat decomposed files as source. Use the [sample .forceignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.forceignore) and adjust extensions for your chosen format (`.xml`, `.json`, `.yaml`, etc.).
 
 5. **Commit** the decomposed files to version control.
 
@@ -293,7 +293,7 @@ Put **.sfdecomposer.config.json** in the project root to run:
 - **After** `sf project retrieve start`: decompose.
 - **Before** `sf project deploy start` / `sf project deploy validate`: recompose.
 
-Copy and customize the [sample config](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.sfdecomposer.config.json).
+Copy and customize the [sample config](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.sfdecomposer.config.json).
 
 | Option                       | Required | Description                                                                                   |
 | ---------------------------- | -------- | --------------------------------------------------------------------------------------------- |
@@ -311,7 +311,7 @@ Copy and customize the [sample config](https://raw.githubusercontent.com/mcarvin
 
 ### .forceignore
 
-The Salesforce CLI must **ignore** decomposed files and **allow** recomposed files. Use the [sample .forceignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.forceignore) and set patterns for the extensions you use (`.xml`, `.json`, `.yaml`, etc.).
+The Salesforce CLI must **ignore** decomposed files and **allow** recomposed files. Use the [sample .forceignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.forceignore) and set patterns for the extensions you use (`.xml`, `.json`, `.yaml`, etc.).
 
 ### .sfdecomposerignore
 
@@ -319,7 +319,7 @@ Optional. In the project root, list paths/patterns to skip when **decomposing** 
 
 ### .gitignore
 
-Optional. Ignore recomposed metadata and/or `disassemble.log` so they aren’t committed. See the [sample .gitignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.gitignore).
+Optional. Ignore recomposed metadata and/or `disassemble.log` so they aren’t committed. See the [sample .gitignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.gitignore).
 
 ---
 
