@@ -1,68 +1,133 @@
-# Contributing
+# Contributing to sf-decomposer
 
-Contributions are welcome! If you would like to contribute, please fork the repository, make your changes, and submit a pull request.
+Contributions are welcome. This guide covers how to set up your environment, run tests, and submit changes.
+
+---
 
 ## Requirements
 
-- Node >= 20.0.0
-- yarn
+- **Node.js** ≥ 20.0.0
+- **yarn** (package manager)
 
-## Installation
+---
 
-### 1) Fork the repository
+## Getting Started
 
-### 2) Install Dependencies
+### 1. Fork and clone
 
-This will install all the tools needed to contribute:
+Fork the [repository](https://github.com/mcarvin8/sf-decomposer) and clone your fork locally.
+
+### 2. Install dependencies
 
 ```bash
 yarn
 ```
 
-### 3) Build application
+### 3. Build
 
 ```bash
 yarn build
 ```
 
-Rebuild every time you made a change in the source and you need to test locally.
+Rebuild after source changes when you want to run or test the plugin locally.
+
+### 4. Link for local testing (optional)
+
+From the repo root:
+
+```bash
+sf plugins link
+```
+
+Then use `sf decomposer` in a Salesforce DX project to test your changes.
+
+---
+
+## Development Workflow
+
+### Lint and format
+
+- **Lint:** `yarn lint` (runs ESLint on `src` and `test`)
+- **Format:** `yarn format` (Prettier on source and test files)
+
+Fix lint/format issues before submitting a PR.
+
+### Commit messages
+
+This project uses [Conventional Commits](https://www.conventionalcommits.org/) enforced by commitlint and Husky. Use a supported type and scope where it helps:
+
+- `feat:` new feature
+- `fix:` bug fix
+- `docs:` documentation only
+- `chore:` build, tooling, dependencies
+- `test:` tests only
+- `refactor:` code change that is not a fix or feature
+
+Example: `feat(decompose): add support for custom metadata type X`
+
+---
 
 ## Testing
 
-When developing, run the provided unit tests for new additions. New additions must meet the jest coverage requirements.
+### Unit tests
+
+Run unit tests (with coverage). New code should satisfy the existing Jest coverage requirements.
 
 ```bash
-# run unit tests
 yarn test:only
 ```
 
-To run the non-unit test, ensure you re-build the application and then run:
+### Non-unit (NUT) tests
+
+After rebuilding, run the non-unit tests:
 
 ```bash
-# run non-unit tests
+yarn build
 yarn test:nuts
 ```
 
-## Metadata
+### Full test pipeline
 
-All metadata attributes, except for unique ID elements, are imported from this plugin's version of `@salesforce/source-deploy-retrieve` (SDR).
+The default `yarn test` runs the full pipeline (compile, lint, unit tests). Use it before pushing.
 
-### Unique ID Elements
+---
 
-Unique ID elements are used to name decomposed files with nested elements. The file that contains the leaf elements will always match the original file-name.
+## Code and Architecture
 
-The default unique ID elements for all metadata types is `fullName` and `name`.
+### Metadata and SDR
 
-To add metadata-specific unique ID elements, you can update `src/metadata/uniqueIdElements.ts`. The metadata type's suffix should be used as the key.
+Metadata attributes (except unique-ID elements) come from this plugin’s version of **@salesforce/source-deploy-retrieve** (SDR). The `-m` / `--metadata-type` flag uses the metadata **suffix** from SDR’s registry.
 
-This plugin looks for the 2 default unique ID elements first before searching for any metadata-specific unique ID elements.
+### Unique ID elements
 
-When a unique ID element isn't found, it will use the SHA-256 hash of the element contents to name the decomposed nested element file.
+Unique ID elements are used to name decomposed files for nested elements. The file that holds leaf elements keeps the original metadata file name.
 
-## XML Disassembler
+- **Defaults:** `fullName` and `name` for all metadata types.
+- **Overrides:** Edit `src/metadata/uniqueIdElements.ts`; use the metadata type’s **suffix** as the key.
+- **Fallback:** If no unique ID is found, the plugin uses a SHA-256 hash of the element content for the file name.
 
-This plugin's code-base primarily handles Salesforce metadata specific functions. The core XML decomposing/recomposing logic is handled by [`xml-disassembler`](https://github.com/mcarvin8/xml-disassembler).
+### XML disassembler
 
-Please fork and raise PRs in this repo for any issues related to XML decomposing or recomposing. You must install `pnpm` to contribute to this repo.
+Core decompose/recompose logic lives in **[xml-disassembler](https://github.com/mcarvin8/xml-disassembler)**. This repo focuses on Salesforce metadata wiring (e.g. package dirs, SDR, strategies).
 
-`src/service/recompose/recomposeFileHandler.ts` and `src/service/decompose/decomposeFileHandler.ts` in this plugin handles calling `xml-disassembler`.
+- **In this repo:** `src/service/decompose/decomposeFileHandler.ts` and `src/service/recompose/recomposeFileHandler.ts` call xml-disassembler.
+- **Changes to XML disassemble/reassemble behavior:** Contribute in the [xml-disassembler](https://github.com/mcarvin8/xml-disassembler) repo (that project uses **pnpm**).
+
+---
+
+## Pull Requests
+
+1. Create a branch from `main` (e.g. `feat/my-feature` or `fix/issue-123`).
+2. Make your changes, add or update tests as needed.
+3. Run `yarn test` and fix any failures or lint issues.
+4. Commit with [conventional commit](https://www.conventionalcommits.org/) messages.
+5. Push to your fork and open a PR against `main`.
+6. Fill in the PR template (if any) and reference any related issues.
+
+Reviewers may ask for changes; once approved, a maintainer will merge.
+
+---
+
+## Questions
+
+If something is unclear, open a [discussion](https://github.com/mcarvin8/sf-decomposer/discussions) or an [issue](https://github.com/mcarvin8/sf-decomposer/issues).

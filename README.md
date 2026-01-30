@@ -1,4 +1,4 @@
-# `sf-decomposer`
+# sf-decomposer
 
 [![NPM](https://img.shields.io/npm/v/sf-decomposer.svg?label=sf-decomposer)](https://www.npmjs.com/package/sf-decomposer)
 [![Downloads/week](https://img.shields.io/npm/dw/sf-decomposer.svg)](https://npmjs.org/package/sf-decomposer)
@@ -7,396 +7,340 @@
 [![Code Coverage](https://qlty.sh/badges/8492c1c6-0f93-4d37-bfad-32fd3b788a2d/test_coverage.svg)](https://qlty.sh/gh/mcarvin8/projects/sf-decomposer)
 [![Known Vulnerabilities](https://snyk.io//test/github/mcarvin8/sf-decomposer/badge.svg?targetFile=package.json)](https://snyk.io//test/github/mcarvin8/sf-decomposer?targetFile=package.json)
 
+A Salesforce CLI plugin that **decomposes** large metadata XML files into smaller, version-control–friendly files (XML, JSON, YAML, TOML, JSON5, or INI), and **recomposes** them back into deployment-ready metadata.
+
 <!-- TABLE OF CONTENTS -->
 <details>
   <summary>Table of Contents</summary>
 
 - [Quick Start](#quick-start)
-- [Why Choose `sf-decomposer`?](#why-choose-sf-decomposer)
+- [Why sf-decomposer?](#why-sf-decomposer)
 - [Commands](#commands)
-  - [`sf decomposer decompose`](#sf-decomposer-decompose)
-  - [`sf decomposer recompose`](#sf-decomposer-recompose)
+  - [sf decomposer decompose](#sf-decomposer-decompose)
+  - [sf decomposer recompose](#sf-decomposer-recompose)
 - [Decompose Strategies](#decompose-strategies)
-  - [Custom Labels Decomposition](#custom-labels-decomposition)
-  - [Additional Permission Set Decomposition](#additional-permission-set-decomposition)
-  - [Loyalty Program Setup Decomposition](#loyalty-program-setup-decomposition)
+  - [Custom Labels](#custom-labels-decomposition)
+  - [Permission Sets (grouped-by-tag)](#additional-permission-set-decomposition)
+  - [Loyalty Program Setup](#loyalty-program-setup-decomposition)
 - [Supported Metadata](#supported-metadata)
   - [Exceptions](#exceptions)
 - [Troubleshooting](#troubleshooting)
 - [Hooks](#hooks)
 - [Ignore Files](#ignore-files)
-  - [`.forceignore`](#.forceignore)
-  - [`.sfdecomposerignore`](#.sfdecomposerignore)
-  - [`.gitignore`](#.gitignore)
+  - [.forceignore](#forceignore)
+  - [.sfdecomposerignore](#sfdecomposerignore)
+  - [.gitignore](#gitignore)
 - [Issues](#issues)
 - [Built With](#built-with)
 - [Contributing](#contributing)
 - [License](#license)
 </details>
 
-Break down large Salesforce metadata files (XML) into smaller, more manageable files (XML/JSON/YAML/TOML/JSON5/INI) for version control and then recreate deployment-compatible files.
+---
 
 ## Quick Start
 
-1. Install plugin using `sf`
+1. **Install the plugin**
 
-```bash
-sf plugins install sf-decomposer@x.y.z
-```
+   ```bash
+   sf plugins install sf-decomposer@x.y.z
+   ```
 
-2. Retrieve metadata into your Salesforce DX project
+2. **Retrieve metadata** into your Salesforce DX project (e.g. `sf project retrieve start`).
 
-3. [Decompose](#sf-decomposer-decompose) the metadata type(s)
+3. **Decompose** the metadata types you need:
 
-```bash
-sf decomposer decompose -m "flow" -m "labels" --postpurge
-```
+   ```bash
+   sf decomposer decompose -m "flow" -m "labels" --postpurge
+   ```
 
-4. Add decomposed files to [`.forceignore`](#.forceignore)
+4. **Add decomposed paths to [.forceignore](#forceignore)**  
+   This is **required** so the Salesforce CLI does not treat decomposed files as source. Use the [sample .forceignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.forceignore) and adjust extensions for your chosen format (`.xml`, `.json`, `.yaml`, etc.).
 
-> This is **REQUIRED** to avoid errors when running `sf`commands
+5. **Commit** the decomposed files to version control.
 
-5. Stage decomposed files in version control
+6. **Before deploy**, recompose and then deploy:
 
-6. [Recompose](#sf-decomposer-recompose) the metadata type(s) before deployment
+   ```bash
+   sf decomposer recompose -m "flow" -m "labels"
+   sf project deploy start
+   ```
 
-```bash
-sf decomposer recompose -m "flow" -m "labels"
-```
+---
 
-7. Deploy recomposed metadata
+## Why sf-decomposer?
 
-## Why Choose `sf-decomposer`?
+Salesforce’s built-in decomposition is limited. sf-decomposer gives admins and developers more control, flexibility, and better versioning.
 
-Salesforce's built-in decomposition has limitations. `sf-decomposer` offers more control, flexibility, and versioning benefits for Admins and Developers.
+### Benefits
 
-### Key Advantages
+- **Broader metadata support** – Works with most Metadata API types, not just the subset Salesforce decomposes.
+- **Selective decomposition** – Decompose only what you need; use [.sfdecomposerignore](#sfdecomposerignore) to skip specific files.
+- **Two [strategies](#decompose-strategies)**:
+  - **unique-id** (default): one file per nested element, named by content or hash.
+  - **grouped-by-tag**: one file per tag (e.g. all `fieldPermissions` in a permission set in `fieldPermissions.xml`). Use `--decompose-nested-permissions` for deeper permission-set decomposition.
+- **Full decomposition** – Fully decompose types that Salesforce only partially supports (e.g. permission sets).
+- **Stable ordering** – Elements are sorted consistently to reduce noisy diffs.  
+  _Note: TOML and INI output may sort differently from other formats._
+- **Multiple formats** – Output as XML, JSON, JSON5, TOML, INI, or YAML.
+- **CI/CD hooks** – Auto decompose after retrieve and recompose before deploy via [.sfdecomposer.config.json](#hooks).
+- **Better reviews** – Smaller, structured files mean clearer pull requests and fewer merge conflicts.
 
-- **Supports More Metadata** – Works with most Metadata API types, unlike Salesforce’s limited decomposition.
-- **Selective Decomposition** – Decompose only what you need, avoiding Salesforce’s all-or-nothing approach.
-  - See [.sfdecomposerignore](#.sfdecomposerignore)
-- **Multiple [Decompose Strategies](#decompose-strategies)** – Choose between:
-  - `unique-id` (default): disassembles each nested element into its own uniquely named file based on XML content or hash.
-  - `grouped-by-tag`: groups all nested elements by tag into a single file per tag (e.g., all `<fieldPermissions>` in a permission set into `fieldPermissions.xml`).
-    - Additionally opt into further decomposition on permisison sets by using the `grouped-by-tag` strategy with the `--decompose-nested-permissions` flag.
-  - Both strategies decompose leaf elements into the same file named after the original XML.
-- **Fully Decomposes Metadata** – Allow complete decomposition for types that Salesforce only partially decomposes (e.g., `decomposePermissionSetBeta2`).
-- **Consistent Sorting** – Keeps elements in a predictable order to reduce unnecessary version control noise.
-  > DISCLAIMER: If you use "toml" or "ini" format for decomposed files, the element sorting will vary compared to the other formats
-- **Multiple Output Formats** – Supports XML, JSON, JSON5, TOML, INI, and YAML for greater flexibility.
-- **CI/CD Integration** – Hooks enable seamless decomposition and recomposition in automated workflows.
-- **Improved Version Control** – Smaller, structured files make pull requests easier to review and reduce merge conflicts.
-
-### How It Helps Salesforce Teams
-
-- **Better Peer Reviews** – More readable diffs for large metadata in GitHub and other CI/CD platforms.
-- **Safer Deployments** – Ensures only intended changes are deployed, improving release quality.
+---
 
 ## Commands
 
-The `sf-decomposer` supports 2 commands:
+| Command                   | Description                                                     |
+| ------------------------- | --------------------------------------------------------------- |
+| `sf decomposer decompose` | Decompose metadata in package directories into smaller files.   |
+| `sf decomposer recompose` | Recompose decomposed files back into deployment-ready metadata. |
 
-- `sf decomposer decompose`
-- `sf decomposer recompose`
+### sf decomposer decompose
 
-## `sf decomposer decompose`
-
-Decomposes the original metadata files in all local package directories into smaller files for version control.
+Decomposes metadata in all local package directories (from `sfdx-project.json`) into smaller files.
 
 ```
 USAGE
   $ sf decomposer decompose -m <value> -f <value> -i <value> -s <value> [--prepurge --postpurge --debug -p --json]
 
 FLAGS
-  -m, --metadata-type=<value>             The metadata suffix to process, such as 'flow', 'labels', etc.
-                                          Can be declared multiple times.
-  -f, --format=<value>                    The file type for the decomposed files.
-                                          Options: ['xml', 'yaml', 'json', 'toml', 'ini', 'json5']
-                                          [default: 'xml']
-  -i, --ignore-package-directory=<value>  Package directory to ignore.
-                                          Should be as they appear in the "sfdx-project.json".
-                                          Can be declared multiple times.
-  -s, --strategy=<value>                  The decompose strategy to use.
-                                          Options: ['unique-id', 'grouped-by-tag']
-                                          [default: 'unique-id']
-  --prepurge                              Purgd directories of pre-existing decomposed files.
-                                          [default: false]
-  --postpurge                             Purge the original files after decomposing them.
-                                          [default: false]
-  --debug                                 Log debugging results to a text file (disassemble.log).
-                                          [default: false]
-  -p, --decompose-nested-permissions      If strategy is "grouped-by-tag", opt into further decomposition
-                                          on object and field permissions on permission sets.
+  -m, --metadata-type=<value>             Metadata suffix to process (e.g. flow, labels). Repeatable.
+  -f, --format=<value>                    Output format: xml | yaml | json | toml | ini | json5 [default: xml]
+  -i, --ignore-package-directory=<value>  Package directory to skip (as in sfdx-project.json). Repeatable.
+  -s, --strategy=<value>                  unique-id | grouped-by-tag [default: unique-id]
+  --prepurge                              Remove existing decomposed files before decomposing [default: false]
+  --postpurge                             Remove original metadata files after decomposing [default: false]
+  --debug                                 Write debug log to disassemble.log [default: false]
+  -p, --decompose-nested-permissions      With grouped-by-tag, further decompose permission set object/field permissions
 
 GLOBAL FLAGS
-  --json  Format output as json.
-
-EXAMPLES
-  Decompose all flows in XML format:
-
-    $ sf decomposer decompose -m "flow" -f "xml" --prepurge --postpurge --debug
-
-  Decompose all flows and custom labels in YAML format
-
-    $ sf decomposer decompose -m "flow" -m "labels" -f "yaml" --prepurge --postpurge --debug
-
-  Decompose flows except for those in the "force-app" package directory.
-
-    $ sf decomposer decompose -m "flow" -i "force-app"
-
+  --json  Output as JSON.
 ```
 
-## `sf decomposer recompose`
+**Examples**
 
-Recompose decomposed files into deployment-compatible files.
+```bash
+# Decompose flows (XML), purge before/after, with debug log
+sf decomposer decompose -m "flow" -f "xml" --prepurge --postpurge --debug
+
+# Decompose flows and labels in YAML
+sf decomposer decompose -m "flow" -m "labels" -f "yaml" --prepurge --postpurge --debug
+
+# Decompose flows, excluding the force-app package
+sf decomposer decompose -m "flow" -i "force-app"
+```
+
+### sf decomposer recompose
+
+Recomposes decomposed files into deployment-compatible metadata.
 
 ```
 USAGE
   $ sf decomposer recompose -m <value> -i <value> [--postpurge --debug --json]
 
 FLAGS
-  -m, --metadata-type=<value>               The metadata suffix to process, such as 'flow', 'labels', etc.
-                                            Can be declared multiple times.
-  -i, --ignore-package-directory=<value>    Package directory to ignore.
-                                            Should be as they appear in the "sfdx-project.json".
-                                            Can be declared multiple times.
-  --postpurge                               Purge the decomposed files after recomposing them.
-                                            [default: false]
-  --debug                                   Log debugging results to a text file (disassemble.log).
-                                            [default: false]
+  -m, --metadata-type=<value>             Metadata suffix to process (e.g. flow, labels). Repeatable.
+  -i, --ignore-package-directory=<value>  Package directory to skip. Repeatable.
+  --postpurge                             Remove decomposed files after recomposing [default: false]
+  --debug                                 Write debug log to disassemble.log [default: false]
 
 GLOBAL FLAGS
-  --json  Format output as json.
-
-EXAMPLES
-  Recompose all flows:
-
-    $ sf decomposer recompose -m "flow" --postpurge --debug
-
-  Recompose flows except for those in the "force-app" package directory.
-
-    $ sf decomposer recompose -m "flow" -i "force-app"
-
+  --json  Output as JSON.
 ```
+
+**Examples**
+
+```bash
+sf decomposer recompose -m "flow" --postpurge --debug
+sf decomposer recompose -m "flow" -i "force-app"
+```
+
+---
 
 ## Decompose Strategies
 
-> Ensure you do not MIX strategies on the same metadata type. If you have previously decomposed metadata with a past verson of `sf-decomposer`, which uses the unique-id strategy, and would like to switch over to the grouped-by-tag strategy, you will need to supply the decompose command with the `--prepurge` flag and `-s "grouped-by-tag"` flag to re-create decomposed files with the new strategy.
+> **Important:** Use one strategy per metadata type. To switch from `unique-id` to `grouped-by-tag`, run decompose with `--prepurge` and `-s "grouped-by-tag"` to regenerate.
 
-You can decompose all metadata, except for custom labels, via 1 of 2 strategies:
+- **unique-id** (default): Each nested element goes to its own file, named by unique-id fields or content hash. Leaf elements stay in a file named like the original XML.
+- **grouped-by-tag**: All elements with the same tag (e.g. `<fieldPermissions>`) go into one file named after the tag (e.g. `fieldPermissions.xml`). Leaf elements are still grouped in the original-named file.
 
-- **unique-id** (default): Each nested element is written to its own file. File names are derived from specified unique ID elements or hashed content.
-- **grouped-by-tag**: All nested elements with the same tag, e.g. `<fieldPermissions>`, are grouped into a single file, named after the tag (e.g., `fieldPermissions.xml`).
+**Permission set – unique-id**
 
-Leaf elements (like `<userLicense>Salesforce</userLicense>`) are always grouped in a file named after the original source XML in both strategies.
+| Format | Example                                                                                                     |
+| ------ | ----------------------------------------------------------------------------------------------------------- |
+| XML    | ![XML](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-xml.png)     |
+| YAML   | ![YAML](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-yaml.png)   |
+| JSON   | ![JSON](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-json.png)   |
+| JSON5  | ![JSON5](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-json5.png) |
+| TOML   | ![TOML](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-toml.png)   |
+| INI    | ![INI](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-ini.png)     |
 
-**Decomposed Permission Set Example - Unique ID Strategy**
+**Permission set – grouped-by-tag**
 
-| Format    | Example                                                                                                         |
-| --------- | --------------------------------------------------------------------------------------------------------------- |
-| **XML**   | ![XML](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-xml.png)<br>     |
-| **YAML**  | ![YAML](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-yaml.png)<br>   |
-| **JSON**  | ![JSON](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-json.png)<br>   |
-| **JSON5** | ![JSON5](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-json5.png)<br> |
-| **TOML**  | ![TOML](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-toml.png)<br>   |
-| **INI**   | ![INI](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-ini.png)<br>     |
-
-**Decomposed Permission Set Example - Grouped by Tag Strategy**
-
-| Format    | Example                                                                                                              |
-| --------- | -------------------------------------------------------------------------------------------------------------------- |
-| **XML**   | ![XML](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-tags-xml.png)<br>     |
-| **YAML**  | ![YAML](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-tags-yaml.png)<br>   |
-| **JSON**  | ![JSON](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-tags-json.png)<br>   |
-| **JSON5** | ![JSON5](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-tags-json5.png)<br> |
-| **TOML**  | ![TOML](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-tags-toml.png)<br>   |
-| **INI**   | ![INI](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-tags-ini.png)<br>     |
+| Format | Example                                                                                                          |
+| ------ | ---------------------------------------------------------------------------------------------------------------- |
+| XML    | ![XML](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-tags-xml.png)     |
+| YAML   | ![YAML](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-tags-yaml.png)   |
+| JSON   | ![JSON](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-tags-json.png)   |
+| JSON5  | ![JSON5](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-tags-json5.png) |
+| TOML   | ![TOML](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-tags-toml.png)   |
+| INI    | ![INI](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-tags-ini.png)     |
 
 ### Custom Labels Decomposition
 
-Custom labels can only be decomposed via the `unique-id`strategy.
+Custom labels use only the **unique-id** strategy. If you pass `grouped-by-tag`, the plugin overrides to `unique-id` and continues (with a warning). Each label is written to its own file.
 
-If you attempt to decompose custom labels using the `grouped-by-tag` strategy, `sf-decomposer` will automatically override the strategy to `unique-id` and continue. You will see a warning in the terminal, but the operation will not be skipped:
-
-```
-Warning: Overriding strategy to "unique-id" for custom labels, as "grouped-by-tag" is not supported.
-```
-
-Each label will be decomposed into its own file:
-
-![Decomposed Custom Labels](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-labels.png)<br>
+![Decomposed Custom Labels](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-labels.png)
 
 ### Additional Permission Set Decomposition
 
-When using the `grouped-by-tag` strategy, you can enable deeper decomposition of permission sets by including the `--decompose-nested-permissions` (`-p`) flag.
+With **grouped-by-tag**, use `--decompose-nested-permissions` (`-p`) to:
 
-This flag decomposes:
+- Write each `<objectPermissions>` to its own file under `objectPermissions/`.
+- Group `<fieldPermissions>` by object under `fieldPermissions/`.
 
-- All `<objectPermissions>` into individual files within an `objectPermissions/` subdirectory.
-- All `<fieldPermissions>` into grouped files by object name within a `fieldPermissions/` subdirectory.
-
-This mirrors the behavior of Salesforce's `decomposePermissionSetBeta2` feature, but provides better control and formatting options.
+Similar to Salesforce’s `decomposePermissionSetBeta2`, with more control and format options.
 
 ```bash
 sf decomposer decompose -m "permissionset" -s "grouped-by-tag" -p
 ```
 
-![Decomposed Perm Set](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/additional-perm-set-decomposed.png)<br>
+![Decomposed Perm Set](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/additional-perm-set-decomposed.png)
 
 ### Loyalty Program Setup Decomposition
 
-Loyalty Program Setup metadata (`-m loyaltyProgramSetup`) is only supported with the `unique-id` strategy.
+`loyaltyProgramSetup` supports only **unique-id**. With `grouped-by-tag`, the plugin overrides to `unique-id` and warns.
 
-If the `grouped-by-tag` strategy is provided, `sf-decomposer` will automatically override the strategy to `unique-id` and continue. You will see a warning like this:
+Under unique-id:
 
-`Warning: Overriding strategy to "unique-id" for loyaltyProgramSetup, as "grouped-by-tag" is not supported.`
+- Each `<programProcesses>` element → its own file.
+- Each `<parameters>` and `<rules>` child → its own file.
 
-Under the `unique-id` strategy, the loyalty program setup metadata is further decomposed:
+> Recomposition for loyalty program setup removes decomposed files even without `--postpurge`. Use version control or CI to keep them if needed.
 
-- Each `<programProcesses>` element is written to its own file.
-- Each `<parameters>` and `<rules>` child within a process is further broken out into its own file.
+![Decomposed Loyalty Program Setup](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-loyalty-program.png)
 
-> **NOTE**: Recomposition for loyalty program setup deletes the decomposed files regardless of `--postpurge`. To preserve them, use version control or a CI/CD pipeline.
-
-![Decomposed Loyalty Program Setup](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-loyalty-program.png)<br>
+---
 
 ## Supported Metadata
 
-All parent metadata types imported from this plugin's version of `@salesforce/source-deploy-retrieve` (SDR) toolkit are supported except for certain types.
+All parent metadata types from this plugin’s version of **@salesforce/source-deploy-retrieve** (SDR) are supported, except where noted below.
 
-The `--metadata-type`/`-m` flag should be the metadata's `suffix` value as listed in the [metadataRegistry.json](https://github.com/forcedotcom/source-deploy-retrieve/blob/main/src/registry/metadataRegistry.json). You can also infer the suffix by looking at the original XML file-name, i.e. `*.{suffix}-meta.xml`.
+Use the metadata **suffix** for `-m` / `--metadata-type`, as in [SDR’s metadataRegistry.json](https://github.com/forcedotcom/source-deploy-retrieve/blob/main/src/registry/metadataRegistry.json), or infer from the file name: `*.{suffix}-meta.xml`.
 
-Here are some examples:
-
-| Metadata Type               | CLI Option                                   |
-| --------------------------- | -------------------------------------------- |
-| Custom Labels               | `--metadata-type "labels"`                   |
-| Workflows                   | `--metadata-type "workflow"`                 |
-| Profiles                    | `--metadata-type "profile"`                  |
-| Permission Sets             | `--metadata-type "permissionset"`            |
-| AI Scoring Model Definition | `--metadata-type "aiScoringModelDefinition"` |
-| Decision Matrix Definition  | `--metadata-type "decisionMatrixDefinition"` |
-| Bot                         | `--metadata-type "bot"`                      |
-| Marketing App Extension     | `--metadata-type "marketingappextension"`    |
+| Metadata Type               | CLI value                  |
+| --------------------------- | -------------------------- |
+| Custom Labels               | `labels`                   |
+| Workflows                   | `workflow`                 |
+| Profiles                    | `profile`                  |
+| Permission Sets             | `permissionset`            |
+| AI Scoring Model Definition | `aiScoringModelDefinition` |
+| Decision Matrix Definition  | `decisionMatrixDefinition` |
+| Bot                         | `bot`                      |
+| Marketing App Extension     | `marketingappextension`    |
 
 ### Exceptions
 
-| Scenario                                                                                                        | Message                                                                                                                                      |
-| --------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `botVersion` is blocked from being run directly                                                                 | `Error (1): botVersion suffix should not be used. Please use bot to decompose/recompose bot and bot version files.`                          |
-| Custom Objects not supported                                                                                    | `Error (1): Custom Objects are not supported by this plugin.`                                                                                |
-| Unsupported SDR adapter strategies (e.g., `matchingContentFile`, `digitalExperience`, `mixedContent`, `bundle`) | `Error (1): Metadata types with [matchingContentFile, digitalExperience, mixedContent, bundle] strategies are not supported by this plugin.` |
-| Children metadata types (e.g., custom fields) and invalid suffixes                                              | `Error (1): Metadata type not found for the given suffix: field.`                                                                            |
+| Situation                                                                                      | Message                                                                                                                           |
+| ---------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `botVersion` used directly                                                                     | `botVersion suffix should not be used. Please use bot to decompose/recompose bot and bot version files.`                          |
+| Custom Objects                                                                                 | `Custom Objects are not supported by this plugin.`                                                                                |
+| Unsupported SDR strategies (e.g. matchingContentFile, digitalExperience, mixedContent, bundle) | `Metadata types with [matchingContentFile, digitalExperience, mixedContent, bundle] strategies are not supported by this plugin.` |
+| Child types (e.g. custom fields) or invalid suffix                                             | `Metadata type not found for the given suffix: field.`                                                                            |
+
+---
 
 ## Troubleshooting
 
-### Missing `sfdx-project.json`
+### Missing sfdx-project.json
 
-`sf-decomposer` requires an `sfdx-project.json` file to function. It starts by checking the current working directory and will search upward through parent directories until it reaches the root of your drive. If the file isn't found, the command will fail with:
+The plugin looks for `sfdx-project.json` from the current directory up to the drive root. If it’s not found:
 
 ```
 Error (1): sfdx-project.json not found in any parent directory.
 ```
 
----
+### Log file (disassemble.log)
 
-### Understanding the Log File
+The plugin always writes a `disassemble.log` (via the xml-disassembler dependency). By default it contains only errors; the CLI still processes other files.
 
-The plugin always generates a `disassemble.log` file using the `xml-disassembler` dependency.
-
-By default, this log will contain only errors related to XML decomposition or recomposition. These errors **do not stop** the CLI command — the tool will continue processing all other metadata files.
-
-Example warning printed in the terminal:
+Example terminal warning:
 
 ```
-Warning: C:\Users\matth\Documents\sf-decomposer\test\baselines\flows\Get_Info\actionCalls\Get_Info.actionCalls-meta.xml was unabled to be parsed and will not be processed. Confirm formatting and try again.
+Warning: ...\Get_Info.actionCalls-meta.xml was unable to be parsed and will not be processed. Confirm formatting and try again.
 ```
 
----
+### Debug output
 
-### Enabling Debug Output
+Use `--debug` with `decompose` or `recompose` to log detailed activity (including processed files) to `disassemble.log`.
 
-To capture more detailed output (including processed files), use the `--debug` flag with either `decompose` or `recompose`.
+### Files with only leaf elements
 
-Example log entry:
+If a metadata file has only leaf elements (primitives, no nested structure), there is nothing to decompose. The file is skipped with a warning:
 
 ```
-[2024-03-30T14:28:37.959] [DEBUG] default - Created disassembled file: mock\no-nested-elements\HR_Admin\HR_Admin.permissionset-meta.xml
+Warning: The XML file ...\view_of_projects_tab_on_opportunity.permissionset-meta.xml only has leaf elements. This file will not be disassembled.
 ```
 
 ---
-
-### Skipped Files with Only Leaf Elements
-
-If a metadata file contains only leaf elements (e.g. strings, booleans, or primitives), there’s nothing to decompose. The CLI will warn and skip the file:
-
-```
-Warning: The XML file force-app\main\default\permissionsets\view_of_projects_tab_on_opportunity.permissionset-meta.xml only has leaf elements. This file will not be disassembled.
-```
 
 ## Hooks
 
-> **NOTE:** In order to avoid errors when running `sf` commands, you must configure your `.forceignore` file to have the Salesforce CLI ignore the decomposed files. See [Ignore Files](#ignore-files).
+> Configure [.forceignore](#forceignore) so the Salesforce CLI ignores decomposed files; otherwise `sf` commands can fail.
 
-`sf-decomposer` supports automatic decomposition and recomposition by defining a `.sfdecomposer.config.json` file in your project root.
+Put **.sfdecomposer.config.json** in the project root to run:
 
-You can copy and update the sample [.sfdecomposer.config.json](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.sfdecomposer.config.json).
+- **After** `sf project retrieve start`: decompose.
+- **Before** `sf project deploy start` / `sf project deploy validate`: recompose.
 
-| Configuration Option         | Required | Description                                                                                                                                    |
-| ---------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `metadataSuffixes`           | Yes      | Comma-separated string of metadata suffixes to decompose and recompose based on the CLI command.                                               |
-| `ignorePackageDirectories`   | No       | Comma-separated string of package directories to ignore.                                                                                       |
-| `prePurge`                   | No       | `true` or `false`. If `true`, deletes existing decomposed files before decomposing. Defaults to `false`.                                       |
-| `postPurge`                  | No       | `true` or `false`. If `true`, deletes the retrieval file after decomposing or deletes decomposed files after recomposing. Defaults to `false`. |
-| `decomposedFormat`           | No       | Format of decomposed files: `xml`, `json`, `json5`, `toml`, `ini`, or `yaml`. Defaults to `xml`.                                               |
-| `strategy`                   | No       | Strategy for decomposing the files: `unique-id` or `grouped-by-tag`. Defaults to `unique-id`.                                                  |
-| `decomposeNestedPermissions` | No       | If strategy is `grouped-by-tag` and this is set to `true`, decompose permission sets further by object and field permissions.                  |
+Copy and customize the [sample config](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.sfdecomposer.config.json).
 
-If `.sfdecomposer.config.json` is found, the hooks will run:
+| Option                       | Required | Description                                                                                   |
+| ---------------------------- | -------- | --------------------------------------------------------------------------------------------- |
+| `metadataSuffixes`           | Yes      | Comma-separated metadata suffixes to decompose/recompose.                                     |
+| `ignorePackageDirectories`   | No       | Comma-separated package directories to skip.                                                  |
+| `prePurge`                   | No       | Remove existing decomposed files before decomposing (default: false).                         |
+| `postPurge`                  | No       | After decompose: remove originals; after recompose: remove decomposed files (default: false). |
+| `decomposedFormat`           | No       | `xml` \| `json` \| `json5` \| `toml` \| `ini` \| `yaml` (default: xml).                       |
+| `strategy`                   | No       | `unique-id` \| `grouped-by-tag` (default: unique-id).                                         |
+| `decomposeNestedPermissions` | No       | With grouped-by-tag, set true to further decompose permission set object/field permissions.   |
 
-- the decompose command **after** a `sf project retrieve start` command completes successfully
-- the recompose command **before** a `sf project deploy [start/validate]` command starts
+---
 
 ## Ignore Files
 
-### `.forceignore`
+### .forceignore
 
-The Salesforce CLI **must** ignore the decomposed files and allow the recomposed files.
+The Salesforce CLI must **ignore** decomposed files and **allow** recomposed files. Use the [sample .forceignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.forceignore) and set patterns for the extensions you use (`.xml`, `.json`, `.yaml`, etc.).
 
-You can use the sample [.forceignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.forceignore). Update the decomposed file extensions based on what format you're using (`.xml`, `.json`, `.json5`, `.toml`, `.ini`, or `.yaml`).
+### .sfdecomposerignore
 
-### `.sfdecomposerignore`
+Optional. In the project root, list paths/patterns to skip when **decomposing** (same syntax as [.gitignore 2.22.1](https://git-scm.com/docs/gitignore)). Ignored files are not recomposed from. With `--debug`, ignored matches are logged to `disassemble.log`.
 
-Optionally, you can create a `.sfdecomposerignore` file in the root of your Salesforce DX project to ignore specific XMLs when decomposing. The `.sfdecomposerignore` file should follow [.gitignore spec 2.22.1](https://git-scm.com/docs/gitignore).
+### .gitignore
 
-When you run `sf decomposer decompose --debug` and it processes a file that matches an entry in `.sfdecomposerignore`, a warning will be printed to the `disassemble.log`:
+Optional. Ignore recomposed metadata and/or `disassemble.log` so they aren’t committed. See the [sample .gitignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.gitignore).
 
-```
-[2024-05-22T09:32:12.078] [WARN] default - File ignored by .sfdecomposerignore: C:\Users\matth\Documents\sf-decomposer\test\baselines\bots\Assessment_Bot\v1.botVersion-meta.xml
-```
-
-`.sfdecomposerignore` is not read when recomposing metadata.
-
-### `.gitignore`
-
-Optionally, git can ignore the recomposed files so you don't stage those in your repositories. You can also have git ignore the `disassemble.log` created by the `xml-disassembler` package.
-
-You can use the sample [.gitignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/samples/.gitignore).
+---
 
 ## Issues
 
-If you encounter any bugs or would like to request features, please create an [issue](https://github.com/mcarvin8/sf-decomposer/issues).
+Bugs and feature requests: [open an issue](https://github.com/mcarvin8/sf-decomposer/issues).
+
+---
 
 ## Built With
 
-- [`xml-disassembler`](https://github.com/mcarvin8/xml-disassembler) - Disassembles XML files into smaller files and reassembles the XML
-- [`fs-extra`](https://github.com/jprichardson/node-fs-extra) - Node.js: extra methods for the fs object like copy(), remove(), mkdirs()
-- [`@salesforce/source-deploy-retrieve`](https://github.com/forcedotcom/source-deploy-retrieve) - JavaScript toolkit for working with Salesforce metadata
+- [xml-disassembler](https://github.com/mcarvin8/xml-disassembler) – XML disassemble/reassemble
+- [fs-extra](https://github.com/jprichardson/node-fs-extra) – Extended Node.js `fs`
+- [@salesforce/source-deploy-retrieve](https://github.com/forcedotcom/source-deploy-retrieve) – Salesforce metadata toolkit
+
+---
 
 ## Contributing
 
-Contributions are welcome! See [Contributing](https://github.com/mcarvin8/sf-decomposer/blob/main/CONTRIBUTING.md).
+Contributions are welcome. See [CONTRIBUTING.md](https://github.com/mcarvin8/sf-decomposer/blob/main/CONTRIBUTING.md).
 
 ## License
 
-This project is licensed under the MIT license. Please see the [LICENSE](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/LICENSE.md) file for details.
+MIT. See [LICENSE](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/LICENSE.md).
