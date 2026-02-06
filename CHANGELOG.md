@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.11.7](https://github.com/mcarvin8/sf-decomposer/compare/v5.11.6...v5.11.7) (2026-02-06)
+
+
+### Bug Fixes
+
+* **deps:** bump @salesforce/core from 8.24.0 to 8.25.0 ([c38ddd3](https://github.com/mcarvin8/sf-decomposer/commit/c38ddd3f55fec91112925a46913721f50ad8528d))
+
 ## [5.11.6](https://github.com/mcarvin8/sf-decomposer/compare/v5.11.5...v5.11.6) (2026-01-31)
 
 
