@@ -255,9 +255,9 @@ Error (1): sfdx-project.json not found in any parent directory.
 
 ### XML disassemble output (Rust crate)
 
-The xml-disassembler Node plugin uses a **Rust crate** for XML decomposing and recomposing. There is **no log file** and **no `--debug` / log file option**. Disassemble errors and messages are shown in the terminal.
+The xml-disassembler Node plugin uses a **Rust crate** for XML decomposing and recomposing. Disassemble errors and messages are shown in the terminal.
 
-Control verbosity with the `RUST_LOG` environment variable (e.g. `RUST_LOG=debug` for detailed output). No `disassemble.log` file is created.
+Control verbosity with the `RUST_LOG` environment variable (e.g. `RUST_LOG=debug` for detailed output).
 
 Example output in the terminal (Rust log format):
 
@@ -318,9 +318,9 @@ Bugs and feature requests: [open an issue](https://github.com/mcarvin8/sf-decomp
 
 ## Built With
 
-- [xml-disassembler](https://github.com/mcarvin8/xml-disassembler) – XML disassemble/reassemble (uses a Rust crate for decomposing/recomposing; no log file)
-- [fs-extra](https://github.com/jprichardson/node-fs-extra) – Extended Node.js `fs`
-- [@salesforce/source-deploy-retrieve](https://github.com/forcedotcom/source-deploy-retrieve) – Salesforce metadata toolkit
+- [xml-disassembler](https://github.com/mcarvin8/xml-disassembler) – Disassemble XML into smaller, manageable files and reassemble when needed. Node.js + Rust (Neon).
+- [fs-extra](https://github.com/jprichardson/node-fs-extra) – Node.js: extra methods for the `fs` object like copy(), remove(), mkdirs().
+- [@salesforce/source-deploy-retrieve](https://github.com/forcedotcom/source-deploy-retrieve) – JavaScript toolkit for working with Salesforce metadata.
 
 ---
 
