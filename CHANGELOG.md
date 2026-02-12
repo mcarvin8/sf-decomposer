@@ -5,6 +5,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.0.0](https://github.com/mcarvin8/sf-decomposer/compare/v5.11.6...v6.0.0) (2026-02-12)
+
+
+### ⚠ BREAKING CHANGES
+
+* Remove --debug flag and disassemble.log file Remove INI and TOML formats from decompose Re-decompose files to include updated key config JSONs from rust crate
+
+### Features
+
+* migrate to xml-disassembler Rust crate ([7421d6e](https://github.com/mcarvin8/sf-decomposer/commit/7421d6eb7cbf55ed79511589c00f656cf5fa9beb))
+
+
+### Bug Fixes
+
+* **deps:** bump @salesforce/core from 8.24.0 to 8.25.0 ([c38ddd3](https://github.com/mcarvin8/sf-decomposer/commit/c38ddd3f55fec91112925a46913721f50ad8528d))
+
 ## [5.11.6](https://github.com/mcarvin8/sf-decomposer/compare/v5.11.5...v5.11.6) (2026-01-31)
 
 
