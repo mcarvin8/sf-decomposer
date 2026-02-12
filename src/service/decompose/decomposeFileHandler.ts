@@ -95,21 +95,11 @@ function disassembleHandler(
   decomposeNestedPerms: boolean
 ): void {
   const handler: DisassembleXMLFileHandler = new DisassembleXMLFileHandler();
-  let decomposeFormat;
-  let decomposePostPurge;
   let multiLevel;
   let splitTags;
   const decomposePermSets: boolean =
     decomposeNestedPerms && metaSuffix === 'permissionset' && strategy === 'grouped-by-tag';
   const decomposeLoyalyProgram: boolean = metaSuffix === 'loyaltyProgramSetup' && strategy === 'unique-id';
-  if (decomposePermSets || decomposeLoyalyProgram) {
-    decomposeFormat = 'xml';
-    decomposePostPurge = false;
-  } else {
-    decomposeFormat = format;
-    decomposePostPurge = postPurge;
-  }
-
   if (decomposeLoyalyProgram) {
     multiLevel = 'programProcesses:programProcesses:parameterName,ruleName';
   }
@@ -122,9 +112,9 @@ function disassembleHandler(
     filePath,
     uniqueIdElements,
     prePurge,
-    postPurge: decomposePostPurge,
+    postPurge,
     ignorePath,
-    format: decomposeFormat,
+    format,
     strategy,
     multiLevel,
     splitTags,
