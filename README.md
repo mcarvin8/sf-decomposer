@@ -181,7 +181,7 @@ sf decomposer recompose -m "flow" -i "force-app"
 
 ### Custom Labels Decomposition
 
-Custom labels use only the **unique-id** strategy. If you pass `grouped-by-tag`, the plugin overrides to `unique-id` and continues (with a warning). Each label is written to its own file.
+Custom labels use only the **unique-id** strategy. If you pass `grouped-by-tag`, the plugin overrides to `unique-id` and continues. Grouping labels by tag would produce no difference from the original file since all elements share the same tag. Each label is written to its own file.
 
 ![Decomposed Custom Labels](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-labels.png)
 
@@ -202,9 +202,7 @@ sf decomposer decompose -m "permissionset" -s "grouped-by-tag" -p
 
 ### Loyalty Program Setup Decomposition
 
-`loyaltyProgramSetup` supports only **unique-id**. With `grouped-by-tag`, the plugin overrides to `unique-id` and warns.
-
-Under unique-id:
+`loyaltyProgramSetup` supports only the **unique-id** strategy. If you pass `grouped-by-tag`, the plugin overrides to `unique-id` and continues. The metadata is automatically decomposed further under unique-id:
 
 - Each `<programProcesses>` element → its own file.
 - Each `<parameters>` and `<rules>` child → its own file.
@@ -221,16 +219,17 @@ All parent metadata types from this plugin’s version of **@salesforce/source-d
 
 Use the metadata **suffix** for `-m` / `--metadata-type`, as in [SDR’s metadataRegistry.json](https://github.com/forcedotcom/source-deploy-retrieve/blob/main/src/registry/metadataRegistry.json), or infer from the file name: `*.{suffix}-meta.xml`.
 
-| Metadata Type               | CLI value                  |
-| --------------------------- | -------------------------- |
-| Custom Labels               | `labels`                   |
-| Workflows                   | `workflow`                 |
-| Profiles                    | `profile`                  |
-| Permission Sets             | `permissionset`            |
-| AI Scoring Model Definition | `aiScoringModelDefinition` |
-| Decision Matrix Definition  | `decisionMatrixDefinition` |
-| Bot                         | `bot`                      |
-| Marketing App Extension     | `marketingappextension`    |
+| Metadata Type               | CLI value                  | Notes                                                                                                                                                                      |
+| --------------------------- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Custom Labels               | `labels`                   | Strategy overridden to `unique-id` if `grouped-by-tag` is provided (grouping labels by tag would be no different from the original file).                                  |
+| Workflows                   | `workflow`                 |                                                                                                                                                                            |
+| Profiles                    | `profile`                  |                                                                                                                                                                            |
+| Permission Sets             | `permissionset`            |                                                                                                                                                                            |
+| AI Scoring Model Definition | `aiScoringModelDefinition` |                                                                                                                                                                            |
+| Decision Matrix Definition  | `decisionMatrixDefinition` |                                                                                                                                                                            |
+| Bot                         | `bot`                      |                                                                                                                                                                            |
+| Marketing App Extension     | `marketingappextension`    |                                                                                                                                                                            |
+| Loyalty Program Setup       | `loyaltyProgramSetup`      | Only `unique-id` strategy supported; `grouped-by-tag` is overridden. Automatically decomposed further (see [Loyalty Program Setup](#loyalty-program-setup-decomposition)). |
 
 ### Exceptions
 
