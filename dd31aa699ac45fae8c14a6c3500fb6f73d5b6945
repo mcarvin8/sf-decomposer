@@ -1,0 +1,23 @@
+test/units/edgeCases.test.ts
+  e3728056a898c957 10,83-184
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.2",
+  "base_commit_sha": "dd31aa699ac45fae8c14a6c3500fb6f73d5b6945",
+  "prompts": {
+    "e3728056a898c957": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "14b7cff3-ab6e-482e-ae69-1bb77b7fefb0",
+        "model": "default"
+      },
+      "human_author": "Matt Carvin <90224411+mcarvin8@users.noreply.github.com>",
+      "messages": [],
+      "total_additions": 103,
+      "total_deletions": 0,
+      "accepted_lines": 103,
+      "overriden_lines": 0
+    }
+  }
+}
