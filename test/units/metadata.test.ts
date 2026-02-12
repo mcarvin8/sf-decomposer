@@ -135,4 +135,35 @@ describe('decomposer unit tests - unique id strategy', () => {
     const output = logMock.mock.calls.flat().join('\n');
     expect(output).toContain('All metadata files have been decomposed for the metadata type: permissionset');
   });
+  it('overrides strategy for labels when grouped-by-tag is used', async () => {
+    await decomposeMetadataTypes({
+      metadataTypes: ['labels'],
+      prepurge: true,
+      postpurge: true,
+      format: 'xml',
+      strategy: 'grouped-by-tag',
+      decomposeNestedPerms: false,
+      ignoreDirs: undefined,
+      log: logMock,
+    });
+
+    const output = logMock.mock.calls.flat().join('\n');
+    expect(output).toContain('All metadata files have been decomposed for the metadata type: labels');
+  });
+
+  it('overrides strategy for loyaltyProgramSetup when grouped-by-tag is used', async () => {
+    await decomposeMetadataTypes({
+      metadataTypes: ['loyaltyProgramSetup'],
+      prepurge: true,
+      postpurge: true,
+      format: 'xml',
+      strategy: 'grouped-by-tag',
+      decomposeNestedPerms: false,
+      ignoreDirs: undefined,
+      log: logMock,
+    });
+
+    const output = logMock.mock.calls.flat().join('\n');
+    expect(output).toContain('All metadata files have been decomposed for the metadata type: loyaltyProgramSetup');
+  });
 });
