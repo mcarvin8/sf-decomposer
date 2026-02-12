@@ -181,7 +181,7 @@ sf decomposer recompose -m "flow" -i "force-app"
 
 ### Custom Labels Decomposition
 
-Custom labels use only the **unique-id** strategy. If you pass `grouped-by-tag`, the plugin overrides to `unique-id` and continues (with a warning). Grouping labels by tag would produce no difference from the original file since all elements share the same tag. Each label is written to its own file.
+Custom labels use only the **unique-id** strategy. If you pass `grouped-by-tag`, the plugin overrides to `unique-id` and continues. Grouping labels by tag would produce no difference from the original file since all elements share the same tag. Each label is written to its own file.
 
 ![Decomposed Custom Labels](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-labels.png)
 
