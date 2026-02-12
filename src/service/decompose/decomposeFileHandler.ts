@@ -162,6 +162,7 @@ async function moveAndRenameLabels(metadataPath: string): Promise<void> {
 
   await Promise.all(tasks);
 
+  // istanbul ignore next -- callback only invoked if non-label files exist after rename
   await moveFiles(sourceDirectory, destinationDirectory, () => true);
   await rm(join(metadataPath, 'CustomLabels'), { recursive: true });
 }
