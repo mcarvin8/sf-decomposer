@@ -27,11 +27,6 @@ export default class DecomposerRecompose extends SfCommand<DecomposerResult> {
       required: false,
       default: false,
     }),
-    debug: Flags.boolean({
-      summary: messages.getMessage('flags.debug.summary'),
-      required: false,
-      default: false,
-    }),
     'ignore-package-directory': Flags.directory({
       summary: messages.getMessage('flags.ignore-package-directory.summary'),
       char: 'i',
@@ -46,10 +41,8 @@ export default class DecomposerRecompose extends SfCommand<DecomposerResult> {
     return recomposeMetadataTypes({
       metadataTypes: flags['metadata-type'],
       postpurge: flags['postpurge'],
-      debug: flags['debug'],
       ignoreDirs: flags['ignore-package-directory'],
       log: this.log.bind(this),
-      warn: this.warn.bind(this),
     });
   }
 }

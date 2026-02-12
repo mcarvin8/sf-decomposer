@@ -15,7 +15,7 @@ export async function reassembleLabels(metadataPath: string, metaSuffix: string,
   await moveFiles(sourceDirectory, destinationDirectory, (fileName) => fileName !== CUSTOM_LABELS_FILE);
 
   // do not use postpurge flag due to file moving
-  await reassembleHandler(join(metadataPath, 'CustomLabels'), `${metaSuffix}-meta.xml`, false);
+  reassembleHandler(join(metadataPath, 'CustomLabels'), `${metaSuffix}-meta.xml`, false);
 
   sourceDirectory = join(metadataPath, 'CustomLabels', 'labels');
   destinationDirectory = metadataPath;

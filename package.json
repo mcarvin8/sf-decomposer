@@ -9,7 +9,7 @@
     "@salesforce/source-deploy-retrieve": "^12.31.10",
     "fs-extra": "^11.3.3",
     "p-limit": "^7.2.0",
-    "xml-disassembler": "^1.11.4"
+    "xml-disassembler": "2.2.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^20.4.0",
@@ -57,8 +57,6 @@
     "yaml",
     "json",
     "json5",
-    "toml",
-    "ini",
     "decompose",
     "reassemble",
     "recompose",

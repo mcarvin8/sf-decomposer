@@ -7,7 +7,7 @@
 [![Code Coverage](https://qlty.sh/badges/8492c1c6-0f93-4d37-bfad-32fd3b788a2d/test_coverage.svg)](https://qlty.sh/gh/mcarvin8/projects/sf-decomposer)
 [![Known Vulnerabilities](https://snyk.io//test/github/mcarvin8/sf-decomposer/badge.svg?targetFile=package.json)](https://snyk.io//test/github/mcarvin8/sf-decomposer?targetFile=package.json)
 
-A Salesforce CLI plugin that **decomposes** large metadata XML files into smaller, version-control–friendly files (XML, JSON, YAML, TOML, JSON5, or INI), and **recomposes** them back into deployment-ready metadata.
+A Salesforce CLI plugin that **decomposes** large metadata XML files into smaller, version-control–friendly files (XML, JSON, YAML, JSON5), and **recomposes** them back into deployment-ready metadata.
 
 <!-- TABLE OF CONTENTS -->
 <details>
@@ -80,9 +80,8 @@ Salesforce’s built-in decomposition is limited. sf-decomposer gives admins and
   - **unique-id** (default): one file per nested element, named by content or hash.
   - **grouped-by-tag**: one file per tag (e.g. all `fieldPermissions` in a permission set in `fieldPermissions.xml`). Use `--decompose-nested-permissions` for deeper permission-set decomposition.
 - **Full decomposition** – Fully decompose types that Salesforce only partially supports (e.g. permission sets).
-- **Stable ordering** – Elements are sorted consistently to reduce noisy diffs.  
-  _Note: TOML and INI output may sort differently from other formats._
-- **Multiple formats** – Output as XML, JSON, JSON5, TOML, INI, or YAML.
+- **Stable ordering** – Elements are sorted consistently to reduce noisy diffs.
+- **Multiple formats** – Output as XML, JSON, JSON5, or YAML.
 - **CI/CD hooks** – Auto decompose after retrieve and recompose before deploy via [.sfdecomposer.config.json](#hooks).
 - **Better reviews** – Smaller, structured files mean clearer pull requests and fewer merge conflicts.
 
@@ -101,16 +100,15 @@ Decomposes metadata in all local package directories (from `sfdx-project.json`) 
 
 ```
 USAGE
-  $ sf decomposer decompose -m <value> -f <value> -i <value> -s <value> [--prepurge --postpurge --debug -p --json]
+  $ sf decomposer decompose -m <value> -f <value> -i <value> -s <value> [--prepurge --postpurge -p --json]
 
 FLAGS
   -m, --metadata-type=<value>             Metadata suffix to process (e.g. flow, labels). Repeatable.
-  -f, --format=<value>                    Output format: xml | yaml | json | toml | ini | json5 [default: xml]
+  -f, --format=<value>                    Output format: xml | yaml | json | json5 [default: xml]
   -i, --ignore-package-directory=<value>  Package directory to skip (as in sfdx-project.json). Repeatable.
   -s, --strategy=<value>                  unique-id | grouped-by-tag [default: unique-id]
   --prepurge                              Remove existing decomposed files before decomposing [default: false]
   --postpurge                             Remove original metadata files after decomposing [default: false]
-  --debug                                 Write debug log to disassemble.log [default: false]
   -p, --decompose-nested-permissions      With grouped-by-tag, further decompose permission set object/field permissions
 
 GLOBAL FLAGS
@@ -120,11 +118,11 @@ GLOBAL FLAGS
 **Examples**
 
 ```bash
-# Decompose flows (XML), purge before/after, with debug log
-sf decomposer decompose -m "flow" -f "xml" --prepurge --postpurge --debug
+# Decompose flows (XML), purge before/after
+sf decomposer decompose -m "flow" -f "xml" --prepurge --postpurge
 
 # Decompose flows and labels in YAML
-sf decomposer decompose -m "flow" -m "labels" -f "yaml" --prepurge --postpurge --debug
+sf decomposer decompose -m "flow" -m "labels" -f "yaml" --prepurge --postpurge
 
 # Decompose flows, excluding the force-app package
 sf decomposer decompose -m "flow" -i "force-app"
@@ -136,13 +134,12 @@ Recomposes decomposed files into deployment-compatible metadata.
 
 ```
 USAGE
-  $ sf decomposer recompose -m <value> -i <value> [--postpurge --debug --json]
+  $ sf decomposer recompose -m <value> -i <value> [--postpurge --json]
 
 FLAGS
   -m, --metadata-type=<value>             Metadata suffix to process (e.g. flow, labels). Repeatable.
   -i, --ignore-package-directory=<value>  Package directory to skip. Repeatable.
   --postpurge                             Remove decomposed files after recomposing [default: false]
-  --debug                                 Write debug log to disassemble.log [default: false]
 
 GLOBAL FLAGS
   --json  Output as JSON.
@@ -151,7 +148,7 @@ GLOBAL FLAGS
 **Examples**
 
 ```bash
-sf decomposer recompose -m "flow" --postpurge --debug
+sf decomposer recompose -m "flow" --postpurge
 sf decomposer recompose -m "flow" -i "force-app"
 ```
 
@@ -172,8 +169,6 @@ sf decomposer recompose -m "flow" -i "force-app"
 | YAML   | ![YAML](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-yaml.png)   |
 | JSON   | ![JSON](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-json.png)   |
 | JSON5  | ![JSON5](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-json5.png) |
-| TOML   | ![TOML](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-toml.png)   |
-| INI    | ![INI](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-ini.png)     |
 
 **Permission set – grouped-by-tag**
 
@@ -183,8 +178,6 @@ sf decomposer recompose -m "flow" -i "force-app"
 | YAML   | ![YAML](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-tags-yaml.png)   |
 | JSON   | ![JSON](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-tags-json.png)   |
 | JSON5  | ![JSON5](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-tags-json5.png) |
-| TOML   | ![TOML](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-tags-toml.png)   |
-| INI    | ![INI](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-tags-ini.png)     |
 
 ### Custom Labels Decomposition
 
@@ -260,27 +253,21 @@ The plugin looks for `sfdx-project.json` from the current directory up to the dr
 Error (1): sfdx-project.json not found in any parent directory.
 ```
 
-### Log file (disassemble.log)
+### XML disassemble output (Rust crate)
 
-The plugin always writes a `disassemble.log` (via the xml-disassembler dependency). By default it contains only errors; the CLI still processes other files.
+The xml-disassembler Node plugin uses a **Rust crate** for XML decomposing and recomposing. There is **no log file** and **no `--debug` / log file option**. Disassemble errors and messages are shown in the terminal.
 
-Example terminal warning:
+Control verbosity with the `RUST_LOG` environment variable (e.g. `RUST_LOG=debug` for detailed output). No `disassemble.log` file is created.
+
+Example output in the terminal (Rust log format):
 
 ```
-Warning: ...\Get_Info.actionCalls-meta.xml was unable to be parsed and will not be processed. Confirm formatting and try again.
+[2026-02-11T22:52:32Z ERROR xml_disassembler::builders::build_disassembled_files] The XML file C:\Users\matthew.carvin\Documents\sf-decomposer\fixtures\package-dir-1\permissionsets\only_leafs.permissionset-meta.xml only has leaf elements. This file will not be disassembled.
 ```
-
-### Debug output
-
-Use `--debug` with `decompose` or `recompose` to log detailed activity (including processed files) to `disassemble.log`.
 
 ### Files with only leaf elements
 
-If a metadata file has only leaf elements (primitives, no nested structure), there is nothing to decompose. The file is skipped with a warning:
-
-```
-Warning: The XML file ...\view_of_projects_tab_on_opportunity.permissionset-meta.xml only has leaf elements. This file will not be disassembled.
-```
+If a metadata file has only leaf elements (primitives, no nested structure), there is nothing to decompose. The Rust crate skips the file and logs an ERROR like the example above.
 
 ---
 
@@ -301,7 +288,7 @@ Copy and customize the [sample config](https://raw.githubusercontent.com/mcarvin
 | `ignorePackageDirectories`   | No       | Comma-separated package directories to skip.                                                  |
 | `prePurge`                   | No       | Remove existing decomposed files before decomposing (default: false).                         |
 | `postPurge`                  | No       | After decompose: remove originals; after recompose: remove decomposed files (default: false). |
-| `decomposedFormat`           | No       | `xml` \| `json` \| `json5` \| `toml` \| `ini` \| `yaml` (default: xml).                       |
+| `decomposedFormat`           | No       | xml, json, json5, or yaml (default: xml).                                                     |
 | `strategy`                   | No       | `unique-id` \| `grouped-by-tag` (default: unique-id).                                         |
 | `decomposeNestedPermissions` | No       | With grouped-by-tag, set true to further decompose permission set object/field permissions.   |
 
@@ -315,11 +302,11 @@ The Salesforce CLI must **ignore** decomposed files and **allow** recomposed fil
 
 ### .sfdecomposerignore
 
-Optional. In the project root, list paths/patterns to skip when **decomposing** (same syntax as [.gitignore 2.22.1](https://git-scm.com/docs/gitignore)). Ignored files are not recomposed from. With `--debug`, ignored matches are logged to `disassemble.log`.
+Optional. In the project root, list paths/patterns to skip when **decomposing** (same syntax as [.gitignore 2.22.1](https://git-scm.com/docs/gitignore)). Ignored files are not recomposed from.
 
 ### .gitignore
 
-Optional. Ignore recomposed metadata and/or `disassemble.log` so they aren’t committed. See the [sample .gitignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.gitignore).
+Optional. Ignore recomposed metadata so it aren’t committed. See the [sample .gitignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.gitignore).
 
 ---
 
@@ -331,7 +318,7 @@ Bugs and feature requests: [open an issue](https://github.com/mcarvin8/sf-decomp
 
 ## Built With
 
-- [xml-disassembler](https://github.com/mcarvin8/xml-disassembler) – XML disassemble/reassemble
+- [xml-disassembler](https://github.com/mcarvin8/xml-disassembler) – XML disassemble/reassemble (uses a Rust crate for decomposing/recomposing; no log file)
 - [fs-extra](https://github.com/jprichardson/node-fs-extra) – Extended Node.js `fs`
 - [@salesforce/source-deploy-retrieve](https://github.com/forcedotcom/source-deploy-retrieve) – Salesforce metadata toolkit
 

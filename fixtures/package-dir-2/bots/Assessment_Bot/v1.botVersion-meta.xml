@@ -320,7 +320,7 @@
     <botDialogs>
         <botSteps>
             <botMessages>
-                <message>Sorry, I didn't understand that.</message>
+                <message>Sorry, I didn&apos;t understand that.</message>
             </botMessages>
             <type>Message</type>
         </botSteps>
