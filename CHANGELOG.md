@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.0.1](https://github.com/mcarvin8/sf-decomposer/compare/v6.0.0...v6.0.1) (2026-02-12)
+
+
+### Bug Fixes
+
+* bump xml-disassembler with crate updates to ensure consistent sorting in reassembly ([aec34c6](https://github.com/mcarvin8/sf-decomposer/commit/aec34c6016c2137a4194f9c1dce5dd8c92717325))
+
 ## [6.0.0](https://github.com/mcarvin8/sf-decomposer/compare/v5.11.6...v6.0.0) (2026-02-12)
 
 
