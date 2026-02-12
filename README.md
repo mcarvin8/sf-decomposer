@@ -31,6 +31,7 @@ A Salesforce CLI plugin that **decomposes** large metadata XML files into smalle
   - [.sfdecomposerignore](#sfdecomposerignore)
   - [.gitignore](#gitignore)
 - [Issues](#issues)
+- [Requirements](#requirements)
 - [Built With](#built-with)
 - [Contributing](#contributing)
 - [License](#license)
@@ -65,6 +66,20 @@ A Salesforce CLI plugin that **decomposes** large metadata XML files into smalle
    sf decomposer recompose -m "flow" -m "labels"
    sf project deploy start
    ```
+
+---
+
+## Requirements
+
+The [xml-disassembler](https://github.com/mcarvin8/xml-disassembler) dependency ships with native binaries for these platforms:
+
+| Platform    | Architectures                      |
+| ----------- | ---------------------------------- |
+| **macOS**   | x64 (Intel), arm64 (Apple Silicon) |
+| **Linux**   | x64, arm64, ia32                   |
+| **Windows** | x64                                |
+
+Other platforms may require building the Rust extension from source (see the xml-disassembler repo).
 
 ---
 
@@ -317,7 +332,7 @@ Bugs and feature requests: [open an issue](https://github.com/mcarvin8/sf-decomp
 
 ## Built With
 
-- [xml-disassembler](https://github.com/mcarvin8/xml-disassembler) – Disassemble XML into smaller, manageable files and reassemble when needed. Node.js + Rust (Neon).
+- [xml-disassembler](https://github.com/mcarvin8/xml-disassembler) – Disassemble XML into smaller, manageable files and reassemble when needed. Node.js + Rust (Neon). Includes prebuilt binaries for macOS (x64, arm64), Linux (x64, arm64, ia32), and Windows (x64).
 - [fs-extra](https://github.com/jprichardson/node-fs-extra) – Node.js: extra methods for the `fs` object like copy(), remove(), mkdirs().
 - [@salesforce/source-deploy-retrieve](https://github.com/forcedotcom/source-deploy-retrieve) – JavaScript toolkit for working with Salesforce metadata.
 
