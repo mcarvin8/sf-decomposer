@@ -10,8 +10,8 @@ You should run this after you retrieve metadata from an org.
 
 # examples
 
-- `sf decomposer decompose -m "flow" -f "xml" --prepurge --postpurge --debug`
-- `sf decomposer decompose -m "flow" -m "labels" -f "xml" --prepurge --postpurge --debug`
+- `sf decomposer decompose -m "flow" -f "xml" --prepurge --postpurge`
+- `sf decomposer decompose -m "flow" -m "labels" -f "xml" --prepurge --postpurge`
 - `sf decomposer decompose -m "flow" -f "xml" -i "force-app"`
 
 # flags.metadata-type.summary
@@ -25,10 +25,6 @@ Purge directories of pre-existing decomposed files.
 # flags.postpurge.summary
 
 Purge the original files after decomposing them.
-
-# flags.debug.summary
-
-Debug to a log file.
 
 # flags.format.summary
 

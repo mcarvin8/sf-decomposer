@@ -10,7 +10,7 @@ You should run this before you deploy decomposed metadata to an org.
 
 # examples
 
-- `sf decomposer recompose -m "flow" --postpurge --debug`
+- `sf decomposer recompose -m "flow" --postpurge`
 - `sf decomposer recompose -m "flow" -i "force-app"`
 
 # flags.metadata-type.summary
@@ -20,10 +20,6 @@ The metadata suffix to process, such as 'flow', 'labels', etc.
 # flags.postpurge.summary
 
 Purge the decomposed files after recomposing them.
-
-# flags.debug.summary
-
-Debug to a log file.
 
 # flags.ignore-package-directory.summary
 
