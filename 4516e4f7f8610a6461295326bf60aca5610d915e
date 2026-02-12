@@ -1,0 +1,23 @@
+test/utils/compareDirectories.ts
+  e3728056a898c957 7-46,62-70
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.2",
+  "base_commit_sha": "4516e4f7f8610a6461295326bf60aca5610d915e",
+  "prompts": {
+    "e3728056a898c957": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "14b7cff3-ab6e-482e-ae69-1bb77b7fefb0",
+        "model": "default"
+      },
+      "human_author": "Matt Carvin <90224411+mcarvin8@users.noreply.github.com>",
+      "messages": [],
+      "total_additions": 49,
+      "total_deletions": 2,
+      "accepted_lines": 49,
+      "overriden_lines": 0
+    }
+  }
+}
