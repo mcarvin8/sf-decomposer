@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.0.2](https://github.com/mcarvin8/sf-decomposer/compare/v6.0.1...v6.0.2) (2026-02-12)
+
+
+### Bug Fixes
+
+* remove format and postpurge overrides on decomposing labels and loyalty program setup ([d34c5e3](https://github.com/mcarvin8/sf-decomposer/commit/d34c5e3cea52532197b691a144bdda52cbe7d58e))
+
 ## [6.0.1](https://github.com/mcarvin8/sf-decomposer/compare/v6.0.0...v6.0.1) (2026-02-12)
 
 
