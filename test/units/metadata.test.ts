@@ -6,13 +6,11 @@ import { join, resolve } from 'node:path';
 import { copy } from 'fs-extra';
 import { describe, it, expect } from '@jest/globals';
 
-import { setLogLevel } from 'xml-disassembler';
 import { decomposeMetadataTypes } from '../../src/core/decomposeMetadataTypes.js';
 import { SFDX_CONFIG_FILE } from '../utils/constants.js';
 
 describe('decomposer unit tests - unique id strategy', () => {
   let logMock: jest.Mock;
-  let warnMock: jest.Mock;
   let tempProjectDir: string;
   let forceAppDir: string;
   let packageDir: string;
@@ -29,9 +27,7 @@ describe('decomposer unit tests - unique id strategy', () => {
   };
 
   beforeAll(async () => {
-    setLogLevel('debug');
     logMock = jest.fn();
-    warnMock = jest.fn();
 
     // Create isolated test workspace
     tempProjectDir = await mkdtemp(join(tmpdir(), 'uid-test-'));
@@ -57,13 +53,11 @@ describe('decomposer unit tests - unique id strategy', () => {
         metadataTypes: ['botVersion'],
         prepurge: true,
         postpurge: true,
-        debug: false,
         format: 'xml',
         strategy: 'unique-id',
         decomposeNestedPerms: false,
         ignoreDirs: undefined,
         log: logMock,
-        warn: warnMock,
       })
     ).rejects.toThrow(
       '`botVersion` suffix should not be used. Please use `bot` to decompose/recompose bot and bot version files.'
@@ -75,13 +69,11 @@ describe('decomposer unit tests - unique id strategy', () => {
         metadataTypes: ['object'],
         prepurge: true,
         postpurge: true,
-        debug: false,
         format: 'xml',
         strategy: 'unique-id',
         decomposeNestedPerms: false,
         ignoreDirs: undefined,
         log: logMock,
-        warn: warnMock,
       })
     ).rejects.toThrow('Custom Objects are not supported by this plugin.');
   });
@@ -91,13 +83,11 @@ describe('decomposer unit tests - unique id strategy', () => {
         metadataTypes: ['cls'],
         prepurge: true,
         postpurge: true,
-        debug: false,
         format: 'xml',
         strategy: 'unique-id',
         decomposeNestedPerms: false,
         ignoreDirs: undefined,
         log: logMock,
-        warn: warnMock,
       })
     ).rejects.toThrow('Metadata types with matchingContentFile strategies are not supported by this plugin.');
   });
@@ -107,13 +97,11 @@ describe('decomposer unit tests - unique id strategy', () => {
         metadataTypes: ['animationRule'],
         prepurge: true,
         postpurge: true,
-        debug: false,
         format: 'xml',
         strategy: 'unique-id',
         decomposeNestedPerms: false,
         ignoreDirs: undefined,
         log: logMock,
-        warn: warnMock,
       })
     ).rejects.toThrow('No directories named animationRules were found in any package directory.');
   });
@@ -123,67 +111,25 @@ describe('decomposer unit tests - unique id strategy', () => {
         metadataTypes: ['bs'],
         prepurge: true,
         postpurge: true,
-        debug: false,
         format: 'xml',
         strategy: 'unique-id',
         decomposeNestedPerms: false,
         ignoreDirs: undefined,
         log: logMock,
-        warn: warnMock,
       })
     ).rejects.toThrow('Metadata type not found for the given suffix: bs.');
   });
-  it('warns and overrides strategy for labels when grouped-by-tag is used', async () => {
-    await decomposeMetadataTypes({
-      metadataTypes: ['labels'],
-      prepurge: true,
-      postpurge: true,
-      debug: false,
-      format: 'xml',
-      strategy: 'grouped-by-tag',
-      decomposeNestedPerms: false,
-      ignoreDirs: undefined,
-      log: logMock,
-      warn: warnMock,
-    });
 
-    const warnings = warnMock.mock.calls.flat();
-    expect(warnings).toContain(
-      'Overriding strategy to "unique-id" for custom labels, as "grouped-by-tag" is not supported.'
-    );
-  });
-
-  it('warns and overrides strategy for loyaltyProgramSetup when grouped-by-tag is used', async () => {
-    await decomposeMetadataTypes({
-      metadataTypes: ['loyaltyProgramSetup'],
-      prepurge: true,
-      postpurge: true,
-      debug: false,
-      format: 'xml',
-      strategy: 'grouped-by-tag',
-      decomposeNestedPerms: false,
-      ignoreDirs: undefined,
-      log: logMock,
-      warn: warnMock,
-    });
-
-    const warnings = warnMock.mock.calls.flat();
-    expect(warnings).toContain(
-      'Overriding strategy to "unique-id" for loyaltyProgramSetup, as "grouped-by-tag" is not supported.'
-    );
-  });
   it('decomposes permission sets with the additional strategy', async () => {
     await decomposeMetadataTypes({
       metadataTypes: ['permissionset'],
       prepurge: true,
       postpurge: true,
-      debug: false,
       format: 'xml',
       strategy: 'grouped-by-tag',
       decomposeNestedPerms: true,
       ignoreDirs: ['package'],
       log: logMock,
-      warn: warnMock,
     });
 
     const output = logMock.mock.calls.flat().join('\n');

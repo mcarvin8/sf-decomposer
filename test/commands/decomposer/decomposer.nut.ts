@@ -38,7 +38,7 @@ describe('non-unit tests', () => {
     await rm(SFDX_CONFIG_FILE);
   });
 
-  const formats = ['xml', 'json', 'json5', 'yaml', 'toml', 'ini'];
+  const formats = ['xml', 'json', 'json5', 'yaml'];
   for (const format of formats) {
     it(`should decompose all metadata types under test in ${format.toUpperCase()} format`, async () => {
       const command = `decomposer decompose --postpurge --prepurge --debug ${METADATA_UNDER_TEST.map(
@@ -66,11 +66,9 @@ describe('non-unit tests', () => {
       });
     });
 
-    if (!['toml', 'ini'].includes(format)) {
-      it(`should confirm the recomposed ${format.toUpperCase()} files match the fixture files`, async () => {
-        await compareDirectories(originalDirectory, mockDirectory);
-        await compareDirectories(originalDirectory2, mockDirectory2);
-      });
-    }
+    it(`should confirm the recomposed ${format.toUpperCase()} files match the fixture files`, async () => {
+      await compareDirectories(originalDirectory, mockDirectory);
+      await compareDirectories(originalDirectory2, mockDirectory2);
+    });
   }
 });

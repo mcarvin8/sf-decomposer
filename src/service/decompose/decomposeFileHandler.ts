@@ -2,13 +2,11 @@
 /* eslint-disable no-await-in-loop */
 import { resolve, relative, join } from 'node:path';
 import { readdir, stat, rm, rename } from 'node:fs/promises';
-import { DisassembleXMLFileHandler, setLogLevel } from 'xml-disassembler';
+import { DisassembleXMLFileHandler } from 'xml-disassembler';
 import pLimit from 'p-limit';
 
 import { CUSTOM_LABELS_FILE, WORKFLOW_SUFFIX_MAPPING, CONCURRENCY_LIMITS } from '../../helpers/constants.js';
 import { moveFiles } from '../core/moveFiles.js';
-import { handleNestedLoyaltyProgramSetupDecomposition } from './lps/loyaltyProgramSetup.js';
-import { handleNestedPermissionSetDecomposition } from './perm-set/permSets.js';
 
 export async function decomposeFileHandler(
   metaAttributes: {
@@ -20,14 +18,12 @@ export async function decomposeFileHandler(
   },
   prepurge: boolean,
   postpurge: boolean,
-  debug: boolean,
   format: string,
   ignorePath: string,
   strategy: string,
   decomposeNestedPerms: boolean
 ): Promise<void> {
   const { metadataPaths, metaSuffix, strictDirectoryName, folderType, uniqueIdElements } = metaAttributes;
-  if (debug) setLogLevel('debug');
 
   // Limit concurrent package directory processing to prevent file system overload
   const limit = pLimit(CONCURRENCY_LIMITS.PACKAGE_DIRS);
@@ -52,7 +48,7 @@ export async function decomposeFileHandler(
         const absoluteLabelFilePath = resolve(metadataPath, CUSTOM_LABELS_FILE);
         const relativeLabelFilePath = relative(process.cwd(), absoluteLabelFilePath);
 
-        await disassembleHandler(
+        disassembleHandler(
           relativeLabelFilePath,
           uniqueIdElements,
           false,
@@ -66,7 +62,7 @@ export async function decomposeFileHandler(
         // move labels from the directory they are created in
         await moveAndRenameLabels(metadataPath);
       } else {
-        await disassembleHandler(
+        disassembleHandler(
           metadataPath,
           uniqueIdElements,
           prepurge,
@@ -87,7 +83,7 @@ export async function decomposeFileHandler(
   await Promise.all(tasks);
 }
 
-async function disassembleHandler(
+function disassembleHandler(
   filePath: string,
   uniqueIdElements: string,
   prePurge: boolean,
@@ -97,10 +93,12 @@ async function disassembleHandler(
   strategy: string,
   metaSuffix: string,
   decomposeNestedPerms: boolean
-): Promise<void> {
+): void {
   const handler: DisassembleXMLFileHandler = new DisassembleXMLFileHandler();
   let decomposeFormat;
   let decomposePostPurge;
+  let multiLevel;
+  let splitTags;
   const decomposePermSets: boolean =
     decomposeNestedPerms && metaSuffix === 'permissionset' && strategy === 'grouped-by-tag';
   const decomposeLoyalyProgram: boolean = metaSuffix === 'loyaltyProgramSetup' && strategy === 'unique-id';
@@ -112,7 +110,15 @@ async function disassembleHandler(
     decomposePostPurge = postPurge;
   }
 
-  await handler.disassemble({
+  if (decomposeLoyalyProgram) {
+    multiLevel = 'programProcesses:programProcesses:parameterName,ruleName';
+  }
+
+  if (decomposePermSets) {
+    splitTags = 'objectPermissions:split:object,fieldPermissions:group:field';
+  }
+
+  handler.disassemble({
     filePath,
     uniqueIdElements,
     prePurge,
@@ -120,16 +126,9 @@ async function disassembleHandler(
     ignorePath,
     format: decomposeFormat,
     strategy,
+    multiLevel,
+    splitTags,
   });
-
-  // Dispatch recursive decomposition based on type
-  if (decomposePermSets) {
-    await handleNestedPermissionSetDecomposition(filePath, uniqueIdElements, handler, format);
-  }
-
-  if (decomposeLoyalyProgram) {
-    await handleNestedLoyaltyProgramSetupDecomposition(filePath, handler, format);
-  }
 }
 
 async function prePurgeLabels(metadataPath: string): Promise<void> {

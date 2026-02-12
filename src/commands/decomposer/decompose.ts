@@ -33,11 +33,6 @@ export default class DecomposerDecompose extends SfCommand<DecomposerResult> {
       required: false,
       default: false,
     }),
-    debug: Flags.boolean({
-      summary: messages.getMessage('flags.debug.summary'),
-      required: false,
-      default: false,
-    }),
     format: Flags.string({
       summary: messages.getMessage('flags.format.summary'),
       char: 'f',
@@ -75,13 +70,11 @@ export default class DecomposerDecompose extends SfCommand<DecomposerResult> {
       metadataTypes: flags['metadata-type'],
       prepurge: flags['prepurge'],
       postpurge: flags['postpurge'],
-      debug: flags['debug'],
       format: flags['format'],
       ignoreDirs: flags['ignore-package-directory'],
       strategy: flags['strategy'],
       decomposeNestedPerms: flags['decompose-nested-permissions'],
       log: this.log.bind(this),
-      warn: this.warn.bind(this),
     });
   }
 }

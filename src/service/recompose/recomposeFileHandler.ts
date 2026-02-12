@@ -2,13 +2,12 @@
 /* eslint-disable no-await-in-loop */
 import { readdir, stat } from 'node:fs/promises';
 import { join } from 'node:path';
-import { ReassembleXMLFileHandler, setLogLevel } from 'xml-disassembler';
+import { ReassembleXMLFileHandler } from 'xml-disassembler';
 import pLimit from 'p-limit';
 
 import { CONCURRENCY_LIMITS } from '../../helpers/constants.js';
 import { reassembleLabels } from './reassembleLabels.js';
 import { renameBotVersionFile } from './renameBotVersionFiles.js';
-import { reassembleLoyaltyProgramSetup } from './resssembleLoyaltyProgramSetup.js';
 
 export async function recomposeFileHandler(
   metaAttributes: {
@@ -17,11 +16,9 @@ export async function recomposeFileHandler(
     folderType: string;
     metadataPaths: string[];
   },
-  postpurge: boolean,
-  debug: boolean
+  postpurge: boolean
 ): Promise<void> {
   const { metaSuffix, strictDirectoryName, folderType, metadataPaths } = metaAttributes;
-  if (debug) setLogLevel('debug');
 
   // Limit concurrent package directory processing
   const limit = pLimit(CONCURRENCY_LIMITS.PACKAGE_DIRS);
@@ -30,8 +27,6 @@ export async function recomposeFileHandler(
     limit(async () => {
       if (metaSuffix === 'labels') {
         await reassembleLabels(metadataPath, metaSuffix, postpurge);
-      } else if (metaSuffix === 'loyaltyProgramSetup') {
-        await reassembleLoyaltyProgramSetup(metadataPath);
       } else {
         let recurse: boolean = false;
         if (strictDirectoryName || folderType) recurse = true;
@@ -45,9 +40,9 @@ export async function recomposeFileHandler(
   await Promise.all(tasks);
 }
 
-export async function reassembleHandler(filePath: string, fileExtension: string, postPurge: boolean): Promise<void> {
+export function reassembleHandler(filePath: string, fileExtension: string, postPurge: boolean): void {
   const handler: ReassembleXMLFileHandler = new ReassembleXMLFileHandler();
-  await handler.reassemble({
+  handler.reassemble({
     filePath,
     fileExtension,
     postPurge,
@@ -83,7 +78,7 @@ async function reassembleDirectories(
           // recursively call this function and set recurse to false
           await reassembleDirectories(subdirectory, metaSuffix, false, postpurge);
         } else {
-          await reassembleHandler(subdirectory, `${metaSuffix}-meta.xml`, postpurge);
+          reassembleHandler(subdirectory, `${metaSuffix}-meta.xml`, postpurge);
         }
       })
     );

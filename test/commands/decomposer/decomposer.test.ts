@@ -6,7 +6,6 @@ import { join, resolve } from 'node:path';
 import { copy } from 'fs-extra';
 import { describe, it, expect } from '@jest/globals';
 
-import { setLogLevel } from 'xml-disassembler';
 import { decomposeMetadataTypes } from '../../../src/core/decomposeMetadataTypes.js';
 import { recomposeMetadataTypes } from '../../../src/core/recomposeMetadataTypes.js';
 import { METADATA_UNDER_TEST, SFDX_CONFIG_FILE } from '../../utils/constants.js';
@@ -14,7 +13,6 @@ import { compareDirectories } from '../../utils/compareDirectories.js';
 
 describe('decomposer unit tests - unique id strategy', () => {
   let logMock: jest.Mock;
-  let warnMock: jest.Mock;
   let tempProjectDir: string;
   let forceAppDir: string;
   let packageDir: string;
@@ -31,9 +29,7 @@ describe('decomposer unit tests - unique id strategy', () => {
   };
 
   beforeAll(async () => {
-    setLogLevel('debug');
     logMock = jest.fn();
-    warnMock = jest.fn();
 
     // Create isolated test workspace
     tempProjectDir = await mkdtemp(join(tmpdir(), 'uid-test-'));
@@ -53,20 +49,18 @@ describe('decomposer unit tests - unique id strategy', () => {
     await rm(tempProjectDir, { recursive: true, force: true });
   });
 
-  const formats = ['xml', 'json', 'json5', 'yaml', 'toml', 'ini'];
+  const formats = ['xml', 'json', 'json5', 'yaml'];
   for (const format of formats) {
     it(`should decompose all metadata types under test in ${format.toUpperCase()} format`, async () => {
       await decomposeMetadataTypes({
         metadataTypes: METADATA_UNDER_TEST,
         prepurge: true,
         postpurge: true,
-        debug: true,
         format,
         strategy: 'unique-id',
         decomposeNestedPerms: false,
         ignoreDirs: undefined,
         log: logMock,
-        warn: warnMock,
       });
 
       const output = logMock.mock.calls.flat().join('\n');
@@ -80,10 +74,8 @@ describe('decomposer unit tests - unique id strategy', () => {
       await recomposeMetadataTypes({
         metadataTypes: METADATA_UNDER_TEST,
         postpurge: true,
-        debug: true,
         ignoreDirs: undefined,
         log: logMock,
-        warn: warnMock,
       });
 
       const output = logMock.mock.calls.flat().join('\n');
@@ -92,11 +84,9 @@ describe('decomposer unit tests - unique id strategy', () => {
       });
     });
 
-    if (!['toml', 'ini'].includes(format)) {
-      it(`should confirm the recomposed ${format.toUpperCase()} files match the fixture files`, async () => {
-        await compareDirectories(originalDirectory, forceAppDir);
-        await compareDirectories(originalDirectory2, packageDir);
-      });
-    }
+    it(`should confirm the recomposed ${format.toUpperCase()} files match the fixture files`, async () => {
+      await compareDirectories(originalDirectory, forceAppDir);
+      await compareDirectories(originalDirectory2, packageDir);
+    });
   }
 });
