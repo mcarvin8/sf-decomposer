@@ -10,12 +10,12 @@
     </classAccesses>
     <fieldPermissions>
         <editable>true</editable>
-        <field>Job_Request__c.Salary__c</field>
+        <field>Job_Request__c.SalaryPay__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
-        <field>Job_Request__c.SalaryPay__c</field>
+        <field>Job_Request__c.Salary__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <description>Grants all rights needed for an HR administrator to manage employees.</description>
