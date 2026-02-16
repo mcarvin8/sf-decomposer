@@ -31,7 +31,9 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### ⚠ BREAKING CHANGES
 
-* Remove --debug flag and disassemble.log file Remove INI and TOML formats from decompose Re-decompose files to include updated key config JSONs from rust crate
+* Remove --debug flag and disassemble.log file 
+* Remove INI and TOML formats from decompose 
+* Re-decompose files to include updated key config JSONs from rust crate
 
 ### Features
 
