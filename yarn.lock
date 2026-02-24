@@ -939,13 +939,13 @@
     resolve-global "1.0.0"
     yargs "^17.0.0"
 
-"@commitlint/cli@^20.4.0":
-  version "20.4.0"
-  resolved "https://registry.yarnpkg.com/@commitlint/cli/-/cli-20.4.0.tgz#2f82c358a7338b8696c55281dfc3bc583c0a7f75"
-  integrity sha512-2lqrFrYNxjKxgMqeYiO3zNM14XN9v72/5xIJyvdLw7sHEGlfg6sweW01PGNWiqZa6/AuZwsb0uzkgWJy6F4N2w==
+"@commitlint/cli@^20.4.2":
+  version "20.4.2"
+  resolved "https://registry.yarnpkg.com/@commitlint/cli/-/cli-20.4.2.tgz#2cb97a37a11ee3245a22f770101b18a89f5e58c4"
+  integrity sha512-YjYSX2yj/WsVoxh9mNiymfFS2ADbg2EK4+1WAsMuckwKMCqJ5PDG0CJU/8GvmHWcv4VRB2V02KqSiecRksWqZQ==
   dependencies:
     "@commitlint/format" "^20.4.0"
-    "@commitlint/lint" "^20.4.0"
+    "@commitlint/lint" "^20.4.2"
     "@commitlint/load" "^20.4.0"
     "@commitlint/read" "^20.4.0"
     "@commitlint/types" "^20.4.0"
@@ -995,13 +995,17 @@
     lodash.startcase "^4.4.0"
     lodash.upperfirst "^4.3.1"
 
-"@commitlint/ensure@^20.4.0":
-  version "20.4.0"
-  resolved "https://registry.yarnpkg.com/@commitlint/ensure/-/ensure-20.4.0.tgz#02ec449d4b239f034aa3ec19d7cd42aea1ed5fee"
-  integrity sha512-F3qwnanJUisFWwh44GYYmMOxfgJL1FKV73FCB5zxo8pw1CHkxXadGfDfzNkN8B3iqgSGusDN2+oDH6upBmLszA==
+"@commitlint/ensure@^20.4.1":
+  version "20.4.1"
+  resolved "https://registry.yarnpkg.com/@commitlint/ensure/-/ensure-20.4.1.tgz#7082950ac3db011177a5826c73b0ab147bb57c23"
+  integrity sha512-WLQqaFx1pBooiVvBrA1YfJNFqZF8wS/YGOtr5RzApDbV9tQ52qT5VkTsY65hFTnXhW8PcDfZLaknfJTmPejmlw==
   dependencies:
     "@commitlint/types" "^20.4.0"
-    kasi "^2.0.1"
+    lodash.camelcase "^4.3.0"
+    lodash.kebabcase "^4.1.1"
+    lodash.snakecase "^4.1.1"
+    lodash.startcase "^4.4.0"
+    lodash.upperfirst "^4.3.1"
 
 "@commitlint/execute-rule@^17.8.1":
   version "17.8.1"
@@ -1037,10 +1041,10 @@
     "@commitlint/types" "^17.8.1"
     semver "7.5.4"
 
-"@commitlint/is-ignored@^20.4.0":
-  version "20.4.0"
-  resolved "https://registry.yarnpkg.com/@commitlint/is-ignored/-/is-ignored-20.4.0.tgz#74d21180ad7200eb06e4a3f694be88a2c4daef86"
-  integrity sha512-E8AHpedEfuf+lZatFvFiJXA4TtZgBZ10+A7HzFudaEmTPPE5o6MGswxbxUIGAciaHAFj/oTTmyFc6A5tcvxE3Q==
+"@commitlint/is-ignored@^20.4.1":
+  version "20.4.1"
+  resolved "https://registry.yarnpkg.com/@commitlint/is-ignored/-/is-ignored-20.4.1.tgz#85c34fd56dbf3bcc5440667ea4e520edce9ee782"
+  integrity sha512-In5EO4JR1lNsAv1oOBBO24V9ND1IqdAJDKZiEpdfjDl2HMasAcT7oA+5BKONv1pRoLG380DGPE2W2RIcUwdgLA==
   dependencies:
     "@commitlint/types" "^20.4.0"
     semver "^7.6.0"
@@ -1055,14 +1059,14 @@
     "@commitlint/rules" "^17.8.1"
     "@commitlint/types" "^17.8.1"
 
-"@commitlint/lint@^20.4.0":
-  version "20.4.0"
-  resolved "https://registry.yarnpkg.com/@commitlint/lint/-/lint-20.4.0.tgz#bf801fe2a2c1e4d64b33fda6d0c3a8924bd10915"
-  integrity sha512-W90YCbm5h3Yg+btF5/X+cxsY6vd/H3tsFt6U7WBmDQSkKV8NmitYg89zeoSQyYEiQCwAsH0dcA+99aQtLZiSnw==
+"@commitlint/lint@^20.4.2":
+  version "20.4.2"
+  resolved "https://registry.yarnpkg.com/@commitlint/lint/-/lint-20.4.2.tgz#c22dd66cbe689f3e8b9be468739b4394fcae8ad4"
+  integrity sha512-buquzNRtFng6xjXvBU1abY/WPEEjCgUipNQrNmIWe8QuJ6LWLtei/LDBAzEe5ASm45+Q9L2Xi3/GVvlj50GAug==
   dependencies:
-    "@commitlint/is-ignored" "^20.4.0"
-    "@commitlint/parse" "^20.4.0"
-    "@commitlint/rules" "^20.4.0"
+    "@commitlint/is-ignored" "^20.4.1"
+    "@commitlint/parse" "^20.4.1"
+    "@commitlint/rules" "^20.4.2"
     "@commitlint/types" "^20.4.0"
 
 "@commitlint/load@^17.8.1":
@@ -1119,10 +1123,10 @@
     conventional-changelog-angular "^6.0.0"
     conventional-commits-parser "^4.0.0"
 
-"@commitlint/parse@^20.4.0":
-  version "20.4.0"
-  resolved "https://registry.yarnpkg.com/@commitlint/parse/-/parse-20.4.0.tgz#4728dd9c3a49b9b0987f11cdd867e43424577b07"
-  integrity sha512-NcRkqo/QUnuc1RgxRCIKTqobKzF0BKJ8h3i1jRyeZ+SEy5rO9dPNOh4BqrFsSznb5mnwETYB7ph9tUcthNkwAQ==
+"@commitlint/parse@^20.4.1":
+  version "20.4.1"
+  resolved "https://registry.yarnpkg.com/@commitlint/parse/-/parse-20.4.1.tgz#92bc8098d4ac6e0221288ef9b096f79e1c294a2d"
+  integrity sha512-XNtZjeRcFuAfUnhYrCY02+mpxwY4OmnvD3ETbVPs25xJFFz1nRo/25nHj+5eM+zTeRFvWFwD4GXWU2JEtoK1/w==
   dependencies:
     "@commitlint/types" "^20.4.0"
     conventional-changelog-angular "^8.1.0"
@@ -1185,12 +1189,12 @@
     "@commitlint/types" "^17.8.1"
     execa "^5.0.0"
 
-"@commitlint/rules@^20.4.0":
-  version "20.4.0"
-  resolved "https://registry.yarnpkg.com/@commitlint/rules/-/rules-20.4.0.tgz#679672c4e1127fe807b8bda7c11740ae5831b67c"
-  integrity sha512-E+UoAA7WA4xrre9lDyX2vL4Df26I+vqMN4D8JoW/L2xE/VRDvn533/ibhgSlGYDltB9nm2S+1lti3PagEwO0ag==
+"@commitlint/rules@^20.4.2":
+  version "20.4.2"
+  resolved "https://registry.yarnpkg.com/@commitlint/rules/-/rules-20.4.2.tgz#0370422fedc037b0e00259445d9b82377743a8a1"
+  integrity sha512-oz83pnp5Yq6uwwTAabuVQPNlPfeD2Y5ZjMb7Wx8FSUlu4sLYJjbBWt8031Z0osCFPfHzAwSYrjnfDFKtuSMdKg==
   dependencies:
-    "@commitlint/ensure" "^20.4.0"
+    "@commitlint/ensure" "^20.4.1"
     "@commitlint/message" "^20.4.0"
     "@commitlint/to-lines" "^20.0.0"
     "@commitlint/types" "^20.4.0"
@@ -7104,11 +7108,6 @@ jws@^4.0.1:
   dependencies:
     jwa "^2.0.1"
     safe-buffer "^5.0.1"
-
-kasi@^2.0.1:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/kasi/-/kasi-2.0.1.tgz#878e91d06816990bb935fdc8341116a95ef72edd"
-  integrity sha512-8qhiHZ1BN26ig1+jQ9fWEk6dj8T1wuxs00QRJfXIANI4scto1EuPUgqj+mxHls52WBfdTNJGQ8yYw9rDpWUcgQ==
 
 keyv@^4.0.0, keyv@^4.5.3:
   version "4.5.4"
