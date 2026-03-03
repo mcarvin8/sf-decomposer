@@ -16,6 +16,7 @@ export default [
         'layout',
         'weekdayStart',
         'friendlyname',
+        'agentName',
       ],
     },
     permissionset: {
