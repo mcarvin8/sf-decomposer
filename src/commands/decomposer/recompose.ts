@@ -1,5 +1,4 @@
 'use strict';
-/* eslint-disable no-await-in-loop */
 
 import { SfCommand, Flags } from '@salesforce/sf-plugins-core';
 import { Messages } from '@salesforce/core';

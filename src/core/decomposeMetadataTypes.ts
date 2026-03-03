@@ -1,4 +1,5 @@
-/* eslint-disable no-await-in-loop */
+'use strict';
+
 import pLimit from 'p-limit';
 import { getRegistryValuesBySuffix } from '../metadata/getRegistryValuesBySuffix.js';
 import { decomposeFileHandler } from '../service/decompose/decomposeFileHandler.js';
