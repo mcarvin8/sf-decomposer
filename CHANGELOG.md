@@ -5,6 +5,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.1.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.0.4...v6.1.0) (2026-03-03)
+
+
+### Features
+
+* support decompose-nested-permissions for muting permission sets ([bec79b0](https://github.com/mcarvin8/sf-decomposer/commit/bec79b062ef65b82400c83cff392616f22cd6f65))
+
+
+### Bug Fixes
+
+* **deps:** bump @oclif/core from 4.8.1 to 4.8.2 ([#379](https://github.com/mcarvin8/sf-decomposer/issues/379)) ([582b2c6](https://github.com/mcarvin8/sf-decomposer/commit/582b2c6e4934aebf92c67e8bb1efd244796cdba0))
+* **deps:** bump @salesforce/core from 8.26.2 to 8.26.3 ([#375](https://github.com/mcarvin8/sf-decomposer/issues/375)) ([843c0a2](https://github.com/mcarvin8/sf-decomposer/commit/843c0a21d0729583d06c67a5e9f0c4319a9634dd))
+* **deps:** bump p-limit from 7.2.0 to 7.3.0 ([#377](https://github.com/mcarvin8/sf-decomposer/issues/377)) ([3913958](https://github.com/mcarvin8/sf-decomposer/commit/39139582b5f489748230bd922928016e585636db))
+* **metadata:** add unique id elements for muting permission sets ([54dbd7d](https://github.com/mcarvin8/sf-decomposer/commit/54dbd7d45706365d353a3b0a9dd04fe903ac6292))
+
 ## [6.0.4](https://github.com/mcarvin8/sf-decomposer/compare/v6.0.3...v6.0.4) (2026-02-24)
 
 
