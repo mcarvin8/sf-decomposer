@@ -1,5 +1,6 @@
-'use strict';
 /* eslint-disable no-await-in-loop */
+'use strict';
+
 import { readdir, stat, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 

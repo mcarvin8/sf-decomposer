@@ -1,12 +1,13 @@
 'use strict';
-/* eslint-disable no-await-in-loop */
+
 import { resolve, relative, join } from 'node:path';
-import { readdir, stat, rm, rename } from 'node:fs/promises';
+import { readdir, stat } from 'node:fs/promises';
 import { DisassembleXMLFileHandler } from 'xml-disassembler';
 import pLimit from 'p-limit';
 
-import { CUSTOM_LABELS_FILE, WORKFLOW_SUFFIX_MAPPING, CONCURRENCY_LIMITS } from '../../helpers/constants.js';
-import { moveFiles } from '../core/moveFiles.js';
+import { CUSTOM_LABELS_FILE, CONCURRENCY_LIMITS } from '../../helpers/constants.js';
+import { prePurgeLabels, moveAndRenameLabels } from './customLabels.js';
+import { renameWorkflows } from './renameWorkflows.js';
 
 export async function decomposeFileHandler(
   metaAttributes: {
@@ -121,42 +122,6 @@ function disassembleHandler(
   });
 }
 
-async function prePurgeLabels(metadataPath: string): Promise<void> {
-  const subFiles = await readdir(metadataPath);
-  for (const subFile of subFiles) {
-    const subfilePath = join(metadataPath, subFile);
-    if ((await stat(subfilePath)).isFile() && subFile !== CUSTOM_LABELS_FILE) {
-      await rm(subfilePath, { recursive: true });
-    }
-  }
-}
-
-async function moveAndRenameLabels(metadataPath: string): Promise<void> {
-  const sourceDirectory = join(metadataPath, 'CustomLabels', 'labels');
-  const destinationDirectory = metadataPath;
-  const labelFiles = await readdir(sourceDirectory);
-
-  // Limit concurrent file operations to prevent file system overload
-  const limit = pLimit(CONCURRENCY_LIMITS.FILE_OPERATIONS);
-
-  const tasks = labelFiles
-    .filter((file) => file.includes('.labels-meta'))
-    .map((file) =>
-      limit(async () => {
-        const oldFilePath = join(sourceDirectory, file);
-        const newFileName = file.replace('.labels-meta', '.label-meta');
-        const newFilePath = join(destinationDirectory, newFileName);
-        await rename(oldFilePath, newFilePath);
-      })
-    );
-
-  await Promise.all(tasks);
-
-  // istanbul ignore next -- callback only invoked if non-label files exist after rename
-  await moveFiles(sourceDirectory, destinationDirectory, () => true);
-  await rm(join(metadataPath, 'CustomLabels'), { recursive: true });
-}
-
 async function subDirectoryHandler(
   metadataPath: string,
   uniqueIdElements: string,
@@ -202,26 +167,4 @@ async function subDirectoryHandler(
     );
 
   await Promise.all(processTasks);
-}
-
-async function renameWorkflows(directory: string): Promise<void> {
-  const files = await readdir(directory, { recursive: true });
-
-  // Limit concurrent file rename operations
-  const limit = pLimit(CONCURRENCY_LIMITS.FILE_OPERATIONS);
-
-  const tasks = files.map((file) =>
-    limit(async () => {
-      for (const [suffix, newSuffix] of Object.entries(WORKFLOW_SUFFIX_MAPPING)) {
-        if (file.includes(suffix)) {
-          const oldFilePath = join(directory, file);
-          const newFilePath = join(directory, file.replace(suffix, newSuffix));
-          await rename(oldFilePath, newFilePath);
-          break;
-        }
-      }
-    })
-  );
-
-  await Promise.all(tasks);
 }

@@ -1,5 +1,5 @@
 'use strict';
-/* eslint-disable no-await-in-loop */
+
 import { readdir, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { ReassembleXMLFileHandler } from 'xml-disassembler';
