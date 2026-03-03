@@ -99,7 +99,9 @@ function disassembleHandler(
   let multiLevel;
   let splitTags;
   const decomposePermSets: boolean =
-    decomposeNestedPerms && metaSuffix === 'permissionset' && strategy === 'grouped-by-tag';
+    decomposeNestedPerms &&
+    (metaSuffix === 'permissionset' || metaSuffix === 'mutingpermissionset') &&
+    strategy === 'grouped-by-tag';
   const decomposeLoyalyProgram: boolean = metaSuffix === 'loyaltyProgramSetup' && strategy === 'unique-id';
   if (decomposeLoyalyProgram) {
     multiLevel = 'programProcesses:programProcesses:parameterName,ruleName';

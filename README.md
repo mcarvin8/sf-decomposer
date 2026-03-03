@@ -93,7 +93,7 @@ Salesforce’s built-in decomposition is limited. sf-decomposer gives admins and
 - **Selective decomposition** – Decompose only what you need; use [.sfdecomposerignore](#sfdecomposerignore) to skip specific files.
 - **Two [strategies](#decompose-strategies)**:
   - **unique-id** (default): one file per nested element, named by content or hash.
-  - **grouped-by-tag**: one file per tag (e.g. all `fieldPermissions` in a permission set in `fieldPermissions.xml`). Use `--decompose-nested-permissions` for deeper permission-set decomposition.
+  - **grouped-by-tag**: one file per tag (e.g. all `fieldPermissions` in a permission set in `fieldPermissions.xml`). Use `--decompose-nested-permissions` for deeper permission set and muting permission set decomposition.
 - **Full decomposition** – Fully decompose types that Salesforce only partially supports (e.g. permission sets).
 - **Stable ordering** – Elements are sorted consistently to reduce noisy diffs.
 - **Multiple formats** – Output as XML, JSON, JSON5, or YAML.
@@ -124,7 +124,7 @@ FLAGS
   -s, --strategy=<value>                  unique-id | grouped-by-tag [default: unique-id]
   --prepurge                              Remove existing decomposed files before decomposing [default: false]
   --postpurge                             Remove original metadata files after decomposing [default: false]
-  -p, --decompose-nested-permissions      With grouped-by-tag, further decompose permission set object/field permissions
+  -p, --decompose-nested-permissions      With grouped-by-tag, further decompose permission set and muting permission set object/field permissions
 
 GLOBAL FLAGS
   --json  Output as JSON.
@@ -202,15 +202,16 @@ Custom labels use only the **unique-id** strategy. If you pass `grouped-by-tag`,
 
 ### Additional Permission Set Decomposition
 
-With **grouped-by-tag**, use `--decompose-nested-permissions` (`-p`) to:
+With **grouped-by-tag**, use `--decompose-nested-permissions` (`-p`) to further decompose permission sets and muting permission sets:
 
 - Write each `<objectPermissions>` to its own file under `objectPermissions/`.
 - Group `<fieldPermissions>` by object under `fieldPermissions/`.
 
-Similar to Salesforce’s `decomposePermissionSetBeta2`, with more control and format options.
+Similar to Salesforce’s `decomposePermissionSetBeta2`, with more control and format options. Muting permission sets extend the permission set metadata type and support the same decomposition.
 
 ```bash
 sf decomposer decompose -m "permissionset" -s "grouped-by-tag" -p
+sf decomposer decompose -m "mutingpermissionset" -s "grouped-by-tag" -p
 ```
 
 ![Decomposed Perm Set](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/additional-perm-set-decomposed.png)
@@ -239,7 +240,8 @@ Use the metadata **suffix** for `-m` / `--metadata-type`, as in [SDR’s metadat
 | Custom Labels               | `labels`                   | Strategy overridden to `unique-id` if `grouped-by-tag` is provided (grouping labels by tag would be no different from the original file).                                  |
 | Workflows                   | `workflow`                 |                                                                                                                                                                            |
 | Profiles                    | `profile`                  |                                                                                                                                                                            |
-| Permission Sets             | `permissionset`            |                                                                                                                                                                            |
+| Permission Sets             | `permissionset`            | Supports `--decompose-nested-permissions` with grouped-by-tag.                                                                                                             |
+| Muting Permission Sets      | `mutingpermissionset`      | Extends permission set metadata type. Supports `--decompose-nested-permissions` with grouped-by-tag.                                                                       |
 | AI Scoring Model Definition | `aiScoringModelDefinition` |                                                                                                                                                                            |
 | Decision Matrix Definition  | `decisionMatrixDefinition` |                                                                                                                                                                            |
 | Bot                         | `bot`                      |                                                                                                                                                                            |
@@ -296,15 +298,15 @@ Put **.sfdecomposer.config.json** in the project root to run:
 
 Copy and customize the [sample config](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.sfdecomposer.config.json).
 
-| Option                       | Required | Description                                                                                   |
-| ---------------------------- | -------- | --------------------------------------------------------------------------------------------- |
-| `metadataSuffixes`           | Yes      | Comma-separated metadata suffixes to decompose/recompose.                                     |
-| `ignorePackageDirectories`   | No       | Comma-separated package directories to skip.                                                  |
-| `prePurge`                   | No       | Remove existing decomposed files before decomposing (default: false).                         |
-| `postPurge`                  | No       | After decompose: remove originals; after recompose: remove decomposed files (default: false). |
-| `decomposedFormat`           | No       | xml, json, json5, or yaml (default: xml).                                                     |
-| `strategy`                   | No       | `unique-id` \| `grouped-by-tag` (default: unique-id).                                         |
-| `decomposeNestedPermissions` | No       | With grouped-by-tag, set true to further decompose permission set object/field permissions.   |
+| Option                       | Required | Description                                                                                                           |
+| ---------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------- |
+| `metadataSuffixes`           | Yes      | Comma-separated metadata suffixes to decompose/recompose.                                                             |
+| `ignorePackageDirectories`   | No       | Comma-separated package directories to skip.                                                                          |
+| `prePurge`                   | No       | Remove existing decomposed files before decomposing (default: false).                                                 |
+| `postPurge`                  | No       | After decompose: remove originals; after recompose: remove decomposed files (default: false).                         |
+| `decomposedFormat`           | No       | xml, json, json5, or yaml (default: xml).                                                                             |
+| `strategy`                   | No       | `unique-id` \| `grouped-by-tag` (default: unique-id).                                                                 |
+| `decomposeNestedPermissions` | No       | With grouped-by-tag, set true to further decompose permission set and muting permission set object/field permissions. |
 
 ---
 
