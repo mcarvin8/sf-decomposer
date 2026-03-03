@@ -67,5 +67,18 @@ export default [
     loyaltyProgramSetup: {
       uniqueIdElements: ['processName'],
     },
+    mutingpermissionset: {
+      uniqueIdElements: [
+        'application',
+        'apexClass',
+        'externalDataSource',
+        'flow',
+        'object',
+        'apexPage',
+        'recordType',
+        'tab',
+        'field',
+      ],
+    },
   },
 ];
