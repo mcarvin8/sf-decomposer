@@ -5,6 +5,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.1.1](https://github.com/mcarvin8/sf-decomposer/compare/v6.1.0...v6.1.1) (2026-03-03)
+
+
+### Bug Fixes
+
+* **metadata:** add new agentforce unique id element for profiles ([ad2c635](https://github.com/mcarvin8/sf-decomposer/commit/ad2c63541272da79089a4d6bf29bf09e76afd3d1))
+* **metadata:** add newer unique id elements for permission sets ([2dba699](https://github.com/mcarvin8/sf-decomposer/commit/2dba699cb0e49e1f86c33bd5b1247a98ec7772c2))
+
 ## [6.1.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.0.4...v6.1.0) (2026-03-03)
 
 
