@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.3.1](https://github.com/mcarvin8/sf-decomposer/compare/v6.3.0...v6.3.1) (2026-03-12)
+
+
+### Bug Fixes
+
+* bump version to release new images on readme ([b2e5a86](https://github.com/mcarvin8/sf-decomposer/commit/b2e5a867c7d2d3b0e90f03851448143990c4c468))
+
 ## [6.3.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.2.0...v6.3.0) (2026-03-12)
 
 
