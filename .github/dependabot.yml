@@ -1,18 +1,14 @@
 version: 2
 updates:
-  - package-ecosystem: 'npm'
-    directory: '/'
+  - package-ecosystem: "npm"
+    directory: "/"
     schedule:
-      interval: 'monthly'
-    versioning-strategy: 'increase'
-    labels:
-      - 'dependencies'
-    open-pull-requests-limit: 5
-    pull-request-branch-name:
-      separator: '-'
+      interval: "weekly"
+    versioning-strategy: increase
     commit-message:
-      prefix: fix(deps)
-      prefix-development: chore(dev-deps)
+      prefix: "feat(metadata)"
+    allow:
+      - dependency-name: "@salesforce/source-deploy-retrieve"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
