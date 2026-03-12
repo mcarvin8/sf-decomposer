@@ -5433,10 +5433,10 @@ fromentries@^1.2.0:
   resolved "https://registry.npmjs.org/fromentries/-/fromentries-1.3.2.tgz"
   integrity sha512-cHEpEQHUg0f8XdtZCc2ZAhrHzKzT0MrFUTcvx+hfxYu7rGMDc5SKoXFh+n4YigxsHXRzc6OrCshdR1bWH6HHyg==
 
-fs-extra@^11.0.0, fs-extra@^11.2.0, fs-extra@^11.3.3:
-  version "11.3.3"
-  resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-11.3.3.tgz#a27da23b72524e81ac6c3815cc0179b8c74c59ee"
-  integrity sha512-VWSRii4t0AFm6ixFFmLLx1t7wS1gh+ckoa84aOeapGum0h+EZd1EhEumSB+ZdDLnEPuucsVB9oB7cxJHap6Afg==
+fs-extra@^11.0.0, fs-extra@^11.3.3, fs-extra@^11.3.4:
+  version "11.3.4"
+  resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-11.3.4.tgz#ab6934eca8bcf6f7f6b82742e33591f86301d6fc"
+  integrity sha512-CTXd6rk/M3/ULNQj8FBqBWHYBVYybQ3VPBw0xGKFe3tuH7ytT6ACnvzpIQ3UZtB8yvUKC2cXn1a+x+5EVQLovA==
   dependencies:
     graceful-fs "^4.2.0"
     jsonfile "^6.0.1"
@@ -10223,12 +10223,12 @@ ws@^8.15.0:
   resolved "https://registry.npmjs.org/ws/-/ws-8.18.3.tgz"
   integrity sha512-PEIGCY5tSlUt50cqyMXfCzX+oOPqN0vuGqWzbcJ2xvnkzkq46oOpz7dQaTDBdfICb4N14+GARUDw2XV2N4tvzg==
 
-xml-disassembler@^2.2.2:
-  version "2.2.2"
-  resolved "https://registry.yarnpkg.com/xml-disassembler/-/xml-disassembler-2.2.2.tgz#44b353f49ce49fc7ad90616b5fa8bc4cf802b7cd"
-  integrity sha512-zEwP6QH8mioG94i7ed8Ocv03kuE00ROo8BzBEwYS0by93VEn+SqQF3oN4IonFDnouwST/F/2vJaeDPZ10mgp/w==
+xml-disassembler@^2.2.3:
+  version "2.2.3"
+  resolved "https://registry.yarnpkg.com/xml-disassembler/-/xml-disassembler-2.2.3.tgz#1e52627cefabfa8d87a53b3e510aff07981b7040"
+  integrity sha512-xFJUAQBV7+vkF/hjqEL/BPQvOnPV/8rK+mmnjeqnwLM70FzbdPRajauwSDfFXIIbcj298kSvLQSSiRraIddkUQ==
   dependencies:
-    fs-extra "^11.2.0"
+    fs-extra "^11.3.4"
     tslib "^2.6.2"
 
 xml2js@^0.6.2:

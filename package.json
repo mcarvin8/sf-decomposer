@@ -9,7 +9,7 @@
     "@salesforce/source-deploy-retrieve": "^12.31.21",
     "fs-extra": "^11.3.3",
     "p-limit": "^7.3.0",
-    "xml-disassembler": "^2.2.2"
+    "xml-disassembler": "^2.2.3"
   },
   "devDependencies": {
     "@commitlint/cli": "^20.4.2",
