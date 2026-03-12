@@ -1,0 +1,25 @@
+src/service/decompose/decomposeFileHandler.ts
+  67e7fbb04ba63e15 103
+README.md
+  67e7fbb04ba63e15 96,127,205,210,214,243-244,309
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.7",
+  "base_commit_sha": "bec79b062ef65b82400c83cff392616f22cd6f65",
+  "prompts": {
+    "67e7fbb04ba63e15": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "7004b35c-3b5e-4318-9eda-8154f54b37ec",
+        "model": "composer-1.5"
+      },
+      "human_author": "Matt Carvin <90224411+mcarvin8@users.noreply.github.com>",
+      "messages": [],
+      "total_additions": 11,
+      "total_deletions": 7,
+      "accepted_lines": 9,
+      "overriden_lines": 0
+    }
+  }
+}
