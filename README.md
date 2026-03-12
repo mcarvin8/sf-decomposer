@@ -178,21 +178,11 @@ sf decomposer recompose -m "flow" -i "force-app"
 
 **Permission set – unique-id**
 
-| Format | Example                                                                                                     |
-| ------ | ----------------------------------------------------------------------------------------------------------- |
-| XML    | ![XML](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-xml.png)     |
-| YAML   | ![YAML](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-yaml.png)   |
-| JSON   | ![JSON](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-json.png)   |
-| JSON5  | ![JSON5](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-json5.png) |
+![Unique ID](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-uid.png)
 
 **Permission set – grouped-by-tag**
 
-| Format | Example                                                                                                          |
-| ------ | ---------------------------------------------------------------------------------------------------------------- |
-| XML    | ![XML](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-tags-xml.png)     |
-| YAML   | ![YAML](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-tags-yaml.png)   |
-| JSON   | ![JSON](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-tags-json.png)   |
-| JSON5  | ![JSON5](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-tags-json5.png) |
+![Grouped By Tag](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-tags.png)
 
 ### Custom Labels Decomposition
 
