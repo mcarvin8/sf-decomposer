@@ -28,7 +28,7 @@ jobs:
       - name: Install Salesforce CLI and plugin
         shell: bash
         run: |
-          npm install --no-cache @salesforce/cli --global
+          npm install --global @salesforce/cli
           echo 'y' | sf plugins install --force sf-decomposer@latest
           sf version --verbose --json
 
