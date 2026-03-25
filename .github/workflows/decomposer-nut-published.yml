@@ -10,28 +10,28 @@ permissions:
 
 jobs:
   verify-published-plugin:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
-      # Checkout repo
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Faster code checkout fetching only latest commit
-          ref: ${{ matrix.branch }}
-          persist-credentials: true
+      - name: Checkout
+        uses: actions/checkout@v6.0.2
 
-      # Setup node
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6.3.0
         with:
           node-version: 24
 
       - name: Install Salesforce CLI and plugin
+        shell: bash
         run: |
           npm install --no-cache @salesforce/cli --global
-          echo 'y' | sf plugins install --force sf-decomposer
+          echo 'y' | sf plugins install --force sf-decomposer@latest
           sf version --verbose --json
 
       - name: Decompose / recompose and compare to baselines
+        shell: bash
         run: node scripts/verify-published-plugin.mjs
