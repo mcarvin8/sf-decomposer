@@ -1,0 +1,37 @@
+# Manual smoke test: latest sf-decomposer from npm + CLI round-trip vs fixture baselines.
+# Uses scripts/verify-published-plugin.mjs (real `sf decomposer` commands), not Jest/testkit.
+name: Decomposer verify (published plugin)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-published-plugin:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      # Checkout repo
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Faster code checkout fetching only latest commit
+          ref: ${{ matrix.branch }}
+          persist-credentials: true
+
+      # Setup node
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install Salesforce CLI and plugin
+        run: |
+          npm install --no-cache @salesforce/cli --global
+          echo 'y' | sf plugins install --force sf-decomposer
+          sf version --verbose --json
+
+      - name: Decompose / recompose and compare to baselines
+        run: node scripts/verify-published-plugin.mjs
