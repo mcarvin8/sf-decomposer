@@ -47,3 +47,8 @@ jobs:
       - name: Publish to NPM
         run: NODE_AUTH_TOKEN="" npm publish --access public --tag latest --provenance
         if: ${{ steps.release.outputs.release_created == 'true' }}
+  smoke-test:
+    needs: release
+    if: ${{ needs.release.outputs.release_created == 'true' }}
+    uses: ./.github/workflows/decomposer-nut-published.yml
+    secrets: inherit
