@@ -1,0 +1,23 @@
+.github/workflows/decomposer-nut-published.yml
+  4c230742dec37de0 31
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.12",
+  "base_commit_sha": "0bc6d36ceb65fd1f6588d7655052ecc573e5f7dc",
+  "prompts": {
+    "4c230742dec37de0": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "7ec19446-7e60-4a08-8bd9-fc5681ae665c",
+        "model": "default"
+      },
+      "human_author": "Matt Carvin <90224411+mcarvin8@users.noreply.github.com>",
+      "messages": [],
+      "total_additions": 1,
+      "total_deletions": 1,
+      "accepted_lines": 1,
+      "overriden_lines": 0
+    }
+  }
+}
