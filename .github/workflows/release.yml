@@ -52,5 +52,5 @@ jobs:
   smoke-test:
     needs: release
     if: ${{ needs.release.outputs.release_created == 'true' }}
-    uses: ./.github/workflows/decomposer-nut-published.yml
+    uses: ./.github/workflows/smoke-test.yml
     secrets: inherit
