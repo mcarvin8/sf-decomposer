@@ -1,6 +1,6 @@
 # Manual smoke test: latest sf-decomposer from npm + CLI round-trip vs fixture baselines.
 # Uses scripts/verify-published-plugin.mjs (real `sf decomposer` commands), not Jest/testkit.
-name: Decomposer verify (published plugin)
+name: Smoke test (published plugin)
 
 on:
   workflow_dispatch:
