@@ -30,14 +30,15 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 24
+          cache: yarn
 
       - name: Install dependencies
         if: steps.metadata.outputs.package-ecosystem == 'npm_and_yarn' && contains(steps.metadata.outputs.dependency-names, '@salesforce/source-deploy-retrieve')
-        run: HUSKY=0 npm ci
+        run: yarn install
 
       - name: Build
         if: steps.metadata.outputs.package-ecosystem == 'npm_and_yarn' && contains(steps.metadata.outputs.dependency-names, '@salesforce/source-deploy-retrieve')
-        run: npm run build
+        run: yarn build
 
       - name: Check if SDR metadata registry changed
         id: registry-check
