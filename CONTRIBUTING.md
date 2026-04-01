@@ -98,6 +98,8 @@ The default `yarn test` runs the full pipeline (compile, lint, unit tests). Use 
 
 Metadata attributes (except unique-ID elements) come from this plugin’s version of **@salesforce/source-deploy-retrieve** (SDR). The `-m` / `--metadata-type` flag uses the metadata **suffix** from SDR’s registry.
 
+Dependabot will check for SDR updates once a week and open a PR for new versions. If the PR version includes an update to the metadata registry file, a GitHub action will automatically merge the PR assuming all build checks pass. 
+
 ### Unique ID elements
 
 Unique ID elements are used to name decomposed files for nested elements. The file that holds leaf elements keeps the original metadata file name.
@@ -112,6 +114,8 @@ Core decompose/recompose logic lives in **[xml-disassembler](https://github.com/
 
 - **In this repo:** `src/service/decompose/decomposeFileHandler.ts` and `src/service/recompose/recomposeFileHandler.ts` call xml-disassembler.
 - **Changes to XML disassemble/reassemble behavior:** Contribute in the [xml-disassembler](https://github.com/mcarvin8/xml-disassembler) repo (that project uses **pnpm**).
+
+Dependabot will check for xml-disassembler updates once a week.
 
 ---
 
