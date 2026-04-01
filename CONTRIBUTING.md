@@ -98,7 +98,7 @@ The default `yarn test` runs the full pipeline (compile, lint, unit tests). Use 
 
 Metadata attributes (except unique-ID elements) come from this plugin’s version of **@salesforce/source-deploy-retrieve** (SDR). The `-m` / `--metadata-type` flag uses the metadata **suffix** from SDR’s registry.
 
-Dependabot will check for SDR updates once a week and open a PR for new versions. If the PR version includes an update to the metadata registry file, a GitHub action will automatically merge the PR assuming all build checks pass. 
+Dependabot will check for SDR updates once a week and open a PR for new versions. If the PR version includes an update to the metadata registry file, a GitHub action will automatically merge the PR assuming all build checks pass. If the PR version of SDR contains no changes to the metadata registry file, the GitHub action will automatically close the PR. 
 
 ### Unique ID elements
 
