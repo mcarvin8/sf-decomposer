@@ -259,6 +259,18 @@ The plugin looks for `sfdx-project.json` from the current directory up to the dr
 Error (1): sfdx-project.json not found in any parent directory.
 ```
 
+### Package Directories Not Found for Given Metadata Type
+
+This plugin relies on the @salesforce/source-deploy-retrieve metadata registry to map each metadata type to its expected directory name.
+
+If you provide a metadata type whose corresponding directory does not exist in any of your package directories, the plugin will fail with the following error:
+
+```
+No directories named ${metadataTypeEntry.directoryName} were found in any package directory.
+```
+
+For example, if you attempt to decompose Custom Labels but none of your package directories contain a "labels" folder, the plugin will throw this error.
+
 ### XML disassemble output (Rust crate)
 
 The xml-disassembler Node plugin uses a **Rust crate** for XML decomposing and recomposing. Disassemble errors and messages are shown in the terminal.
