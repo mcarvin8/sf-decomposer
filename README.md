@@ -71,7 +71,7 @@ A Salesforce CLI plugin that **decomposes** large metadata XML files into smalle
 
 ## Requirements
 
-The [xml-disassembler](https://github.com/mcarvin8/xml-disassembler) dependency ships with native binaries for these platforms:
+The [xml-disassembler](https://github.com/mcarvin8/xml-disassembler) NodeJS dependency, which depends on a Rust crate, ships with native binaries for these platforms:
 
 | Platform    | Architectures                      |
 | ----------- | ---------------------------------- |
@@ -79,7 +79,7 @@ The [xml-disassembler](https://github.com/mcarvin8/xml-disassembler) dependency 
 | **Linux**   | x64, arm64, ia32                   |
 | **Windows** | x64                                |
 
-Other platforms may require building the Rust extension from source (see the xml-disassembler repo).
+If other platforms or architectures require support, please open an issue in the [Rust repository](https://github.com/mcarvin8/xml-disassembler-rust).
 
 ---
 
