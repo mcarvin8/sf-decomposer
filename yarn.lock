@@ -10237,10 +10237,10 @@ ws@^8.15.0:
   resolved "https://registry.npmjs.org/ws/-/ws-8.18.3.tgz"
   integrity sha512-PEIGCY5tSlUt50cqyMXfCzX+oOPqN0vuGqWzbcJ2xvnkzkq46oOpz7dQaTDBdfICb4N14+GARUDw2XV2N4tvzg==
 
-xml-disassembler@^2.2.3:
-  version "2.2.3"
-  resolved "https://registry.yarnpkg.com/xml-disassembler/-/xml-disassembler-2.2.3.tgz#1e52627cefabfa8d87a53b3e510aff07981b7040"
-  integrity sha512-xFJUAQBV7+vkF/hjqEL/BPQvOnPV/8rK+mmnjeqnwLM70FzbdPRajauwSDfFXIIbcj298kSvLQSSiRraIddkUQ==
+xml-disassembler@^2.3.0:
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/xml-disassembler/-/xml-disassembler-2.3.0.tgz#2106f660da110360e9219cd88947a0b3130debfb"
+  integrity sha512-KLqKMlqlQKuIoWAKFbKu3mZc4OzamxtQLEgIJNneuyte3D2CQrunRdzmTTjo/+RO6vFLoSraTTbg4smWAYMkEw==
   dependencies:
     fs-extra "^11.3.4"
     tslib "^2.6.2"
