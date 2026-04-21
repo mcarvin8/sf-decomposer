@@ -26,6 +26,7 @@ export async function getPackageDirectories(
     if (!normalizedIgnoreDirs.includes(basename(directory))) {
       return searchRecursively(directory, metaDirectory);
     }
+    return undefined;
   });
 
   const results = await Promise.all(searchPromises);

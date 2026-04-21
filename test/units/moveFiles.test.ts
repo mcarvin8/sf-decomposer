@@ -1,6 +1,6 @@
 import { mkdir, writeFile, rm, readdir, stat } from 'node:fs/promises';
 import { join } from 'node:path';
-import { describe, it, expect } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 
 import { moveFiles } from '../../src/service/core/moveFiles.js';
 
