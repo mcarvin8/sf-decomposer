@@ -4,13 +4,13 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { copy } from 'fs-extra';
-import { describe, it, expect } from '@jest/globals';
+import { describe, it, expect, beforeAll, afterAll, vi, type Mock } from 'vitest';
 
 import { decomposeMetadataTypes } from '../../src/core/decomposeMetadataTypes.js';
 import { SFDX_CONFIG_FILE } from '../utils/constants.js';
 
 describe('decomposer unit tests - unique id strategy', () => {
-  let logMock: jest.Mock;
+  let logMock: Mock;
   let tempProjectDir: string;
   let forceAppDir: string;
   let packageDir: string;
@@ -27,7 +27,7 @@ describe('decomposer unit tests - unique id strategy', () => {
   };
 
   beforeAll(async () => {
-    logMock = jest.fn();
+    logMock = vi.fn();
 
     // Create isolated test workspace
     tempProjectDir = await mkdtemp(join(tmpdir(), 'uid-test-'));

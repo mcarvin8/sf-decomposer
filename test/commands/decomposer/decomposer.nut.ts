@@ -2,7 +2,7 @@
 
 import { rm, writeFile } from 'node:fs/promises';
 import { copy } from 'fs-extra';
-import { describe, it, expect } from '@jest/globals';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 
 import { execCmd, TestSession } from '@salesforce/cli-plugins-testkit';
 

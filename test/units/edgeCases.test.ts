@@ -4,7 +4,7 @@ import { mkdtemp, rm, writeFile, readdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { copy } from 'fs-extra';
-import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
 
 import { decomposeMetadataTypes } from '../../src/core/decomposeMetadataTypes.js';
 import { recomposeMetadataTypes } from '../../src/core/recomposeMetadataTypes.js';
@@ -58,7 +58,7 @@ describe('Edge case coverage tests', () => {
     });
 
     it('should prePurge extra files in labels directory during decomposition', async () => {
-      const logMock = jest.fn();
+      const logMock = vi.fn();
 
       // Verify extra file exists before decomposition
       const filesBefore = await readdir(labelsDir);
@@ -109,7 +109,7 @@ describe('Edge case coverage tests', () => {
     });
 
     it('should decompose labels with prepurge false', async () => {
-      const logMock = jest.fn();
+      const logMock = vi.fn();
 
       // Decompose labels with prepurge: false to cover the else branch on line 47
       await decomposeMetadataTypes({
@@ -156,7 +156,7 @@ describe('Edge case coverage tests', () => {
     });
 
     it('should recompose labels with postpurge false', async () => {
-      const logMock = jest.fn();
+      const logMock = vi.fn();
 
       // First decompose the labels
       await decomposeMetadataTypes({
