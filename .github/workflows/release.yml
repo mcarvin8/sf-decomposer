@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   test:
-    uses: ./.github/workflows/coverage.yml
+    uses: ./.github/workflows/test.yml
     secrets: inherit
   release:
     name: Release
@@ -34,16 +34,16 @@ jobs:
         uses: actions/setup-node@v6.3.0
         with:
           node-version: 24
-          cache: yarn
+          cache: npm
           registry-url: 'https://registry.npmjs.org'
         if: ${{ steps.release.outputs.release_created == 'true' }}
 
       - name: Install Dependencies
-        run: yarn install
+        run: npm ci
         if: ${{ steps.release.outputs.release_created == 'true' }}
 
       - name: Build
-        run: yarn build
+        run: npm run build
         if: ${{ steps.release.outputs.release_created == 'true' }}
 
       - name: Publish to NPM

@@ -7,7 +7,7 @@ Contributions are welcome. This guide covers how to set up your environment, run
 ## Requirements
 
 - **Node.js** ≥ 20.0.0
-- **yarn** (package manager)
+- **npm** (package manager)
 
 ---
 
@@ -20,13 +20,13 @@ Fork the [repository](https://github.com/mcarvin8/sf-decomposer) and clone your 
 ### 2. Install dependencies
 
 ```bash
-yarn
+npm install
 ```
 
 ### 3. Build
 
 ```bash
-yarn build
+npm run build
 ```
 
 Rebuild after source changes when you want to run or test the plugin locally.
@@ -47,8 +47,8 @@ Then use `sf decomposer` in a Salesforce DX project to test your changes.
 
 ### Lint and format
 
-- **Lint:** `yarn lint` (runs ESLint on `src` and `test`)
-- **Format:** `yarn format` (Prettier on source and test files)
+- **Lint:** `npm run lint` (runs ESLint on `src` and `test`)
+- **Format:** `npm run format` (Prettier on source and test files)
 
 Fix lint/format issues before submitting a PR.
 
@@ -74,7 +74,7 @@ Example: `feat(decompose): add support for custom metadata type X`
 Run unit tests (with coverage). New code should satisfy the existing Jest coverage requirements.
 
 ```bash
-yarn test:only
+npm run test:only
 ```
 
 ### Non-unit (NUT) tests
@@ -82,13 +82,13 @@ yarn test:only
 After rebuilding, run the non-unit tests:
 
 ```bash
-yarn build
-yarn test:nuts
+npm run build
+npm run test:nuts
 ```
 
 ### Full test pipeline
 
-The default `yarn test` runs the full pipeline (compile, lint, unit tests). Use it before pushing.
+The default `npm test` runs the full pipeline (compile, lint, unit tests). Use it before pushing.
 
 ---
 
@@ -98,7 +98,7 @@ The default `yarn test` runs the full pipeline (compile, lint, unit tests). Use 
 
 Metadata attributes (except unique-ID elements) come from this plugin’s version of **@salesforce/source-deploy-retrieve** (SDR). The `-m` / `--metadata-type` flag uses the metadata **suffix** from SDR’s registry.
 
-Dependabot will check for SDR updates once a week and open a PR for new versions. If the PR version includes an update to the metadata registry file, a GitHub action will automatically merge the PR assuming all build checks pass. If the PR version of SDR contains no changes to the metadata registry file, the GitHub action will automatically close the PR. 
+Dependabot will check for SDR updates once a week and open a PR for new versions. If the PR version includes an update to the metadata registry file, a GitHub action will automatically merge the PR assuming all build checks pass. If the PR version of SDR contains no changes to the metadata registry file, the GitHub action will automatically close the PR.
 
 ### Unique ID elements
 
@@ -123,7 +123,7 @@ Dependabot will check for xml-disassembler updates once a week.
 
 1. Create a branch from `main` (e.g. `feat/my-feature` or `fix/issue-123`).
 2. Make your changes, add or update tests as needed.
-3. Run `yarn test` and fix any failures or lint issues.
+3. Run `npm test` and fix any failures or lint issues.
 4. Commit with [conventional commit](https://www.conventionalcommits.org/) messages.
 5. Push to your fork and open a PR against `main`.
 6. Fill in the PR template (if any) and reference any related issues.

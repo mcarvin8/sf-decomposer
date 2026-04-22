@@ -8,7 +8,7 @@
         "kind": "build",
         "isDefault": true
       },
-      "command": "yarn",
+      "command": "npm",
       "type": "shell",
       "presentation": {
         "focus": false,
