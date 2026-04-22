@@ -11,12 +11,13 @@ permissions:
 
 jobs:
   unit-tests:
-    name: Unit Tests (${{ matrix.os }})
+    name: Unit Tests (${{ matrix.os }}, node ${{ matrix.node-version }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
+        node-version: ['20', '22', '24']
     steps:
       - name: Configure git longpaths if on Windows
         if: ${{ runner.os == 'Windows' }}
@@ -28,7 +29,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v6.3.0
         with:
-          node-version: 20
+          node-version: ${{ matrix.node-version }}
           cache: npm
           registry-url: 'https://registry.npmjs.org'
 
@@ -44,7 +45,7 @@ jobs:
           SF_DISABLE_TELEMETRY: true
 
       - name: Upload coverage
-        if: runner.os == 'Linux'
+        if: runner.os == 'Linux' && matrix.node-version == '20'
         uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -53,12 +54,13 @@ jobs:
 
   nuts:
     needs: unit-tests
-    name: NUTs (${{ matrix.os }})
+    name: NUTs (${{ matrix.os }}, node ${{ matrix.node-version }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
+        node-version: ['20', '22', '24']
     steps:
       - name: Configure git longpaths if on Windows
         if: ${{ runner.os == 'Windows' }}
@@ -70,7 +72,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v6.3.0
         with:
-          node-version: lts/*
+          node-version: ${{ matrix.node-version }}
           cache: npm
           registry-url: 'https://registry.npmjs.org'
 
