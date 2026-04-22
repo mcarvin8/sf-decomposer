@@ -1,7 +1,5 @@
 # -- CLEAN
 tmp/
-# use yarn by default, so ignore npm
-package-lock.json
 
 # never checkin npm config
 .npmrc
@@ -9,6 +7,7 @@ package-lock.json
 # debug logs
 npm-error.log
 yarn-error.log
+yarn.lock
 
 
 # compile source

@@ -4,17 +4,97 @@ on:
   push:
     branches-ignore:
       - main
+  workflow_call:
+
+permissions:
+  contents: read
 
 jobs:
   unit-tests:
-    uses: salesforcecli/github-workflows/.github/workflows/unitTest.yml@main
+    name: Unit Tests (${{ matrix.os }}, node ${{ matrix.node-version }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node-version: ['20', '22', '24']
+    steps:
+      - name: Configure git longpaths if on Windows
+        if: ${{ runner.os == 'Windows' }}
+        run: git config --system core.longpaths true
+
+      - name: Checkout
+        uses: actions/checkout@v6.0.2
+
+      - name: Setup Node
+        uses: actions/setup-node@v6.3.0
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Test
+        run: npm run test:only
+        env:
+          SF_DISABLE_TELEMETRY: true
+
+      - name: Upload coverage
+        if: runner.os == 'Linux' && matrix.node-version == '20'
+        uses: codecov/codecov-action@v6
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage/lcov.info
+          fail_ci_if_error: true
+
   nuts:
     needs: unit-tests
-    uses: salesforcecli/github-workflows/.github/workflows/nut.yml@main
-    secrets: inherit
+    name: NUTs (${{ matrix.os }}, node ${{ matrix.node-version }})
+    runs-on: ${{ matrix.os }}
     strategy:
-      matrix:
-        os: [windows-latest]
       fail-fast: false
-    with:
-      os: ${{ matrix.os }}
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node-version: ['20', '22', '24']
+    steps:
+      - name: Configure git longpaths if on Windows
+        if: ${{ runner.os == 'Windows' }}
+        run: git config --system core.longpaths true
+
+      - name: Checkout
+        uses: actions/checkout@v6.0.2
+
+      - name: Setup Node
+        uses: actions/setup-node@v6.3.0
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install Salesforce CLI
+        run: npm install -g @salesforce/cli@nightly
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Compile
+        run: npm run compile
+
+      - name: Oclif manifest
+        run: npx oclif manifest
+
+      - name: NUTs
+        run: npm run test:nuts
+        env:
+          TESTKIT_AUTH_URL: ${{ secrets.TESTKIT_AUTH_URL }}
+          TESTKIT_HUB_USERNAME: ${{ secrets.TESTKIT_HUB_USERNAME }}
+          TESTKIT_JWT_CLIENT_ID: ${{ secrets.TESTKIT_JWT_CLIENT_ID }}
+          TESTKIT_JWT_KEY: ${{ secrets.TESTKIT_JWT_KEY }}
+          TESTKIT_HUB_INSTANCE: ${{ secrets.TESTKIT_HUB_INSTANCE }}
+          TESTKIT_SETUP_RETRIES: 2
+          SF_DISABLE_TELEMETRY: true
