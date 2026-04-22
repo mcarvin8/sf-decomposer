@@ -1,0 +1,44 @@
+.github/workflows/release.yml
+  05bb2ef1cc7b60fd 15,37,42,46
+.husky/commit-msg
+  05bb2ef1cc7b60fd 1
+.husky/pre-commit
+  05bb2ef1cc7b60fd 1
+.github/workflows/test.yml
+  05bb2ef1cc7b60fd 7-10,14-53,56-57,60-98
+.gitignore
+  05bb2ef1cc7b60fd 10
+.github/workflows/dependabot-auto-merge.yml
+  05bb2ef1cc7b60fd 33,37,41
+.vscode/tasks.json
+  05bb2ef1cc7b60fd 11
+CONTRIBUTING.md
+  05bb2ef1cc7b60fd 10,23,29,50-51,77,85-86,91,101,126
+.husky/pre-push
+  05bb2ef1cc7b60fd 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.2",
+  "base_commit_sha": "3acc2e58a9f624d87e9178215dd25f9c31ce88ae",
+  "prompts": {
+    "05bb2ef1cc7b60fd": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "7c818197-502e-4c3d-a11a-db8c03530d50",
+        "model": "auto-high"
+      },
+      "human_author": "Matt Carvin",
+      "messages": [],
+      "total_additions": 131,
+      "total_deletions": 97,
+      "accepted_lines": 107,
+      "overriden_lines": 0
+    }
+  },
+  "humans": {
+    "h_b104b674256482": {
+      "author": "Matt Carvin"
+    }
+  }
+}
