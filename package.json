@@ -81,7 +81,7 @@
   },
   "scripts": {
     "command-docs": "oclif readme",
-    "build": "tsc -b",
+    "build": "wireit",
     "clean": "sf-clean",
     "clean-all": "sf-clean all",
     "clean:lib": "shx rm -rf lib && shx rm -rf coverage && shx rm -rf .nyc_output && shx rm -f oclif.manifest.json oclif.lock",
@@ -90,7 +90,7 @@
     "format": "sf-format",
     "lint": "wireit",
     "postpack": "shx rm -f oclif.manifest.json oclif.lock",
-    "prepack": "sf-prepack",
+    "prepack": "wireit",
     "prepare": "husky install",
     "test": "wireit",
     "test:nuts": "oclif manifest && vitest run --config ./vitest.nut.config.ts",
@@ -141,6 +141,23 @@
         "**/tsconfig.json"
       ],
       "output": []
+    },
+    "prepack": {
+      "command": "oclif manifest && oclif readme",
+      "files": [
+        "src/commands/decomposer/decompose.ts",
+        "src/commands/decomposer/recompose.ts",
+        "messages/decomposer.decompose.md",
+        "messages/decomposer.recompose.md",
+        "README.md"
+      ],
+      "dependencies": [
+        "build"
+      ],
+      "output": [
+        "README.md"
+      ],
+      "clean": false
     },
     "test:compile": {
       "command": "tsc -p \"./test\" --pretty",
