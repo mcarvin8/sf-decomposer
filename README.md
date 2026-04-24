@@ -17,6 +17,7 @@ A Salesforce CLI plugin that **decomposes** large metadata XML files into smalle
 - [Commands](#commands)
   - [sf decomposer decompose](#sf-decomposer-decompose)
   - [sf decomposer recompose](#sf-decomposer-recompose)
+  - [Manifest-scoped runs](#manifest-scoped-runs)
 - [Decompose Strategies](#decompose-strategies)
   - [Custom Labels](#custom-labels-decomposition)
   - [Permission Sets (grouped-by-tag)](#additional-permission-set-decomposition)
@@ -66,6 +67,13 @@ A Salesforce CLI plugin that **decomposes** large metadata XML files into smalle
    sf project deploy start
    ```
 
+   Or scope the recompose to just the components in your deploy manifest:
+
+   ```bash
+   sf decomposer recompose -x "manifest/package.xml"
+   sf project deploy start -x "manifest/package.xml"
+   ```
+
 ---
 
 ## Requirements
@@ -90,6 +98,7 @@ Salesforce’s built-in decomposition is limited. sf-decomposer gives admins and
 
 - **Broader metadata support** – Works with most Metadata API types, not just the subset Salesforce decomposes.
 - **Selective decomposition** – Decompose only what you need; use [.sfdecomposerignore](#sfdecomposerignore) to skip specific files.
+- **Manifest-scoped runs** – Pass `-x package.xml` to decompose or recompose only the components listed in a Salesforce manifest, mirroring `sf project deploy start -x`. Ideal for CI/CD pipelines that only ship a subset of metadata per deployment.
 - **Two [strategies](#decompose-strategies)**:
   - **unique-id** (default): one file per nested element, named by content or hash.
   - **grouped-by-tag**: one file per tag (e.g. all `fieldPermissions` in a permission set in `fieldPermissions.xml`). Use `--decompose-nested-permissions` for deeper permission set and muting permission set decomposition.
@@ -114,10 +123,11 @@ Decomposes metadata in all local package directories (from `sfdx-project.json`) 
 
 ```
 USAGE
-  $ sf decomposer decompose -m <value> -f <value> -i <value> -s <value> [--prepurge --postpurge -p --json]
+  $ sf decomposer decompose [-m <value>] [-x <value>] [-f <value>] [-i <value>] [-s <value>] [--prepurge --postpurge -p --json]
 
 FLAGS
-  -m, --metadata-type=<value>             Metadata suffix to process (e.g. flow, labels). Repeatable.
+  -m, --metadata-type=<value>             Metadata suffix to process (e.g. flow, labels). Repeatable. Optional when --manifest is provided.
+  -x, --manifest=<value>                  Path to a package.xml manifest. When provided, only the components listed in the manifest are decomposed.
   -f, --format=<value>                    Output format: xml | yaml | json | json5 [default: xml]
   -i, --ignore-package-directory=<value>  Package directory to skip (as in sfdx-project.json). Repeatable.
   -s, --strategy=<value>                  unique-id | grouped-by-tag [default: unique-id]
@@ -128,6 +138,8 @@ FLAGS
 GLOBAL FLAGS
   --json  Output as JSON.
 ```
+
+> At least one of `--metadata-type` or `--manifest` is required. When both are supplied, the run is scoped to the intersection of the two.
 
 **Examples**
 
@@ -140,6 +152,12 @@ sf decomposer decompose -m "flow" -m "labels" -f "yaml" --prepurge --postpurge
 
 # Decompose flows, excluding the force-app package
 sf decomposer decompose -m "flow" -i "force-app"
+
+# Decompose only the components listed in a manifest
+sf decomposer decompose -x "manifest/package.xml" --prepurge
+
+# Restrict a manifest run to a single metadata type
+sf decomposer decompose -x "manifest/package.xml" -m "permissionset"
 ```
 
 ### sf decomposer recompose
@@ -148,10 +166,11 @@ Recomposes decomposed files into deployment-compatible metadata.
 
 ```
 USAGE
-  $ sf decomposer recompose -m <value> -i <value> [--postpurge --json]
+  $ sf decomposer recompose [-m <value>] [-x <value>] [-i <value>] [--postpurge --json]
 
 FLAGS
-  -m, --metadata-type=<value>             Metadata suffix to process (e.g. flow, labels). Repeatable.
+  -m, --metadata-type=<value>             Metadata suffix to process (e.g. flow, labels). Repeatable. Optional when --manifest is provided.
+  -x, --manifest=<value>                  Path to a package.xml manifest. When provided, only the components listed in the manifest are recomposed.
   -i, --ignore-package-directory=<value>  Package directory to skip. Repeatable.
   --postpurge                             Remove decomposed files after recomposing [default: false]
 
@@ -159,11 +178,52 @@ GLOBAL FLAGS
   --json  Output as JSON.
 ```
 
+> At least one of `--metadata-type` or `--manifest` is required. When both are supplied, the run is scoped to the intersection of the two.
+
 **Examples**
 
 ```bash
 sf decomposer recompose -m "flow" --postpurge
 sf decomposer recompose -m "flow" -i "force-app"
+
+# Recompose only the components listed in a deploy manifest before deploying
+sf decomposer recompose -x "manifest/package.xml"
+sf project deploy start -x "manifest/package.xml"
+```
+
+### Manifest-scoped runs
+
+The `-x` / `--manifest` flag accepts any standard Salesforce `package.xml` and limits the work to just the components it lists. This is especially useful for CI/CD pipelines that deploy a subset of metadata per change.
+
+How it works:
+
+- The manifest is parsed with `@salesforce/source-deploy-retrieve`'s `ManifestResolver`, so the same XML you pass to `sf project deploy start -x` is honored here.
+- For each entry, the plugin resolves the matching parent metadata files in your local package directories (using each metadata type's `directoryName`, `suffix`, `strictDirectoryName`, and `folderType` from the SDR registry).
+- Only those files are decomposed/recomposed; everything else on disk is left untouched.
+- Wildcards (`<members>*</members>`) expand against your local source. Folder-typed members (e.g. `MyFolder/MyReport`) are resolved by walking the folder.
+- Types in the manifest that the plugin does not support (e.g. `CustomObject`, `ApexClass`) are skipped with a warning instead of failing the run, so a single manifest can drive both deploys and decomposer runs.
+- If both `--metadata-type` and `--manifest` are provided, the run is scoped to the intersection (only types present in both).
+
+Example manifest:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+  <types>
+    <members>HR_Admin</members>
+    <name>PermissionSet</name>
+  </types>
+  <types>
+    <members>Case</members>
+    <name>Workflow</name>
+  </types>
+  <version>58.0</version>
+</Package>
+```
+
+```bash
+sf decomposer recompose -x "manifest/package.xml"
+sf project deploy start -x "manifest/package.xml"
 ```
 
 ---
@@ -299,15 +359,16 @@ Put **.sfdecomposer.config.json** in the project root to run:
 
 Copy and customize the [sample config](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.sfdecomposer.config.json).
 
-| Option                       | Required | Description                                                                                                           |
-| ---------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------- |
-| `metadataSuffixes`           | Yes      | Comma-separated metadata suffixes to decompose/recompose.                                                             |
-| `ignorePackageDirectories`   | No       | Comma-separated package directories to skip.                                                                          |
-| `prePurge`                   | No       | Remove existing decomposed files before decomposing (default: false).                                                 |
-| `postPurge`                  | No       | After decompose: remove originals; after recompose: remove decomposed files (default: false).                         |
-| `decomposedFormat`           | No       | xml, json, json5, or yaml (default: xml).                                                                             |
-| `strategy`                   | No       | `unique-id` \| `grouped-by-tag` (default: unique-id).                                                                 |
-| `decomposeNestedPermissions` | No       | With grouped-by-tag, set true to further decompose permission set and muting permission set object/field permissions. |
+| Option                       | Required    | Description                                                                                                                                                       |
+| ---------------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `metadataSuffixes`           | Conditional | Comma-separated metadata suffixes to decompose/recompose. Required unless `manifest` is set; when both are set, the run is scoped to the intersection.            |
+| `manifest`                   | Conditional | Path (relative to the project root) to a `package.xml` manifest. When set, only the components listed in the manifest are decomposed/recomposed. See `-x` above. |
+| `ignorePackageDirectories`   | No          | Comma-separated package directories to skip.                                                                                                                      |
+| `prePurge`                   | No          | Remove existing decomposed files before decomposing (default: false).                                                                                             |
+| `postPurge`                  | No          | After decompose: remove originals; after recompose: remove decomposed files (default: false).                                                                     |
+| `decomposedFormat`           | No          | xml, json, json5, or yaml (default: xml).                                                                                                                         |
+| `strategy`                   | No          | `unique-id` \| `grouped-by-tag` (default: unique-id).                                                                                                             |
+| `decomposeNestedPermissions` | No          | With grouped-by-tag, set true to further decompose permission set and muting permission set object/field permissions.                                             |
 
 ---
 

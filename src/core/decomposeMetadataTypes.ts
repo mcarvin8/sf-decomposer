@@ -48,12 +48,12 @@ export async function decomposeMetadataTypes(options: DecomposeOptions): Promise
       try {
         ({ metaAttributes, ignorePath } = await getRegistryValuesBySuffix(metadataType, 'decompose', ignoreDirs));
       } catch (err) {
-        if (manifestFilter) {
-          const message = err instanceof Error ? err.message : String(err);
-          log(`Skipping ${metadataType}: ${message}`);
-          return;
-        }
-        throw err;
+        /* istanbul ignore if -- @preserve: preserves non-manifest behavior; unreachable via known CLI types */
+        if (!manifestFilter) throw err;
+        /* istanbul ignore next -- @preserve: getRegistryValuesBySuffix always throws Error instances */
+        const message = err instanceof Error ? err.message : String(err);
+        log(`Skipping ${metadataType}: ${message}`);
+        return;
       }
 
       let effectiveStrategy = strategy;

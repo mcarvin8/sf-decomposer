@@ -28,8 +28,16 @@ const MANIFEST_XML = `<?xml version="1.0" encoding="UTF-8"?>
 const UNSCOPED_MANIFEST_XML = `<?xml version="1.0" encoding="UTF-8"?>
 <Package xmlns="http://soap.sforce.com/2006/04/metadata">
   <types>
-    <members>NonexistentProfile</members>
-    <name>Profile</name>
+    <members>NonexistentPermissionSet</members>
+    <name>PermissionSet</name>
+  </types>
+  <types>
+    <members>NonexistentBot</members>
+    <name>Bot</name>
+  </types>
+  <types>
+    <members>NonexistentQueue</members>
+    <name>Queue</name>
   </types>
   <version>58.0</version>
 </Package>
@@ -221,6 +229,7 @@ const LABEL_BOT_MANIFEST_XML = `<?xml version="1.0" encoding="UTF-8"?>
 <Package xmlns="http://soap.sforce.com/2006/04/metadata">
   <types>
     <members>DeleteMe</members>
+    <members>ValueExpressionInCollectionFilter</members>
     <name>CustomLabel</name>
   </types>
   <types>
@@ -337,7 +346,7 @@ describe('decomposer manifest scoping - labels, bot, wildcard, errors', () => {
         format: 'xml',
         strategy: 'unique-id',
         decomposeNestedPerms: false,
-        ignoreDirs: undefined,
+        ignoreDirs: ['some-other-dir'],
         manifest: 'package.xml',
         log,
       });
@@ -408,6 +417,11 @@ describe('decomposer manifest scoping - labels, bot, wildcard, errors', () => {
 </Package>
 `;
     const dir = await setupTempProject(wildcardBot);
+    // Add a rogue subdirectory with no bot xml so parseManifest skips it during
+    // wildcard expansion.
+    const { mkdir } = await import('node:fs/promises');
+    await mkdir(join(dir, 'package', 'bots', 'Empty_Bot'), { recursive: true });
+
     const log = vi.fn();
     try {
       await decomposeMetadataTypes({
@@ -500,6 +514,50 @@ describe('decomposer manifest scoping - labels, bot, wildcard, errors', () => {
       const output = log.mock.calls.flat().join('\n');
       expect(output).toMatch(/Skipping cls:.*not supported/);
       expect(output).toContain('All metadata files have been recomposed for the metadata type: permissionset');
+    } finally {
+      process.chdir(originalCwd);
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('resolves folder-typed members via the folderType branch', async () => {
+    // Specific folder-typed members (e.g. Report MyFolder/Sample) come back from
+    // ManifestResolver as the parent type with folderType set; verify resolveMemberXml
+    // walks the folder-relative path correctly.
+    const folderManifest = `<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+  <types>
+    <members>MyFolder/Sample</members>
+    <members>MissingFolder/Missing</members>
+    <name>Report</name>
+  </types>
+  <version>58.0</version>
+</Package>
+`;
+    const dir = await setupTempProject(folderManifest);
+    const { mkdir } = await import('node:fs/promises');
+    const reportsDir = join(dir, 'force-app', 'reports', 'MyFolder');
+    await mkdir(reportsDir, { recursive: true });
+    await writeFile(
+      join(reportsDir, 'Sample.report-meta.xml'),
+      '<?xml version="1.0" encoding="UTF-8"?><Report xmlns="http://soap.sforce.com/2006/04/metadata"><name>Sample</name></Report>',
+    );
+
+    const log = vi.fn();
+    try {
+      await decomposeMetadataTypes({
+        metadataTypes: undefined,
+        prepurge: false,
+        postpurge: false,
+        format: 'xml',
+        strategy: 'unique-id',
+        decomposeNestedPerms: false,
+        ignoreDirs: undefined,
+        manifest: 'package.xml',
+        log,
+      });
+      const output = log.mock.calls.flat().join('\n');
+      expect(output).toContain('All metadata files have been decomposed for the metadata type: report');
     } finally {
       process.chdir(originalCwd);
       await rm(dir, { recursive: true, force: true });

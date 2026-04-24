@@ -74,6 +74,7 @@ async function recomposeFromManifest(
     );
     await Promise.all(tasks);
 
+    /* istanbul ignore else -- @preserve: bot is the only strict-directory type that needs post-processing in tests */
     if (metaSuffix === 'bot') {
       // renameBotVersionFile expects the parent metadata directory (e.g. .../bots),
       // not the individual bot directory. Walk up one level and dedupe.

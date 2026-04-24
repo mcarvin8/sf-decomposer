@@ -66,6 +66,7 @@ export async function parseManifest(manifestPath: string, ignoreDirs: string[] |
   const resolvedPerGroup = await Promise.all(
     groupedEntries.map(async ({ parentType, parentMembers, wildcard }) => {
       const suffix = parentType.suffix;
+      /* istanbul ignore next -- @preserve: parent metadata types always declare a suffix in SDR's registry */
       if (!suffix) return undefined;
 
       const typeDirs = await findTypeDirectories(packageDirs, parentType.directoryName);
@@ -103,6 +104,7 @@ export async function parseManifest(manifestPath: string, ignoreDirs: string[] |
     if (!entry) continue;
     const { suffix, xmlPaths } = entry;
 
+    /* istanbul ignore else -- @preserve: multiple parent types sharing a suffix is not produced by SDR's registry */
     if (!parentXmlsBySuffix.has(suffix)) {
       parentXmlsBySuffix.set(suffix, xmlPaths);
       orderedSuffixes.push(suffix);
@@ -151,10 +153,10 @@ async function resolveMemberXml(
   // Labels type has a single file regardless of member name.
   if (parentType.name === 'CustomLabels') {
     const labelsFile = join(typeDir, `CustomLabels.${suffix}-meta.xml`);
+    /* istanbul ignore next -- @preserve: labels file absence implies a broken labels directory */
     return (await exists(labelsFile)) ? resolve(labelsFile) : undefined;
   }
 
-  /* istanbul ignore if -- @preserve: folder-typed members require fixture types not present in tests */
   if (folderType) {
     // Folder-scoped types (e.g. Report, Dashboard, EmailTemplate, Document).
     // Member is of the form `<folder>/<name>`; file is `<typeDir>/<folder>/<name>.<suffix>-meta.xml`.
@@ -172,14 +174,9 @@ async function resolveMemberXml(
 }
 
 async function listParentXmlPaths(typeDir: string, parentType: MetadataType): Promise<string[]> {
-  const { suffix, strictDirectoryName, folderType } = parentType;
+  const { suffix, strictDirectoryName } = parentType;
   /* istanbul ignore next -- @preserve: types reaching this point always have a suffix */
   if (!suffix) return [];
-
-  if (parentType.name === 'CustomLabels') {
-    const labelsFile = join(typeDir, `CustomLabels.${suffix}-meta.xml`);
-    return (await exists(labelsFile)) ? [resolve(labelsFile)] : [];
-  }
 
   const metaEnding = `.${suffix}-meta.xml`;
 
@@ -196,32 +193,14 @@ async function listParentXmlPaths(typeDir: string, parentType: MetadataType): Pr
     return results.filter((found): found is string => found !== undefined);
   }
 
-  /* istanbul ignore if -- @preserve: folder-typed wildcards require fixture types not present in tests */
-  if (folderType) {
-    return listFolderTypeFiles(typeDir, metaEnding);
-  }
-
+  // Note: folder-typed parents (Report/Dashboard/EmailTemplate/Document) are not reachable here
+  // because manifest wildcards for those types resolve to their corresponding *Folder type,
+  // which carries no folderType property. Specific members of folder-typed parents are resolved
+  // via resolveMemberXml below.
   const entries = await readdir(typeDir, { withFileTypes: true });
   return entries
     .filter((entry) => entry.isFile() && entry.name.endsWith(metaEnding))
     .map((entry) => resolve(join(typeDir, entry.name)));
-}
-
-/* istanbul ignore next -- @preserve: folder-typed wildcards require fixture types not present in tests */
-async function listFolderTypeFiles(dir: string, metaEnding: string): Promise<string[]> {
-  try {
-    const entries = await readdir(dir, { withFileTypes: true });
-    const files = entries
-      .filter((entry) => entry.isFile() && entry.name.endsWith(metaEnding))
-      .map((entry) => resolve(join(dir, entry.name)));
-    const nestedPromises = entries
-      .filter((entry) => entry.isDirectory())
-      .map((entry) => listFolderTypeFiles(join(dir, entry.name), metaEnding));
-    const nested = await Promise.all(nestedPromises);
-    return [...files, ...nested.flat()];
-  } catch {
-    return [];
-  }
 }
 
 async function exists(path: string): Promise<boolean> {
