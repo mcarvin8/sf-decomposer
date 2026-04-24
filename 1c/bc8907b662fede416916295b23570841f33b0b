@@ -1,0 +1,31 @@
+src/service/recompose/recomposeFileHandler.ts
+  8112edc25809b87d 77
+src/core/decomposeMetadataTypes.ts
+  8112edc25809b87d 51-56
+src/metadata/parseManifest.ts
+  8112edc25809b87d 69,107,156,177,196-199
+test/commands/decomposer/manifest.test.ts
+  8112edc25809b87d 31-40,232,349,420-424,518-561
+src/core/recomposeMetadataTypes.ts
+  8112edc25809b87d 49-54
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "1cbc8907b662fede416916295b23570841f33b0b",
+  "prompts": {
+    "8112edc25809b87d": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "23c8eb6c-6864-4c1a-aa9d-5c7c07e668d8",
+        "model": "auto-high"
+      },
+      "human_author": "Matt Carvin",
+      "messages": [],
+      "total_additions": 186,
+      "total_deletions": 132,
+      "accepted_lines": 963,
+      "overriden_lines": 0
+    }
+  }
+}
