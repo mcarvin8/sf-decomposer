@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.11.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.10.0...v6.11.0) (2026-04-24)
+
+
+### Features
+
+* add --manifest/-x flag for scoped decompose and recompose ([#405](https://github.com/mcarvin8/sf-decomposer/issues/405)) ([2a1f39f](https://github.com/mcarvin8/sf-decomposer/commit/2a1f39f572362899265c6d6092adb8284b9c4427))
+
 ## [6.10.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.9.0...v6.10.0) (2026-04-23)
 
 
