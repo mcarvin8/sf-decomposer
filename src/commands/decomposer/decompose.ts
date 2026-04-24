@@ -20,7 +20,13 @@ export default class DecomposerDecompose extends SfCommand<DecomposerResult> {
       summary: messages.getMessage('flags.metadata-type.summary'),
       char: 'm',
       multiple: true,
-      required: true,
+      required: false,
+    }),
+    manifest: Flags.file({
+      summary: messages.getMessage('flags.manifest.summary'),
+      char: 'x',
+      required: false,
+      exists: true,
     }),
     prepurge: Flags.boolean({
       summary: messages.getMessage('flags.prepurge.summary'),
@@ -65,6 +71,10 @@ export default class DecomposerDecompose extends SfCommand<DecomposerResult> {
   public async run(): Promise<DecomposerResult> {
     const { flags } = await this.parse(DecomposerDecompose);
 
+    if (!flags['metadata-type'] && !flags['manifest']) {
+      throw messages.createError('error.missingMetadataOrManifest');
+    }
+
     return decomposeMetadataTypes({
       metadataTypes: flags['metadata-type'],
       prepurge: flags['prepurge'],
@@ -73,6 +83,7 @@ export default class DecomposerDecompose extends SfCommand<DecomposerResult> {
       ignoreDirs: flags['ignore-package-directory'],
       strategy: flags['strategy'],
       decomposeNestedPerms: flags['decompose-nested-permissions'],
+      manifest: flags['manifest'],
       log: this.log.bind(this),
     });
   }

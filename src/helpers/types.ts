@@ -15,6 +15,7 @@ export type ConfigFile = {
   ignorePackageDirectories: string;
   strategy: string;
   decomposeNestedPermissions: boolean;
+  manifest?: string;
 };
 
 export type SfdxProject = {
@@ -44,19 +45,21 @@ export type FieldPermission = {
 };
 
 export type DecomposeOptions = {
-  metadataTypes: string[];
+  metadataTypes?: string[];
   prepurge: boolean;
   postpurge: boolean;
   format: string;
   ignoreDirs?: string[];
   strategy: string;
   decomposeNestedPerms: boolean;
+  manifest?: string;
   log: (msg: string) => void;
 };
 
 export type RecomposeOptions = {
-  metadataTypes: string[];
+  metadataTypes?: string[];
   postpurge: boolean;
   ignoreDirs?: string[];
+  manifest?: string;
   log: (msg: string) => void;
 };
