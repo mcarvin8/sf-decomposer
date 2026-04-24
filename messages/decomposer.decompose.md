@@ -13,10 +13,16 @@ You should run this after you retrieve metadata from an org.
 - `sf decomposer decompose -m "flow" -f "xml" --prepurge --postpurge`
 - `sf decomposer decompose -m "flow" -m "labels" -f "xml" --prepurge --postpurge`
 - `sf decomposer decompose -m "flow" -f "xml" -i "force-app"`
+- `sf decomposer decompose -x "manifest/package.xml" --postpurge`
+- `sf decomposer decompose -x "manifest/package.xml" -m "flow"`
 
 # flags.metadata-type.summary
 
-The metadata suffix to process, such as 'flow', 'labels', etc.
+The metadata suffix to process, such as 'flow', 'labels', etc. Required unless --manifest is provided.
+
+# flags.manifest.summary
+
+Path to a package.xml manifest file. When provided, only the metadata listed in the manifest is decomposed. If --metadata-type is also provided, the intersection of the two is used.
 
 # flags.prepurge.summary
 
@@ -41,3 +47,7 @@ Strategy to follow when decomposing files.
 # flags.decompose-nested-permissions.summary
 
 Additionally decompose object and field permissions on a permission set when strategy is set to "grouped-by-tag".
+
+# error.missingMetadataOrManifest
+
+Either --metadata-type (-m) or --manifest (-x) must be provided.
