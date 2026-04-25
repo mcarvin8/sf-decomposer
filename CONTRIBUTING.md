@@ -110,12 +110,12 @@ Unique ID elements are used to name decomposed files for nested elements. The fi
 
 ### XML disassembler
 
-Core decompose/recompose logic lives in **[xml-disassembler](https://github.com/mcarvin8/xml-disassembler)**. This repo focuses on Salesforce metadata wiring (e.g. package dirs, SDR, strategies).
+Core decompose/recompose logic lives in **[xml-disassembler-node](https://github.com/mcarvin8/xml-disassembler-node)**, which uses a Rust crate to handle decomposing and recomposing files on the local disk. This plugin focuses on Salesforce metadata wiring (e.g. package dirs, SDR, strategies).
 
-- **In this repo:** `src/service/decompose/decomposeFileHandler.ts` and `src/service/recompose/recomposeFileHandler.ts` call xml-disassembler.
-- **Changes to XML disassemble/reassemble behavior:** Contribute in the [xml-disassembler](https://github.com/mcarvin8/xml-disassembler) repo (that project uses **pnpm**).
+- **In this plugin:** `src/service/decompose/decomposeFileHandler.ts` and `src/service/recompose/recomposeFileHandler.ts` call xml-disassembler.
+- **Changes to XML disassemble/reassemble behavior:** Contribute in the [xml-disassembler-node](https://github.com/mcarvin8/xml-disassembler-node) repo.
 
-Dependabot will check for xml-disassembler updates once a week.
+Dependabot will check for xml-disassembler-node updates once a week.
 
 ---
 
