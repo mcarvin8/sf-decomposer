@@ -243,8 +243,13 @@ describe('configOverrides helper', () => {
       const configPath = join(tempProjectDir, HOOK_CONFIG_JSON);
       await writeFile(configPath, JSON.stringify({ metadataSuffixes: 'flow' }));
 
+      // Build the expected path from process.cwd() (which getRepoRoot walks) rather than from
+      // the raw tempProjectDir. This avoids cross-platform path-canonicalization mismatches:
+      // macOS may canonicalize /var -> /private/var, and Windows may preserve 8.3 short names
+      // in tmpdir() that cwd() does or does not normalize. Either way, process.cwd() after
+      // chdir matches what the implementation will see.
       const resolved = await resolveDefaultConfigPath();
-      expect(resolved).toBe(resolve(tempProjectDir, HOOK_CONFIG_JSON));
+      expect(resolved).toBe(resolve(process.cwd(), HOOK_CONFIG_JSON));
     });
 
     it('throws a clear error when the config file is missing from the repo root', async () => {
