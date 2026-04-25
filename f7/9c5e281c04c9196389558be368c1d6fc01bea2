@@ -1,0 +1,23 @@
+test/units/configOverrides.test.ts
+  d68b67e73c0680ca 246-250,252
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "f79c5e281c04c9196389558be368c1d6fc01bea2",
+  "prompts": {
+    "d68b67e73c0680ca": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "e74774a2-b497-433c-9b8b-4c418c83b524",
+        "model": "auto-high"
+      },
+      "human_author": "Matt Carvin",
+      "messages": [],
+      "total_additions": 14,
+      "total_deletions": 9,
+      "accepted_lines": 11,
+      "overriden_lines": 0
+    }
+  }
+}
