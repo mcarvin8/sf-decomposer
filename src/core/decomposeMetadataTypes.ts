@@ -6,10 +6,21 @@ import { parseManifest, ManifestFilter } from '../metadata/parseManifest.js';
 import { decomposeFileHandler } from '../service/decompose/decomposeFileHandler.js';
 import { CONCURRENCY_LIMITS } from '../helpers/constants.js';
 import { DecomposerResult, DecomposeOptions } from '../helpers/types.js';
+import { resolveDecomposeOptionsForType } from '../helpers/configOverrides.js';
 
 export async function decomposeMetadataTypes(options: DecomposeOptions): Promise<DecomposerResult> {
-  const { metadataTypes, prepurge, postpurge, format, ignoreDirs, strategy, decomposeNestedPerms, manifest, log } =
-    options;
+  const {
+    metadataTypes,
+    prepurge,
+    postpurge,
+    format,
+    ignoreDirs,
+    strategy,
+    decomposeNestedPerms,
+    manifest,
+    overrides,
+    log,
+  } = options;
 
   let manifestFilter: ManifestFilter | undefined;
   let effectiveTypes: string[];
@@ -56,24 +67,30 @@ export async function decomposeMetadataTypes(options: DecomposeOptions): Promise
         return;
       }
 
-      let effectiveStrategy = strategy;
+      const resolved = resolveDecomposeOptionsForType(
+        metadataType,
+        { format, strategy, decomposeNestedPerms, prepurge, postpurge },
+        overrides,
+      );
 
-      if (metadataType === 'labels' && strategy === 'grouped-by-tag') {
+      let effectiveStrategy = resolved.strategy;
+
+      if (metadataType === 'labels' && effectiveStrategy === 'grouped-by-tag') {
         effectiveStrategy = 'unique-id';
       }
 
-      if (metadataType === 'loyaltyProgramSetup' && strategy === 'grouped-by-tag') {
+      if (metadataType === 'loyaltyProgramSetup' && effectiveStrategy === 'grouped-by-tag') {
         effectiveStrategy = 'unique-id';
       }
 
       await decomposeFileHandler(
         metaAttributes,
-        prepurge,
-        postpurge,
-        format,
+        resolved.prepurge,
+        resolved.postpurge,
+        resolved.format,
         ignorePath,
         effectiveStrategy,
-        decomposeNestedPerms,
+        resolved.decomposeNestedPerms,
         manifestXmlPaths,
       );
 

@@ -5,6 +5,7 @@ import { Messages } from '@salesforce/core';
 
 import { DECOMPOSED_FILE_TYPES, DECOMPOSED_STRATEGIES } from '../../helpers/constants.js';
 import { decomposeMetadataTypes } from '../../core/decomposeMetadataTypes.js';
+import { loadOverridesFromConfig, resolveDefaultConfigPath } from '../../helpers/configOverrides.js';
 import { DecomposerResult } from '../../helpers/types.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
@@ -66,6 +67,12 @@ export default class DecomposerDecompose extends SfCommand<DecomposerResult> {
       required: false,
       default: false,
     }),
+    config: Flags.boolean({
+      summary: messages.getMessage('flags.config.summary'),
+      char: 'c',
+      required: false,
+      default: false,
+    }),
   };
 
   public async run(): Promise<DecomposerResult> {
@@ -74,6 +81,8 @@ export default class DecomposerDecompose extends SfCommand<DecomposerResult> {
     if (!flags['metadata-type'] && !flags['manifest']) {
       throw messages.createError('error.missingMetadataOrManifest');
     }
+
+    const overrides = flags['config'] ? await loadOverridesFromConfig(await resolveDefaultConfigPath()) : undefined;
 
     return decomposeMetadataTypes({
       metadataTypes: flags['metadata-type'],
@@ -84,6 +93,7 @@ export default class DecomposerDecompose extends SfCommand<DecomposerResult> {
       strategy: flags['strategy'],
       decomposeNestedPerms: flags['decompose-nested-permissions'],
       manifest: flags['manifest'],
+      overrides,
       log: this.log.bind(this),
     });
   }

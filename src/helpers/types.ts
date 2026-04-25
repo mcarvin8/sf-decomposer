@@ -7,6 +7,15 @@ export type DecomposerResult = {
   metadata: string[];
 };
 
+export type DecomposerOverride = {
+  metadataTypes: string[];
+  decomposedFormat?: string;
+  strategy?: string;
+  decomposeNestedPermissions?: boolean;
+  prePurge?: boolean;
+  postPurge?: boolean;
+};
+
 export type ConfigFile = {
   metadataSuffixes: string;
   prePurge: boolean;
@@ -16,6 +25,7 @@ export type ConfigFile = {
   strategy: string;
   decomposeNestedPermissions: boolean;
   manifest?: string;
+  overrides?: DecomposerOverride[];
 };
 
 export type SfdxProject = {
@@ -53,6 +63,7 @@ export type DecomposeOptions = {
   strategy: string;
   decomposeNestedPerms: boolean;
   manifest?: string;
+  overrides?: DecomposerOverride[];
   log: (msg: string) => void;
 };
 
