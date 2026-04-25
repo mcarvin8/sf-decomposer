@@ -4,53 +4,53 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { Hook } from '@oclif/core';
 
-import DecomposerDecompose from '../commands/decomposer/decompose.js';
-import { ConfigFile, PostRetrieveHookOptions } from '../helpers/types.js';
+import { decomposeMetadataTypes } from '../core/decomposeMetadataTypes.js';
+import { ConfigFile, DecomposeOptions, PostRetrieveHookOptions } from '../helpers/types.js';
 import { getRepoRoot } from '../service/core/getRepoRoot.js';
 import { HOOK_CONFIG_JSON } from '../helpers/constants.js';
 
 type HookFunction = (this: Hook.Context, options: PostRetrieveHookOptions) => Promise<void>;
 
-function hasOverrides(configFile: ConfigFile): boolean {
-  return Array.isArray(configFile.overrides) && configFile.overrides.length > 0;
-}
-
-function buildDecomposeArgs(configFile: ConfigFile): string[] | undefined {
-  const metadataTypes: string = configFile.metadataSuffixes || '.';
-  const format: string = configFile.decomposedFormat || 'xml';
-  const prepurge: boolean = configFile.prePurge || false;
-  const postpurge: boolean = configFile.postPurge || false;
+function buildDecomposeOptions(
+  configFile: ConfigFile,
+  log: (msg: string) => void,
+): DecomposeOptions | undefined {
+  const metadataSuffixes: string = configFile.metadataSuffixes || '.';
   const ignorePackageDirs: string = configFile.ignorePackageDirectories || '';
-  const strategy: string = configFile.strategy || 'unique-id';
-  const decomposeNestedPermissions: boolean = configFile.decomposeNestedPermissions || false;
   const manifest: string = configFile.manifest ?? '';
 
-  if (metadataTypes.trim() === '.' && manifest.trim() === '') {
+  if (metadataSuffixes.trim() === '.' && manifest.trim() === '') {
     return undefined;
   }
 
-  const commandArgs: string[] = [];
-  if (metadataTypes.trim() !== '.') {
-    for (const metadataType of metadataTypes.split(',')) {
-      commandArgs.push('--metadata-type', metadataType.replace(/,/g, ''));
-    }
-  }
-  if (ignorePackageDirs.trim() !== '') {
-    for (const dir of ignorePackageDirs.split(',')) {
-      commandArgs.push('--ignore-package-directory', dir.replace(/,/g, ''));
-    }
-  }
-  if (manifest.trim() !== '') {
-    commandArgs.push('--manifest', manifest.trim());
-  }
-  commandArgs.push('--format', format);
-  if (prepurge) commandArgs.push('--prepurge');
-  if (postpurge) commandArgs.push('--postpurge');
-  if (decomposeNestedPermissions) commandArgs.push('--decompose-nested-permissions');
-  commandArgs.push('--strategy', strategy);
-  if (hasOverrides(configFile)) commandArgs.push('--config');
+  const metadataTypes: string[] | undefined =
+    metadataSuffixes.trim() !== '.'
+      ? metadataSuffixes
+          .split(',')
+          .map((type) => type.replace(/,/g, '').trim())
+          .filter((type) => type.length > 0)
+      : undefined;
 
-  return commandArgs;
+  const ignoreDirs: string[] | undefined =
+    ignorePackageDirs.trim() !== ''
+      ? ignorePackageDirs
+          .split(',')
+          .map((dir) => dir.replace(/,/g, '').trim())
+          .filter((dir) => dir.length > 0)
+      : undefined;
+
+  return {
+    metadataTypes,
+    prepurge: configFile.prePurge || false,
+    postpurge: configFile.postPurge || false,
+    format: configFile.decomposedFormat || 'xml',
+    ignoreDirs,
+    strategy: configFile.strategy || 'unique-id',
+    decomposeNestedPerms: configFile.decomposeNestedPermissions || false,
+    manifest: manifest.trim() !== '' ? manifest.trim() : undefined,
+    overrides: configFile.overrides,
+    log,
+  };
 }
 
 export const scopedPostRetrieve: HookFunction = async function (options) {
@@ -71,8 +71,10 @@ export const scopedPostRetrieve: HookFunction = async function (options) {
     return;
   }
 
-  const commandArgs = buildDecomposeArgs(configFile);
-  if (!commandArgs) return;
+  const decomposeOptions = buildDecomposeOptions(configFile, (msg: string) => {
+    this.log(msg);
+  });
+  if (!decomposeOptions) return;
 
-  await DecomposerDecompose.run(commandArgs);
+  await decomposeMetadataTypes(decomposeOptions);
 };
