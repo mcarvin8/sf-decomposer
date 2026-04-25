@@ -26,6 +26,7 @@ A Salesforce CLI plugin that **decomposes** large metadata XML files into smalle
   - [Exceptions](#exceptions)
 - [Troubleshooting](#troubleshooting)
 - [Hooks](#hooks)
+- [Per-Type Overrides](#per-type-overrides)
 - [Ignore Files](#ignore-files)
   - [.forceignore](#forceignore)
   - [.sfdecomposerignore](#sfdecomposerignore)
@@ -123,7 +124,7 @@ Decomposes metadata in all local package directories (from `sfdx-project.json`) 
 
 ```
 USAGE
-  $ sf decomposer decompose [-m <value>] [-x <value>] [-f <value>] [-i <value>] [-s <value>] [--prepurge --postpurge -p --json]
+  $ sf decomposer decompose [-m <value>] [-x <value>] [-f <value>] [-i <value>] [-s <value>] [--prepurge --postpurge -p -c --json]
 
 FLAGS
   -m, --metadata-type=<value>             Metadata suffix to process (e.g. flow, labels). Repeatable. Optional when --manifest is provided.
@@ -134,6 +135,7 @@ FLAGS
   --prepurge                              Remove existing decomposed files before decomposing [default: false]
   --postpurge                             Remove original metadata files after decomposing [default: false]
   -p, --decompose-nested-permissions      With grouped-by-tag, further decompose permission set and muting permission set object/field permissions
+  -c, --config                            Load per-metadata-type overrides from .sfdecomposer.config.json in the repo root. Only the "overrides" array is consumed. See Per-Type Overrides. [default: false]
 
 GLOBAL FLAGS
   --json  Output as JSON.
@@ -357,7 +359,7 @@ Put **.sfdecomposer.config.json** in the project root to run:
 - **After** `sf project retrieve start`: decompose.
 - **Before** `sf project deploy start` / `sf project deploy validate`: recompose.
 
-Copy and customize the [sample config](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.sfdecomposer.config.json).
+Copy and customize the [sample config](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.sfdecomposer.config.json), or the [sample config with per-type overrides](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.sfdecomposer.config.overrides.json) to vary format/strategy/etc. by metadata type.
 
 | Option                       | Required    | Description                                                                                                                                                       |
 | ---------------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -369,6 +371,71 @@ Copy and customize the [sample config](https://raw.githubusercontent.com/mcarvin
 | `decomposedFormat`           | No          | xml, json, json5, or yaml (default: xml).                                                                                                                         |
 | `strategy`                   | No          | `unique-id` \| `grouped-by-tag` (default: unique-id).                                                                                                             |
 | `decomposeNestedPermissions` | No          | With grouped-by-tag, set true to further decompose permission set and muting permission set object/field permissions.                                             |
+| `overrides`                  | No          | Array of per-metadata-type overrides for `decomposedFormat`, `strategy`, `decomposeNestedPermissions`, `prePurge`, and `postPurge`. See [Per-Type Overrides](#per-type-overrides). |
+
+---
+
+## Per-Type Overrides
+
+Per-type overrides apply to **decompose only**. Recompose is a deterministic round-trip — it auto-detects format from the on-disk files and does not depend on strategy — so it ignores the `overrides` array.
+
+By default, a single decompose run uses one format and one strategy across every metadata type. The optional `overrides` array in `.sfdecomposer.config.json` lets you vary a small set of options per metadata suffix without splitting the run into multiple invocations.
+
+```json
+{
+  "metadataSuffixes": "labels,workflow,profile,flow,permissionset",
+  "ignorePackageDirectories": "force-app,examples",
+  "prePurge": true,
+  "postPurge": true,
+  "decomposedFormat": "xml",
+  "strategy": "unique-id",
+  "overrides": [
+    { "metadataTypes": ["flow"], "decomposedFormat": "yaml" },
+    {
+      "metadataTypes": ["permissionset", "mutingpermissionset"],
+      "strategy": "grouped-by-tag",
+      "decomposeNestedPermissions": true
+    }
+  ]
+}
+```
+
+### What can be overridden
+
+| Field                        | Notes                                                                                                                            |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `metadataTypes`              | Required. Array of metadata suffixes (same vocabulary as `--metadata-type` / `metadataSuffixes`). Each suffix may appear in at most one override. |
+| `decomposedFormat`           | `xml` \| `json` \| `json5` \| `yaml`.                                                                                            |
+| `strategy`                   | `unique-id` \| `grouped-by-tag`. Hard rules still win — `labels` and `loyaltyProgramSetup` are always treated as `unique-id`.    |
+| `decomposeNestedPermissions` | Only applies to `permissionset` / `mutingpermissionset` with `grouped-by-tag`.                                                   |
+| `prePurge`                   | Per-type prePurge (decompose).                                                                                                   |
+| `postPurge`                  | Per-type postPurge (decompose: remove originals after decomposing).                                                              |
+
+Run-scope options (`metadataSuffixes`, `manifest`, `ignorePackageDirectories`) are **not** valid inside an override; the plugin will throw if they are present.
+
+### Precedence
+
+For each metadata type, the effective value is resolved as:
+
+1. The per-type override value, if set.
+2. Otherwise, the run-wide value (CLI flag, hook config top-level field, or built-in default).
+3. Hard plugin rules (e.g. labels → `unique-id`) still override both.
+
+### Opting in from the CLI
+
+CLI users can opt into overrides on `decompose` with the boolean `--config` (`-c`) flag. When set, the plugin reads `.sfdecomposer.config.json` from the repo root (the nearest ancestor directory that contains `sfdx-project.json`):
+
+```bash
+sf decomposer decompose -m "flow" -m "permissionset" -c
+```
+
+When `--config` is set, **only** the `overrides` array is consumed from the file. Top-level fields like `decomposedFormat`, `strategy`, `metadataSuffixes`, etc. are ignored — the CLI flags remain the source of truth for run-wide values. This keeps direct CLI behavior predictable and lets you reuse the same config file as the post-retrieve hook without any surprises.
+
+If `--config` is set but `.sfdecomposer.config.json` is missing from the repo root, the command fails with a clear error.
+
+`recompose` does not accept `--config` because it does not need the override information — format is auto-detected from the decomposed files on disk and recompose does not depend on strategy.
+
+The post-retrieve hook automatically picks up `overrides` from `.sfdecomposer.config.json` — no extra setup required. Existing config files without an `overrides` field continue to behave exactly as before.
 
 ---
 

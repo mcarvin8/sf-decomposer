@@ -48,6 +48,10 @@ Strategy to follow when decomposing files.
 
 Additionally decompose object and field permissions on a permission set when strategy is set to "grouped-by-tag".
 
+# flags.config.summary
+
+Load per-metadata-type overrides from .sfdecomposer.config.json in the repo root. When set, the file's "overrides" array is applied (format, strategy, decomposeNestedPermissions, prePurge, postPurge per type). Other top-level config fields are ignored when invoking the CLI directly.
+
 # error.missingMetadataOrManifest
 
 Either --metadata-type (-m) or --manifest (-x) must be provided.

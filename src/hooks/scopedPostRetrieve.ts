@@ -11,6 +11,10 @@ import { HOOK_CONFIG_JSON } from '../helpers/constants.js';
 
 type HookFunction = (this: Hook.Context, options: PostRetrieveHookOptions) => Promise<void>;
 
+function hasOverrides(configFile: ConfigFile): boolean {
+  return Array.isArray(configFile.overrides) && configFile.overrides.length > 0;
+}
+
 function buildDecomposeArgs(configFile: ConfigFile): string[] | undefined {
   const metadataTypes: string = configFile.metadataSuffixes || '.';
   const format: string = configFile.decomposedFormat || 'xml';
@@ -44,6 +48,7 @@ function buildDecomposeArgs(configFile: ConfigFile): string[] | undefined {
   if (postpurge) commandArgs.push('--postpurge');
   if (decomposeNestedPermissions) commandArgs.push('--decompose-nested-permissions');
   commandArgs.push('--strategy', strategy);
+  if (hasOverrides(configFile)) commandArgs.push('--config');
 
   return commandArgs;
 }

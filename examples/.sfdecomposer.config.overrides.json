@@ -1,0 +1,16 @@
+{
+  "metadataSuffixes": "labels,workflow,profile,flow,permissionset,mutingpermissionset",
+  "ignorePackageDirectories": "force-app,examples",
+  "prePurge": true,
+  "postPurge": true,
+  "decomposedFormat": "xml",
+  "strategy": "unique-id",
+  "overrides": [
+    { "metadataTypes": ["flow"], "decomposedFormat": "yaml" },
+    {
+      "metadataTypes": ["permissionset", "mutingpermissionset"],
+      "strategy": "grouped-by-tag",
+      "decomposeNestedPermissions": true
+    }
+  ]
+}
