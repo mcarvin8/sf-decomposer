@@ -3,7 +3,7 @@
 import { mkdtemp, rm, writeFile, readdir, stat } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { copy } from 'fs-extra';
+import { cp } from 'node:fs/promises';
 import { describe, it, expect, beforeAll, afterAll, vi, type Mock } from 'vitest';
 
 import { decomposeMetadataTypes } from '../../../src/core/decomposeMetadataTypes.js';
@@ -80,8 +80,8 @@ describe('decomposer manifest scoping', () => {
     manifestPath = join(tempProjectDir, 'package.xml');
     unscopedManifestPath = join(tempProjectDir, 'unscoped.xml');
 
-    await copy(originalDirectory, forceAppDir, { overwrite: true });
-    await copy(originalDirectory2, packageDir, { overwrite: true });
+    await cp(originalDirectory, forceAppDir, { recursive: true, force: true });
+    await cp(originalDirectory2, packageDir, { recursive: true, force: true });
     await writeFile(sfdxConfigPath, JSON.stringify(configFile, null, 2));
     await writeFile(manifestPath, MANIFEST_XML);
     await writeFile(unscopedManifestPath, UNSCOPED_MANIFEST_XML);
@@ -187,8 +187,8 @@ describe('decomposer manifest scoping', () => {
     const freshDir = await mkdtemp(join(tmpdir(), 'manifest-intersect-'));
     const freshForceApp = join(freshDir, 'force-app');
     const freshPackage = join(freshDir, 'package');
-    await copy(originalDirectory, freshForceApp, { overwrite: true });
-    await copy(originalDirectory2, freshPackage, { overwrite: true });
+    await cp(originalDirectory, freshForceApp, { recursive: true, force: true });
+    await cp(originalDirectory2, freshPackage, { recursive: true, force: true });
     await writeFile(join(freshDir, SFDX_CONFIG_FILE), JSON.stringify(configFile, null, 2));
     await writeFile(join(freshDir, 'package.xml'), MANIFEST_XML);
     process.chdir(freshDir);
@@ -277,8 +277,8 @@ describe('decomposer manifest scoping - labels, bot, wildcard, errors', () => {
 
   async function setupTempProject(manifestBody: string, manifestName = 'package.xml'): Promise<string> {
     const dir = await mkdtemp(join(tmpdir(), 'manifest-case-'));
-    await copy(originalDirectory, join(dir, 'force-app'), { overwrite: true });
-    await copy(originalDirectory2, join(dir, 'package'), { overwrite: true });
+    await cp(originalDirectory, join(dir, 'force-app'), { recursive: true, force: true });
+    await cp(originalDirectory2, join(dir, 'package'), { recursive: true, force: true });
     await writeFile(join(dir, SFDX_CONFIG_FILE), JSON.stringify(configFile, null, 2));
     await writeFile(join(dir, manifestName), manifestBody);
     process.chdir(dir);

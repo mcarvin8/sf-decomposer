@@ -1,15 +1,30 @@
 'use strict';
 
-import { readdir, stat } from 'node:fs/promises';
-import { join } from 'node:path';
-import { move } from 'fs-extra';
+import { readdir, stat, rename, copyFile, unlink, mkdir } from 'node:fs/promises';
+import { dirname, join } from 'node:path';
 import pLimit from 'p-limit';
 import { CONCURRENCY_LIMITS } from '../../helpers/constants.js';
+
+async function moveFile(source: string, destination: string): Promise<void> {
+  await mkdir(dirname(destination), { recursive: true });
+  try {
+    await rename(source, destination);
+  } catch (err) {
+    const code = (err as NodeJS.ErrnoException).code;
+    // EXDEV: cross-device rename. EPERM/EEXIST: Windows rename when destination exists.
+    if (code === 'EXDEV' || code === 'EPERM' || code === 'EEXIST') {
+      await copyFile(source, destination);
+      await unlink(source);
+    } else {
+      throw err;
+    }
+  }
+}
 
 export async function moveFiles(
   sourceDirectory: string,
   destinationDirectory: string,
-  predicate: (fileName: string) => boolean
+  predicate: (fileName: string) => boolean,
 ): Promise<void> {
   const files = await readdir(sourceDirectory);
 
@@ -21,21 +36,15 @@ export async function moveFiles(
         file,
         isFile: (await stat(join(sourceDirectory, file))).isFile(),
         shouldMove: predicate(file),
-      }))
-    )
+      })),
+    ),
   );
 
   // Limit concurrent file move operations
   const moveLimit = pLimit(CONCURRENCY_LIMITS.FILE_OPERATIONS);
   const moveTasks = fileStats
     .filter(({ isFile, shouldMove }) => isFile && shouldMove)
-    .map(({ file }) =>
-      moveLimit(() => {
-        const sourceFile = join(sourceDirectory, file);
-        const destinationFile = join(destinationDirectory, file);
-        return move(sourceFile, destinationFile, { overwrite: true });
-      })
-    );
+    .map(({ file }) => moveLimit(() => moveFile(join(sourceDirectory, file), join(destinationDirectory, file))));
 
   await Promise.all(moveTasks);
 }

@@ -3,7 +3,7 @@
 import { mkdtemp, rm, writeFile, readdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { copy } from 'fs-extra';
+import { cp } from 'node:fs/promises';
 import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
 
 import { decomposeMetadataTypes } from '../../src/core/decomposeMetadataTypes.js';
@@ -42,7 +42,7 @@ describe('Edge case coverage tests', () => {
       labelsDir = join(forceAppDir, 'labels');
 
       // Copy fixture files
-      await copy(originalDirectory, forceAppDir, { overwrite: true });
+      await cp(originalDirectory, forceAppDir, { recursive: true, force: true });
 
       // Create an extra file in labels directory that should be purged
       const extraFilePath = join(labelsDir, 'ExtraFile.label-meta.xml');
@@ -98,7 +98,7 @@ describe('Edge case coverage tests', () => {
       tempProjectDir = await mkdtemp(join(tmpdir(), 'labels-prepurge-false-test-'));
       forceAppDir = join(tempProjectDir, 'force-app');
 
-      await copy(originalDirectory, forceAppDir, { overwrite: true });
+      await cp(originalDirectory, forceAppDir, { recursive: true, force: true });
       await writeFile(join(tempProjectDir, SFDX_CONFIG_FILE), JSON.stringify(configFile, null, 2));
       process.chdir(tempProjectDir);
     });
@@ -145,7 +145,7 @@ describe('Edge case coverage tests', () => {
       tempProjectDir = await mkdtemp(join(tmpdir(), 'labels-postpurge-false-test-'));
       forceAppDir = join(tempProjectDir, 'force-app');
 
-      await copy(originalDirectory, forceAppDir, { overwrite: true });
+      await cp(originalDirectory, forceAppDir, { recursive: true, force: true });
       await writeFile(join(tempProjectDir, SFDX_CONFIG_FILE), JSON.stringify(configFile, null, 2));
       process.chdir(tempProjectDir);
     });
