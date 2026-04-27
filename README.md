@@ -463,7 +463,7 @@ Bugs and feature requests: [open an issue](https://github.com/mcarvin8/sf-decomp
 
 ## Built With
 
-- [xml-disassembler](https://github.com/mcarvin8/xml-disassembler) – Disassemble XML into smaller, manageable files and reassemble when needed. Node.js + Rust (Neon). Includes prebuilt binaries for macOS (x64, arm64), Linux (x64, arm64, ia32), and Windows (x64).
+- [xml-disassembler-node](https://github.com/mcarvin8/xml-disassembler-node) – Disassemble XML into smaller, manageable files and reassemble when needed. Node.js + Rust (Neon). Includes prebuilt binaries for macOS (x64, arm64), Linux (x64, arm64, ia32), and Windows (x64).
 - [@salesforce/source-deploy-retrieve](https://github.com/forcedotcom/source-deploy-retrieve) – JavaScript toolkit for working with Salesforce metadata.
 
 ---
