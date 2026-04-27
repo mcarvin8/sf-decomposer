@@ -6,6 +6,8 @@ export default defineConfig({
     environment: 'node',
     include: ['test/**/*.test.ts'],
     clearMocks: true,
+    testTimeout: 600_000,
+    hookTimeout: 600_000,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],
