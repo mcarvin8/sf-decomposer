@@ -3,7 +3,7 @@
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { copy } from 'fs-extra';
+import { cp } from 'node:fs/promises';
 import { describe, it, expect, beforeAll, afterAll, vi, type Mock } from 'vitest';
 
 import { decomposeMetadataTypes } from '../../src/core/decomposeMetadataTypes.js';
@@ -36,8 +36,8 @@ describe('decomposer unit tests - unique id strategy', () => {
     sfdxConfigPath = join(tempProjectDir, SFDX_CONFIG_FILE);
 
     // Setup isolated test project
-    await copy(originalDirectory, forceAppDir, { overwrite: true });
-    await copy(originalDirectory2, packageDir, { overwrite: true });
+    await cp(originalDirectory, forceAppDir, { recursive: true, force: true });
+    await cp(originalDirectory2, packageDir, { recursive: true, force: true });
     await writeFile(sfdxConfigPath, JSON.stringify(configFile, null, 2));
     process.chdir(tempProjectDir);
   });
@@ -58,9 +58,9 @@ describe('decomposer unit tests - unique id strategy', () => {
         decomposeNestedPerms: false,
         ignoreDirs: undefined,
         log: logMock,
-      })
+      }),
     ).rejects.toThrow(
-      '`botVersion` suffix should not be used. Please use `bot` to decompose/recompose bot and bot version files.'
+      '`botVersion` suffix should not be used. Please use `bot` to decompose/recompose bot and bot version files.',
     );
   });
   it('throws a validation error when custom object is used', async () => {
@@ -74,7 +74,7 @@ describe('decomposer unit tests - unique id strategy', () => {
         decomposeNestedPerms: false,
         ignoreDirs: undefined,
         log: logMock,
-      })
+      }),
     ).rejects.toThrow('Custom Objects are not supported by this plugin.');
   });
   it('throws a validation error when a meta with a SDR strategy is given', async () => {
@@ -88,7 +88,7 @@ describe('decomposer unit tests - unique id strategy', () => {
         decomposeNestedPerms: false,
         ignoreDirs: undefined,
         log: logMock,
-      })
+      }),
     ).rejects.toThrow('Metadata types with matchingContentFile strategies are not supported by this plugin.');
   });
   it('throws a validation error when a valid package directory is not found', async () => {
@@ -102,7 +102,7 @@ describe('decomposer unit tests - unique id strategy', () => {
         decomposeNestedPerms: false,
         ignoreDirs: undefined,
         log: logMock,
-      })
+      }),
     ).rejects.toThrow('No directories named animationRules were found in any package directory.');
   });
   it('throws a validation error when a suffix cannot be found', async () => {
@@ -116,7 +116,7 @@ describe('decomposer unit tests - unique id strategy', () => {
         decomposeNestedPerms: false,
         ignoreDirs: undefined,
         log: logMock,
-      })
+      }),
     ).rejects.toThrow('Metadata type not found for the given suffix: bs.');
   });
 

@@ -3,7 +3,7 @@
 import { mkdtemp, rm, readdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { copy } from 'fs-extra';
+import { cp } from 'node:fs/promises';
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 
 import { decomposeMetadataTypes } from '../../../src/core/decomposeMetadataTypes.js';
@@ -34,7 +34,7 @@ describe('decomposer per-type overrides', () => {
     profilesDir = join(forceAppDir, 'profiles');
     permissionsetsDir = join(forceAppDir, 'permissionsets');
 
-    await copy(originalDirectory, forceAppDir, { overwrite: true });
+    await cp(originalDirectory, forceAppDir, { recursive: true, force: true });
     await writeFile(join(tempProjectDir, SFDX_CONFIG_FILE), JSON.stringify(sfdxConfig, null, 2));
     process.chdir(tempProjectDir);
   });

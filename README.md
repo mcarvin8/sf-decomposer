@@ -361,16 +361,16 @@ Put **.sfdecomposer.config.json** in the project root to run:
 
 Copy and customize the [sample config](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.sfdecomposer.config.json), or the [sample config with per-type overrides](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.sfdecomposer.config.overrides.json) to vary format/strategy/etc. by metadata type.
 
-| Option                       | Required    | Description                                                                                                                                                       |
-| ---------------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `metadataSuffixes`           | Conditional | Comma-separated metadata suffixes to decompose/recompose. Required unless `manifest` is set; when both are set, the run is scoped to the intersection.            |
-| `manifest`                   | Conditional | Path (relative to the project root) to a `package.xml` manifest. When set, only the components listed in the manifest are decomposed/recomposed. See `-x` above. |
-| `ignorePackageDirectories`   | No          | Comma-separated package directories to skip.                                                                                                                      |
-| `prePurge`                   | No          | Remove existing decomposed files before decomposing (default: false).                                                                                             |
-| `postPurge`                  | No          | After decompose: remove originals; after recompose: remove decomposed files (default: false).                                                                     |
-| `decomposedFormat`           | No          | xml, json, json5, or yaml (default: xml).                                                                                                                         |
-| `strategy`                   | No          | `unique-id` \| `grouped-by-tag` (default: unique-id).                                                                                                             |
-| `decomposeNestedPermissions` | No          | With grouped-by-tag, set true to further decompose permission set and muting permission set object/field permissions.                                             |
+| Option                       | Required    | Description                                                                                                                                                                        |
+| ---------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `metadataSuffixes`           | Conditional | Comma-separated metadata suffixes to decompose/recompose. Required unless `manifest` is set; when both are set, the run is scoped to the intersection.                             |
+| `manifest`                   | Conditional | Path (relative to the project root) to a `package.xml` manifest. When set, only the components listed in the manifest are decomposed/recomposed. See `-x` above.                   |
+| `ignorePackageDirectories`   | No          | Comma-separated package directories to skip.                                                                                                                                       |
+| `prePurge`                   | No          | Remove existing decomposed files before decomposing (default: false).                                                                                                              |
+| `postPurge`                  | No          | After decompose: remove originals; after recompose: remove decomposed files (default: false).                                                                                      |
+| `decomposedFormat`           | No          | xml, json, json5, or yaml (default: xml).                                                                                                                                          |
+| `strategy`                   | No          | `unique-id` \| `grouped-by-tag` (default: unique-id).                                                                                                                              |
+| `decomposeNestedPermissions` | No          | With grouped-by-tag, set true to further decompose permission set and muting permission set object/field permissions.                                                              |
 | `overrides`                  | No          | Array of per-metadata-type overrides for `decomposedFormat`, `strategy`, `decomposeNestedPermissions`, `prePurge`, and `postPurge`. See [Per-Type Overrides](#per-type-overrides). |
 
 ---
@@ -402,14 +402,14 @@ By default, a single decompose run uses one format and one strategy across every
 
 ### What can be overridden
 
-| Field                        | Notes                                                                                                                            |
-| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Field                        | Notes                                                                                                                                             |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `metadataTypes`              | Required. Array of metadata suffixes (same vocabulary as `--metadata-type` / `metadataSuffixes`). Each suffix may appear in at most one override. |
-| `decomposedFormat`           | `xml` \| `json` \| `json5` \| `yaml`.                                                                                            |
-| `strategy`                   | `unique-id` \| `grouped-by-tag`. Hard rules still win — `labels` and `loyaltyProgramSetup` are always treated as `unique-id`.    |
-| `decomposeNestedPermissions` | Only applies to `permissionset` / `mutingpermissionset` with `grouped-by-tag`.                                                   |
-| `prePurge`                   | Per-type prePurge (decompose).                                                                                                   |
-| `postPurge`                  | Per-type postPurge (decompose: remove originals after decomposing).                                                              |
+| `decomposedFormat`           | `xml` \| `json` \| `json5` \| `yaml`.                                                                                                             |
+| `strategy`                   | `unique-id` \| `grouped-by-tag`. Hard rules still win — `labels` and `loyaltyProgramSetup` are always treated as `unique-id`.                     |
+| `decomposeNestedPermissions` | Only applies to `permissionset` / `mutingpermissionset` with `grouped-by-tag`.                                                                    |
+| `prePurge`                   | Per-type prePurge (decompose).                                                                                                                    |
+| `postPurge`                  | Per-type postPurge (decompose: remove originals after decomposing).                                                                               |
 
 Run-scope options (`metadataSuffixes`, `manifest`, `ignorePackageDirectories`) are **not** valid inside an override; the plugin will throw if they are present.
 
@@ -464,7 +464,6 @@ Bugs and feature requests: [open an issue](https://github.com/mcarvin8/sf-decomp
 ## Built With
 
 - [xml-disassembler](https://github.com/mcarvin8/xml-disassembler) – Disassemble XML into smaller, manageable files and reassemble when needed. Node.js + Rust (Neon). Includes prebuilt binaries for macOS (x64, arm64), Linux (x64, arm64, ia32), and Windows (x64).
-- [fs-extra](https://github.com/jprichardson/node-fs-extra) – Node.js: extra methods for the `fs` object like copy(), remove(), mkdirs().
 - [@salesforce/source-deploy-retrieve](https://github.com/forcedotcom/source-deploy-retrieve) – JavaScript toolkit for working with Salesforce metadata.
 
 ---
@@ -475,4 +474,4 @@ Contributions are welcome. See [CONTRIBUTING.md](https://github.com/mcarvin8/sf-
 
 ## License
 
-MIT. See [LICENSE](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/LICENSE.md).
+[MIT](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/LICENSE.md)

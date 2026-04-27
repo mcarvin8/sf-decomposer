@@ -1,7 +1,7 @@
 'use strict';
 
 import { rm, writeFile } from 'node:fs/promises';
-import { copy } from 'fs-extra';
+import { cp } from 'node:fs/promises';
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 
 import { execCmd, TestSession } from '@salesforce/cli-plugins-testkit';
@@ -26,8 +26,8 @@ describe('non-unit tests', () => {
 
   beforeAll(async () => {
     session = await TestSession.create({ devhubAuthStrategy: 'NONE' });
-    await copy(originalDirectory, mockDirectory, { overwrite: true });
-    await copy(originalDirectory2, mockDirectory2, { overwrite: true });
+    await cp(originalDirectory, mockDirectory, { recursive: true, force: true });
+    await cp(originalDirectory2, mockDirectory2, { recursive: true, force: true });
     await writeFile(SFDX_CONFIG_FILE, configJsonString);
   });
 
@@ -42,26 +42,26 @@ describe('non-unit tests', () => {
   for (const format of formats) {
     it(`should decompose all metadata types under test in ${format.toUpperCase()} format`, async () => {
       const command = `decomposer decompose --postpurge --prepurge ${METADATA_UNDER_TEST.map(
-        (metadataType) => `--metadata-type "${metadataType}"`
+        (metadataType) => `--metadata-type "${metadataType}"`,
       ).join(' ')}`;
       const output = execCmd(command, { ensureExitCode: 0 }).shellOutput.stdout;
 
       METADATA_UNDER_TEST.forEach((metadataType) => {
         expect(output.replace('\n', '')).toContain(
-          `All metadata files have been decomposed for the metadata type: ${metadataType}`
+          `All metadata files have been decomposed for the metadata type: ${metadataType}`,
         );
       });
     });
 
     it('should recompose the decomposed XML files for all metadata types under test', async () => {
       const command = `decomposer recompose --postpurge ${METADATA_UNDER_TEST.map(
-        (metadataType) => `--metadata-type "${metadataType}"`
+        (metadataType) => `--metadata-type "${metadataType}"`,
       ).join(' ')}`;
       const output = execCmd(command, { ensureExitCode: 0 }).shellOutput.stdout;
 
       METADATA_UNDER_TEST.forEach((metadataType) => {
         expect(output.replace('\n', '')).toContain(
-          `All metadata files have been recomposed for the metadata type: ${metadataType}`
+          `All metadata files have been recomposed for the metadata type: ${metadataType}`,
         );
       });
     });

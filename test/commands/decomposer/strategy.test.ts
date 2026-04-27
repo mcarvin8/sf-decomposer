@@ -3,7 +3,7 @@
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { copy } from 'fs-extra';
+import { cp } from 'node:fs/promises';
 import { describe, it, expect, beforeAll, afterAll, vi, type Mock } from 'vitest';
 
 import { decomposeMetadataTypes } from '../../../src/core/decomposeMetadataTypes.js';
@@ -38,8 +38,8 @@ describe('decomposer unit tests - grouped by tag strategy', () => {
     sfdxConfigPath = join(tempProjectDir, SFDX_CONFIG_FILE);
 
     // Setup isolated test project
-    await copy(originalDirectory, forceAppDir, { overwrite: true });
-    await copy(originalDirectory2, packageDir, { overwrite: true });
+    await cp(originalDirectory, forceAppDir, { recursive: true, force: true });
+    await cp(originalDirectory2, packageDir, { recursive: true, force: true });
     await writeFile(sfdxConfigPath, JSON.stringify(configFile, null, 2));
     process.chdir(tempProjectDir);
   });
