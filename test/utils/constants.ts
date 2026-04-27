@@ -14,3 +14,4 @@ export const METADATA_UNDER_TEST = [
 ];
 // labels shouldn't be in the tags test
 export const METADATA_UNDER_TEST_FOR_TAGS = ['workflow', 'bot', 'profile', 'permissionset', 'flow', 'app'];
+export const FORMATS = ['xml', 'json', 'json5', 'yaml'];

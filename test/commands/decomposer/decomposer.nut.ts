@@ -6,7 +6,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 
 import { execCmd, TestSession } from '@salesforce/cli-plugins-testkit';
 
-import { METADATA_UNDER_TEST, SFDX_CONFIG_FILE } from '../../utils/constants.js';
+import { METADATA_UNDER_TEST, SFDX_CONFIG_FILE, FORMATS } from '../../utils/constants.js';
 import { compareDirectories } from '../../utils/compareDirectories.js';
 
 describe('non-unit tests', () => {
@@ -38,8 +38,7 @@ describe('non-unit tests', () => {
     await rm(SFDX_CONFIG_FILE);
   });
 
-  const formats = ['xml', 'json', 'json5', 'yaml'];
-  for (const format of formats) {
+  for (const format of FORMATS) {
     it(`should decompose all metadata types under test in ${format.toUpperCase()} format`, async () => {
       const command = `decomposer decompose --postpurge --prepurge ${METADATA_UNDER_TEST.map(
         (metadataType) => `--metadata-type "${metadataType}"`,

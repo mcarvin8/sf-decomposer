@@ -8,7 +8,7 @@ import { describe, it, expect, beforeAll, afterAll, vi, type Mock } from 'vitest
 
 import { decomposeMetadataTypes } from '../../../src/core/decomposeMetadataTypes.js';
 import { recomposeMetadataTypes } from '../../../src/core/recomposeMetadataTypes.js';
-import { METADATA_UNDER_TEST_FOR_TAGS, SFDX_CONFIG_FILE } from '../../utils/constants.js';
+import { METADATA_UNDER_TEST_FOR_TAGS, SFDX_CONFIG_FILE, FORMATS } from '../../utils/constants.js';
 import { compareDirectories } from '../../utils/compareDirectories.js';
 
 describe('decomposer unit tests - grouped by tag strategy', () => {
@@ -49,8 +49,7 @@ describe('decomposer unit tests - grouped by tag strategy', () => {
     await rm(tempProjectDir, { recursive: true, force: true });
   });
 
-  const formats = ['xml', 'json', 'json5', 'yaml'];
-  for (const format of formats) {
+  for (const format of FORMATS) {
     it(`should decompose all metadata types under test in ${format.toUpperCase()} format`, async () => {
       await decomposeMetadataTypes({
         metadataTypes: METADATA_UNDER_TEST_FOR_TAGS,
