@@ -4,38 +4,46 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { Hook } from '@oclif/core';
 
-import DecomposerRecompose from '../commands/decomposer/recompose.js';
-import { ConfigFile } from '../helpers/types.js';
+import { recomposeMetadataTypes } from '../core/recomposeMetadataTypes.js';
+import { ConfigFile, RecomposeOptions } from '../helpers/types.js';
 import { getRepoRoot } from '../service/core/getRepoRoot.js';
 import { HOOK_CONFIG_JSON } from '../helpers/constants.js';
 
-function buildRecomposeArgs(configFile: ConfigFile): string[] | undefined {
-  const metadataTypes: string = configFile.metadataSuffixes || '.';
-  const postpurge: boolean = configFile.postPurge || false;
+function buildRecomposeOptions(
+  configFile: ConfigFile,
+  log: (msg: string) => void,
+): RecomposeOptions | undefined {
+  const metadataSuffixes: string = configFile.metadataSuffixes || '.';
   const ignorePackageDirs: string = configFile.ignorePackageDirectories || '';
   const manifest: string = configFile.manifest ?? '';
 
-  if (metadataTypes.trim() === '.' && manifest.trim() === '') {
+  if (metadataSuffixes.trim() === '.' && manifest.trim() === '') {
     return undefined;
   }
 
-  const commandArgs: string[] = [];
-  if (metadataTypes.trim() !== '.') {
-    for (const metadataType of metadataTypes.split(',')) {
-      commandArgs.push('--metadata-type', metadataType.replace(/,/g, ''));
-    }
-  }
-  if (ignorePackageDirs.trim() !== '') {
-    for (const dir of ignorePackageDirs.split(',')) {
-      commandArgs.push('--ignore-package-directory', dir.replace(/,/g, ''));
-    }
-  }
-  if (manifest.trim() !== '') {
-    commandArgs.push('--manifest', manifest.trim());
-  }
-  if (postpurge) commandArgs.push('--postpurge');
+  const metadataTypes: string[] | undefined =
+    metadataSuffixes.trim() !== '.'
+      ? metadataSuffixes
+          .split(',')
+          .map((type) => type.replace(/,/g, '').trim())
+          .filter((type) => type.length > 0)
+      : undefined;
 
-  return commandArgs;
+  const ignoreDirs: string[] | undefined =
+    ignorePackageDirs.trim() !== ''
+      ? ignorePackageDirs
+          .split(',')
+          .map((dir) => dir.replace(/,/g, '').trim())
+          .filter((dir) => dir.length > 0)
+      : undefined;
+
+  return {
+    metadataTypes,
+    postpurge: configFile.postPurge || false,
+    ignoreDirs,
+    manifest: manifest.trim() !== '' ? manifest.trim() : undefined,
+    log,
+  };
 }
 
 export const prerun: Hook<'prerun'> = async function (options) {
@@ -57,8 +65,10 @@ export const prerun: Hook<'prerun'> = async function (options) {
     return;
   }
 
-  const commandArgs = buildRecomposeArgs(configFile);
-  if (!commandArgs) return;
+  const recomposeOptions = buildRecomposeOptions(configFile, (msg: string) => {
+    this.log(msg);
+  });
+  if (!recomposeOptions) return;
 
-  await DecomposerRecompose.run(commandArgs);
+  await recomposeMetadataTypes(recomposeOptions);
 };
