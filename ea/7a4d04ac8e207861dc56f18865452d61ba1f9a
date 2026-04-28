@@ -1,0 +1,25 @@
+.github/workflows/smoke-test.yml
+  7ea3ca1866db2ebc 2,13,28-31,41-44
+test/commands/decomposer/decomposer.nut.ts
+  7ea3ca1866db2ebc 3,28-32,36,40-42,46-49,52,55,60,63,66
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "ea7a4d04ac8e207861dc56f18865452d61ba1f9a",
+  "prompts": {
+    "7ea3ca1866db2ebc": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "801f3be9-32e2-4f1e-bea0-857feb209701",
+        "model": "auto-high"
+      },
+      "human_author": "Matt Carvin",
+      "messages": [],
+      "total_additions": 29,
+      "total_deletions": 146,
+      "accepted_lines": 29,
+      "overriden_lines": 0
+    }
+  }
+}
