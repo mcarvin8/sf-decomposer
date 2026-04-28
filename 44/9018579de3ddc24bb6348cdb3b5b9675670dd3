@@ -1,0 +1,28 @@
+.github/workflows/smoke-test.yml
+  h_b104b674256482 44
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "449018579de3ddc24bb6348cdb3b5b9675670dd3",
+  "prompts": {
+    "7ea3ca1866db2ebc": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "801f3be9-32e2-4f1e-bea0-857feb209701",
+        "model": "auto-high"
+      },
+      "human_author": "Matt Carvin",
+      "messages": [],
+      "total_additions": 2,
+      "total_deletions": 5,
+      "accepted_lines": 0,
+      "overriden_lines": 1
+    }
+  },
+  "humans": {
+    "h_b104b674256482": {
+      "author": "Matt Carvin"
+    }
+  }
+}
