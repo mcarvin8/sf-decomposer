@@ -41,5 +41,5 @@ jobs:
         run: npm run test:nuts
         env:
           TESTKIT_EXECUTABLE_PATH: sf
-          TESTKIT_HOMEDIR: ${{ env.HOME }}
+          TESTKIT_HOMEDIR: $HOME
           SF_DISABLE_TELEMETRY: true
