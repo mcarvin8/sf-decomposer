@@ -1,7 +1,6 @@
 'use strict';
 
-import { rm, writeFile } from 'node:fs/promises';
-import { cp } from 'node:fs/promises';
+import { cp, rm, writeFile } from 'node:fs/promises';
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 
 import { execCmd, TestSession } from '@salesforce/cli-plugins-testkit';
@@ -26,46 +25,49 @@ describe('non-unit tests', () => {
 
   beforeAll(async () => {
     session = await TestSession.create({ devhubAuthStrategy: 'NONE' });
+  });
+
+  async function resetWorkdirs(): Promise<void> {
+    await rm(mockDirectory, { recursive: true, force: true });
+    await rm(mockDirectory2, { recursive: true, force: true });
     await cp(originalDirectory, mockDirectory, { recursive: true, force: true });
     await cp(originalDirectory2, mockDirectory2, { recursive: true, force: true });
     await writeFile(SFDX_CONFIG_FILE, configJsonString);
-  });
+  }
 
   afterAll(async () => {
     await session?.clean();
-    await rm(mockDirectory, { recursive: true });
-    await rm(mockDirectory2, { recursive: true });
-    await rm(SFDX_CONFIG_FILE);
+    await rm(mockDirectory, { recursive: true, force: true });
+    await rm(mockDirectory2, { recursive: true, force: true });
+    await rm(SFDX_CONFIG_FILE, { force: true });
   });
 
   for (const format of FORMATS) {
-    it(`should decompose all metadata types under test in ${format.toUpperCase()} format`, async () => {
-      const command = `decomposer decompose --postpurge --prepurge ${METADATA_UNDER_TEST.map(
+    it(`should decompose and recompose all metadata types under test in ${format.toUpperCase()} format`, async () => {
+      await resetWorkdirs();
+
+      const decomposeCommand = `decomposer decompose --postpurge --prepurge --format ${format} ${METADATA_UNDER_TEST.map(
         (metadataType) => `--metadata-type "${metadataType}"`,
       ).join(' ')}`;
-      const output = execCmd(command, { ensureExitCode: 0 }).shellOutput.stdout;
+      const decomposeOutput = execCmd(decomposeCommand, { ensureExitCode: 0 }).shellOutput.stdout;
 
       METADATA_UNDER_TEST.forEach((metadataType) => {
-        expect(output.replace('\n', '')).toContain(
+        expect(decomposeOutput.replace('\n', '')).toContain(
           `All metadata files have been decomposed for the metadata type: ${metadataType}`,
         );
       });
-    });
 
-    it('should recompose the decomposed XML files for all metadata types under test', async () => {
-      const command = `decomposer recompose --postpurge ${METADATA_UNDER_TEST.map(
+      const recomposeCommand = `decomposer recompose --postpurge ${METADATA_UNDER_TEST.map(
         (metadataType) => `--metadata-type "${metadataType}"`,
       ).join(' ')}`;
-      const output = execCmd(command, { ensureExitCode: 0 }).shellOutput.stdout;
+      const recomposeOutput = execCmd(recomposeCommand, { ensureExitCode: 0 }).shellOutput.stdout;
 
       METADATA_UNDER_TEST.forEach((metadataType) => {
-        expect(output.replace('\n', '')).toContain(
+        expect(recomposeOutput.replace('\n', '')).toContain(
           `All metadata files have been recomposed for the metadata type: ${metadataType}`,
         );
       });
-    });
 
-    it(`should confirm the recomposed ${format.toUpperCase()} files match the fixture files`, async () => {
       await compareDirectories(originalDirectory, mockDirectory);
       await compareDirectories(originalDirectory2, mockDirectory2);
     });

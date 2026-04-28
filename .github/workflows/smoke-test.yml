@@ -1,5 +1,5 @@
 # Manual smoke test: latest sf-decomposer from npm + CLI round-trip vs fixture baselines.
-# Uses scripts/verify-published-plugin.mjs (real `sf decomposer` commands), not Jest/testkit.
+# Reuses the NUT suite with TESTKIT_EXECUTABLE_PATH=sf so commands run through the real CLI.
 name: Smoke test (published plugin)
 
 on:
@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  verify-published-plugin:
+  published-plugin-nuts:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     strategy:
@@ -25,6 +25,10 @@ jobs:
         uses: actions/setup-node@v6.3.0
         with:
           node-version: 24
+          cache: npm
+
+      - name: Install Dependencies
+        run: npm ci
 
       - name: Install Salesforce CLI and plugin
         shell: bash
@@ -33,6 +37,12 @@ jobs:
           echo 'y' | sf plugins install --force sf-decomposer@latest
           sf version --verbose --json
 
-      - name: Decompose / recompose and compare to baselines
+      - name: Use runner Salesforce CLI home in Testkit
         shell: bash
-        run: node scripts/verify-published-plugin.mjs
+        run: node -e "require('fs').appendFileSync(process.env.GITHUB_ENV, 'TESTKIT_HOMEDIR=' + require('os').homedir() + '\n')"
+
+      - name: Decompose / recompose and compare to baselines
+        run: npm run test:nuts
+        env:
+          TESTKIT_EXECUTABLE_PATH: sf
+          SF_DISABLE_TELEMETRY: true
