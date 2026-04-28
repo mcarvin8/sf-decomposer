@@ -37,9 +37,12 @@ jobs:
           echo 'y' | sf plugins install --force sf-decomposer@latest
           sf version --verbose --json
 
+      - name: Use runner Salesforce CLI home in Testkit
+        shell: bash
+        run: node -e "require('fs').appendFileSync(process.env.GITHUB_ENV, 'TESTKIT_HOMEDIR=' + require('os').homedir() + '\n')"
+
       - name: Decompose / recompose and compare to baselines
         run: npm run test:nuts
         env:
           TESTKIT_EXECUTABLE_PATH: sf
-          TESTKIT_HOMEDIR: $HOME
           SF_DISABLE_TELEMETRY: true
