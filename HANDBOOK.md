@@ -49,7 +49,7 @@ Everything else in this handbook is opt-in.
 
 A flat `unique-id` decomposition of a `BotVersion` produces one giant per-dialog file with hundreds of nested steps inside. That's only marginally easier to review than the original.
 
-**Recipe — multi-rule decomposition.**
+**Recipe — two-rule multi-level decomposition.**
 
 ```json
 {
@@ -65,42 +65,60 @@ A flat `unique-id` decomposition of a `BotVersion` produces one giant per-dialog
 }
 ```
 
-What this produces on disk for `Assessment_Bot/v1.botVersion-meta.xml`:
+What this produces on disk for `Sample_Chat_Bot/v1.botVersion-meta.xml` (an Einstein chat bot from the plugin's own fixtures):
 
 ```
 bots/
-└── Assessment_Bot/
-    ├── Assessment_Bot.bot-meta.xml          ← bot header (untouched)
+└── Sample_Chat_Bot/
+    ├── Sample_Chat_Bot.bot-meta.xml                 ← bot header (untouched)
     ├── v1/
-    │   ├── botDialogGroups/
-    │   │   ├── Alert_Items.botDialogGroups-meta.xml
-    │   │   ├── Question_Items.botDialogGroups-meta.xml
+    │   ├── nlpProviders/
+    │   │   └── EinsteinAi.nlpProviders-meta.xml
+    │   ├── botDialogs/                              ← outer rule lands here
+    │   │   ├── Welcome/                             ← one directory per dialog (named by developerName)
+    │   │   │   ├── Welcome.xml                      ← dialog leaf properties
+    │   │   │   └── botSteps/                        ← inner rule lands here
+    │   │   │       ├── 853b6432/                    ← step with nested content -> own subdir
+    │   │   │       │   ├── 853b6432.xml             ← step leaf properties
+    │   │   │       │   └── botNavigation/           ← nested step content broken out
+    │   │   │       │       └── Redirect.botNavigation-meta.xml
+    │   │   │       └── dc35b789/
+    │   │   │           ├── dc35b789.xml
+    │   │   │           └── botMessages/
+    │   │   │               └── dc35b789.botMessages-meta.xml
+    │   │   ├── End_Chat/
+    │   │   │   ├── End_Chat.xml
+    │   │   │   └── botSteps/
+    │   │   │       ├── 9d031e75.botSteps-meta.xml   ← step with no nested content -> single leaf file
+    │   │   │       └── a7afda99/                    ← step with nested content -> subdir
+    │   │   │           └── ...
     │   │   └── ...
-    │   ├── botDialogs/
-    │   │   ├── Welcome.botDialogs-meta.xml      ← per-dialog file
-    │   │   └── Welcome/
-    │   │       └── botSteps/
-    │   │           ├── Collect.botSteps-meta.xml ← inner steps split out
-    │   │           ├── Message.botSteps-meta.xml
-    │   │           └── ...
-    │   └── v1.botVersion-meta.xml               ← leaf-only outer wrapper
+    │   ├── .multi_level.json                        ← required for recompose; do not hand-edit
+    │   └── v1.botVersion-meta.xml                   ← leaf-only outer wrapper
     └── ...
 ```
 
-**Tweaking it for your bots.**
+A few things worth knowing before you commit this:
 
-- If your dialog `developerName`s are non-unique across versions (rare), swap the first rule's UID list to `developerName,id`.
-- If `botSteps` collide on `type` (very common — many `Message` steps in one dialog), add `stepIdentifier` as a tiebreaker: `botSteps:botSteps:stepIdentifier,type`.
-- **Per-bot precision**: scope a rule to one component if a single bot needs different decomposition than the rest:
+- **Dialog folders are named by developerName**, the way the recipe asks for. So `Welcome`, `End_Chat`, etc. are stable and review-friendly across deploys.
+- **Step folders/files are content-hashed.** The inner rule's `:type` segment tells the disassembler what to look for, but each step's nested content is what determines the on-disk name (`853b6432`, `dc35b789`, ...). The hashes are stable across runs as long as the step content doesn't change, so they diff cleanly. Don't try to "rename them to something nicer" — they'll regenerate on the next decompose.
+- **Each step is one of two shapes**: a leaf `<hash>.botSteps-meta.xml` file when the step has no nested content (e.g. a `Wait` step), or a `<hash>/` directory containing `<hash>.xml` plus subdirectories for the nested content (e.g. a `Message` step with `<botMessages>`, a `Navigation` step with `<botNavigation>`, an Agentforce `Action` step with `<botFlowInvocation>`). Both shapes recompose back to identical `<botSteps>` XML.
+- **The two rules do different things.** The outer `botDialogs` rule is what gives you per-dialog folders — that's the headline win for review-ability. The inner `botSteps` rule additionally splits each step's nested content out of the per-dialog file into per-step subdirectories. For small Einstein bots with shallow steps you can drop the inner rule and still get the dialog-level split; for heavier Agentforce bots the inner rule is the difference between a 50-line per-step subtree and a 500-line per-dialog file.
 
-  ```json
-  {
-    "components": ["bot:Assessment_Bot"],
-    "multiLevel": ["botDialogs:botDialogs:developerName", "botSteps:botSteps:stepIdentifier,type"]
-  }
-  ```
+**When to use a single rule instead.** If your bots have shallow steps (most Einstein chat bots, or pre-Agentforce bots), `multiLevel: ["botDialogs:botDialogs:developerName"]` alone is enough. Each dialog gets its own folder and steps live as flat `*.botSteps-meta.xml` files inside. Recompose is byte-identical either way; the choice is purely about how granular you want the per-step diff to be.
 
-> **Agentforce vs Einstein.** Both share the `bot` suffix, so a single override entry covers both bot families. The structural difference (Agentforce uses richer `botFlowInvocation` and `genAi*` blocks where Einstein uses `botNavigation` and `mlIntents`) is invisible to this recipe — `multiLevel` rules only target the repeating sections that exist on each side.
+> **Per-bot precision.** Scope the override to a single component when one bot in your repo has a different shape than the rest. The plugin's own bot fixture suite uses this pattern:
+>
+> ```json
+> {
+>   "components": ["bot:Sample_Chat_Bot", "bot:Internal_Copilot_Sample"],
+>   "multiLevel": ["botDialogs:botDialogs:developerName", "botSteps:botSteps:type"]
+> }
+> ```
+
+> **Agentforce vs Einstein.** Both share the `bot` suffix, so a single override entry covers both bot families. The structural difference (Agentforce uses richer `botFlowInvocation` and `genAi*` blocks where Einstein uses `botNavigation` and `mlIntents`) is invisible to this recipe — `multiLevel` rules only target the repeating sections that exist on each side. The plugin ships an `Internal_Copilot_Sample` fixture that exercises the Agentforce-style shape and an Einstein-style `Sample_Chat_Bot` fixture; both round-trip with the same recipe.
+
+> **Sibling order inside `botSteps`.** Recompose orders `<botSteps>` siblings alphabetically by their on-disk filename, not by their original document position. For bot deploys this is a no-op (Salesforce doesn't rely on step order at the XML level), but a freshly-recomposed file may show step entries shuffled compared to the source you originally pulled. The committed fixtures in this repo are baked from the recompose output for that reason — `sf decomposer verify` will treat the baked output as the source of truth.
 
 ## Flexipages (Lightning App / Record / Home pages)
 
