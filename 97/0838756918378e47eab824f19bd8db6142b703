@@ -1,0 +1,35 @@
+src/service/decompose/decomposeFileHandler.ts
+  fe7e6e0c9c356cde 168-182
+test/commands/decomposer/overrides.test.ts
+  fe7e6e0c9c356cde 226-277
+README.md
+  fe7e6e0c9c356cde 30,417-418,444-488
+src/helpers/configOverrides.ts
+  fe7e6e0c9c356cde 44-45,48-49,155-212,316,344
+examples/.sfdecomposer.config.overrides.json
+  fe7e6e0c9c356cde 16-19
+src/helpers/types.ts
+  fe7e6e0c9c356cde 18-25
+test/units/configOverrides.test.ts
+  fe7e6e0c9c356cde 11,155-224,227-234,403,406-416,470-472,474-480,482-485
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "970838756918378e47eab824f19bd8db6142b703",
+  "prompts": {
+    "fe7e6e0c9c356cde": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "2ff60847-36f6-45b2-be1c-d11615bbf1a4",
+        "model": "auto-high"
+      },
+      "human_author": "Matt Carvin",
+      "messages": [],
+      "total_additions": 305,
+      "total_deletions": 8,
+      "accepted_lines": 297,
+      "overriden_lines": 4
+    }
+  }
+}
