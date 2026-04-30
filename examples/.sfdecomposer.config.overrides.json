@@ -11,6 +11,11 @@
       "metadataTypes": ["permissionset", "mutingpermissionset"],
       "strategy": "grouped-by-tag",
       "decomposeNestedPermissions": true
+    },
+    {
+      "components": ["permissionset:HR_Admin"],
+      "strategy": "unique-id",
+      "decomposedFormat": "json"
     }
   ]
 }

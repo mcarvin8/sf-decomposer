@@ -26,7 +26,7 @@ A Salesforce CLI plugin that **decomposes** large metadata XML files into smalle
   - [Exceptions](#exceptions)
 - [Troubleshooting](#troubleshooting)
 - [Hooks](#hooks)
-- [Per-Type Overrides](#per-type-overrides)
+- [Per-Type & Per-Component Overrides](#per-type--per-component-overrides)
 - [Ignore Files](#ignore-files)
   - [.forceignore](#forceignore)
   - [.sfdecomposerignore](#sfdecomposerignore)
@@ -135,7 +135,7 @@ FLAGS
   --prepurge                              Remove existing decomposed files before decomposing [default: false]
   --postpurge                             Remove original metadata files after decomposing [default: false]
   -p, --decompose-nested-permissions      With grouped-by-tag, further decompose permission set and muting permission set object/field permissions
-  -c, --config                            Load per-metadata-type overrides from .sfdecomposer.config.json in the repo root. Only the "overrides" array is consumed. See Per-Type Overrides. [default: false]
+  -c, --config                            Load per-type and per-component overrides from .sfdecomposer.config.json in the repo root. Only the "overrides" array is consumed. See Per-Type & Per-Component Overrides. [default: false]
 
 GLOBAL FLAGS
   --json  Output as JSON.
@@ -232,7 +232,7 @@ sf project deploy start -x "manifest/package.xml"
 
 ## Decompose Strategies
 
-> **Important:** Use one strategy per metadata type. To switch from `unique-id` to `grouped-by-tag`, run decompose with `--prepurge` and `-s "grouped-by-tag"` to regenerate.
+> **Tip:** A single decompose run can mix strategies and formats across metadata types — and even across components within the same type — through the `overrides` array (see [Per-Type & Per-Component Overrides](#per-type--per-component-overrides)). Recompose is deterministic from the on-disk sidecar, so any combination round-trips. When switching strategies for an existing component, pass `--prepurge` (or set `prePurge: true`) so leftover files from the previous strategy are removed before the new ones are written.
 
 - **unique-id** (default): Each nested element goes to its own file, named by unique-id fields or content hash. Leaf elements stay in a file named like the original XML.
 - **grouped-by-tag**: All elements with the same tag (e.g. `<fieldPermissions>`) go into one file named after the tag (e.g. `fieldPermissions.xml`). Leaf elements are still grouped in the original-named file.
@@ -359,27 +359,27 @@ Put **.sfdecomposer.config.json** in the project root to run:
 - **After** `sf project retrieve start`: decompose.
 - **Before** `sf project deploy start` / `sf project deploy validate`: recompose.
 
-Copy and customize the [sample config](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.sfdecomposer.config.json), or the [sample config with per-type overrides](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.sfdecomposer.config.overrides.json) to vary format/strategy/etc. by metadata type.
+Copy and customize the [sample config](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.sfdecomposer.config.json), or the [sample config with overrides](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.sfdecomposer.config.overrides.json) to vary format/strategy/etc. by metadata type or by individual component.
 
-| Option                       | Required    | Description                                                                                                                                                                        |
-| ---------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `metadataSuffixes`           | Conditional | Comma-separated metadata suffixes to decompose/recompose. Required unless `manifest` is set; when both are set, the run is scoped to the intersection.                             |
-| `manifest`                   | Conditional | Path (relative to the project root) to a `package.xml` manifest. When set, only the components listed in the manifest are decomposed/recomposed. See `-x` above.                   |
-| `ignorePackageDirectories`   | No          | Comma-separated package directories to skip.                                                                                                                                       |
-| `prePurge`                   | No          | Remove existing decomposed files before decomposing (default: false).                                                                                                              |
-| `postPurge`                  | No          | After decompose: remove originals; after recompose: remove decomposed files (default: false).                                                                                      |
-| `decomposedFormat`           | No          | xml, json, json5, or yaml (default: xml).                                                                                                                                          |
-| `strategy`                   | No          | `unique-id` \| `grouped-by-tag` (default: unique-id).                                                                                                                              |
-| `decomposeNestedPermissions` | No          | With grouped-by-tag, set true to further decompose permission set and muting permission set object/field permissions.                                                              |
-| `overrides`                  | No          | Array of per-metadata-type overrides for `decomposedFormat`, `strategy`, `decomposeNestedPermissions`, `prePurge`, and `postPurge`. See [Per-Type Overrides](#per-type-overrides). |
+| Option                       | Required    | Description                                                                                                                                                                                                                   |
+| ---------------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `metadataSuffixes`           | Conditional | Comma-separated metadata suffixes to decompose/recompose. Required unless `manifest` is set; when both are set, the run is scoped to the intersection.                                                                        |
+| `manifest`                   | Conditional | Path (relative to the project root) to a `package.xml` manifest. When set, only the components listed in the manifest are decomposed/recomposed. See `-x` above.                                                              |
+| `ignorePackageDirectories`   | No          | Comma-separated package directories to skip.                                                                                                                                                                                  |
+| `prePurge`                   | No          | Remove existing decomposed files before decomposing (default: false).                                                                                                                                                         |
+| `postPurge`                  | No          | After decompose: remove originals; after recompose: remove decomposed files (default: false).                                                                                                                                 |
+| `decomposedFormat`           | No          | xml, json, json5, or yaml (default: xml).                                                                                                                                                                                     |
+| `strategy`                   | No          | `unique-id` \| `grouped-by-tag` (default: unique-id).                                                                                                                                                                         |
+| `decomposeNestedPermissions` | No          | With grouped-by-tag, set true to further decompose permission set and muting permission set object/field permissions.                                                                                                         |
+| `overrides`                  | No          | Array of per-type and/or per-component overrides for `decomposedFormat`, `strategy`, `decomposeNestedPermissions`, `prePurge`, and `postPurge`. See [Per-Type & Per-Component Overrides](#per-type--per-component-overrides). |
 
 ---
 
-## Per-Type Overrides
+## Per-Type & Per-Component Overrides
 
-Per-type overrides apply to **decompose only**. Recompose is a deterministic round-trip — it auto-detects format from the on-disk files and does not depend on strategy — so it ignores the `overrides` array.
+Overrides apply to **decompose only**. Recompose is a deterministic round-trip — it auto-detects format from the on-disk files and does not depend on strategy — so it ignores the `overrides` array.
 
-By default, a single decompose run uses one format and one strategy across every metadata type. The optional `overrides` array in `.sfdecomposer.config.json` lets you vary a small set of options per metadata suffix without splitting the run into multiple invocations.
+By default, a single decompose run uses one format and one strategy across every metadata type. The optional `overrides` array in `.sfdecomposer.config.json` lets you vary a small set of options per metadata suffix (**type-scope**) or per individual SDR component (**component-scope**) without splitting the run into multiple invocations.
 
 ```json
 {
@@ -395,6 +395,11 @@ By default, a single decompose run uses one format and one strategy across every
       "metadataTypes": ["permissionset", "mutingpermissionset"],
       "strategy": "grouped-by-tag",
       "decomposeNestedPermissions": true
+    },
+    {
+      "components": ["permissionset:HR_Admin", "permissionset:Big_PermSet"],
+      "strategy": "grouped-by-tag",
+      "decomposeNestedPermissions": true
     }
   ]
 }
@@ -402,24 +407,37 @@ By default, a single decompose run uses one format and one strategy across every
 
 ### What can be overridden
 
-| Field                        | Notes                                                                                                                                             |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `metadataTypes`              | Required. Array of metadata suffixes (same vocabulary as `--metadata-type` / `metadataSuffixes`). Each suffix may appear in at most one override. |
-| `decomposedFormat`           | `xml` \| `json` \| `json5` \| `yaml`.                                                                                                             |
-| `strategy`                   | `unique-id` \| `grouped-by-tag`. Hard rules still win — `labels` and `loyaltyProgramSetup` are always treated as `unique-id`.                     |
-| `decomposeNestedPermissions` | Only applies to `permissionset` / `mutingpermissionset` with `grouped-by-tag`.                                                                    |
-| `prePurge`                   | Per-type prePurge (decompose).                                                                                                                    |
-| `postPurge`                  | Per-type postPurge (decompose: remove originals after decomposing).                                                                               |
+| Field                        | Notes                                                                                                                                                                                                          |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `metadataTypes`              | Optional (required if `components` is omitted). Array of metadata suffixes (same vocabulary as `--metadata-type` / `metadataSuffixes`). Each suffix may appear in at most one override.                        |
+| `components`                 | Optional (required if `metadataTypes` is omitted). Array of `<metadataSuffix>:<fullName>` keys (e.g. `permissionset:HR_Admin`, `report:MyFolder/MyReport`). Each component may appear in at most one override. |
+| `decomposedFormat`           | `xml` \| `json` \| `json5` \| `yaml`.                                                                                                                                                                          |
+| `strategy`                   | `unique-id` \| `grouped-by-tag`. Hard rules still win — `labels` and `loyaltyProgramSetup` are always treated as `unique-id`.                                                                                  |
+| `decomposeNestedPermissions` | Only applies to `permissionset` / `mutingpermissionset` with `grouped-by-tag`.                                                                                                                                 |
+| `prePurge`                   | Per-scope prePurge (decompose). Component-scope `prePurge` only purges the named component's decomposed directory.                                                                                             |
+| `postPurge`                  | Per-scope postPurge (decompose: remove originals after decomposing).                                                                                                                                           |
 
 Run-scope options (`metadataSuffixes`, `manifest`, `ignorePackageDirectories`) are **not** valid inside an override; the plugin will throw if they are present.
 
+#### Component key conventions
+
+The `<fullName>` part of a component key is the SDR fullName for the component, matching the basename of the decomposed directory:
+
+- **Plain types** (e.g. `permissionset`, `flow`, `profile`, `workflow`): use the file stem, e.g. `permissionset:HR_Admin` for `permissionsets/HR_Admin.permissionset-meta.xml`.
+- **Strict-directory types** (e.g. `bot`): use the bot directory name, e.g. `bot:My_Bot` for `bots/My_Bot/My_Bot.bot-meta.xml`.
+- **Folder-typed metadata** (e.g. `report`, `dashboard`, `email`, `document`): the unit of decomposition is the folder; use the folder name, e.g. `report:MyFolder` to scope every report inside `reports/MyFolder/`.
+- **`labels`**: there is exactly one labels file per labels directory, so component-scope keys are not meaningful — use the type-scope `metadataTypes: ["labels"]` instead.
+
+Component overrides are not a filter. If `--metadata` / `metadataSuffixes` includes `permissionset`, every permission set is still decomposed; the override only changes how the named ones are decomposed. Use `--manifest` / the hook's `manifest` field if you want to scope the run itself to a subset of components.
+
 ### Precedence
 
-For each metadata type, the effective value is resolved as:
+For each component, each option is resolved independently in this order (highest first):
 
-1. The per-type override value, if set.
-2. Otherwise, the run-wide value (CLI flag, hook config top-level field, or built-in default).
-3. Hard plugin rules (e.g. labels → `unique-id`) still override both.
+1. The component-scope override value (matching `<suffix>:<fullName>` in `components`), if set.
+2. The type-scope override value (matching `<suffix>` in `metadataTypes`), if set.
+3. The run-wide value (CLI flag, hook config top-level field, or built-in default).
+4. Hard plugin rules (e.g. `labels` and `loyaltyProgramSetup` forced to `unique-id`) override all of the above.
 
 ### Opting in from the CLI
 

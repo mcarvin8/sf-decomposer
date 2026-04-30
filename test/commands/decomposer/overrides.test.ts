@@ -1,17 +1,17 @@
 'use strict';
 
-import { mkdtemp, rm, readdir, writeFile } from 'node:fs/promises';
+import { mkdtemp, rm, readdir, writeFile, readFile, copyFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { cp } from 'node:fs/promises';
-import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, afterAll, afterEach, vi } from 'vitest';
 
 import { decomposeMetadataTypes } from '../../../src/core/decomposeMetadataTypes.js';
 import { recomposeMetadataTypes } from '../../../src/core/recomposeMetadataTypes.js';
 import { compareDirectories } from '../../utils/compareDirectories.js';
 import { SFDX_CONFIG_FILE } from '../../utils/constants.js';
 
-describe('decomposer per-type overrides', () => {
+describe('decomposer overrides (per-type)', () => {
   let tempProjectDir: string;
   let forceAppDir: string;
   let workflowsDir: string;
@@ -117,6 +117,156 @@ describe('decomposer per-type overrides', () => {
     });
 
     await compareDirectories(originalDirectory, forceAppDir);
+  });
+});
+
+// Per-component overrides allow two components of the same metadata type to be decomposed with
+// different strategies/formats in a single run. Reassembly is deterministic from the on-disk
+// sidecar so the round-trip works regardless of how each component was split.
+describe('decomposer per-component overrides', () => {
+  let tempProjectDir: string;
+  let forceAppDir: string;
+  let permissionsetsDir: string;
+  const fixtureDir: string = resolve('fixtures/package-dir-1');
+  const originalCwd = process.cwd();
+
+  const sfdxConfig = {
+    packageDirectories: [{ path: 'force-app', default: true }],
+    namespace: '',
+    sfdcLoginUrl: 'https://login.salesforce.com',
+    sourceApiVersion: '58.0',
+  };
+
+  beforeEach(async () => {
+    tempProjectDir = await mkdtemp(join(tmpdir(), 'component-overrides-test-'));
+    forceAppDir = join(tempProjectDir, 'force-app');
+    permissionsetsDir = join(forceAppDir, 'permissionsets');
+
+    await cp(fixtureDir, forceAppDir, { recursive: true, force: true });
+    // The base fixture only contains one "real" permission set (HR_Admin); duplicate it so
+    // we have two distinct components to differentiate via component-scope overrides.
+    const hrAdminPath = join(permissionsetsDir, 'HR_Admin.permissionset-meta.xml');
+    const bigPermSetPath = join(permissionsetsDir, 'Big_PermSet.permissionset-meta.xml');
+    await copyFile(hrAdminPath, bigPermSetPath);
+
+    await writeFile(join(tempProjectDir, SFDX_CONFIG_FILE), JSON.stringify(sfdxConfig, null, 2));
+    process.chdir(tempProjectDir);
+  });
+
+  afterEach(async () => {
+    process.chdir(originalCwd);
+    await rm(tempProjectDir, { recursive: true, force: true });
+  });
+
+  it('decomposes two components of the same type with different strategies and round-trips on recompose', async () => {
+    const logMock = vi.fn();
+
+    await decomposeMetadataTypes({
+      metadataTypes: ['permissionset'],
+      prepurge: true,
+      postpurge: true,
+      format: 'xml',
+      strategy: 'unique-id',
+      decomposeNestedPerms: false,
+      ignoreDirs: undefined,
+      overrides: [
+        {
+          components: ['permissionset:Big_PermSet'],
+          strategy: 'grouped-by-tag',
+          decomposeNestedPermissions: true,
+        },
+      ],
+      log: logMock,
+    });
+
+    const hrAdminEntries = await readdir(join(permissionsetsDir, 'HR_Admin'), { withFileTypes: true });
+    const hrAdminFileNames = hrAdminEntries.filter((e) => e.isFile()).map((e) => e.name);
+
+    // HR_Admin used the default unique-id strategy. unique-id never produces top-level
+    // tag-named aggregate files (those are the grouped-by-tag fingerprint).
+    expect(hrAdminFileNames).not.toContain('applicationVisibilities.xml');
+    expect(hrAdminFileNames).not.toContain('classAccesses.xml');
+    expect(hrAdminFileNames).not.toContain('pageAccesses.xml');
+
+    // Inside fieldPermissions/, unique-id produces ONE file per individual field
+    // (named after the `field` value, e.g. `Job_Request__c.SalaryPay__c`), not a single
+    // grouped-by-object file.
+    const hrFieldPerms = await readdir(join(permissionsetsDir, 'HR_Admin', 'fieldPermissions'));
+    expect(hrFieldPerms).toContain('Job_Request__c.SalaryPay__c.fieldPermissions-meta.xml');
+    expect(hrFieldPerms).toContain('Job_Request__c.Salary__c.fieldPermissions-meta.xml');
+
+    // Big_PermSet was overridden to grouped-by-tag, so it produces tag-named aggregate files
+    // at the top level (one file per nested tag).
+    const bigPermSetDir = join(permissionsetsDir, 'Big_PermSet');
+    const bigEntries = await readdir(bigPermSetDir, { withFileTypes: true });
+    const bigFileNames = bigEntries.filter((e) => e.isFile()).map((e) => e.name);
+    expect(bigFileNames).toContain('applicationVisibilities.xml');
+    expect(bigFileNames).toContain('classAccesses.xml');
+    expect(bigFileNames).toContain('pageAccesses.xml');
+
+    // With decomposeNestedPermissions=true, fieldPermissions are grouped by object (one
+    // file per object aggregating all field entries) rather than one file per individual field.
+    const bigFieldPerms = await readdir(join(bigPermSetDir, 'fieldPermissions'));
+    expect(bigFieldPerms).toContain('Job_Request__c.fieldPermissions-meta.xml');
+    expect(bigFieldPerms).not.toContain('Job_Request__c.SalaryPay__c.fieldPermissions-meta.xml');
+
+    await recomposeMetadataTypes({
+      metadataTypes: ['permissionset'],
+      postpurge: true,
+      ignoreDirs: undefined,
+      log: logMock,
+    });
+
+    // Both files should round-trip back to byte-identical XML (same source).
+    const hrAdminXml = await readFile(join(permissionsetsDir, 'HR_Admin.permissionset-meta.xml'), 'utf-8');
+    const bigPermSetXml = await readFile(join(permissionsetsDir, 'Big_PermSet.permissionset-meta.xml'), 'utf-8');
+    expect(hrAdminXml).toBe(bigPermSetXml);
+  });
+
+  it('applies per-component format overrides on top of a per-type format override', async () => {
+    const logMock = vi.fn();
+
+    await decomposeMetadataTypes({
+      metadataTypes: ['permissionset'],
+      prepurge: true,
+      postpurge: true,
+      format: 'xml',
+      strategy: 'unique-id',
+      decomposeNestedPerms: false,
+      ignoreDirs: undefined,
+      overrides: [
+        // Type-scope: every permission set decomposes to YAML by default.
+        { metadataTypes: ['permissionset'], decomposedFormat: 'yaml' },
+        // Component-scope: HR_Admin is special and decomposes to JSON instead.
+        { components: ['permissionset:HR_Admin'], decomposedFormat: 'json' },
+      ],
+      log: logMock,
+    });
+
+    // Filter out the `.config-disassembler.json` metadata sidecar and the `.key_order.json`
+    // helper file (both are always JSON regardless of decomposed format and would confuse
+    // the per-format assertions below).
+    const isSidecar = (f: string): boolean => f.endsWith('.config-disassembler.json') || f.endsWith('.key_order.json');
+    const hrAdminFiles = (await collectFiles(join(permissionsetsDir, 'HR_Admin'))).filter((f) => !isSidecar(f));
+    const bigPermSetFiles = (await collectFiles(join(permissionsetsDir, 'Big_PermSet'))).filter((f) => !isSidecar(f));
+
+    // HR_Admin honors the component-scope override (JSON), not the type-scope override (YAML).
+    expect(hrAdminFiles.some((f) => f.endsWith('.json'))).toBe(true);
+    expect(hrAdminFiles.some((f) => f.endsWith('.yaml'))).toBe(false);
+    // Big_PermSet falls back to the type-scope override (YAML).
+    expect(bigPermSetFiles.some((f) => f.endsWith('.yaml'))).toBe(true);
+    expect(bigPermSetFiles.some((f) => f.endsWith('.json'))).toBe(false);
+
+    await recomposeMetadataTypes({
+      metadataTypes: ['permissionset'],
+      postpurge: true,
+      ignoreDirs: undefined,
+      log: logMock,
+    });
+
+    const hrAdminXml = await readFile(join(permissionsetsDir, 'HR_Admin.permissionset-meta.xml'), 'utf-8');
+    const bigPermSetXml = await readFile(join(permissionsetsDir, 'Big_PermSet.permissionset-meta.xml'), 'utf-8');
+    expect(hrAdminXml).toBe(bigPermSetXml);
   });
 });
 

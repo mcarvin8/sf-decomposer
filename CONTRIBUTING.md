@@ -112,7 +112,7 @@ Unique ID elements are used to name decomposed files for nested elements. The fi
 
 Core decompose/recompose logic lives in **[config-disassembler-node](https://github.com/mcarvin8/config-disassembler-node)**, which uses a Rust crate to handle decomposing and recomposing files on the local disk. This plugin focuses on Salesforce metadata wiring (e.g. package dirs, SDR, strategies).
 
-- **In this plugin:** `src/service/decompose/decomposeFileHandler.ts` and `src/service/recompose/recomposeFileHandler.ts` call config-disassembler.
+- **In this plugin:** `src/service/decompose/decomposeFileHandler.ts` and `src/service/recompose/recomposeFileHandler.ts` call config-disassembler. Per-type / per-component override resolution happens in `src/helpers/configOverrides.ts` and is applied per file inside the decompose handler so different components of the same metadata type can be decomposed with different strategies/formats in one run.
 - **Changes to XML decompose/recompose behavior:** Contribute in the [config-disassembler](https://github.com/mcarvin8/config-disassembler) (Rust crate) and/or [config-disassembler-node](https://github.com/mcarvin8/config-disassembler-node) repo.
 
 Dependabot will check for config-disassembler updates once a week.
