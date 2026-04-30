@@ -1,0 +1,29 @@
+CONTRIBUTING.md
+  fe7e6e0c9c356cde 111,113,115-116,118
+src/service/decompose/decomposeFileHandler.ts
+  fe7e6e0c9c356cde 5,65
+src/service/recompose/recomposeFileHandler.ts
+  fe7e6e0c9c356cde 5
+README.md
+  fe7e6e0c9c356cde 82,90,337,466
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "b1ef9da6e0d0cec49d8387b7d3a077af248b6bad",
+  "prompts": {
+    "fe7e6e0c9c356cde": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "2ff60847-36f6-45b2-be1c-d11615bbf1a4",
+        "model": "auto-high"
+      },
+      "human_author": "Matt Carvin",
+      "messages": [],
+      "total_additions": 13,
+      "total_deletions": 13,
+      "accepted_lines": 12,
+      "overriden_lines": 1
+    }
+  }
+}
