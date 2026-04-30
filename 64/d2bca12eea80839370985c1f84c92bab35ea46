@@ -1,0 +1,14 @@
+README.md
+  h_b104b674256482 344
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "64d2bca12eea80839370985c1f84c92bab35ea46",
+  "prompts": {},
+  "humans": {
+    "h_b104b674256482": {
+      "author": "Matt Carvin"
+    }
+  }
+}
