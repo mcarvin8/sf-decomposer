@@ -13,6 +13,11 @@
       "decomposeNestedPermissions": true
     },
     {
+      "metadataTypes": ["profile"],
+      "strategy": "grouped-by-tag",
+      "splitTags": "objectPermissions:split:object,fieldPermissions:group:field,layoutAssignments:group:layout"
+    },
+    {
       "components": ["permissionset:HR_Admin"],
       "strategy": "unique-id",
       "decomposedFormat": "json"

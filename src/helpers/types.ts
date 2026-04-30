@@ -15,6 +15,14 @@ export type DecomposerOverride = {
   decomposedFormat?: string;
   strategy?: string;
   decomposeNestedPermissions?: boolean;
+  /**
+   * Custom `splitTags` spec for `grouped-by-tag` strategy. Comma-separated rules of the form
+   * `<tag>:<mode>:<field>` or `<tag>:<path>:<mode>:<field>`, where `mode` is `split` (one file
+   * per array item, filename from `field`) or `group` (array items grouped by `field`, one file
+   * per group). When set, this wins over the hardcoded `decomposeNestedPermissions` default
+   * for permission sets. Only applied when the resolved strategy is `grouped-by-tag`.
+   */
+  splitTags?: string;
   prePurge?: boolean;
   postPurge?: boolean;
 };

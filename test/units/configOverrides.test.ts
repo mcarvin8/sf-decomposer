@@ -8,6 +8,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import {
   loadOverridesFromConfig,
   validateOverrides,
+  validateSplitTagsSpec,
   getOverrideForType,
   getOverrideForComponent,
   hasComponentOverridesForType,
@@ -150,6 +151,86 @@ describe('configOverrides helper', () => {
         { metadataTypes: ['flow'], decomposedFormat: 'yaml', futureFlag: true },
       ] as unknown as DecomposerOverride[];
       expect(() => validateOverrides(overrides)).not.toThrow();
+    });
+
+    it('accepts a well-formed splitTags spec', () => {
+      const overrides: DecomposerOverride[] = [
+        {
+          metadataTypes: ['permissionset'],
+          strategy: 'grouped-by-tag',
+          splitTags: 'objectPermissions:split:object,fieldPermissions:group:field',
+        },
+      ];
+      expect(() => validateOverrides(overrides)).not.toThrow();
+    });
+
+    it('rejects a malformed splitTags spec', () => {
+      const overrides: DecomposerOverride[] = [
+        { metadataTypes: ['flow'], strategy: 'grouped-by-tag', splitTags: 'actionCalls:split' },
+      ];
+      expect(() => validateOverrides(overrides)).toThrow(/3 or 4 colon-separated parts/);
+    });
+  });
+
+  describe('validateSplitTagsSpec', () => {
+    it('accepts a 3-part rule', () => {
+      expect(() => validateSplitTagsSpec('objectPermissions:split:object', 0)).not.toThrow();
+    });
+
+    it('accepts a 4-part rule (with explicit path)', () => {
+      expect(() => validateSplitTagsSpec('items:nested.items:group:label', 0)).not.toThrow();
+    });
+
+    it('accepts multiple comma-separated rules', () => {
+      expect(() =>
+        validateSplitTagsSpec('objectPermissions:split:object,fieldPermissions:group:field', 0),
+      ).not.toThrow();
+    });
+
+    it('rejects an empty spec', () => {
+      expect(() => validateSplitTagsSpec('', 0)).toThrow(/empty "splitTags" string/);
+    });
+
+    it('rejects a whitespace-only spec', () => {
+      expect(() => validateSplitTagsSpec('   ', 0)).toThrow(/empty "splitTags" string/);
+    });
+
+    it('rejects an empty rule between commas', () => {
+      expect(() => validateSplitTagsSpec('objectPermissions:split:object,,fieldPermissions:group:field', 0)).toThrow(
+        /contains an empty rule/,
+      );
+    });
+
+    it('rejects a rule with too few parts', () => {
+      expect(() => validateSplitTagsSpec('actionCalls:split', 0)).toThrow(/3 or 4 colon-separated parts/);
+    });
+
+    it('rejects a rule with too many parts', () => {
+      expect(() => validateSplitTagsSpec('a:b:c:d:e', 0)).toThrow(/3 or 4 colon-separated parts/);
+    });
+
+    it('rejects a rule with an empty tag', () => {
+      expect(() => validateSplitTagsSpec(':split:object', 0)).toThrow(/empty parts/);
+    });
+
+    it('rejects a 4-part rule with an empty path', () => {
+      expect(() => validateSplitTagsSpec('items::group:label', 0)).toThrow(/empty parts/);
+    });
+
+    it('rejects an unknown mode', () => {
+      expect(() => validateSplitTagsSpec('actionCalls:explode:name', 0)).toThrow(/invalid mode "explode"/);
+    });
+
+    it('rejects duplicate tags within a single spec', () => {
+      expect(() => validateSplitTagsSpec('actionCalls:split:name,actionCalls:group:label', 0)).toThrow(
+        /duplicate tag "actionCalls"/,
+      );
+    });
+
+    it('tolerates rules with surrounding whitespace', () => {
+      expect(() =>
+        validateSplitTagsSpec('  objectPermissions : split : object , fieldPermissions : group : field ', 0),
+      ).not.toThrow();
     });
   });
 
@@ -319,7 +400,19 @@ describe('configOverrides helper', () => {
         decomposeNestedPerms: true,
         prepurge: false,
         postpurge: false,
+        splitTags: undefined,
       });
+    });
+
+    it('threads a type-scope splitTags through resolution', () => {
+      const overrides: DecomposerOverride[] = [
+        {
+          metadataTypes: ['flow'],
+          strategy: 'grouped-by-tag',
+          splitTags: 'actionCalls:split:name',
+        },
+      ];
+      expect(resolveDecomposeOptionsForType('flow', base, overrides).splitTags).toBe('actionCalls:split:name');
     });
   });
 
@@ -373,6 +466,22 @@ describe('configOverrides helper', () => {
     it('returns typeResolved when overrides is undefined', () => {
       const typeResolved = { ...base, format: 'json' };
       expect(resolveDecomposeOptionsForComponent('flow', 'My_Flow', typeResolved)).toEqual(typeResolved);
+    });
+
+    it('lets a component override replace a type-scoped splitTags', () => {
+      const typeResolved = { ...base, strategy: 'grouped-by-tag', splitTags: 'actionCalls:split:name' };
+      const overrides: DecomposerOverride[] = [{ components: ['flow:Special'], splitTags: 'decisions:group:label' }];
+      expect(resolveDecomposeOptionsForComponent('flow', 'Special', typeResolved, overrides).splitTags).toBe(
+        'decisions:group:label',
+      );
+    });
+
+    it('inherits a type-scoped splitTags when the component override does not set one', () => {
+      const typeResolved = { ...base, strategy: 'grouped-by-tag', splitTags: 'actionCalls:split:name' };
+      const overrides: DecomposerOverride[] = [{ components: ['flow:Other'], decomposedFormat: 'yaml' }];
+      expect(resolveDecomposeOptionsForComponent('flow', 'Other', typeResolved, overrides).splitTags).toBe(
+        'actionCalls:split:name',
+      );
     });
   });
 

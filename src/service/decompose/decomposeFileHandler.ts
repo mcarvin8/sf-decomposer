@@ -159,19 +159,27 @@ function disassembleHandler(
 ): void {
   const handler: DisassembleXMLFileHandler = new DisassembleXMLFileHandler();
   let multiLevel;
-  let splitTags;
   const effectiveStrategy = applyHardStrategyRules(metaSuffix, options.strategy);
-  const decomposePermSets: boolean =
-    options.decomposeNestedPerms &&
-    (metaSuffix === 'permissionset' || metaSuffix === 'mutingpermissionset') &&
-    effectiveStrategy === 'grouped-by-tag';
   const decomposeLoyalyProgram: boolean = metaSuffix === 'loyaltyProgramSetup' && effectiveStrategy === 'unique-id';
   if (decomposeLoyalyProgram) {
     multiLevel = 'programProcesses:programProcesses:parameterName,ruleName';
   }
 
-  if (decomposePermSets) {
-    splitTags = 'objectPermissions:split:object,fieldPermissions:group:field';
+  // Resolve splitTags with this precedence:
+  //   1. an explicit `splitTags` set in the override (any metadata type, gated to grouped-by-tag);
+  //   2. the hardcoded permission-set default when `decomposeNestedPermissions: true` is set on
+  //      a permissionset / mutingpermissionset under grouped-by-tag.
+  // splitTags is a no-op for non-grouped-by-tag strategies, so we never pass it otherwise.
+  let splitTags: string | undefined;
+  if (effectiveStrategy === 'grouped-by-tag') {
+    if (options.splitTags) {
+      splitTags = options.splitTags;
+    } else if (
+      options.decomposeNestedPerms &&
+      (metaSuffix === 'permissionset' || metaSuffix === 'mutingpermissionset')
+    ) {
+      splitTags = 'objectPermissions:split:object,fieldPermissions:group:field';
+    }
   }
 
   handler.disassemble({

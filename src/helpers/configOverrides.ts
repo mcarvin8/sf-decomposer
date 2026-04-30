@@ -41,7 +41,11 @@ export type ResolvedDecomposeTypeOptions = {
   decomposeNestedPerms: boolean;
   prepurge: boolean;
   postpurge: boolean;
+  /** Resolved custom `splitTags` spec, when explicitly set in an override. */
+  splitTags?: string;
 };
+
+const SPLIT_TAGS_MODES = new Set<string>(['split', 'group']);
 
 /**
  * Load and validate the `overrides` array from a `.sfdecomposer.config.json` file.
@@ -148,6 +152,64 @@ function validateOverrideValues(override: DecomposerOverride, i: number): void {
         `Allowed values: ${DECOMPOSED_STRATEGIES.join(', ')}.`,
     );
   }
+
+  if (override.splitTags !== undefined) {
+    validateSplitTagsSpec(override.splitTags, i);
+  }
+}
+
+/**
+ * Validate the comma-separated `splitTags` spec at config-load time. Each rule must be of the
+ * form `<tag>:<mode>:<field>` or `<tag>:<path>:<mode>:<field>`, with `mode` ∈ {split, group}.
+ * Tags must be unique within the spec. Deeper validation (e.g. unknown XML tag names) is left
+ * to the underlying disassembler crate at runtime.
+ */
+export function validateSplitTagsSpec(spec: string, i: number): void {
+  if (typeof spec !== 'string' || spec.trim() === '') {
+    throw new Error(`Override at index ${i} has an empty "splitTags" string.`);
+  }
+
+  const rules = spec.split(',').map((rule) => rule.trim());
+  const seenTags = new Set<string>();
+
+  for (const rule of rules) {
+    if (rule === '') {
+      throw new Error(`Override at index ${i} "splitTags" contains an empty rule.`);
+    }
+    const parts = rule.split(':').map((part) => part.trim());
+
+    let tag: string;
+    let mode: string;
+    let field: string;
+    if (parts.length === 3) {
+      [tag, mode, field] = parts;
+    } else if (parts.length === 4) {
+      // path defaults to tag in the 3-part form; we don't need to retain it for validation,
+      // we just check the parts are non-empty and the mode/field are well-formed.
+      [tag, , mode, field] = parts;
+    } else {
+      throw new Error(
+        `Override at index ${i} "splitTags" rule "${rule}" must have 3 or 4 colon-separated parts ` +
+          '("tag:mode:field" or "tag:path:mode:field").',
+      );
+    }
+
+    if (!tag || !mode || !field || (parts.length === 4 && !parts[1])) {
+      throw new Error(`Override at index ${i} "splitTags" rule "${rule}" has empty parts.`);
+    }
+    if (!SPLIT_TAGS_MODES.has(mode)) {
+      throw new Error(
+        `Override at index ${i} "splitTags" rule "${rule}" has invalid mode "${mode}". ` +
+          `Allowed values: ${Array.from(SPLIT_TAGS_MODES).join(', ')}.`,
+      );
+    }
+    if (seenTags.has(tag)) {
+      throw new Error(
+        `Override at index ${i} "splitTags" contains duplicate tag "${tag}". Each tag may appear at most once.`,
+      );
+    }
+    seenTags.add(tag);
+  }
 }
 
 function validateMetadataTypeEntries(metadataTypes: string[], i: number, seenTypes: Set<string>): void {
@@ -251,6 +313,7 @@ export function resolveDecomposeOptionsForType(
     decomposeNestedPerms: override.decomposeNestedPermissions ?? base.decomposeNestedPerms,
     prepurge: override.prePurge ?? base.prepurge,
     postpurge: override.postPurge ?? base.postpurge,
+    splitTags: override.splitTags ?? base.splitTags,
   };
 }
 
@@ -278,5 +341,6 @@ export function resolveDecomposeOptionsForComponent(
     decomposeNestedPerms: componentOverride.decomposeNestedPermissions ?? typeResolved.decomposeNestedPerms,
     prepurge: componentOverride.prePurge ?? typeResolved.prepurge,
     postpurge: componentOverride.postPurge ?? typeResolved.postpurge,
+    splitTags: componentOverride.splitTags ?? typeResolved.splitTags,
   };
 }
