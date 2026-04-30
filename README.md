@@ -341,7 +341,7 @@ Control verbosity with the `RUST_LOG` environment variable (e.g. `RUST_LOG=debug
 Example output in the terminal (Rust log format):
 
 ```
-[2026-02-11T22:52:32Z ERROR xml_disassembler::builders::build_disassembled_files] The XML file C:\Users\matthew.carvin\Documents\sf-decomposer\fixtures\package-dir-1\permissionsets\only_leafs.permissionset-meta.xml only has leaf elements. This file will not be disassembled.
+[2026-04-30T12:34:38Z ERROR config_disassembler::xml::builders::build_disassembled_files] The XML file C:\Users\matthew.carvin\Documents\sf-decomposer\fixtures\package-dir-1\permissionsets\only_leafs.permissionset-meta.xml only has leaf elements. This file will not be disassembled.
 ```
 
 ### Files with only leaf elements
