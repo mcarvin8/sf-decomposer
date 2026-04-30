@@ -283,17 +283,57 @@ sf project deploy start -x "manifest/package.xml"
 
 **Permission set – unique-id**
 
-![Unique ID](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-uid.png)
+```
+permissionsets/
+└── HR_Admin/
+    ├── HR_Admin.permissionset-meta.xml             ← leaf properties (label, description, userLicense, ...)
+    ├── .key_order.json                             ← preserves original element order
+    ├── applicationVisibilities/
+    │   └── JobApps__Recruiting.applicationVisibilities-meta.xml
+    ├── classAccesses/
+    │   └── Send_Email_Confirmation.classAccesses-meta.xml
+    ├── fieldPermissions/
+    │   ├── Job_Request__c.SalaryPay__c.fieldPermissions-meta.xml
+    │   └── Job_Request__c.Salary__c.fieldPermissions-meta.xml
+    ├── objectPermissions/
+    │   └── Job_Request__c.objectPermissions-meta.xml
+    ├── pageAccesses/
+    │   └── Job_Request_Web_Form.pageAccesses-meta.xml
+    ├── recordTypeVisibilities/
+    │   └── Recruiting.DevManager.recordTypeVisibilities-meta.xml
+    ├── tabSettings/
+    │   └── Job_Request__c.tabSettings-meta.xml
+    └── userPermissions/
+        └── APIEnabled.userPermissions-meta.xml
+```
 
 **Permission set – grouped-by-tag**
 
-![Grouped By Tag](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-tags.png)
+```
+permissionsets/
+└── HR_Admin/
+    ├── HR_Admin.permissionset-meta.xml             ← leaf properties only
+    ├── .key_order.json
+    ├── applicationVisibilities.xml                 ← all applicationVisibilities entries
+    ├── classAccesses.xml                           ← all classAccesses entries
+    ├── fieldPermissions.xml                        ← all fieldPermissions entries
+    ├── objectPermissions.xml
+    ├── pageAccesses.xml
+    ├── recordTypeVisibilities.xml
+    ├── tabSettings.xml
+    └── userPermissions.xml
+```
 
 ### Custom Labels Decomposition
 
 Custom labels use only the **unique-id** strategy. If you pass `grouped-by-tag`, the plugin overrides to `unique-id` and continues. Grouping labels by tag would produce no difference from the original file since all elements share the same tag. Each label is written to its own file.
 
-![Decomposed Custom Labels](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-labels.png)
+```
+labels/
+├── CustomLabels.labels-meta.xml                    ← original wrapper kept (empty after decompose)
+├── quoteAuto.label-meta.xml                        ← one file per <labels> entry, named by fullName
+└── quoteManual.label-meta.xml
+```
 
 ### Additional Permission Set Decomposition
 
@@ -309,7 +349,22 @@ sf decomposer decompose -m "permissionset" -s "grouped-by-tag" -p
 sf decomposer decompose -m "mutingpermissionset" -s "grouped-by-tag" -p
 ```
 
-![Decomposed Perm Set](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/additional-perm-set-decomposed.png)
+```
+permissionsets/
+└── HR_Admin/
+    ├── HR_Admin.permissionset-meta.xml             ← leaf properties
+    ├── .key_order.json
+    ├── applicationVisibilities.xml                 ← grouped-by-tag stays grouped
+    ├── classAccesses.xml
+    ├── pageAccesses.xml
+    ├── recordTypeVisibilities.xml
+    ├── tabSettings.xml
+    ├── userPermissions.xml
+    ├── fieldPermissions/                           ← grouped per object (decompose-nested-permissions)
+    │   └── Job_Request__c.fieldPermissions-meta.xml
+    └── objectPermissions/                          ← one file per object
+        └── Job_Request__c.objectPermissions-meta.xml
+```
 
 ### Loyalty Program Setup Decomposition
 
@@ -320,7 +375,30 @@ sf decomposer decompose -m "mutingpermissionset" -s "grouped-by-tag" -p
 
 > Recomposition for loyalty program setup removes decomposed files even without `--postpurge`. Use version control or CI to keep them if needed.
 
-![Decomposed Loyalty Program Setup](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/.github/images/decomposed-loyalty-program.png)
+```
+loyaltyProgramSetups/
+└── Cloud_Kicks_Inner_Circle/
+    ├── Cloud_Kicks_Inner_Circle.loyaltyProgramSetup-meta.xml   ← leaf properties (e.g. label)
+    ├── .key_order.json
+    ├── .multi_level.json                                       ← required for recompose; do not hand-edit
+    └── programProcesses/                                       ← one folder per process, named by processName
+        ├── Manual Points Adjustments/
+        │   ├── Manual Points Adjustments.xml                   ← process leaf properties
+        │   ├── .key_order.json
+        │   ├── parameters/                                     ← one file per parameter, named by parameterName
+        │   │   ├── EA_PerAdjustmentRewardTracking.parameters-meta.xml
+        │   │   ├── EventType.parameters-meta.xml
+        │   │   └── ...
+        │   └── rules/                                          ← one file per rule, named by ruleName
+        │       ├── Bulk Voucher Upload.rules-meta.xml
+        │       ├── Finalize.rules-meta.xml
+        │       └── Set Up Step.rules-meta.xml
+        ├── Member Enrollment Process/
+        │   └── ...                                             ← same shape per process
+        └── ...
+```
+
+> **Tip:** This three-level layout (`programProcesses` → `parameters`/`rules`) is exactly the multi-level decomposition pattern. The same pattern powers Bots, Flexipages, and Layouts via opt-in `multiLevel` overrides — see the [admin handbook](https://github.com/mcarvin8/sf-decomposer/blob/main/HANDBOOK.md) for those recipes.
 
 ---
 
