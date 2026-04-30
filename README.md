@@ -572,7 +572,7 @@ Within one scope, the `(file_pattern, root_to_strip)` pair must be unique across
 
 > **Tip:** Use [`sf decomposer verify`](#sf-decomposer-verify) to non-destructively confirm a new override config still round-trips before committing it.
 
-> **Tip:** See the [admin handbook](./HANDBOOK.md) for end-to-end recipes for Bots, Flexipages, Layouts, and other deeply-nested metadata.
+> **Tip:** See the [admin handbook](https://github.com/mcarvin8/sf-decomposer/blob/main/HANDBOOK.md) for end-to-end recipes for Bots, Flexipages, Layouts, and other deeply-nested metadata.
 
 ### Opting in from the CLI
 

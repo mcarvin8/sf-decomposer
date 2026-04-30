@@ -37,7 +37,8 @@
     "/messages",
     "/oclif.manifest.json",
     "/oclif.lock",
-    "/CHANGELOG.md"
+    "/CHANGELOG.md",
+    "/HANDBOOK.md"
   ],
   "keywords": [
     "force",
