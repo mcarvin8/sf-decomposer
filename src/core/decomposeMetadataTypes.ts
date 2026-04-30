@@ -67,32 +67,17 @@ export async function decomposeMetadataTypes(options: DecomposeOptions): Promise
         return;
       }
 
-      const resolved = resolveDecomposeOptionsForType(
+      // Type-scope resolved options serve as the base for component-scope resolution further
+      // down the call stack. Hard strategy rules (labels / loyaltyProgramSetup) are applied per
+      // file inside the disassembler so they remain in force even when a component-scope override
+      // tries to flip the strategy.
+      const typeResolved = resolveDecomposeOptionsForType(
         metadataType,
         { format, strategy, decomposeNestedPerms, prepurge, postpurge },
         overrides,
       );
 
-      let effectiveStrategy = resolved.strategy;
-
-      if (metadataType === 'labels' && effectiveStrategy === 'grouped-by-tag') {
-        effectiveStrategy = 'unique-id';
-      }
-
-      if (metadataType === 'loyaltyProgramSetup' && effectiveStrategy === 'grouped-by-tag') {
-        effectiveStrategy = 'unique-id';
-      }
-
-      await decomposeFileHandler(
-        metaAttributes,
-        resolved.prepurge,
-        resolved.postpurge,
-        resolved.format,
-        ignorePath,
-        effectiveStrategy,
-        resolved.decomposeNestedPerms,
-        manifestXmlPaths,
-      );
+      await decomposeFileHandler(metaAttributes, typeResolved, ignorePath, overrides, manifestXmlPaths);
 
       processed.push(metadataType);
       log(`All metadata files have been decomposed for the metadata type: ${metadataType}`);

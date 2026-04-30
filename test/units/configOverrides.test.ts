@@ -9,7 +9,11 @@ import {
   loadOverridesFromConfig,
   validateOverrides,
   getOverrideForType,
+  getOverrideForComponent,
+  hasComponentOverridesForType,
+  parseComponentKey,
   resolveDecomposeOptionsForType,
+  resolveDecomposeOptionsForComponent,
   resolveDefaultConfigPath,
 } from '../../src/helpers/configOverrides.js';
 import { HOOK_CONFIG_JSON, SFDX_PROJECT_FILE_NAME } from '../../src/helpers/constants.js';
@@ -29,14 +33,78 @@ describe('configOverrides helper', () => {
       expect(() => validateOverrides(overrides)).not.toThrow();
     });
 
-    it('rejects an override with an empty metadataTypes array', () => {
+    it('rejects an override with empty metadataTypes and no components', () => {
       expect(() => validateOverrides([{ metadataTypes: [] } as unknown as DecomposerOverride])).toThrow(
-        /non-empty "metadataTypes"/,
+        /non-empty "metadataTypes" or "components"/,
       );
     });
 
-    it('rejects an override missing metadataTypes', () => {
-      expect(() => validateOverrides([{} as unknown as DecomposerOverride])).toThrow(/non-empty "metadataTypes"/);
+    it('rejects an override missing both metadataTypes and components', () => {
+      expect(() => validateOverrides([{} as unknown as DecomposerOverride])).toThrow(
+        /non-empty "metadataTypes" or "components"/,
+      );
+    });
+
+    it('rejects a non-array metadataTypes', () => {
+      expect(() => validateOverrides([{ metadataTypes: 'flow' } as unknown as DecomposerOverride])).toThrow(
+        /non-array "metadataTypes"/,
+      );
+    });
+
+    it('rejects a non-array components', () => {
+      expect(() =>
+        validateOverrides([{ components: 'permissionset:HR_Admin' } as unknown as DecomposerOverride]),
+      ).toThrow(/non-array "components"/);
+    });
+
+    it('accepts a components-only override', () => {
+      const overrides: DecomposerOverride[] = [
+        {
+          components: ['permissionset:HR_Admin', 'permissionset:Big_PermSet'],
+          strategy: 'grouped-by-tag',
+          decomposeNestedPermissions: true,
+        },
+      ];
+      expect(() => validateOverrides(overrides)).not.toThrow();
+    });
+
+    it('accepts a mixed override that targets both a type and components', () => {
+      const overrides: DecomposerOverride[] = [
+        {
+          metadataTypes: ['permissionset'],
+          components: ['mutingpermissionset:Locked_Down'],
+          decomposedFormat: 'yaml',
+        },
+      ];
+      expect(() => validateOverrides(overrides)).not.toThrow();
+    });
+
+    it('rejects duplicate component keys across overrides', () => {
+      const overrides: DecomposerOverride[] = [
+        { components: ['permissionset:HR_Admin'], decomposedFormat: 'yaml' },
+        { components: ['permissionset:HR_Admin'], strategy: 'grouped-by-tag' },
+      ];
+      expect(() => validateOverrides(overrides)).toThrow(/Component "permissionset:HR_Admin" appears in more than one/);
+    });
+
+    it('rejects a malformed component key without colon', () => {
+      const overrides: DecomposerOverride[] = [{ components: ['permissionset_HR_Admin'] }];
+      expect(() => validateOverrides(overrides)).toThrow(/invalid component key/);
+    });
+
+    it('rejects a component key with an empty fullName', () => {
+      const overrides: DecomposerOverride[] = [{ components: ['permissionset:'] }];
+      expect(() => validateOverrides(overrides)).toThrow(/invalid component key/);
+    });
+
+    it('rejects a component key with an empty suffix', () => {
+      const overrides: DecomposerOverride[] = [{ components: [':HR_Admin'] }];
+      expect(() => validateOverrides(overrides)).toThrow(/invalid component key/);
+    });
+
+    it('rejects a non-string component', () => {
+      const overrides = [{ components: [42] }] as unknown as DecomposerOverride[];
+      expect(() => validateOverrides(overrides)).toThrow(/empty or non-string component/);
     });
 
     it('rejects duplicate metadata types across overrides', () => {
@@ -85,10 +153,49 @@ describe('configOverrides helper', () => {
     });
   });
 
+  describe('parseComponentKey', () => {
+    it('parses a simple key', () => {
+      expect(parseComponentKey('permissionset:HR_Admin')).toEqual({
+        metadataType: 'permissionset',
+        fullName: 'HR_Admin',
+      });
+    });
+
+    it('preserves a folder-style fullName intact', () => {
+      expect(parseComponentKey('report:MyFolder/MyReport')).toEqual({
+        metadataType: 'report',
+        fullName: 'MyFolder/MyReport',
+      });
+    });
+
+    it('returns undefined for a key without a colon', () => {
+      expect(parseComponentKey('flow_MyFlow')).toBeUndefined();
+    });
+
+    it('returns undefined for a key starting with a colon', () => {
+      expect(parseComponentKey(':MyFlow')).toBeUndefined();
+    });
+
+    it('returns undefined for a key ending with a colon', () => {
+      expect(parseComponentKey('flow:')).toBeUndefined();
+    });
+
+    it('returns undefined when the suffix is only whitespace', () => {
+      // ` :HR_Admin` parses past the colon-position checks (colon is at index 1, not 0) but
+      // fails the post-trim emptiness guard.
+      expect(parseComponentKey(' :HR_Admin')).toBeUndefined();
+    });
+
+    it('returns undefined when the fullName is only whitespace', () => {
+      expect(parseComponentKey('permissionset:   ')).toBeUndefined();
+    });
+  });
+
   describe('getOverrideForType', () => {
     const overrides: DecomposerOverride[] = [
       { metadataTypes: ['flow'], decomposedFormat: 'yaml' },
       { metadataTypes: ['permissionset', 'mutingpermissionset'], strategy: 'grouped-by-tag' },
+      { components: ['permissionset:HR_Admin'], strategy: 'grouped-by-tag' },
     ];
 
     it('returns undefined when overrides is undefined', () => {
@@ -106,6 +213,66 @@ describe('configOverrides helper', () => {
 
     it('returns undefined for an unmatched suffix', () => {
       expect(getOverrideForType('workflow', overrides)).toBeUndefined();
+    });
+
+    it('does not match a components-only override by suffix', () => {
+      // The third override only has `components`, so a type-suffix lookup must skip it even
+      // when the suffix appears inside a component key.
+      const componentsOnly: DecomposerOverride[] = [{ components: ['flow:My_Flow'], decomposedFormat: 'yaml' }];
+      expect(getOverrideForType('flow', componentsOnly)).toBeUndefined();
+    });
+  });
+
+  describe('getOverrideForComponent', () => {
+    const overrides: DecomposerOverride[] = [
+      { metadataTypes: ['flow'], decomposedFormat: 'yaml' },
+      {
+        components: ['permissionset:HR_Admin', 'permissionset:Big_PermSet'],
+        strategy: 'grouped-by-tag',
+        decomposeNestedPermissions: true,
+      },
+    ];
+
+    it('returns undefined when overrides is undefined or empty', () => {
+      expect(getOverrideForComponent('permissionset', 'HR_Admin', undefined)).toBeUndefined();
+      expect(getOverrideForComponent('permissionset', 'HR_Admin', [])).toBeUndefined();
+    });
+
+    it('returns the matching override for a known component', () => {
+      expect(getOverrideForComponent('permissionset', 'HR_Admin', overrides)).toBe(overrides[1]);
+      expect(getOverrideForComponent('permissionset', 'Big_PermSet', overrides)).toBe(overrides[1]);
+    });
+
+    it('returns undefined for an unmatched component', () => {
+      expect(getOverrideForComponent('permissionset', 'Unknown', overrides)).toBeUndefined();
+      expect(getOverrideForComponent('flow', 'My_Flow', overrides)).toBeUndefined();
+    });
+  });
+
+  describe('hasComponentOverridesForType', () => {
+    const overrides: DecomposerOverride[] = [
+      { metadataTypes: ['flow'], decomposedFormat: 'yaml' },
+      { components: ['permissionset:HR_Admin'], strategy: 'grouped-by-tag' },
+    ];
+
+    it('returns false when overrides is undefined or empty', () => {
+      expect(hasComponentOverridesForType('permissionset', undefined)).toBe(false);
+      expect(hasComponentOverridesForType('permissionset', [])).toBe(false);
+    });
+
+    it('returns true when at least one component targets the type', () => {
+      expect(hasComponentOverridesForType('permissionset', overrides)).toBe(true);
+    });
+
+    it('returns false when no component targets the type', () => {
+      expect(hasComponentOverridesForType('flow', overrides)).toBe(false);
+      expect(hasComponentOverridesForType('mutingpermissionset', overrides)).toBe(false);
+    });
+
+    it('does not match on a partial suffix prefix', () => {
+      // `permission` is a prefix of `permissionset` but must not match.
+      const sneaky: DecomposerOverride[] = [{ components: ['permissionset:HR_Admin'] }];
+      expect(hasComponentOverridesForType('permission', sneaky)).toBe(false);
     });
   });
 
@@ -128,9 +295,7 @@ describe('configOverrides helper', () => {
     });
 
     it('applies override values that are set, falling back to base for unset fields', () => {
-      const overrides: DecomposerOverride[] = [
-        { metadataTypes: ['flow'], decomposedFormat: 'yaml', prePurge: true },
-      ];
+      const overrides: DecomposerOverride[] = [{ metadataTypes: ['flow'], decomposedFormat: 'yaml', prePurge: true }];
       expect(resolveDecomposeOptionsForType('flow', base, overrides)).toEqual({
         format: 'yaml',
         strategy: 'unique-id',
@@ -155,6 +320,59 @@ describe('configOverrides helper', () => {
         prepurge: false,
         postpurge: false,
       });
+    });
+  });
+
+  describe('resolveDecomposeOptionsForComponent', () => {
+    const base = {
+      format: 'xml',
+      strategy: 'unique-id',
+      decomposeNestedPerms: false,
+      prepurge: false,
+      postpurge: false,
+    };
+
+    it('returns the type-resolved values when no component override matches', () => {
+      const typeResolved = { ...base, format: 'yaml' };
+      const overrides: DecomposerOverride[] = [{ components: ['permissionset:Other'], strategy: 'grouped-by-tag' }];
+      expect(resolveDecomposeOptionsForComponent('permissionset', 'HR_Admin', typeResolved, overrides)).toEqual(
+        typeResolved,
+      );
+    });
+
+    it('applies component override fields and falls back to typeResolved for unset fields', () => {
+      const typeResolved = { ...base, format: 'yaml', prepurge: true };
+      const overrides: DecomposerOverride[] = [
+        {
+          components: ['permissionset:HR_Admin'],
+          strategy: 'grouped-by-tag',
+          decomposeNestedPermissions: true,
+        },
+      ];
+      expect(resolveDecomposeOptionsForComponent('permissionset', 'HR_Admin', typeResolved, overrides)).toEqual({
+        format: 'yaml',
+        strategy: 'grouped-by-tag',
+        decomposeNestedPerms: true,
+        prepurge: true,
+        postpurge: false,
+      });
+    });
+
+    it('lets a component override fully overwrite a type-scoped field', () => {
+      const typeResolved = { ...base, format: 'yaml' };
+      const overrides: DecomposerOverride[] = [
+        { metadataTypes: ['permissionset'], decomposedFormat: 'yaml' },
+        { components: ['permissionset:HR_Admin'], decomposedFormat: 'json' },
+      ];
+      expect(resolveDecomposeOptionsForComponent('permissionset', 'HR_Admin', typeResolved, overrides)).toEqual({
+        ...typeResolved,
+        format: 'json',
+      });
+    });
+
+    it('returns typeResolved when overrides is undefined', () => {
+      const typeResolved = { ...base, format: 'json' };
+      expect(resolveDecomposeOptionsForComponent('flow', 'My_Flow', typeResolved)).toEqual(typeResolved);
     });
   });
 
@@ -214,10 +432,7 @@ describe('configOverrides helper', () => {
       await writeFile(
         configPath,
         JSON.stringify({
-          overrides: [
-            { metadataTypes: ['flow'] },
-            { metadataTypes: ['flow'], decomposedFormat: 'yaml' },
-          ],
+          overrides: [{ metadataTypes: ['flow'] }, { metadataTypes: ['flow'], decomposedFormat: 'yaml' }],
         }),
       );
       await expect(loadOverridesFromConfig(configPath)).rejects.toThrow(/appears in more than one override/);

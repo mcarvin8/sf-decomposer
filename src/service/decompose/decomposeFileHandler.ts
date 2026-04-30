@@ -1,11 +1,17 @@
 'use strict';
 
-import { resolve, relative, join, dirname } from 'node:path';
+import { resolve, relative, join, dirname, basename } from 'node:path';
 import { readdir, stat } from 'node:fs/promises';
 import { DisassembleXMLFileHandler } from 'config-disassembler';
 import pLimit from 'p-limit';
 
 import { CUSTOM_LABELS_FILE, CONCURRENCY_LIMITS } from '../../helpers/constants.js';
+import { DecomposerOverride } from '../../helpers/types.js';
+import {
+  ResolvedDecomposeTypeOptions,
+  hasComponentOverridesForType,
+  resolveDecomposeOptionsForComponent,
+} from '../../helpers/configOverrides.js';
 import { prePurgeLabels, moveAndRenameLabels } from './customLabels.js';
 import { renameWorkflows } from './renameWorkflows.js';
 
@@ -17,12 +23,9 @@ export async function decomposeFileHandler(
     folderType: string;
     uniqueIdElements: string;
   },
-  prepurge: boolean,
-  postpurge: boolean,
-  format: string,
+  typeResolved: ResolvedDecomposeTypeOptions,
   ignorePath: string,
-  strategy: string,
-  decomposeNestedPerms: boolean,
+  overrides?: DecomposerOverride[],
   manifestXmlPaths?: Set<string>,
 ): Promise<void> {
   const { metadataPaths, metaSuffix, strictDirectoryName, folderType, uniqueIdElements } = metaAttributes;
@@ -31,15 +34,12 @@ export async function decomposeFileHandler(
     await decomposeFromManifest(
       manifestXmlPaths,
       uniqueIdElements,
-      prepurge,
-      postpurge,
-      format,
+      typeResolved,
       ignorePath,
-      strategy,
       metaSuffix,
       strictDirectoryName,
       folderType,
-      decomposeNestedPerms,
+      overrides,
     );
     return;
   }
@@ -50,48 +50,26 @@ export async function decomposeFileHandler(
   const tasks = metadataPaths.map((metadataPath) =>
     limit(async () => {
       if (strictDirectoryName || folderType) {
-        await subDirectoryHandler(
-          metadataPath,
-          uniqueIdElements,
-          prepurge,
-          postpurge,
-          format,
-          ignorePath,
-          strategy,
-          metaSuffix,
-          decomposeNestedPerms,
-        );
+        await subDirectoryHandler(metadataPath, uniqueIdElements, typeResolved, ignorePath, metaSuffix, overrides);
       } else if (metaSuffix === 'labels') {
-        // do not use the prePurge flag in the config-disassembler package for labels due to file moving
-        if (prepurge) await prePurgeLabels(metadataPath);
+        // Labels live in a single shared file; component-scope overrides are not applicable.
+        // Skip the prePurge flag in the disassembler for labels due to file moving.
+        if (typeResolved.prepurge) await prePurgeLabels(metadataPath);
         const absoluteLabelFilePath = resolve(metadataPath, CUSTOM_LABELS_FILE);
         const relativeLabelFilePath = relative(process.cwd(), absoluteLabelFilePath);
 
         disassembleHandler(
           relativeLabelFilePath,
           uniqueIdElements,
-          false,
-          postpurge,
-          format,
+          { ...typeResolved, prepurge: false },
           ignorePath,
-          strategy,
           metaSuffix,
-          decomposeNestedPerms,
         );
-        // move labels from the directory they are created in
         await moveAndRenameLabels(metadataPath);
+      } else if (hasComponentOverridesForType(metaSuffix, overrides)) {
+        await perFileHandler(metadataPath, uniqueIdElements, typeResolved, ignorePath, metaSuffix, overrides);
       } else {
-        disassembleHandler(
-          metadataPath,
-          uniqueIdElements,
-          prepurge,
-          postpurge,
-          format,
-          ignorePath,
-          strategy,
-          metaSuffix,
-          decomposeNestedPerms,
-        );
+        disassembleHandler(metadataPath, uniqueIdElements, typeResolved, ignorePath, metaSuffix);
       }
       if (metaSuffix === 'workflow') {
         await renameWorkflows(metadataPath);
@@ -105,15 +83,12 @@ export async function decomposeFileHandler(
 async function decomposeFromManifest(
   manifestXmlPaths: Set<string>,
   uniqueIdElements: string,
-  prepurge: boolean,
-  postpurge: boolean,
-  format: string,
+  typeResolved: ResolvedDecomposeTypeOptions,
   ignorePath: string,
-  strategy: string,
   metaSuffix: string,
   strictDirectoryName: boolean,
   folderType: string,
-  decomposeNestedPerms: boolean,
+  overrides?: DecomposerOverride[],
 ): Promise<void> {
   const limit = pLimit(CONCURRENCY_LIMITS.PACKAGE_DIRS);
   const xmlPaths = Array.from(manifestXmlPaths);
@@ -123,19 +98,15 @@ async function decomposeFromManifest(
     const labelDirs = new Set(xmlPaths.map((xml) => dirname(xml)));
     const tasks = Array.from(labelDirs).map((labelDir) =>
       limit(async () => {
-        if (prepurge) await prePurgeLabels(labelDir);
+        if (typeResolved.prepurge) await prePurgeLabels(labelDir);
         const absoluteLabelFilePath = resolve(labelDir, CUSTOM_LABELS_FILE);
         const relativeLabelFilePath = relative(process.cwd(), absoluteLabelFilePath);
         disassembleHandler(
           relativeLabelFilePath,
           uniqueIdElements,
-          false,
-          postpurge,
-          format,
+          { ...typeResolved, prepurge: false },
           ignorePath,
-          strategy,
           metaSuffix,
-          decomposeNestedPerms,
         );
         await moveAndRenameLabels(labelDir);
       }),
@@ -145,42 +116,28 @@ async function decomposeFromManifest(
   }
 
   if (strictDirectoryName || folderType) {
-    // Each parent xml lives inside its own strict subdirectory (e.g. bots/MyBot/MyBot.bot-meta.xml).
-    // Dedupe by parent directory and disassemble the whole subdirectory.
+    // Each parent xml lives inside its own strict subdirectory (e.g. bots/MyBot/MyBot.bot-meta.xml),
+    // or, for folder-typed metadata, inside its containing folder (e.g. reports/MyFolder/MyReport.report-meta.xml).
+    // Dedupe by parent directory and disassemble the whole subdirectory; the parent directory's basename
+    // is the canonical fullName for component-scope override matching.
     const parentDirs = new Set(xmlPaths.map((xml) => dirname(xml)));
     const tasks = Array.from(parentDirs).map((parentDir) =>
-      limit(() =>
-        disassembleHandler(
-          parentDir,
-          uniqueIdElements,
-          prepurge,
-          postpurge,
-          format,
-          ignorePath,
-          strategy,
-          metaSuffix,
-          decomposeNestedPerms,
-        ),
-      ),
+      limit(() => {
+        const fullName = basename(parentDir);
+        const resolved = resolveDecomposeOptionsForComponent(metaSuffix, fullName, typeResolved, overrides);
+        return disassembleHandler(parentDir, uniqueIdElements, resolved, ignorePath, metaSuffix);
+      }),
     );
     await Promise.all(tasks);
     return;
   }
 
   const tasks = xmlPaths.map((xmlPath) =>
-    limit(() =>
-      disassembleHandler(
-        xmlPath,
-        uniqueIdElements,
-        prepurge,
-        postpurge,
-        format,
-        ignorePath,
-        strategy,
-        metaSuffix,
-        decomposeNestedPerms,
-      ),
-    ),
+    limit(() => {
+      const fullName = stripMetaSuffix(basename(xmlPath), metaSuffix);
+      const resolved = resolveDecomposeOptionsForComponent(metaSuffix, fullName, typeResolved, overrides);
+      return disassembleHandler(xmlPath, uniqueIdElements, resolved, ignorePath, metaSuffix);
+    }),
   );
   await Promise.all(tasks);
 
@@ -196,22 +153,19 @@ async function decomposeFromManifest(
 function disassembleHandler(
   filePath: string,
   uniqueIdElements: string,
-  prePurge: boolean,
-  postPurge: boolean,
-  format: string,
+  options: ResolvedDecomposeTypeOptions,
   ignorePath: string,
-  strategy: string,
   metaSuffix: string,
-  decomposeNestedPerms: boolean,
 ): void {
   const handler: DisassembleXMLFileHandler = new DisassembleXMLFileHandler();
   let multiLevel;
   let splitTags;
+  const effectiveStrategy = applyHardStrategyRules(metaSuffix, options.strategy);
   const decomposePermSets: boolean =
-    decomposeNestedPerms &&
+    options.decomposeNestedPerms &&
     (metaSuffix === 'permissionset' || metaSuffix === 'mutingpermissionset') &&
-    strategy === 'grouped-by-tag';
-  const decomposeLoyalyProgram: boolean = metaSuffix === 'loyaltyProgramSetup' && strategy === 'unique-id';
+    effectiveStrategy === 'grouped-by-tag';
+  const decomposeLoyalyProgram: boolean = metaSuffix === 'loyaltyProgramSetup' && effectiveStrategy === 'unique-id';
   if (decomposeLoyalyProgram) {
     multiLevel = 'programProcesses:programProcesses:parameterName,ruleName';
   }
@@ -223,26 +177,41 @@ function disassembleHandler(
   handler.disassemble({
     filePath,
     uniqueIdElements,
-    prePurge,
-    postPurge,
+    prePurge: options.prepurge,
+    postPurge: options.postpurge,
     ignorePath,
-    format,
-    strategy,
+    format: options.format,
+    strategy: effectiveStrategy,
     multiLevel,
     splitTags,
   });
 }
 
+/**
+ * Hard plugin rules that always win over user-provided strategies. `labels` and
+ * `loyaltyProgramSetup` are forced to `unique-id` regardless of run-, type-, or component-scope
+ * configuration because their on-disk layout depends on it.
+ */
+function applyHardStrategyRules(metaSuffix: string, strategy: string): string {
+  if (strategy !== 'grouped-by-tag') return strategy;
+  if (metaSuffix === 'labels' || metaSuffix === 'loyaltyProgramSetup') return 'unique-id';
+  return strategy;
+}
+
+function stripMetaSuffix(fileName: string, metaSuffix: string): string {
+  const metaEnding = `.${metaSuffix}-meta.xml`;
+  /* istanbul ignore next -- @preserve: parseManifest always builds xml paths from `${member}.${suffix}-meta.xml`,
+     so non-matching basenames cannot reach this helper through the public API. */
+  return fileName.endsWith(metaEnding) ? fileName.slice(0, -metaEnding.length) : fileName;
+}
+
 async function subDirectoryHandler(
   metadataPath: string,
   uniqueIdElements: string,
-  prepurge: boolean,
-  postpurge: boolean,
-  format: string,
+  typeResolved: ResolvedDecomposeTypeOptions,
   ignorePath: string,
-  strategy: string,
   metaSuffix: string,
-  decomposeNestedPerms: boolean,
+  overrides?: DecomposerOverride[],
 ): Promise<void> {
   const subFiles = await readdir(metadataPath);
 
@@ -262,20 +231,42 @@ async function subDirectoryHandler(
   const processTasks = statResults
     .filter(({ isDir }) => isDir)
     .map(({ subFilePath }) =>
-      processLimit(() =>
-        disassembleHandler(
-          subFilePath,
-          uniqueIdElements,
-          prepurge,
-          postpurge,
-          format,
-          ignorePath,
-          strategy,
-          metaSuffix,
-          decomposeNestedPerms,
-        ),
-      ),
+      processLimit(() => {
+        const fullName = basename(subFilePath);
+        const resolved = resolveDecomposeOptionsForComponent(metaSuffix, fullName, typeResolved, overrides);
+        return disassembleHandler(subFilePath, uniqueIdElements, resolved, ignorePath, metaSuffix);
+      }),
     );
 
   await Promise.all(processTasks);
+}
+
+/**
+ * Per-file disassembly used when component-scope overrides are present for a non-strict, non-labels
+ * metadata type. Walks the type's package directory, resolves options per file, and disassembles
+ * each parent metadata XML individually so different components can use different strategies/formats.
+ */
+async function perFileHandler(
+  metadataPath: string,
+  uniqueIdElements: string,
+  typeResolved: ResolvedDecomposeTypeOptions,
+  ignorePath: string,
+  metaSuffix: string,
+  overrides?: DecomposerOverride[],
+): Promise<void> {
+  const metaEnding = `.${metaSuffix}-meta.xml`;
+  const entries = await readdir(metadataPath, { withFileTypes: true });
+  const xmlEntries = entries.filter((entry) => entry.isFile() && entry.name.endsWith(metaEnding));
+
+  const limit = pLimit(CONCURRENCY_LIMITS.SUBDIRECTORIES);
+  const tasks = xmlEntries.map((entry) =>
+    limit(() => {
+      const filePath = join(metadataPath, entry.name);
+      const fullName = entry.name.slice(0, -metaEnding.length);
+      const resolved = resolveDecomposeOptionsForComponent(metaSuffix, fullName, typeResolved, overrides);
+      return disassembleHandler(filePath, uniqueIdElements, resolved, ignorePath, metaSuffix);
+    }),
+  );
+
+  await Promise.all(tasks);
 }

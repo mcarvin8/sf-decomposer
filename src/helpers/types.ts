@@ -8,7 +8,10 @@ export type DecomposerResult = {
 };
 
 export type DecomposerOverride = {
-  metadataTypes: string[];
+  /** Suffix-scoped targets (e.g. `permissionset`). Applies to every component of the type. */
+  metadataTypes?: string[];
+  /** Component-scoped targets in the form `<suffix>:<fullName>` (e.g. `permissionset:HR_Admin`). */
+  components?: string[];
   decomposedFormat?: string;
   strategy?: string;
   decomposeNestedPermissions?: boolean;
