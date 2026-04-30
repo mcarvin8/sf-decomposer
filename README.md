@@ -17,7 +17,8 @@ A Salesforce CLI plugin that **decomposes** large metadata XML files into smalle
 - [Commands](#commands)
   - [sf decomposer decompose](#sf-decomposer-decompose)
   - [sf decomposer recompose](#sf-decomposer-recompose)
-  - [Manifest-scoped runs](#manifest-scoped-runs)
+  - [sf decomposer verify](#sf-decomposer-verify)
+- [Manifest-scoped runs](#manifest-scoped-runs)
 - [Decompose Strategies](#decompose-strategies)
   - [Custom Labels](#custom-labels-decomposition)
   - [Permission Sets (grouped-by-tag)](#additional-permission-set-decomposition)
@@ -28,6 +29,7 @@ A Salesforce CLI plugin that **decomposes** large metadata XML files into smalle
 - [Hooks](#hooks)
 - [Per-Type & Per-Component Overrides](#per-type--per-component-overrides)
   - [splitTags grammar](#splittags-grammar)
+  - [multiLevel grammar](#multilevel-grammar)
 - [Ignore Files](#ignore-files)
   - [.forceignore](#forceignore)
   - [.sfdecomposerignore](#sfdecomposerignore)
@@ -114,10 +116,11 @@ Salesforce’s built-in decomposition is limited. sf-decomposer gives admins and
 
 ## Commands
 
-| Command                   | Description                                                     |
-| ------------------------- | --------------------------------------------------------------- |
-| `sf decomposer decompose` | Decompose metadata in package directories into smaller files.   |
-| `sf decomposer recompose` | Recompose decomposed files back into deployment-ready metadata. |
+| Command                   | Description                                                                         |
+| ------------------------- | ----------------------------------------------------------------------------------- |
+| `sf decomposer decompose` | Decompose metadata in package directories into smaller files.                       |
+| `sf decomposer recompose` | Recompose decomposed files back into deployment-ready metadata.                     |
+| `sf decomposer verify`    | Round-trip check: decompose + recompose in a temp directory and diff the originals. |
 
 ### sf decomposer decompose
 
@@ -194,9 +197,49 @@ sf decomposer recompose -x "manifest/package.xml"
 sf project deploy start -x "manifest/package.xml"
 ```
 
-### Manifest-scoped runs
+### sf decomposer verify
 
-The `-x` / `--manifest` flag accepts any standard Salesforce `package.xml` and limits the work to just the components it lists. This is especially useful for CI/CD pipelines that deploy a subset of metadata per change.
+Non-destructive round-trip check: copies your package directories into a temp directory under your OS's `tmpdir()`, runs decompose then recompose there, and diffs the rebuilt parents against the originals using **structural XML equality** (sibling and attribute order are ignored). Exits non-zero on any drift; your working tree is never modified.
+
+```
+USAGE
+  $ sf decomposer verify [-m <value>] [-x <value>] [-f <value>] [-i <value>] [-s <value>] [-p -c --json]
+
+FLAGS
+  -m, --metadata-type=<value>             Metadata suffix to verify (e.g. flow, labels). Repeatable. Optional when --manifest is provided.
+  -x, --manifest=<value>                  Path to a package.xml manifest. When provided, only the components listed in the manifest are verified.
+  -f, --format=<value>                    Output format used for the round-trip decompose: xml | yaml | json | json5 [default: xml]
+  -i, --ignore-package-directory=<value>  Package directory to skip. Repeatable.
+  -s, --strategy=<value>                  unique-id | grouped-by-tag [default: unique-id]
+  -p, --decompose-nested-permissions      With grouped-by-tag, further decompose permission set and muting permission set object/field permissions.
+  -c, --config                            Load per-type and per-component overrides from .sfdecomposer.config.json in the repo root, the same as `decompose --config`. [default: false]
+
+GLOBAL FLAGS
+  --json  Output as JSON.
+```
+
+> At least one of `--metadata-type` or `--manifest` is required. When both are supplied, the run is scoped to the intersection of the two.
+
+**Examples**
+
+```bash
+# Verify two metadata types round-trip cleanly with defaults
+sf decomposer verify -m "permissionset" -m "profile"
+
+# Verify a different strategy + nested-perms split before committing the change
+sf decomposer verify -m "permissionset" -s "grouped-by-tag" -p
+
+# CI gate: verify just the components in a deploy manifest, using the repo-root config
+sf decomposer verify -x "manifest/package.xml" --config
+```
+
+Files where the **only** delta is sibling or attribute ordering are surfaced separately as informational notices ("Note: N file(s) round-tripped semantically but with sibling/attribute reordering") rather than as drift. This is safe — Salesforce treats metadata as order-agnostic and `config-disassembler` does not preserve original sibling order — but it tells you up front that committing the post-recompose output will produce a diff in git even though the metadata is functionally identical.
+
+---
+
+## Manifest-scoped runs
+
+The `-x` / `--manifest` flag is supported by every `sf decomposer` command (`decompose`, `recompose`, `verify`) and accepts any standard Salesforce `package.xml`, limiting the work to just the components it lists. This is especially useful for CI/CD pipelines that deploy a subset of metadata per change.
 
 How it works:
 
@@ -416,6 +459,7 @@ By default, a single decompose run uses one format and one strategy across every
 | `strategy`                   | `unique-id` \| `grouped-by-tag`. Hard rules still win — `labels` and `loyaltyProgramSetup` are always treated as `unique-id`.                                                                                  |
 | `decomposeNestedPermissions` | Only applies to `permissionset` / `mutingpermissionset` with `grouped-by-tag`. Sets a known-good `splitTags` default; ignored if `splitTags` is also set in the same scope.                                    |
 | `splitTags`                  | Custom `splitTags` spec for `grouped-by-tag` strategy. See [splitTags grammar](#splittags-grammar). Ignored when the resolved strategy is not `grouped-by-tag`.                                                |
+| `multiLevel`                 | Custom `multiLevel` spec for nested-array decomposition. See [multiLevel grammar](#multilevel-grammar). When set, replaces the hardcoded `loyaltyProgramSetup` default for the targeted scope.                 |
 | `prePurge`                   | Per-scope prePurge (decompose). Component-scope `prePurge` only purges the named component's decomposed directory.                                                                                             |
 | `postPurge`                  | Per-scope postPurge (decompose: remove originals after decomposing).                                                                                                                                           |
 
@@ -485,6 +529,35 @@ Each `<tag>` may appear at most once in a spec. The plugin validates the grammar
 ```
 
 > **Caveat:** When using `mode: split`, the chosen `<field>` must produce a unique value for every array item — otherwise two items would map to the same filename. If two items share a field value, prefer `mode: group` instead, which is designed for that case.
+
+### multiLevel grammar
+
+`multiLevel` enables a second decomposition pass on inner-level files for metadata types whose XML has deeply nested repeatable blocks (e.g. `loyaltyProgramSetup`'s `programProcesses → parameters → ...`). The plugin already applies a known-good default for `loyaltyProgramSetup` when running the `unique-id` strategy; setting `multiLevel` directly takes precedence and works for any metadata type.
+
+**Spec:** A single rule with exactly 3 colon-separated parts (the third part is itself a comma-separated list):
+
+```
+<file_pattern>:<root_to_strip>:<unique_id_elements>
+```
+
+- **`<file_pattern>`** — basename pattern that selects which inner-level files get the second decomposition pass (e.g. `programProcesses`).
+- **`<root_to_strip>`** — XML root tag to strip from each matched file before splitting.
+- **`<unique_id_elements>`** — comma-separated list of element names used to derive a stable filename for each inner-level item (e.g. `parameterName,ruleName`). The first element that resolves to a non-empty value wins.
+
+The plugin validates the grammar at config-load time; deeper checks (whether the file pattern matches anything, whether the unique-id elements actually appear on the inner XML) are surfaced by the underlying disassembler crate at runtime.
+
+```json
+"overrides": [
+  {
+    "metadataTypes": ["loyaltyProgramSetup"],
+    "multiLevel": "programProcesses:programProcesses:parameterName,ruleName"
+  }
+]
+```
+
+> **Limit:** Only one rule per scope. The disassembler does not currently accept multiple comma-separated multiLevel specs, because the third part of the rule is itself a comma-separated list.
+
+> **Tip:** Use [`sf decomposer verify`](#sf-decomposer-verify) to non-destructively confirm a new override config still round-trips before committing it.
 
 ### Opting in from the CLI
 

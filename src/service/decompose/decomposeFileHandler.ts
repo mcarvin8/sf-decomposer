@@ -158,10 +158,15 @@ function disassembleHandler(
   metaSuffix: string,
 ): void {
   const handler: DisassembleXMLFileHandler = new DisassembleXMLFileHandler();
-  let multiLevel;
   const effectiveStrategy = applyHardStrategyRules(metaSuffix, options.strategy);
-  const decomposeLoyalyProgram: boolean = metaSuffix === 'loyaltyProgramSetup' && effectiveStrategy === 'unique-id';
-  if (decomposeLoyalyProgram) {
+
+  // Resolve multiLevel with this precedence:
+  //   1. an explicit `multiLevel` set in the override (any metadata type);
+  //   2. the hardcoded loyaltyProgramSetup default when running unique-id strategy.
+  let multiLevel: string | undefined;
+  if (options.multiLevel) {
+    multiLevel = options.multiLevel;
+  } else if (metaSuffix === 'loyaltyProgramSetup' && effectiveStrategy === 'unique-id') {
     multiLevel = 'programProcesses:programProcesses:parameterName,ruleName';
   }
 

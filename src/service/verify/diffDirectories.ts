@@ -1,0 +1,151 @@
+'use strict';
+
+import { readdir, readFile, stat } from 'node:fs/promises';
+import { extname, join } from 'node:path';
+import { XMLParser } from 'fast-xml-parser';
+
+import { VerifyDrift } from '../../helpers/types.js';
+
+const xmlParser = new XMLParser({
+  ignoreAttributes: false,
+  attributeNamePrefix: '@_',
+  parseTagValue: false,
+  parseAttributeValue: false,
+  trimValues: true,
+  ignoreDeclaration: true,
+  ignorePiTags: true,
+});
+
+export type DirDiffResult = {
+  /** Files whose contents are semantically different (real drift). */
+  drift: VerifyDrift[];
+  /**
+   * Files where the only delta is sibling/attribute ordering. Surfaced for awareness — these are
+   * NOT failures, since Salesforce metadata is generally order-agnostic and `config-disassembler`
+   * does not preserve original sibling order.
+   */
+  reordered: string[];
+};
+
+/**
+ * Recursively diff two directory trees. Files in the reference tree are compared against the
+ * mock tree; files that exist only in the mock tree are intentionally ignored, so the helper is
+ * safe to use against round-trip output that contains transient sidecars (e.g.
+ * `.config-disassembler.json`) which the original tree never had.
+ *
+ * For `.xml` files, comparison is **structural and order-insensitive**: sibling elements with the
+ * same tag name can appear in any order without registering as drift. Files that are byte-different
+ * but semantically equal are returned in `reordered` so the caller can surface the difference.
+ */
+export async function diffDirectories(referenceDir: string, mockDir: string, prefix = ''): Promise<DirDiffResult> {
+  const out: DirDiffResult = { drift: [], reordered: [] };
+
+  let entries;
+  try {
+    entries = await readdir(referenceDir, { withFileTypes: true });
+  } catch {
+    /* istanbul ignore next -- @preserve: caller already filters to existing directories */
+    return out;
+  }
+
+  for (const entry of entries) {
+    const refPath = join(referenceDir, entry.name);
+    const mockPath = join(mockDir, entry.name);
+    const relPath = prefix ? `${prefix}/${entry.name}` : entry.name;
+
+    if (entry.isDirectory()) {
+      // eslint-disable-next-line no-await-in-loop
+      const nested = await diffDirectories(refPath, mockPath, relPath);
+      out.drift.push(...nested.drift);
+      out.reordered.push(...nested.reordered);
+      continue;
+    }
+
+    // eslint-disable-next-line no-await-in-loop
+    const mockExists = await fileExists(mockPath);
+    if (!mockExists) {
+      out.drift.push({ path: relPath, reason: 'missing in round-trip output' });
+      continue;
+    }
+
+    // eslint-disable-next-line no-await-in-loop
+    const [ref, mock] = await Promise.all([readFile(refPath, 'utf-8'), readFile(mockPath, 'utf-8')]);
+    if (ref === mock) continue;
+
+    if (isXmlFile(entry.name)) {
+      // Byte-different but maybe semantically identical — e.g. siblings reordered on round trip.
+      if (xmlEquivalent(ref, mock)) {
+        out.reordered.push(relPath);
+      } else {
+        out.drift.push({ path: relPath, reason: 'content drift' });
+      }
+    } else {
+      out.drift.push({ path: relPath, reason: 'content drift' });
+    }
+  }
+
+  return out;
+}
+
+async function fileExists(path: string): Promise<boolean> {
+  try {
+    await stat(path);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function isXmlFile(fileName: string): boolean {
+  return extname(fileName).toLowerCase() === '.xml';
+}
+
+/**
+ * Compare two XML strings for structural equality, ignoring sibling order and attribute order.
+ * Falls back to `false` if either side fails to parse, so genuinely malformed output still
+ * surfaces as drift through the caller.
+ */
+export function xmlEquivalent(a: string, b: string): boolean {
+  if (a === b) return true;
+  let parsedA: unknown;
+  let parsedB: unknown;
+  try {
+    parsedA = xmlParser.parse(a);
+    parsedB = xmlParser.parse(b);
+  } catch {
+    /* istanbul ignore next -- @preserve: fast-xml-parser is permissive; this is defensive only */
+    return false;
+  }
+  return canonicalJson(parsedA) === canonicalJson(parsedB);
+}
+
+/**
+ * Convert any JSON value into a stable string representation: object keys are sorted, and arrays
+ * are sorted by the canonical-JSON of each element. Two values produce the same canonical string
+ * iff they are deeply equal up to sibling order.
+ */
+export function canonicalJson(value: unknown): string {
+  return JSON.stringify(canonicalize(value));
+}
+
+function canonicalize(value: unknown): unknown {
+  if (value === null || typeof value !== 'object') return value;
+  if (Array.isArray(value)) {
+    const normalized = value.map(canonicalize);
+    normalized.sort((left, right) => {
+      const ls = JSON.stringify(left);
+      const rs = JSON.stringify(right);
+      if (ls < rs) return -1;
+      if (ls > rs) return 1;
+      return 0;
+    });
+    return normalized;
+  }
+  const record = value as Record<string, unknown>;
+  const keys = Object.keys(record).sort();
+  const out: Record<string, unknown> = {};
+  for (const key of keys) {
+    out[key] = canonicalize(record[key]);
+  }
+  return out;
+}

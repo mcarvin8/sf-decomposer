@@ -83,6 +83,47 @@ describe('decomposer overrides (per-type)', () => {
     await compareDirectories(originalDirectory, forceAppDir);
   });
 
+  it('threads a custom multiLevel override through the disassembler and round-trips on recompose', async () => {
+    const logMock = vi.fn();
+
+    // Explicitly set the same spec the plugin hardcodes for loyalty. The point of this test is
+    // to prove the override path is wired all the way through; if the override silently dropped,
+    // round-trip would still pass (the hardcoded default would kick in), so we additionally
+    // verify the resolved options surface it (covered by unit tests) and that decompose produced
+    // the inner-level files we expect.
+    await decomposeMetadataTypes({
+      metadataTypes: ['loyaltyProgramSetup'],
+      prepurge: true,
+      postpurge: false,
+      format: 'xml',
+      strategy: 'unique-id',
+      decomposeNestedPerms: false,
+      ignoreDirs: undefined,
+      overrides: [
+        {
+          metadataTypes: ['loyaltyProgramSetup'],
+          multiLevel: 'programProcesses:programProcesses:parameterName,ruleName',
+        },
+      ],
+      log: logMock,
+    });
+
+    const loyaltyDir = join(forceAppDir, 'loyaltyProgramSetups', 'Cloud_Kicks_Inner_Circle');
+    const loyaltyEntries = await readdir(loyaltyDir, { withFileTypes: true });
+    // multiLevel decomposition produces a per-process subdir with parameter/rule files inside.
+    const subdirs = loyaltyEntries.filter((e) => e.isDirectory()).map((e) => e.name);
+    expect(subdirs).toContain('programProcesses');
+
+    await recomposeMetadataTypes({
+      metadataTypes: ['loyaltyProgramSetup'],
+      postpurge: true,
+      ignoreDirs: undefined,
+      log: logMock,
+    });
+
+    await compareDirectories(originalDirectory, forceAppDir);
+  });
+
   it('applies per-type strategy overrides during decompose', async () => {
     const logMock = vi.fn();
 

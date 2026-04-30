@@ -43,6 +43,8 @@ export type ResolvedDecomposeTypeOptions = {
   postpurge: boolean;
   /** Resolved custom `splitTags` spec, when explicitly set in an override. */
   splitTags?: string;
+  /** Resolved custom `multiLevel` spec, when explicitly set in an override. */
+  multiLevel?: string;
 };
 
 const SPLIT_TAGS_MODES = new Set<string>(['split', 'group']);
@@ -156,6 +158,10 @@ function validateOverrideValues(override: DecomposerOverride, i: number): void {
   if (override.splitTags !== undefined) {
     validateSplitTagsSpec(override.splitTags, i);
   }
+
+  if (override.multiLevel !== undefined) {
+    validateMultiLevelSpec(override.multiLevel, i);
+  }
 }
 
 /**
@@ -209,6 +215,44 @@ export function validateSplitTagsSpec(spec: string, i: number): void {
       );
     }
     seenTags.add(tag);
+  }
+}
+
+/**
+ * Validate the `multiLevel` spec at config-load time. The underlying disassembler currently
+ * accepts a single colon-separated rule of the form
+ * `<file_pattern>:<root_to_strip>:<unique_id_elements>` where `<unique_id_elements>` is itself
+ * a comma-separated list. Deeper checks (whether the file pattern matches anything, whether
+ * the unique-id elements actually exist on the inner XML) are left to the runtime crate.
+ */
+export function validateMultiLevelSpec(spec: string, i: number): void {
+  if (typeof spec !== 'string' || spec.trim() === '') {
+    throw new Error(`Override at index ${i} has an empty "multiLevel" string.`);
+  }
+
+  const parts = spec.split(':').map((part) => part.trim());
+  if (parts.length !== 3) {
+    throw new Error(
+      `Override at index ${i} "multiLevel" must have exactly 3 colon-separated parts ` +
+        '("<file_pattern>:<root_to_strip>:<unique_id_elements>").',
+    );
+  }
+
+  const [filePattern, rootToStrip, uniqueIdElements] = parts;
+  if (!filePattern || !rootToStrip || !uniqueIdElements) {
+    throw new Error(`Override at index ${i} "multiLevel" has empty parts.`);
+  }
+
+  const ids = uniqueIdElements.split(',').map((id) => id.trim());
+  const seenIds = new Set<string>();
+  for (const id of ids) {
+    if (id === '') {
+      throw new Error(`Override at index ${i} "multiLevel" unique-id list contains an empty entry.`);
+    }
+    if (seenIds.has(id)) {
+      throw new Error(`Override at index ${i} "multiLevel" unique-id list has duplicate entry "${id}".`);
+    }
+    seenIds.add(id);
   }
 }
 
@@ -314,6 +358,7 @@ export function resolveDecomposeOptionsForType(
     prepurge: override.prePurge ?? base.prepurge,
     postpurge: override.postPurge ?? base.postpurge,
     splitTags: override.splitTags ?? base.splitTags,
+    multiLevel: override.multiLevel ?? base.multiLevel,
   };
 }
 
@@ -342,5 +387,6 @@ export function resolveDecomposeOptionsForComponent(
     prepurge: componentOverride.prePurge ?? typeResolved.prepurge,
     postpurge: componentOverride.postPurge ?? typeResolved.postpurge,
     splitTags: componentOverride.splitTags ?? typeResolved.splitTags,
+    multiLevel: componentOverride.multiLevel ?? typeResolved.multiLevel,
   };
 }
