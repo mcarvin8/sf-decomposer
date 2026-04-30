@@ -403,6 +403,114 @@ describe('decomposer per-component overrides', () => {
   });
 });
 
+// End-to-end exercise of the bot recipe documented in HANDBOOK.md. Sample_Chat_Bot is a small
+// placeholder bot whose v1.botVersion has 8 dialogs and a mix of Wait/Message/Navigation/SystemMessage
+// step types — enough surface to prove that two multiLevel rules in one call produce the expected
+// per-dialog and per-step files on disk and round-trip back byte-identical to the fixture.
+describe('decomposer bot multi-rule overrides', () => {
+  let tempProjectDir: string;
+  let packageDir: string;
+  let botRoot: string;
+  const fixtureDir: string = resolve('fixtures/package-dir-2');
+  const originalCwd = process.cwd();
+
+  const sfdxConfig = {
+    packageDirectories: [{ path: 'package', default: true }],
+    namespace: '',
+    sfdcLoginUrl: 'https://login.salesforce.com',
+    sourceApiVersion: '58.0',
+  };
+
+  beforeEach(async () => {
+    tempProjectDir = await mkdtemp(join(tmpdir(), 'bot-multirule-test-'));
+    packageDir = join(tempProjectDir, 'package');
+    botRoot = join(packageDir, 'bots', 'Sample_Chat_Bot');
+
+    await cp(fixtureDir, packageDir, { recursive: true, force: true });
+    await writeFile(join(tempProjectDir, SFDX_CONFIG_FILE), JSON.stringify(sfdxConfig, null, 2));
+    process.chdir(tempProjectDir);
+  });
+
+  afterEach(async () => {
+    process.chdir(originalCwd);
+    await rm(tempProjectDir, { recursive: true, force: true });
+  });
+
+  it('decomposes Sample_Chat_Bot with a two-rule multiLevel override and round-trips byte-identical', async () => {
+    const logMock = vi.fn();
+
+    await decomposeMetadataTypes({
+      metadataTypes: ['bot'],
+      prepurge: true,
+      postpurge: true,
+      format: 'xml',
+      strategy: 'unique-id',
+      decomposeNestedPerms: false,
+      ignoreDirs: undefined,
+      overrides: [
+        {
+          components: ['bot:Sample_Chat_Bot'],
+          multiLevel: ['botDialogs:botDialogs:developerName', 'botSteps:botSteps:type'],
+        },
+      ],
+      log: logMock,
+    });
+
+    // Outer rule: each dialog (Welcome, Main_Menu, End_Chat, ...) gets its own subdirectory
+    // under v1/botDialogs/, named by developerName. Leaf-only dialog properties live as files
+    // inside that subdirectory; the inner rule is what produces the per-step files within.
+    const dialogEntries = await readdir(join(botRoot, 'v1', 'botDialogs'), { withFileTypes: true });
+    const dialogDirs = dialogEntries.filter((e) => e.isDirectory()).map((e) => e.name);
+    expect(dialogDirs).toEqual(
+      expect.arrayContaining([
+        'Welcome',
+        'Main_Menu',
+        'End_Chat',
+        'Confused',
+        'Transfer_To_Agent',
+        'Blah',
+        'Blah_Blah',
+        'Blah_Blah_Blah',
+      ]),
+    );
+
+    // Inner rule: each dialog's steps are split under the dialog's botSteps/ subdir. Welcome's
+    // two steps (Message + Navigation) both carry nested content so they're split into
+    // structured subdirectories. Confused has a Message + Wait pair, so it produces at least
+    // one leaf file (the Wait step has no inner structure).
+    const welcomeStepEntries = await readdir(join(botRoot, 'v1', 'botDialogs', 'Welcome', 'botSteps'), {
+      withFileTypes: true,
+    });
+    expect(welcomeStepEntries.length).toBeGreaterThan(1);
+    const confusedStepEntries = await readdir(join(botRoot, 'v1', 'botDialogs', 'Confused', 'botSteps'), {
+      withFileTypes: true,
+    });
+    const confusedStepFiles = confusedStepEntries
+      .filter((e) => e.isFile() && e.name.endsWith('.botSteps-meta.xml'))
+      .map((e) => e.name);
+    expect(confusedStepFiles.length).toBeGreaterThan(0);
+
+    // The crate writes a sidecar so reassembly knows how to merge inner levels first.
+    const sidecar = await readFile(join(botRoot, 'v1', '.multi_level.json'), 'utf-8');
+    const parsed = JSON.parse(sidecar) as { rules: Array<{ file_pattern: string; root_to_strip: string }> };
+    expect(parsed.rules.map((r) => `${r.file_pattern}:${r.root_to_strip}`)).toEqual([
+      'botDialogs:botDialogs',
+      'botSteps:botSteps',
+    ]);
+
+    await recomposeMetadataTypes({
+      metadataTypes: ['bot'],
+      postpurge: true,
+      ignoreDirs: undefined,
+      log: logMock,
+    });
+
+    // The committed fixture is the canonical recomposer output (alphabetical dialog order),
+    // so a round-trip must reproduce it byte-for-byte.
+    await compareDirectories(fixtureDir, packageDir);
+  });
+});
+
 async function collectFiles(dir: string): Promise<string[]> {
   const out: string[] = [];
   const entries = await readdir(dir, { withFileTypes: true });
