@@ -5,6 +5,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.14.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.13.0...v6.14.0) (2026-04-30)
+
+
+### Features
+
+* add multiLevel override and round-trip verify command ([#418](https://github.com/mcarvin8/sf-decomposer/issues/418)) ([5f06265](https://github.com/mcarvin8/sf-decomposer/commit/5f06265333e9a0523154d0c745e83e0571938f98))
+* **decompose:** expose splitTags as an override field ([#416](https://github.com/mcarvin8/sf-decomposer/issues/416)) ([eedf0f2](https://github.com/mcarvin8/sf-decomposer/commit/eedf0f23d248fdd028a097435aa9493449269954))
+
 ## [6.13.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.12.0...v6.13.0) (2026-04-30)
 
 
