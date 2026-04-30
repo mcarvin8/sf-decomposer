@@ -24,12 +24,14 @@ export type DecomposerOverride = {
    */
   splitTags?: string;
   /**
-   * Custom `multiLevel` spec for nested-array decomposition. Format:
+   * Custom `multiLevel` spec(s) for nested-array decomposition. Each rule has the form
    * `<file_pattern>:<root_to_strip>:<unique_id_elements>` (the third part is itself a
-   * comma-separated list). When set, this wins over the hardcoded `loyaltyProgramSetup`
-   * default. Applies regardless of strategy because multiLevel works on a per-file pattern.
+   * comma-separated list). Pass a string for a single rule, a string[] for several rules
+   * (preferred), or a single `;`-separated string. When set, this wins over the hardcoded
+   * `loyaltyProgramSetup` default. Applies regardless of strategy because multiLevel
+   * works on a per-file pattern.
    */
-  multiLevel?: string;
+  multiLevel?: string | string[];
   prePurge?: boolean;
   postPurge?: boolean;
 };

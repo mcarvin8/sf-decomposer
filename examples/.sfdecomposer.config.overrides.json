@@ -22,6 +22,10 @@
       "multiLevel": "programProcesses:programProcesses:parameterName,ruleName"
     },
     {
+      "components": ["bot:Assessment_Bot"],
+      "multiLevel": ["botDialogs:botDialogs:developerName", "botSteps:botSteps:type"]
+    },
+    {
       "components": ["permissionset:HR_Admin"],
       "strategy": "unique-id",
       "decomposedFormat": "json"

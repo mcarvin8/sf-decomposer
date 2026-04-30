@@ -124,6 +124,46 @@ describe('decomposer overrides (per-type)', () => {
     await compareDirectories(originalDirectory, forceAppDir);
   });
 
+  it('threads an array-form multiLevel override through the disassembler and round-trips on recompose', async () => {
+    const logMock = vi.fn();
+
+    // Same shape as the previous test, but the override is supplied as a string[] rather than
+    // a single string. This pins the new multi-rule input path against a known-good fixture
+    // without depending on a multi-section bot fixture in this repo. End-to-end multi-rule
+    // round-trip is covered by the underlying config-disassembler@^1.1.0 integration tests.
+    await decomposeMetadataTypes({
+      metadataTypes: ['loyaltyProgramSetup'],
+      prepurge: true,
+      postpurge: false,
+      format: 'xml',
+      strategy: 'unique-id',
+      decomposeNestedPerms: false,
+      ignoreDirs: undefined,
+      overrides: [
+        {
+          metadataTypes: ['loyaltyProgramSetup'],
+          multiLevel: ['programProcesses:programProcesses:parameterName,ruleName'],
+        },
+      ],
+      log: logMock,
+    });
+
+    const loyaltyDir = join(forceAppDir, 'loyaltyProgramSetups', 'Cloud_Kicks_Inner_Circle');
+    const subdirs = (await readdir(loyaltyDir, { withFileTypes: true }))
+      .filter((e) => e.isDirectory())
+      .map((e) => e.name);
+    expect(subdirs).toContain('programProcesses');
+
+    await recomposeMetadataTypes({
+      metadataTypes: ['loyaltyProgramSetup'],
+      postpurge: true,
+      ignoreDirs: undefined,
+      log: logMock,
+    });
+
+    await compareDirectories(originalDirectory, forceAppDir);
+  });
+
   it('applies per-type strategy overrides during decompose', async () => {
     const logMock = vi.fn();
 

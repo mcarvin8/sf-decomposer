@@ -7,7 +7,7 @@
     "@salesforce/core": "^8.26.3",
     "@salesforce/sf-plugins-core": "^12.2.6",
     "@salesforce/source-deploy-retrieve": "^12.35.0",
-    "config-disassembler": "^1.0.0",
+    "config-disassembler": "^1.1.0",
     "fast-xml-parser": "^5.7.2",
     "p-limit": "^7.3.0"
   },
@@ -37,7 +37,8 @@
     "/messages",
     "/oclif.manifest.json",
     "/oclif.lock",
-    "/CHANGELOG.md"
+    "/CHANGELOG.md",
+    "/HANDBOOK.md"
   ],
   "keywords": [
     "force",
