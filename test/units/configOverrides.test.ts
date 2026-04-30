@@ -9,6 +9,7 @@ import {
   loadOverridesFromConfig,
   validateOverrides,
   validateSplitTagsSpec,
+  validateMultiLevelSpec,
   getOverrideForType,
   getOverrideForComponent,
   hasComponentOverridesForType,
@@ -170,6 +171,23 @@ describe('configOverrides helper', () => {
       ];
       expect(() => validateOverrides(overrides)).toThrow(/3 or 4 colon-separated parts/);
     });
+
+    it('accepts a well-formed multiLevel spec', () => {
+      const overrides: DecomposerOverride[] = [
+        {
+          metadataTypes: ['loyaltyProgramSetup'],
+          multiLevel: 'programProcesses:programProcesses:parameterName,ruleName',
+        },
+      ];
+      expect(() => validateOverrides(overrides)).not.toThrow();
+    });
+
+    it('rejects a malformed multiLevel spec', () => {
+      const overrides: DecomposerOverride[] = [
+        { metadataTypes: ['loyaltyProgramSetup'], multiLevel: 'programProcesses:programProcesses' },
+      ];
+      expect(() => validateOverrides(overrides)).toThrow(/exactly 3 colon-separated parts/);
+    });
   });
 
   describe('validateSplitTagsSpec', () => {
@@ -231,6 +249,48 @@ describe('configOverrides helper', () => {
       expect(() =>
         validateSplitTagsSpec('  objectPermissions : split : object , fieldPermissions : group : field ', 0),
       ).not.toThrow();
+    });
+  });
+
+  describe('validateMultiLevelSpec', () => {
+    it('accepts the canonical loyalty spec', () => {
+      expect(() => validateMultiLevelSpec('programProcesses:programProcesses:parameterName,ruleName', 0)).not.toThrow();
+    });
+
+    it('accepts a single-id rule', () => {
+      expect(() => validateMultiLevelSpec('items:items:name', 0)).not.toThrow();
+    });
+
+    it('rejects an empty spec', () => {
+      expect(() => validateMultiLevelSpec('', 0)).toThrow(/empty "multiLevel" string/);
+    });
+
+    it('rejects a whitespace-only spec', () => {
+      expect(() => validateMultiLevelSpec('   ', 0)).toThrow(/empty "multiLevel" string/);
+    });
+
+    it('rejects a rule with too few parts', () => {
+      expect(() => validateMultiLevelSpec('items:items', 0)).toThrow(/exactly 3 colon-separated parts/);
+    });
+
+    it('rejects a rule with too many parts', () => {
+      expect(() => validateMultiLevelSpec('items:items:name:extra', 0)).toThrow(/exactly 3 colon-separated parts/);
+    });
+
+    it('rejects a rule with empty parts', () => {
+      expect(() => validateMultiLevelSpec(':items:name', 0)).toThrow(/empty parts/);
+    });
+
+    it('rejects a unique-id list with an empty entry', () => {
+      expect(() => validateMultiLevelSpec('items:items:name,', 0)).toThrow(/empty entry/);
+    });
+
+    it('rejects duplicate unique-id entries', () => {
+      expect(() => validateMultiLevelSpec('items:items:name,name', 0)).toThrow(/duplicate entry "name"/);
+    });
+
+    it('tolerates surrounding whitespace', () => {
+      expect(() => validateMultiLevelSpec(' items : items : name , label ', 0)).not.toThrow();
     });
   });
 
@@ -401,6 +461,7 @@ describe('configOverrides helper', () => {
         prepurge: false,
         postpurge: false,
         splitTags: undefined,
+        multiLevel: undefined,
       });
     });
 
@@ -413,6 +474,18 @@ describe('configOverrides helper', () => {
         },
       ];
       expect(resolveDecomposeOptionsForType('flow', base, overrides).splitTags).toBe('actionCalls:split:name');
+    });
+
+    it('threads a type-scope multiLevel through resolution', () => {
+      const overrides: DecomposerOverride[] = [
+        {
+          metadataTypes: ['loyaltyProgramSetup'],
+          multiLevel: 'programProcesses:programProcesses:parameterName,ruleName',
+        },
+      ];
+      expect(resolveDecomposeOptionsForType('loyaltyProgramSetup', base, overrides).multiLevel).toBe(
+        'programProcesses:programProcesses:parameterName,ruleName',
+      );
     });
   });
 
@@ -482,6 +555,27 @@ describe('configOverrides helper', () => {
       expect(resolveDecomposeOptionsForComponent('flow', 'Other', typeResolved, overrides).splitTags).toBe(
         'actionCalls:split:name',
       );
+    });
+
+    it('lets a component override replace a type-scoped multiLevel', () => {
+      const typeResolved = { ...base, multiLevel: 'programProcesses:programProcesses:parameterName,ruleName' };
+      const overrides: DecomposerOverride[] = [
+        { components: ['loyaltyProgramSetup:Custom'], multiLevel: 'rules:rules:ruleName' },
+      ];
+      expect(
+        resolveDecomposeOptionsForComponent('loyaltyProgramSetup', 'Custom', typeResolved, overrides).multiLevel,
+      ).toBe('rules:rules:ruleName');
+    });
+
+    it('inherits a type-scoped multiLevel when the component override does not set one', () => {
+      const typeResolved = {
+        ...base,
+        multiLevel: 'programProcesses:programProcesses:parameterName,ruleName',
+      };
+      const overrides: DecomposerOverride[] = [{ components: ['loyaltyProgramSetup:Other'], decomposedFormat: 'yaml' }];
+      expect(
+        resolveDecomposeOptionsForComponent('loyaltyProgramSetup', 'Other', typeResolved, overrides).multiLevel,
+      ).toBe('programProcesses:programProcesses:parameterName,ruleName');
     });
   });
 

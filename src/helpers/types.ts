@@ -23,6 +23,13 @@ export type DecomposerOverride = {
    * for permission sets. Only applied when the resolved strategy is `grouped-by-tag`.
    */
   splitTags?: string;
+  /**
+   * Custom `multiLevel` spec for nested-array decomposition. Format:
+   * `<file_pattern>:<root_to_strip>:<unique_id_elements>` (the third part is itself a
+   * comma-separated list). When set, this wins over the hardcoded `loyaltyProgramSetup`
+   * default. Applies regardless of strategy because multiLevel works on a per-file pattern.
+   */
+  multiLevel?: string;
   prePurge?: boolean;
   postPurge?: boolean;
 };
@@ -84,4 +91,34 @@ export type RecomposeOptions = {
   ignoreDirs?: string[];
   manifest?: string;
   log: (msg: string) => void;
+};
+
+export type VerifyOptions = {
+  metadataTypes?: string[];
+  format: string;
+  ignoreDirs?: string[];
+  strategy: string;
+  decomposeNestedPerms: boolean;
+  manifest?: string;
+  overrides?: DecomposerOverride[];
+  log: (msg: string) => void;
+};
+
+export type VerifyDrift = {
+  /** Path of the offending file relative to its package directory. */
+  path: string;
+  /** Short human-readable reason: `'content drift'` or `'missing in round-trip output'`. */
+  reason: string;
+};
+
+export type VerifyResult = {
+  /** Metadata types that participated in the round trip. */
+  metadata: string[];
+  /** One entry per file that did not survive the round trip semantically. Empty on success. */
+  drift: VerifyDrift[];
+  /**
+   * Files where the only delta was sibling/attribute ordering — content is semantically identical
+   * but not byte-identical. Reported for awareness; does not fail `verify`.
+   */
+  reordered: string[];
 };

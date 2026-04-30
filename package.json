@@ -8,6 +8,7 @@
     "@salesforce/sf-plugins-core": "^12.2.6",
     "@salesforce/source-deploy-retrieve": "^12.35.0",
     "config-disassembler": "^1.0.0",
+    "fast-xml-parser": "^5.7.2",
     "p-limit": "^7.3.0"
   },
   "devDependencies": {
@@ -143,8 +144,10 @@
       "files": [
         "src/commands/decomposer/decompose.ts",
         "src/commands/decomposer/recompose.ts",
+        "src/commands/decomposer/verify.ts",
         "messages/decomposer.decompose.md",
         "messages/decomposer.recompose.md",
+        "messages/decomposer.verify.md",
         "README.md"
       ],
       "dependencies": [

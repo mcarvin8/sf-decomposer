@@ -18,6 +18,10 @@
       "splitTags": "objectPermissions:split:object,fieldPermissions:group:field,layoutAssignments:group:layout"
     },
     {
+      "metadataTypes": ["loyaltyProgramSetup"],
+      "multiLevel": "programProcesses:programProcesses:parameterName,ruleName"
+    },
+    {
       "components": ["permissionset:HR_Admin"],
       "strategy": "unique-id",
       "decomposedFormat": "json"
