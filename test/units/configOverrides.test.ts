@@ -188,6 +188,26 @@ describe('configOverrides helper', () => {
       ];
       expect(() => validateOverrides(overrides)).toThrow(/exactly 3 colon-separated parts/);
     });
+
+    it('accepts a multiLevel spec passed as an array of rules', () => {
+      const overrides: DecomposerOverride[] = [
+        {
+          metadataTypes: ['bot'],
+          multiLevel: ['botDialogs:botDialogs:developerName', 'botSteps:botSteps:type'],
+        },
+      ];
+      expect(() => validateOverrides(overrides)).not.toThrow();
+    });
+
+    it('accepts a multiLevel spec with multiple rules joined by ";"', () => {
+      const overrides: DecomposerOverride[] = [
+        {
+          metadataTypes: ['bot'],
+          multiLevel: 'botDialogs:botDialogs:developerName;botSteps:botSteps:type',
+        },
+      ];
+      expect(() => validateOverrides(overrides)).not.toThrow();
+    });
   });
 
   describe('validateSplitTagsSpec', () => {
@@ -291,6 +311,40 @@ describe('configOverrides helper', () => {
 
     it('tolerates surrounding whitespace', () => {
       expect(() => validateMultiLevelSpec(' items : items : name , label ', 0)).not.toThrow();
+    });
+
+    it('accepts a string[] of rules', () => {
+      expect(() =>
+        validateMultiLevelSpec(['botDialogs:botDialogs:developerName', 'botSteps:botSteps:type'], 0),
+      ).not.toThrow();
+    });
+
+    it('accepts a single ";"-separated string of rules', () => {
+      expect(() =>
+        validateMultiLevelSpec('botDialogs:botDialogs:developerName;botSteps:botSteps:type', 0),
+      ).not.toThrow();
+    });
+
+    it('rejects an empty array', () => {
+      expect(() => validateMultiLevelSpec([], 0)).toThrow(/empty "multiLevel" array/);
+    });
+
+    it('rejects an array entry that is empty', () => {
+      expect(() => validateMultiLevelSpec(['botDialogs:botDialogs:developerName', ''], 0)).toThrow(
+        /array contains an empty or non-string entry/,
+      );
+    });
+
+    it('rejects duplicate (file_pattern, root_to_strip) pairs across rules', () => {
+      expect(() =>
+        validateMultiLevelSpec(['botDialogs:botDialogs:developerName', 'botDialogs:botDialogs:label'], 0),
+      ).toThrow(/duplicate \(file_pattern, root_to_strip\) pair/);
+    });
+
+    it('rejects a malformed rule inside an otherwise valid array', () => {
+      expect(() => validateMultiLevelSpec(['botDialogs:botDialogs:developerName', 'broken:rule'], 0)).toThrow(
+        /exactly 3 colon-separated parts/,
+      );
     });
   });
 
@@ -486,6 +540,19 @@ describe('configOverrides helper', () => {
       expect(resolveDecomposeOptionsForType('loyaltyProgramSetup', base, overrides).multiLevel).toBe(
         'programProcesses:programProcesses:parameterName,ruleName',
       );
+    });
+
+    it('threads an array-form multiLevel through resolution without flattening', () => {
+      const overrides: DecomposerOverride[] = [
+        {
+          metadataTypes: ['bot'],
+          multiLevel: ['botDialogs:botDialogs:developerName', 'botSteps:botSteps:type'],
+        },
+      ];
+      expect(resolveDecomposeOptionsForType('bot', base, overrides).multiLevel).toEqual([
+        'botDialogs:botDialogs:developerName',
+        'botSteps:botSteps:type',
+      ]);
     });
   });
 

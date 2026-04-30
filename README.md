@@ -451,17 +451,17 @@ By default, a single decompose run uses one format and one strategy across every
 
 ### What can be overridden
 
-| Field                        | Notes                                                                                                                                                                                                          |
-| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `metadataTypes`              | Optional (required if `components` is omitted). Array of metadata suffixes (same vocabulary as `--metadata-type` / `metadataSuffixes`). Each suffix may appear in at most one override.                        |
-| `components`                 | Optional (required if `metadataTypes` is omitted). Array of `<metadataSuffix>:<fullName>` keys (e.g. `permissionset:HR_Admin`, `report:MyFolder/MyReport`). Each component may appear in at most one override. |
-| `decomposedFormat`           | `xml` \| `json` \| `json5` \| `yaml`.                                                                                                                                                                          |
-| `strategy`                   | `unique-id` \| `grouped-by-tag`. Hard rules still win — `labels` and `loyaltyProgramSetup` are always treated as `unique-id`.                                                                                  |
-| `decomposeNestedPermissions` | Only applies to `permissionset` / `mutingpermissionset` with `grouped-by-tag`. Sets a known-good `splitTags` default; ignored if `splitTags` is also set in the same scope.                                    |
-| `splitTags`                  | Custom `splitTags` spec for `grouped-by-tag` strategy. See [splitTags grammar](#splittags-grammar). Ignored when the resolved strategy is not `grouped-by-tag`.                                                |
-| `multiLevel`                 | Custom `multiLevel` spec for nested-array decomposition. See [multiLevel grammar](#multilevel-grammar). When set, replaces the hardcoded `loyaltyProgramSetup` default for the targeted scope.                 |
-| `prePurge`                   | Per-scope prePurge (decompose). Component-scope `prePurge` only purges the named component's decomposed directory.                                                                                             |
-| `postPurge`                  | Per-scope postPurge (decompose: remove originals after decomposing).                                                                                                                                           |
+| Field                        | Notes                                                                                                                                                                                                                                                        |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `metadataTypes`              | Optional (required if `components` is omitted). Array of metadata suffixes (same vocabulary as `--metadata-type` / `metadataSuffixes`). Each suffix may appear in at most one override.                                                                      |
+| `components`                 | Optional (required if `metadataTypes` is omitted). Array of `<metadataSuffix>:<fullName>` keys (e.g. `permissionset:HR_Admin`, `report:MyFolder/MyReport`). Each component may appear in at most one override.                                               |
+| `decomposedFormat`           | `xml` \| `json` \| `json5` \| `yaml`.                                                                                                                                                                                                                        |
+| `strategy`                   | `unique-id` \| `grouped-by-tag`. Hard rules still win — `labels` and `loyaltyProgramSetup` are always treated as `unique-id`.                                                                                                                                |
+| `decomposeNestedPermissions` | Only applies to `permissionset` / `mutingpermissionset` with `grouped-by-tag`. Sets a known-good `splitTags` default; ignored if `splitTags` is also set in the same scope.                                                                                  |
+| `splitTags`                  | Custom `splitTags` spec for `grouped-by-tag` strategy. See [splitTags grammar](#splittags-grammar). Ignored when the resolved strategy is not `grouped-by-tag`.                                                                                              |
+| `multiLevel`                 | One or more `multiLevel` specs for nested-array decomposition. Pass a string, a `string[]`, or a `;`-separated string. See [multiLevel grammar](#multilevel-grammar). When set, replaces the hardcoded `loyaltyProgramSetup` default for the targeted scope. |
+| `prePurge`                   | Per-scope prePurge (decompose). Component-scope `prePurge` only purges the named component's decomposed directory.                                                                                                                                           |
+| `postPurge`                  | Per-scope postPurge (decompose: remove originals after decomposing).                                                                                                                                                                                         |
 
 Run-scope options (`metadataSuffixes`, `manifest`, `ignorePackageDirectories`) are **not** valid inside an override; the plugin will throw if they are present.
 
@@ -532,9 +532,9 @@ Each `<tag>` may appear at most once in a spec. The plugin validates the grammar
 
 ### multiLevel grammar
 
-`multiLevel` enables a second decomposition pass on inner-level files for metadata types whose XML has deeply nested repeatable blocks (e.g. `loyaltyProgramSetup`'s `programProcesses → parameters → ...`). The plugin already applies a known-good default for `loyaltyProgramSetup` when running the `unique-id` strategy; setting `multiLevel` directly takes precedence and works for any metadata type.
+`multiLevel` enables a second decomposition pass on inner-level files for metadata types whose XML has deeply nested repeatable blocks (e.g. `loyaltyProgramSetup`'s `programProcesses → parameters → ...`, or a Bot's `botVersion → botDialogs → botSteps`). The plugin already applies a known-good default for `loyaltyProgramSetup` when running the `unique-id` strategy; setting `multiLevel` directly takes precedence and works for any metadata type.
 
-**Spec:** A single rule with exactly 3 colon-separated parts (the third part is itself a comma-separated list):
+**Spec:** Each rule has exactly 3 colon-separated parts (the third part is itself a comma-separated list):
 
 ```
 <file_pattern>:<root_to_strip>:<unique_id_elements>
@@ -544,20 +544,35 @@ Each `<tag>` may appear at most once in a spec. The plugin validates the grammar
 - **`<root_to_strip>`** — XML root tag to strip from each matched file before splitting.
 - **`<unique_id_elements>`** — comma-separated list of element names used to derive a stable filename for each inner-level item (e.g. `parameterName,ruleName`). The first element that resolves to a non-empty value wins.
 
-The plugin validates the grammar at config-load time; deeper checks (whether the file pattern matches anything, whether the unique-id elements actually appear on the inner XML) are surfaced by the underlying disassembler crate at runtime.
+A scope may target several nested sections by passing **multiple rules**. Three input shapes are supported:
+
+- a single rule string (legacy, unchanged behaviour);
+- a JSON `string[]` of rules (preferred — clearest intent, easiest to diff);
+- a single `;`-separated string of rules (compact form, also accepted).
+
+Within one scope, the `(file_pattern, root_to_strip)` pair must be unique across rules. The plugin validates the grammar at config-load time; deeper checks (whether a file pattern matches anything, whether the unique-id elements actually appear on the inner XML) are surfaced by the underlying disassembler crate at runtime.
 
 ```json
 "overrides": [
   {
     "metadataTypes": ["loyaltyProgramSetup"],
     "multiLevel": "programProcesses:programProcesses:parameterName,ruleName"
+  },
+  {
+    "components": ["bot:Assessment_Bot"],
+    "multiLevel": [
+      "botDialogs:botDialogs:developerName",
+      "botSteps:botSteps:type"
+    ]
   }
 ]
 ```
 
-> **Limit:** Only one rule per scope. The disassembler does not currently accept multiple comma-separated multiLevel specs, because the third part of the rule is itself a comma-separated list.
+> **Why one call:** Pass every rule for a given component in a single override. Sequential single-rule decompositions rewrite the on-disk `.multi_level.json` and only the last rule survives — so multi-rule scenarios must travel together.
 
 > **Tip:** Use [`sf decomposer verify`](#sf-decomposer-verify) to non-destructively confirm a new override config still round-trips before committing it.
+
+> **Tip:** See the [admin handbook](./HANDBOOK.md) for end-to-end recipes for Bots, Flexipages, Layouts, and other deeply-nested metadata.
 
 ### Opting in from the CLI
 

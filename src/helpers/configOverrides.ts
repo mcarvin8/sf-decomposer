@@ -43,8 +43,12 @@ export type ResolvedDecomposeTypeOptions = {
   postpurge: boolean;
   /** Resolved custom `splitTags` spec, when explicitly set in an override. */
   splitTags?: string;
-  /** Resolved custom `multiLevel` spec, when explicitly set in an override. */
-  multiLevel?: string;
+  /**
+   * Resolved custom `multiLevel` spec(s), when explicitly set in an override. Preserves the
+   * input shape (string vs string[]) so the disassembler crate can decide how to parse it;
+   * a single `;`-separated string is treated by the crate as multiple rules.
+   */
+  multiLevel?: string | string[];
 };
 
 const SPLIT_TAGS_MODES = new Set<string>(['split', 'group']);
@@ -219,41 +223,82 @@ export function validateSplitTagsSpec(spec: string, i: number): void {
 }
 
 /**
- * Validate the `multiLevel` spec at config-load time. The underlying disassembler currently
- * accepts a single colon-separated rule of the form
- * `<file_pattern>:<root_to_strip>:<unique_id_elements>` where `<unique_id_elements>` is itself
- * a comma-separated list. Deeper checks (whether the file pattern matches anything, whether
- * the unique-id elements actually exist on the inner XML) are left to the runtime crate.
+ * Validate the `multiLevel` spec at config-load time. Each rule must be of the form
+ * `<file_pattern>:<root_to_strip>:<unique_id_elements>`, where `<unique_id_elements>` is
+ * itself a comma-separated list. Three input shapes are supported: a single rule string
+ * (legacy); a string[] of rules (preferred when targeting multiple nested sections); or a
+ * single `;`-separated string of rules (compact form, also accepted by the crate).
+ *
+ * Rules are validated individually and the (file_pattern, root_to_strip) pair must be
+ * unique across rules in the same scope. Deeper checks (whether a file pattern matches
+ * anything, whether the unique-id elements actually exist on the inner XML) are left to
+ * the runtime crate.
  */
-export function validateMultiLevelSpec(spec: string, i: number): void {
+export function validateMultiLevelSpec(spec: string | string[], i: number): void {
+  const rules = normalizeMultiLevelRules(spec, i);
+  const seenPairs = new Set<string>();
+  for (const rule of rules) {
+    const { filePattern, rootToStrip } = validateSingleMultiLevelRule(rule, i);
+    const pairKey = `${filePattern}:${rootToStrip}`;
+    if (seenPairs.has(pairKey)) {
+      throw new Error(
+        `Override at index ${i} "multiLevel" has duplicate (file_pattern, root_to_strip) pair "${pairKey}". ` +
+          'Each pair may appear at most once per scope.',
+      );
+    }
+    seenPairs.add(pairKey);
+  }
+}
+
+function normalizeMultiLevelRules(spec: string | string[], i: number): string[] {
+  if (Array.isArray(spec)) {
+    if (spec.length === 0) {
+      throw new Error(`Override at index ${i} has an empty "multiLevel" array.`);
+    }
+    for (const entry of spec) {
+      if (typeof entry !== 'string' || entry.trim() === '') {
+        throw new Error(`Override at index ${i} "multiLevel" array contains an empty or non-string entry.`);
+      }
+    }
+    return spec.map((rule) => rule.trim());
+  }
   if (typeof spec !== 'string' || spec.trim() === '') {
     throw new Error(`Override at index ${i} has an empty "multiLevel" string.`);
   }
+  // A single `;`-separated string is treated as multiple rules to mirror the crate's parser.
+  return spec
+    .split(';')
+    .map((rule) => rule.trim())
+    .filter((rule) => rule.length > 0);
+}
 
-  const parts = spec.split(':').map((part) => part.trim());
+function validateSingleMultiLevelRule(rule: string, i: number): { filePattern: string; rootToStrip: string } {
+  const parts = rule.split(':').map((part) => part.trim());
   if (parts.length !== 3) {
     throw new Error(
-      `Override at index ${i} "multiLevel" must have exactly 3 colon-separated parts ` +
+      `Override at index ${i} "multiLevel" rule "${rule}" must have exactly 3 colon-separated parts ` +
         '("<file_pattern>:<root_to_strip>:<unique_id_elements>").',
     );
   }
 
   const [filePattern, rootToStrip, uniqueIdElements] = parts;
   if (!filePattern || !rootToStrip || !uniqueIdElements) {
-    throw new Error(`Override at index ${i} "multiLevel" has empty parts.`);
+    throw new Error(`Override at index ${i} "multiLevel" rule "${rule}" has empty parts.`);
   }
 
   const ids = uniqueIdElements.split(',').map((id) => id.trim());
   const seenIds = new Set<string>();
   for (const id of ids) {
     if (id === '') {
-      throw new Error(`Override at index ${i} "multiLevel" unique-id list contains an empty entry.`);
+      throw new Error(`Override at index ${i} "multiLevel" rule "${rule}" unique-id list contains an empty entry.`);
     }
     if (seenIds.has(id)) {
-      throw new Error(`Override at index ${i} "multiLevel" unique-id list has duplicate entry "${id}".`);
+      throw new Error(`Override at index ${i} "multiLevel" rule "${rule}" unique-id list has duplicate entry "${id}".`);
     }
     seenIds.add(id);
   }
+
+  return { filePattern, rootToStrip };
 }
 
 function validateMetadataTypeEntries(metadataTypes: string[], i: number, seenTypes: Set<string>): void {

@@ -163,10 +163,11 @@ function disassembleHandler(
   // Resolve multiLevel with this precedence:
   //   1. an explicit `multiLevel` set in the override (any metadata type);
   //   2. the hardcoded loyaltyProgramSetup default when running unique-id strategy.
-  let multiLevel: string | undefined;
-  if (options.multiLevel) {
-    multiLevel = options.multiLevel;
-  } else if (metaSuffix === 'loyaltyProgramSetup' && effectiveStrategy === 'unique-id') {
+  // The override may be a single rule (string) or several rules (string[]); both shapes are
+  // forwarded verbatim — the crate decides how to split them. Empty arrays are rejected
+  // upstream by validateMultiLevelSpec, so we don't need to guard against them here.
+  let multiLevel: string | string[] | undefined = options.multiLevel;
+  if (multiLevel === undefined && metaSuffix === 'loyaltyProgramSetup' && effectiveStrategy === 'unique-id') {
     multiLevel = 'programProcesses:programProcesses:parameterName,ruleName';
   }
 
