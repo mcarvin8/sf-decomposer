@@ -27,6 +27,7 @@ A Salesforce CLI plugin that **decomposes** large metadata XML files into smalle
 - [Troubleshooting](#troubleshooting)
 - [Hooks](#hooks)
 - [Per-Type & Per-Component Overrides](#per-type--per-component-overrides)
+  - [splitTags grammar](#splittags-grammar)
 - [Ignore Files](#ignore-files)
   - [.forceignore](#forceignore)
   - [.sfdecomposerignore](#sfdecomposerignore)
@@ -413,7 +414,8 @@ By default, a single decompose run uses one format and one strategy across every
 | `components`                 | Optional (required if `metadataTypes` is omitted). Array of `<metadataSuffix>:<fullName>` keys (e.g. `permissionset:HR_Admin`, `report:MyFolder/MyReport`). Each component may appear in at most one override. |
 | `decomposedFormat`           | `xml` \| `json` \| `json5` \| `yaml`.                                                                                                                                                                          |
 | `strategy`                   | `unique-id` \| `grouped-by-tag`. Hard rules still win — `labels` and `loyaltyProgramSetup` are always treated as `unique-id`.                                                                                  |
-| `decomposeNestedPermissions` | Only applies to `permissionset` / `mutingpermissionset` with `grouped-by-tag`.                                                                                                                                 |
+| `decomposeNestedPermissions` | Only applies to `permissionset` / `mutingpermissionset` with `grouped-by-tag`. Sets a known-good `splitTags` default; ignored if `splitTags` is also set in the same scope.                                    |
+| `splitTags`                  | Custom `splitTags` spec for `grouped-by-tag` strategy. See [splitTags grammar](#splittags-grammar). Ignored when the resolved strategy is not `grouped-by-tag`.                                                |
 | `prePurge`                   | Per-scope prePurge (decompose). Component-scope `prePurge` only purges the named component's decomposed directory.                                                                                             |
 | `postPurge`                  | Per-scope postPurge (decompose: remove originals after decomposing).                                                                                                                                           |
 
@@ -438,6 +440,51 @@ For each component, each option is resolved independently in this order (highest
 2. The type-scope override value (matching `<suffix>` in `metadataTypes`), if set.
 3. The run-wide value (CLI flag, hook config top-level field, or built-in default).
 4. Hard plugin rules (e.g. `labels` and `loyaltyProgramSetup` forced to `unique-id`) override all of the above.
+
+### splitTags grammar
+
+`splitTags` lets you control how `grouped-by-tag` writes nested arrays for any metadata type. The plugin already applies a known-good default for permission sets when `decomposeNestedPermissions: true` is set; setting `splitTags` directly takes precedence and works for any metadata type.
+
+**Spec:** Comma-separated rules. Each rule has 3 or 4 colon-separated parts:
+
+- `<tag>:<mode>:<field>` — read array items from the top-level `<tag>`.
+- `<tag>:<path>:<mode>:<field>` — read array items from the nested `<path>` (defaults to `<tag>`).
+
+`<mode>` is one of:
+
+- **`split`** — write one file per array item, named after the value of `<field>` on each item.
+- **`group`** — group array items by the value of `<field>`, writing one file per group.
+
+Each `<tag>` may appear at most once in a spec. The plugin validates the grammar at config-load time. Deeper checks (e.g. unknown tag names for the metadata type) are surfaced by the underlying disassembler crate at runtime.
+
+#### splitTags cookbook
+
+```json
+"overrides": [
+  {
+    "metadataTypes": ["permissionset", "mutingpermissionset"],
+    "strategy": "grouped-by-tag",
+    "splitTags": "objectPermissions:split:object,fieldPermissions:group:field"
+  },
+  {
+    "metadataTypes": ["profile"],
+    "strategy": "grouped-by-tag",
+    "splitTags": "objectPermissions:split:object,fieldPermissions:group:field,layoutAssignments:group:layout"
+  },
+  {
+    "metadataTypes": ["flow"],
+    "strategy": "grouped-by-tag",
+    "splitTags": "actionCalls:split:name,decisions:split:name,assignments:split:name"
+  },
+  {
+    "metadataTypes": ["workflow"],
+    "strategy": "grouped-by-tag",
+    "splitTags": "rules:split:fullName,alerts:split:fullName,fieldUpdates:split:fullName,tasks:split:fullName"
+  }
+]
+```
+
+> **Caveat:** When using `mode: split`, the chosen `<field>` must produce a unique value for every array item — otherwise two items would map to the same filename. If two items share a field value, prefer `mode: group` instead, which is designed for that case.
 
 ### Opting in from the CLI
 

@@ -223,6 +223,58 @@ describe('decomposer per-component overrides', () => {
     expect(hrAdminXml).toBe(bigPermSetXml);
   });
 
+  it('honors a custom splitTags spec over the hardcoded permission-set default', async () => {
+    const logMock = vi.fn();
+
+    // Custom spec: split fieldPermissions one-file-per-field instead of grouping by object,
+    // and leave objectPermissions as a single tag-named aggregate file (no rule for it).
+    await decomposeMetadataTypes({
+      metadataTypes: ['permissionset'],
+      prepurge: true,
+      postpurge: true,
+      format: 'xml',
+      strategy: 'unique-id',
+      decomposeNestedPerms: false,
+      ignoreDirs: undefined,
+      overrides: [
+        {
+          metadataTypes: ['permissionset'],
+          strategy: 'grouped-by-tag',
+          // decomposeNestedPermissions intentionally omitted to prove the custom splitTags
+          // alone is enough to drive the nested-tag layout.
+          splitTags: 'fieldPermissions:split:field',
+        },
+      ],
+      log: logMock,
+    });
+
+    const hrAdminDir = join(permissionsetsDir, 'HR_Admin');
+    const fieldPermsFiles = await readdir(join(hrAdminDir, 'fieldPermissions'));
+    // split mode keys files by the `field` value (one file per field), not by object.
+    expect(fieldPermsFiles).toContain('Job_Request__c.SalaryPay__c.fieldPermissions-meta.xml');
+    expect(fieldPermsFiles).toContain('Job_Request__c.Salary__c.fieldPermissions-meta.xml');
+    // The hardcoded default would have produced this group-by-object filename; verify it does
+    // NOT exist, proving the custom spec replaced the default rather than merging with it.
+    expect(fieldPermsFiles).not.toContain('Job_Request__c.fieldPermissions-meta.xml');
+
+    // No splitTags rule for objectPermissions → it stays as a single aggregate top-level file
+    // (standard grouped-by-tag behavior).
+    const hrAdminEntries = await readdir(hrAdminDir, { withFileTypes: true });
+    const hrAdminFiles = hrAdminEntries.filter((e) => e.isFile()).map((e) => e.name);
+    expect(hrAdminFiles).toContain('objectPermissions.xml');
+
+    await recomposeMetadataTypes({
+      metadataTypes: ['permissionset'],
+      postpurge: true,
+      ignoreDirs: undefined,
+      log: logMock,
+    });
+
+    const recomposedXml = await readFile(join(permissionsetsDir, 'HR_Admin.permissionset-meta.xml'), 'utf-8');
+    const originalXml = await readFile(join(fixtureDir, 'permissionsets', 'HR_Admin.permissionset-meta.xml'), 'utf-8');
+    expect(recomposedXml).toBe(originalXml);
+  });
+
   it('applies per-component format overrides on top of a per-type format override', async () => {
     const logMock = vi.fn();
 
