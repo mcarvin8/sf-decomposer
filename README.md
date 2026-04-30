@@ -59,7 +59,7 @@ A Salesforce CLI plugin that **decomposes** large metadata XML files into smalle
    sf decomposer decompose -m "flow" -m "labels" --postpurge
    ```
 
-> Combine steps 2 & 3 by configuring the > Combine steps 2 and 3 using the [hooks](#hooks). 
+> Combine steps 2 & 3 by configuring the [hooks](#hooks). 
 
 4. **Add decomposed paths to [.forceignore](#forceignore)**  
    This is **required** so the Salesforce CLI does not treat decomposed files as source. Use the [sample .forceignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.forceignore) and adjust extensions for your chosen format (`.xml`, `.json`, `.yaml`, etc.).
