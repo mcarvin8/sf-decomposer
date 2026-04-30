@@ -1,16 +1,16 @@
 version: 2
 updates:
-  - package-ecosystem: "npm"
-    directory: "/"
+  - package-ecosystem: 'npm'
+    directory: '/'
     schedule:
-      interval: "weekly"
+      interval: 'weekly'
     versioning-strategy: increase
     commit-message:
-      prefix: "feat(metadata)"
+      prefix: 'feat(metadata)'
     allow:
-      - dependency-name: "@salesforce/source-deploy-retrieve"
-      - dependency-name: "xml-disassembler"
-  - package-ecosystem: "github-actions"
-    directory: "/"
+      - dependency-name: '@salesforce/source-deploy-retrieve'
+      - dependency-name: 'config-disassembler'
+  - package-ecosystem: 'github-actions'
+    directory: '/'
     schedule:
-      interval: "monthly"
+      interval: 'monthly'

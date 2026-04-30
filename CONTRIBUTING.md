@@ -108,14 +108,14 @@ Unique ID elements are used to name decomposed files for nested elements. The fi
 - **Overrides:** Edit `src/metadata/uniqueIdElements.ts`; use the metadata type’s **suffix** as the key.
 - **Fallback:** If no unique ID is found, the plugin uses a SHA-256 hash of the element content for the file name.
 
-### XML disassembler
+### Config disassembler
 
-Core decompose/recompose logic lives in **[xml-disassembler-node](https://github.com/mcarvin8/xml-disassembler-node)**, which uses a Rust crate to handle decomposing and recomposing files on the local disk. This plugin focuses on Salesforce metadata wiring (e.g. package dirs, SDR, strategies).
+Core decompose/recompose logic lives in **[config-disassembler-node](https://github.com/mcarvin8/config-disassembler-node)**, which uses a Rust crate to handle decomposing and recomposing files on the local disk. This plugin focuses on Salesforce metadata wiring (e.g. package dirs, SDR, strategies).
 
-- **In this plugin:** `src/service/decompose/decomposeFileHandler.ts` and `src/service/recompose/recomposeFileHandler.ts` call xml-disassembler.
-- **Changes to XML decompose/recompose behavior:** Contribute in the [xml-disassembler-rust](https://github.com/mcarvin8/xml-disassembler-rust) and/or [xml-disassembler-node](https://github.com/mcarvin8/xml-disassembler-node) repo.
+- **In this plugin:** `src/service/decompose/decomposeFileHandler.ts` and `src/service/recompose/recomposeFileHandler.ts` call config-disassembler.
+- **Changes to XML decompose/recompose behavior:** Contribute in the [config-disassembler](https://github.com/mcarvin8/config-disassembler) (Rust crate) and/or [config-disassembler-node](https://github.com/mcarvin8/config-disassembler-node) repo.
 
-Dependabot will check for xml-disassembler-node updates once a week.
+Dependabot will check for config-disassembler updates once a week.
 
 ---
 

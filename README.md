@@ -79,7 +79,7 @@ A Salesforce CLI plugin that **decomposes** large metadata XML files into smalle
 
 ## Requirements
 
-The [xml-disassembler-node](https://github.com/mcarvin8/xml-disassembler-node) package, which depends on a Rust crate, ships with native binaries for these platforms:
+The [config-disassembler-node](https://github.com/mcarvin8/config-disassembler-node) package, which depends on a Rust crate, ships with native binaries for these platforms:
 
 | Platform    | Architectures                      |
 | ----------- | ---------------------------------- |
@@ -87,7 +87,7 @@ The [xml-disassembler-node](https://github.com/mcarvin8/xml-disassembler-node) p
 | **Linux**   | x64, arm64, ia32                   |
 | **Windows** | x64                                |
 
-If other platforms or architectures require support, please open an issue in [xml-disassembler-node](https://github.com/mcarvin8/xml-disassembler-node/issues).
+If other platforms or architectures require support, please open an issue in [config-disassembler-node](https://github.com/mcarvin8/config-disassembler-node/issues).
 
 ---
 
@@ -334,7 +334,7 @@ For example, if you attempt to decompose Custom Labels but none of your package 
 
 ### XML disassemble output (Rust crate)
 
-The xml-disassembler Node plugin uses a **Rust crate** for XML decomposing and recomposing. Disassemble errors and messages are shown in the terminal.
+The config-disassembler Node plugin uses a **Rust crate** for XML decomposing and recomposing. Disassemble errors and messages are shown in the terminal.
 
 Control verbosity with the `RUST_LOG` environment variable (e.g. `RUST_LOG=debug` for detailed output).
 
@@ -463,7 +463,7 @@ Bugs and feature requests: [open an issue](https://github.com/mcarvin8/sf-decomp
 
 ## Built With
 
-- [xml-disassembler-node](https://github.com/mcarvin8/xml-disassembler-node) – Disassemble XML into smaller, manageable files and reassemble when needed. Node.js + Rust (Neon). See [Requirements](#requirements).
+- [config-disassembler-node](https://github.com/mcarvin8/config-disassembler-node) – Disassemble XML (and other config formats) into smaller, manageable files and reassemble when needed. Node.js + Rust (Neon). See [Requirements](#requirements).
 - [@salesforce/source-deploy-retrieve](https://github.com/forcedotcom/source-deploy-retrieve) – JavaScript toolkit for working with Salesforce metadata.
 
 ---
