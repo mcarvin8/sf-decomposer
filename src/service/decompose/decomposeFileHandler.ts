@@ -2,7 +2,7 @@
 
 import { resolve, relative, join, dirname } from 'node:path';
 import { readdir, stat } from 'node:fs/promises';
-import { DisassembleXMLFileHandler } from 'xml-disassembler';
+import { DisassembleXMLFileHandler } from 'config-disassembler';
 import pLimit from 'p-limit';
 
 import { CUSTOM_LABELS_FILE, CONCURRENCY_LIMITS } from '../../helpers/constants.js';
@@ -62,7 +62,7 @@ export async function decomposeFileHandler(
           decomposeNestedPerms,
         );
       } else if (metaSuffix === 'labels') {
-        // do not use the prePurge flag in the xml-disassembler package for labels due to file moving
+        // do not use the prePurge flag in the config-disassembler package for labels due to file moving
         if (prepurge) await prePurgeLabels(metadataPath);
         const absoluteLabelFilePath = resolve(metadataPath, CUSTOM_LABELS_FILE);
         const relativeLabelFilePath = relative(process.cwd(), absoluteLabelFilePath);

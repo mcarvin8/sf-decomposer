@@ -2,7 +2,7 @@
 
 import { readdir, stat } from 'node:fs/promises';
 import { join, dirname, basename } from 'node:path';
-import { ReassembleXMLFileHandler } from 'xml-disassembler';
+import { ReassembleXMLFileHandler } from 'config-disassembler';
 import pLimit from 'p-limit';
 
 import { CONCURRENCY_LIMITS } from '../../helpers/constants.js';
