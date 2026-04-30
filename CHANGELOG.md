@@ -5,6 +5,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.15.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.14.0...v6.15.0) (2026-04-30)
+
+
+### Features
+
+* support multi-rule multiLevel overrides ([#419](https://github.com/mcarvin8/sf-decomposer/issues/419)) ([5b36f74](https://github.com/mcarvin8/sf-decomposer/commit/5b36f745ab998509b2b7a86a1a6d0a65ebc91a45))
+
+
+### Bug Fixes
+
+* **bot:** round-trip bots with nested botSteps multi-level rule ([#421](https://github.com/mcarvin8/sf-decomposer/issues/421)) ([38e8f9e](https://github.com/mcarvin8/sf-decomposer/commit/38e8f9e944b6ba85d724c479c28f9f3de1e9361a))
+
 ## [6.14.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.13.0...v6.14.0) (2026-04-30)
 
 
