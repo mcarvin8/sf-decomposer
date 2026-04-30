@@ -5,6 +5,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.13.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.12.0...v6.13.0) (2026-04-30)
+
+
+### Features
+
+* **decompose:** add per-component overrides ([#415](https://github.com/mcarvin8/sf-decomposer/issues/415)) ([47d7c79](https://github.com/mcarvin8/sf-decomposer/commit/47d7c794db17ccc59e832309a0a4980d736ab89c))
+* **deps:** bump dependabot/fetch-metadata from 2 to 3 ([#412](https://github.com/mcarvin8/sf-decomposer/issues/412)) ([6b0a24b](https://github.com/mcarvin8/sf-decomposer/commit/6b0a24b9c83dfb6fb9ef1d8dc8e2dfbec23200bf))
+* **metadata:** bump @salesforce/source-deploy-retrieve ([#413](https://github.com/mcarvin8/sf-decomposer/issues/413)) ([e261049](https://github.com/mcarvin8/sf-decomposer/commit/e261049cc07a94642c1e80cf29dbd1e96a7183bd))
+
 ## [6.12.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.11.0...v6.12.0) (2026-04-27)
 
 
