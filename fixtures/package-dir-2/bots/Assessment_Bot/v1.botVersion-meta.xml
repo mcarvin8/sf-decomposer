@@ -23,19 +23,6 @@
     <botDialogs>
         <botDialogGroup>Alert_Items</botDialogGroup>
         <botSteps>
-            <botSteps>
-                <botVariableOperation>
-                    <botVariableOperands>
-                        <targetName>QuestionResponseTrueOrFalse</targetName>
-                        <targetType>ConversationVariable</targetType>
-                    </botVariableOperands>
-                    <type>Unset</type>
-                </botVariableOperation>
-                <type>VariableOperation</type>
-            </botSteps>
-            <type>Group</type>
-        </botSteps>
-        <botSteps>
             <botVariableOperation>
                 <botMessages>
                     <message>{!AssessmentItemMessage}</message>
@@ -60,6 +47,19 @@
         <botSteps>
             <type>Wait</type>
         </botSteps>
+        <botSteps>
+            <botSteps>
+                <botVariableOperation>
+                    <botVariableOperands>
+                        <targetName>QuestionResponseTrueOrFalse</targetName>
+                        <targetType>ConversationVariable</targetType>
+                    </botVariableOperands>
+                    <type>Unset</type>
+                </botVariableOperation>
+                <type>VariableOperation</type>
+            </botSteps>
+            <type>Group</type>
+        </botSteps>
         <developerName>Alert_Item</developerName>
         <label>Alert Item</label>
         <showInFooterMenu>false</showInFooterMenu>
@@ -71,12 +71,12 @@
                 <leftOperandName>AssessmentItemType</leftOperandName>
                 <leftOperandType>ConversationVariable</leftOperandType>
                 <operatorType>Equals</operatorType>
-                <rightOperandValue>Message</rightOperandValue>
+                <rightOperandValue>Question</rightOperandValue>
             </botStepConditions>
             <botSteps>
                 <botNavigation>
                     <botNavigationLinks>
-                        <targetBotDialog>Message_Item</targetBotDialog>
+                        <targetBotDialog>Question_Item_Delegate</targetBotDialog>
                     </botNavigationLinks>
                     <type>Call</type>
                 </botNavigation>
@@ -103,22 +103,7 @@
             <type>Group</type>
         </botSteps>
         <botSteps>
-            <botStepConditions>
-                <leftOperandName>AssessmentItemType</leftOperandName>
-                <leftOperandType>ConversationVariable</leftOperandType>
-                <operatorType>Equals</operatorType>
-                <rightOperandValue>Question</rightOperandValue>
-            </botStepConditions>
-            <botSteps>
-                <botNavigation>
-                    <botNavigationLinks>
-                        <targetBotDialog>Question_Item_Delegate</targetBotDialog>
-                    </botNavigationLinks>
-                    <type>Call</type>
-                </botNavigation>
-                <type>Navigation</type>
-            </botSteps>
-            <type>Group</type>
+            <type>Wait</type>
         </botSteps>
         <botSteps>
             <botStepConditions>
@@ -139,7 +124,22 @@
             <type>Group</type>
         </botSteps>
         <botSteps>
-            <type>Wait</type>
+            <botStepConditions>
+                <leftOperandName>AssessmentItemType</leftOperandName>
+                <leftOperandType>ConversationVariable</leftOperandType>
+                <operatorType>Equals</operatorType>
+                <rightOperandValue>Message</rightOperandValue>
+            </botStepConditions>
+            <botSteps>
+                <botNavigation>
+                    <botNavigationLinks>
+                        <targetBotDialog>Message_Item</targetBotDialog>
+                    </botNavigationLinks>
+                    <type>Call</type>
+                </botNavigation>
+                <type>Navigation</type>
+            </botSteps>
+            <type>Group</type>
         </botSteps>
         <developerName>Assessment_Item_Delegate</developerName>
         <label>Assessment Item Delegate</label>
@@ -224,16 +224,30 @@
             <type>VariableOperation</type>
         </botSteps>
         <botSteps>
+            <botStepConditions>
+                <leftOperandName>CurrentAssessmentItemId</leftOperandName>
+                <leftOperandType>ConversationVariable</leftOperandType>
+                <operatorType>IsSet</operatorType>
+            </botStepConditions>
             <botSteps>
                 <botNavigation>
                     <botNavigationLinks>
-                        <targetBotDialog>Assessment_Item_Delegate</targetBotDialog>
+                        <targetBotDialog>Assessment_Loop</targetBotDialog>
                     </botNavigationLinks>
-                    <type>Call</type>
+                    <type>Redirect</type>
                 </botNavigation>
                 <type>Navigation</type>
             </botSteps>
             <type>Group</type>
+        </botSteps>
+        <botSteps>
+            <botNavigation>
+                <botNavigationLinks>
+                    <targetBotDialog>End_Chat</targetBotDialog>
+                </botNavigationLinks>
+                <type>Redirect</type>
+            </botNavigation>
+            <type>Navigation</type>
         </botSteps>
         <botSteps>
             <botVariableOperation>
@@ -288,30 +302,16 @@
             <type>VariableOperation</type>
         </botSteps>
         <botSteps>
-            <botStepConditions>
-                <leftOperandName>CurrentAssessmentItemId</leftOperandName>
-                <leftOperandType>ConversationVariable</leftOperandType>
-                <operatorType>IsSet</operatorType>
-            </botStepConditions>
             <botSteps>
                 <botNavigation>
                     <botNavigationLinks>
-                        <targetBotDialog>Assessment_Loop</targetBotDialog>
+                        <targetBotDialog>Assessment_Item_Delegate</targetBotDialog>
                     </botNavigationLinks>
-                    <type>Redirect</type>
+                    <type>Call</type>
                 </botNavigation>
                 <type>Navigation</type>
             </botSteps>
             <type>Group</type>
-        </botSteps>
-        <botSteps>
-            <botNavigation>
-                <botNavigationLinks>
-                    <targetBotDialog>End_Chat</targetBotDialog>
-                </botNavigationLinks>
-                <type>Redirect</type>
-            </botNavigation>
-            <type>Navigation</type>
         </botSteps>
         <developerName>Assessment_Loop</developerName>
         <label>Assessment Loop</label>
@@ -351,13 +351,13 @@
     <botDialogs>
         <botDialogGroup>Message_Items</botDialogGroup>
         <botSteps>
+            <type>Wait</type>
+        </botSteps>
+        <botSteps>
             <botMessages>
                 <message>{!AssessmentItemMessage}</message>
             </botMessages>
             <type>Message</type>
-        </botSteps>
-        <botSteps>
-            <type>Wait</type>
         </botSteps>
         <developerName>Message_Item</developerName>
         <label>Message Item</label>
@@ -379,47 +379,6 @@
     </botDialogs>
     <botDialogs>
         <botDialogGroup>Question_Items</botDialogGroup>
-        <botSteps>
-            <botSteps>
-                <botVariableOperation>
-                    <botVariableOperands>
-                        <targetName>CurrentAssessmentItemSelectedChoice</targetName>
-                        <targetType>ConversationVariable</targetType>
-                    </botVariableOperands>
-                    <type>Unset</type>
-                </botVariableOperation>
-                <type>VariableOperation</type>
-            </botSteps>
-            <type>Group</type>
-        </botSteps>
-        <botSteps>
-            <botVariableOperation>
-                <botMessages>
-                    <message>{!AssessmentItemMessage}</message>
-                </botMessages>
-                <botVariableOperands>
-                    <disableAutoFill>true</disableAutoFill>
-                    <sourceName>_Object</sourceName>
-                    <sourceType>StandardMlSlotClass</sourceType>
-                    <targetName>CurrentAssessmentItemSelectedChoice</targetName>
-                    <targetType>ConversationVariable</targetType>
-                </botVariableOperands>
-                <invalidInputBotNavigation>
-                    <botNavigationLinks>
-                        <targetBotDialog>End_Chat</targetBotDialog>
-                    </botNavigationLinks>
-                    <type>Redirect</type>
-                </invalidInputBotNavigation>
-                <optionalCollect>false</optionalCollect>
-                <quickReplyOptionTemplate>{!label}</quickReplyOptionTemplate>
-                <quickReplyType>Dynamic</quickReplyType>
-                <quickReplyWidgetType>Buttons</quickReplyWidgetType>
-                <sourceVariableName>CurrentAssessmentItemChoices</sourceVariableName>
-                <sourceVariableType>ConversationVariable</sourceVariableType>
-                <type>Collect</type>
-            </botVariableOperation>
-            <type>VariableOperation</type>
-        </botSteps>
         <botSteps>
             <botVariableOperation>
                 <botInvocation>
@@ -455,6 +414,47 @@
             <type>VariableOperation</type>
         </botSteps>
         <botSteps>
+            <botVariableOperation>
+                <botMessages>
+                    <message>{!AssessmentItemMessage}</message>
+                </botMessages>
+                <botVariableOperands>
+                    <disableAutoFill>true</disableAutoFill>
+                    <sourceName>_Object</sourceName>
+                    <sourceType>StandardMlSlotClass</sourceType>
+                    <targetName>CurrentAssessmentItemSelectedChoice</targetName>
+                    <targetType>ConversationVariable</targetType>
+                </botVariableOperands>
+                <invalidInputBotNavigation>
+                    <botNavigationLinks>
+                        <targetBotDialog>End_Chat</targetBotDialog>
+                    </botNavigationLinks>
+                    <type>Redirect</type>
+                </invalidInputBotNavigation>
+                <optionalCollect>false</optionalCollect>
+                <quickReplyOptionTemplate>{!label}</quickReplyOptionTemplate>
+                <quickReplyType>Dynamic</quickReplyType>
+                <quickReplyWidgetType>Buttons</quickReplyWidgetType>
+                <sourceVariableName>CurrentAssessmentItemChoices</sourceVariableName>
+                <sourceVariableType>ConversationVariable</sourceVariableType>
+                <type>Collect</type>
+            </botVariableOperation>
+            <type>VariableOperation</type>
+        </botSteps>
+        <botSteps>
+            <botSteps>
+                <botVariableOperation>
+                    <botVariableOperands>
+                        <targetName>CurrentAssessmentItemSelectedChoice</targetName>
+                        <targetType>ConversationVariable</targetType>
+                    </botVariableOperands>
+                    <type>Unset</type>
+                </botVariableOperation>
+                <type>VariableOperation</type>
+            </botSteps>
+            <type>Group</type>
+        </botSteps>
+        <botSteps>
             <type>Wait</type>
         </botSteps>
         <developerName>Question_Item_Choices</developerName>
@@ -477,6 +477,9 @@
             <type>Group</type>
         </botSteps>
         <botSteps>
+            <type>Wait</type>
+        </botSteps>
+        <botSteps>
             <botVariableOperation>
                 <botMessages>
                     <message>{!AssessmentItemMessage}</message>
@@ -494,9 +497,6 @@
             </botVariableOperation>
             <type>VariableOperation</type>
         </botSteps>
-        <botSteps>
-            <type>Wait</type>
-        </botSteps>
         <developerName>Question_Item_Date</developerName>
         <label>Question Item (Date)</label>
         <showInFooterMenu>false</showInFooterMenu>
@@ -508,12 +508,12 @@
                 <leftOperandName>AnswerType</leftOperandName>
                 <leftOperandType>ConversationVariable</leftOperandType>
                 <operatorType>Equals</operatorType>
-                <rightOperandValue>TrueOrFalse</rightOperandValue>
+                <rightOperandValue>Text</rightOperandValue>
             </botStepConditions>
             <botSteps>
                 <botNavigation>
                     <botNavigationLinks>
-                        <targetBotDialog>Question_Item_True_False</targetBotDialog>
+                        <targetBotDialog>Question_Item_Text</targetBotDialog>
                     </botNavigationLinks>
                     <type>Call</type>
                 </botNavigation>
@@ -558,22 +558,7 @@
             <type>Group</type>
         </botSteps>
         <botSteps>
-            <botStepConditions>
-                <leftOperandName>AnswerType</leftOperandName>
-                <leftOperandType>ConversationVariable</leftOperandType>
-                <operatorType>Equals</operatorType>
-                <rightOperandValue>Text</rightOperandValue>
-            </botStepConditions>
-            <botSteps>
-                <botNavigation>
-                    <botNavigationLinks>
-                        <targetBotDialog>Question_Item_Text</targetBotDialog>
-                    </botNavigationLinks>
-                    <type>Call</type>
-                </botNavigation>
-                <type>Navigation</type>
-            </botSteps>
-            <type>Group</type>
+            <type>Wait</type>
         </botSteps>
         <botSteps>
             <botStepConditions>
@@ -594,7 +579,22 @@
             <type>Group</type>
         </botSteps>
         <botSteps>
-            <type>Wait</type>
+            <botStepConditions>
+                <leftOperandName>AnswerType</leftOperandName>
+                <leftOperandType>ConversationVariable</leftOperandType>
+                <operatorType>Equals</operatorType>
+                <rightOperandValue>TrueOrFalse</rightOperandValue>
+            </botStepConditions>
+            <botSteps>
+                <botNavigation>
+                    <botNavigationLinks>
+                        <targetBotDialog>Question_Item_True_False</targetBotDialog>
+                    </botNavigationLinks>
+                    <type>Call</type>
+                </botNavigation>
+                <type>Navigation</type>
+            </botSteps>
+            <type>Group</type>
         </botSteps>
         <developerName>Question_Item_Delegate</developerName>
         <label>Question Item Delegate</label>
@@ -602,19 +602,6 @@
     </botDialogs>
     <botDialogs>
         <botDialogGroup>Question_Items</botDialogGroup>
-        <botSteps>
-            <botSteps>
-                <botVariableOperation>
-                    <botVariableOperands>
-                        <targetName>QuestionResponseNumber</targetName>
-                        <targetType>ConversationVariable</targetType>
-                    </botVariableOperands>
-                    <type>Unset</type>
-                </botVariableOperation>
-                <type>VariableOperation</type>
-            </botSteps>
-            <type>Group</type>
-        </botSteps>
         <botSteps>
             <botVariableOperation>
                 <botMessages>
@@ -636,17 +623,11 @@
         <botSteps>
             <type>Wait</type>
         </botSteps>
-        <developerName>Question_Item_Number</developerName>
-        <label>Question Item (Number)</label>
-        <showInFooterMenu>false</showInFooterMenu>
-    </botDialogs>
-    <botDialogs>
-        <botDialogGroup>Question_Items</botDialogGroup>
         <botSteps>
             <botSteps>
                 <botVariableOperation>
                     <botVariableOperands>
-                        <targetName>QuestionResponseText</targetName>
+                        <targetName>QuestionResponseNumber</targetName>
                         <targetType>ConversationVariable</targetType>
                     </botVariableOperands>
                     <type>Unset</type>
@@ -655,6 +636,12 @@
             </botSteps>
             <type>Group</type>
         </botSteps>
+        <developerName>Question_Item_Number</developerName>
+        <label>Question Item (Number)</label>
+        <showInFooterMenu>false</showInFooterMenu>
+    </botDialogs>
+    <botDialogs>
+        <botDialogGroup>Question_Items</botDialogGroup>
         <botSteps>
             <botVariableOperation>
                 <botMessages>
@@ -676,17 +663,11 @@
         <botSteps>
             <type>Wait</type>
         </botSteps>
-        <developerName>Question_Item_Text</developerName>
-        <label>Question Item (Text)</label>
-        <showInFooterMenu>false</showInFooterMenu>
-    </botDialogs>
-    <botDialogs>
-        <botDialogGroup>Question_Items</botDialogGroup>
         <botSteps>
             <botSteps>
                 <botVariableOperation>
                     <botVariableOperands>
-                        <targetName>QuestionResponseTrueOrFalse</targetName>
+                        <targetName>QuestionResponseText</targetName>
                         <targetType>ConversationVariable</targetType>
                     </botVariableOperands>
                     <type>Unset</type>
@@ -695,6 +676,12 @@
             </botSteps>
             <type>Group</type>
         </botSteps>
+        <developerName>Question_Item_Text</developerName>
+        <label>Question Item (Text)</label>
+        <showInFooterMenu>false</showInFooterMenu>
+    </botDialogs>
+    <botDialogs>
+        <botDialogGroup>Question_Items</botDialogGroup>
         <botSteps>
             <botVariableOperation>
                 <botMessages>
@@ -723,12 +710,54 @@
         <botSteps>
             <type>Wait</type>
         </botSteps>
+        <botSteps>
+            <botSteps>
+                <botVariableOperation>
+                    <botVariableOperands>
+                        <targetName>QuestionResponseTrueOrFalse</targetName>
+                        <targetType>ConversationVariable</targetType>
+                    </botVariableOperands>
+                    <type>Unset</type>
+                </botVariableOperation>
+                <type>VariableOperation</type>
+            </botSteps>
+            <type>Group</type>
+        </botSteps>
         <developerName>Question_Item_True_False</developerName>
         <label>Question Item (True/False)</label>
         <showInFooterMenu>false</showInFooterMenu>
     </botDialogs>
     <botDialogs>
         <botDialogGroup>Transfer_Items</botDialogGroup>
+        <botSteps>
+            <botStepConditions>
+                <leftOperandName>CurrentAssessmentItemId</leftOperandName>
+                <leftOperandType>ConversationVariable</leftOperandType>
+                <operatorType>IsNotSet</operatorType>
+            </botStepConditions>
+            <botSteps>
+                <conversationSystemMessage>
+                    <type>EndChat</type>
+                </conversationSystemMessage>
+                <type>SystemMessage</type>
+            </botSteps>
+            <type>Group</type>
+        </botSteps>
+        <botSteps>
+            <botStepConditions>
+                <leftOperandName>ActiveAssessmentDefinition</leftOperandName>
+                <leftOperandType>ConversationVariable</leftOperandType>
+                <operatorType>Equals</operatorType>
+                <rightOperandValue>false</rightOperandValue>
+            </botStepConditions>
+            <botSteps>
+                <conversationSystemMessage>
+                    <type>EndChat</type>
+                </conversationSystemMessage>
+                <type>SystemMessage</type>
+            </botSteps>
+            <type>Group</type>
+        </botSteps>
         <botSteps>
             <botVariableOperation>
                 <botInvocation>
@@ -776,35 +805,6 @@
             <type>VariableOperation</type>
         </botSteps>
         <botSteps>
-            <botStepConditions>
-                <leftOperandName>ActiveAssessmentDefinition</leftOperandName>
-                <leftOperandType>ConversationVariable</leftOperandType>
-                <operatorType>Equals</operatorType>
-                <rightOperandValue>false</rightOperandValue>
-            </botStepConditions>
-            <botSteps>
-                <conversationSystemMessage>
-                    <type>EndChat</type>
-                </conversationSystemMessage>
-                <type>SystemMessage</type>
-            </botSteps>
-            <type>Group</type>
-        </botSteps>
-        <botSteps>
-            <botStepConditions>
-                <leftOperandName>CurrentAssessmentItemId</leftOperandName>
-                <leftOperandType>ConversationVariable</leftOperandType>
-                <operatorType>IsNotSet</operatorType>
-            </botStepConditions>
-            <botSteps>
-                <conversationSystemMessage>
-                    <type>EndChat</type>
-                </conversationSystemMessage>
-                <type>SystemMessage</type>
-            </botSteps>
-            <type>Group</type>
-        </botSteps>
-        <botSteps>
             <botNavigation>
                 <botNavigationLinks>
                     <targetBotDialog>Assessment_Loop</targetBotDialog>
@@ -824,6 +824,24 @@
                 <leftOperandName>Transfer_Type</leftOperandName>
                 <leftOperandType>ConversationVariable</leftOperandType>
                 <operatorType>Equals</operatorType>
+                <rightOperandValue>Assessment</rightOperandValue>
+            </botStepConditions>
+            <botSteps>
+                <botNavigation>
+                    <botNavigationLinks>
+                        <targetBotDialog>Transfer_Assessment</targetBotDialog>
+                    </botNavigationLinks>
+                    <type>Redirect</type>
+                </botNavigation>
+                <type>Navigation</type>
+            </botSteps>
+            <type>Group</type>
+        </botSteps>
+        <botSteps>
+            <botStepConditions>
+                <leftOperandName>Transfer_Type</leftOperandName>
+                <leftOperandType>ConversationVariable</leftOperandType>
+                <operatorType>Equals</operatorType>
                 <rightOperandValue>Queue</rightOperandValue>
             </botStepConditions>
             <botSteps>
@@ -833,6 +851,18 @@
                         <parameterType>Transfer</parameterType>
                         <variableName>Transfer_Queue_Id</variableName>
                     </systemMessageMappings>
+                    <type>Transfer</type>
+                </conversationSystemMessage>
+                <type>SystemMessage</type>
+            </botSteps>
+            <type>Group</type>
+        </botSteps>
+        <botSteps>
+            <type>Wait</type>
+        </botSteps>
+        <botSteps>
+            <botSteps>
+                <conversationSystemMessage>
                     <type>Transfer</type>
                 </conversationSystemMessage>
                 <type>SystemMessage</type>
@@ -859,17 +889,21 @@
             </botSteps>
             <type>Group</type>
         </botSteps>
+        <developerName>Transfer_Item_Delegate</developerName>
+        <label>Transfer Item Delegate</label>
+        <showInFooterMenu>false</showInFooterMenu>
+    </botDialogs>
+    <botDialogs>
         <botSteps>
             <botStepConditions>
-                <leftOperandName>Transfer_Type</leftOperandName>
+                <leftOperandName>CurrentAssessmentItemId</leftOperandName>
                 <leftOperandType>ConversationVariable</leftOperandType>
-                <operatorType>Equals</operatorType>
-                <rightOperandValue>Assessment</rightOperandValue>
+                <operatorType>IsNotSet</operatorType>
             </botStepConditions>
             <botSteps>
                 <botNavigation>
                     <botNavigationLinks>
-                        <targetBotDialog>Transfer_Assessment</targetBotDialog>
+                        <targetBotDialog>End_Chat</targetBotDialog>
                     </botNavigationLinks>
                     <type>Redirect</type>
                 </botNavigation>
@@ -878,22 +912,20 @@
             <type>Group</type>
         </botSteps>
         <botSteps>
+            <botStepConditions>
+                <leftOperandName>ActiveAssessmentDefinition</leftOperandName>
+                <leftOperandType>ConversationVariable</leftOperandType>
+                <operatorType>Equals</operatorType>
+                <rightOperandValue>false</rightOperandValue>
+            </botStepConditions>
             <botSteps>
                 <conversationSystemMessage>
-                    <type>Transfer</type>
+                    <type>EndChat</type>
                 </conversationSystemMessage>
                 <type>SystemMessage</type>
             </botSteps>
             <type>Group</type>
         </botSteps>
-        <botSteps>
-            <type>Wait</type>
-        </botSteps>
-        <developerName>Transfer_Item_Delegate</developerName>
-        <label>Transfer Item Delegate</label>
-        <showInFooterMenu>false</showInFooterMenu>
-    </botDialogs>
-    <botDialogs>
         <botSteps>
             <botVariableOperation>
                 <botInvocation>
@@ -939,38 +971,6 @@
                 <type>Set</type>
             </botVariableOperation>
             <type>VariableOperation</type>
-        </botSteps>
-        <botSteps>
-            <botStepConditions>
-                <leftOperandName>ActiveAssessmentDefinition</leftOperandName>
-                <leftOperandType>ConversationVariable</leftOperandType>
-                <operatorType>Equals</operatorType>
-                <rightOperandValue>false</rightOperandValue>
-            </botStepConditions>
-            <botSteps>
-                <conversationSystemMessage>
-                    <type>EndChat</type>
-                </conversationSystemMessage>
-                <type>SystemMessage</type>
-            </botSteps>
-            <type>Group</type>
-        </botSteps>
-        <botSteps>
-            <botStepConditions>
-                <leftOperandName>CurrentAssessmentItemId</leftOperandName>
-                <leftOperandType>ConversationVariable</leftOperandType>
-                <operatorType>IsNotSet</operatorType>
-            </botStepConditions>
-            <botSteps>
-                <botNavigation>
-                    <botNavigationLinks>
-                        <targetBotDialog>End_Chat</targetBotDialog>
-                    </botNavigationLinks>
-                    <type>Redirect</type>
-                </botNavigation>
-                <type>Navigation</type>
-            </botSteps>
-            <type>Group</type>
         </botSteps>
         <botSteps>
             <botNavigation>
