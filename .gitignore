@@ -35,6 +35,10 @@ package.json.bak.
 .wireit
 node_modules
 
+# performance fixtures (generated, large, deterministic) and timing artifacts
+perf-fixtures
+perf-results
+
 # --
 # put files here you don't want cleaned with sf-clean
 
