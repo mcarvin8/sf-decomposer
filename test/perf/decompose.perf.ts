@@ -22,23 +22,22 @@ import { dirBytes, formatBytes, formatMs, measure, writeReport, type MeasureResu
 //   PERF_FORMATS=xml,json,json5,yaml         (default: all four)
 //   PERF_TYPES=permissionset,flow,...        (default: types known to round-trip)
 //
-// The default type list mirrors `test/utils/constants.ts#METADATA_UNDER_TEST` -
-// the types whose unique-id elements are configured in src/metadata/uniqueIdElements.ts
-// well enough that decompose+recompose is faithful.
-//
-// Other types the generator produces (app, globalValueSet) currently lack
-// per-type unique-id coverage for some of their child elements (e.g. CustomApplication's
-// actionOverrides has no <fullName>/<name>), so the SHA-256 fallback collapses
-// many distinct elements into one shard. They are NOT in the default list, but
-// you can include them via PERF_TYPES to time the (lossy) round-trip on the
-// shapes you intend to support next.
+// The default type list covers the types we generate fixtures for. Since
+// config-disassembler 1.1.2 (Rust crate 0.4.3), the SHA-256 fallback hashes
+// the full outer element rather than the first text-leaf child, so types
+// without per-type unique-id coverage - notably CustomApplication's
+// actionOverrides / profileActionOverrides - now round-trip faithfully
+// (one shard per distinct sibling) and produce meaningful perf signal.
 // Treat unset OR empty-string env vars as "use default". GitHub Actions
 // workflow_dispatch inputs come through as the empty string when not
 // provided, which `??` does not catch.
 function envList(name: string, fallback: string[]): string[] {
   const raw = process.env[name];
   if (!raw || raw.trim() === '') return fallback;
-  return raw.split(',').map((s) => s.trim()).filter(Boolean);
+  return raw
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
 }
 function envString<T extends string>(name: string, fallback: T): T {
   const raw = process.env[name];
@@ -47,7 +46,17 @@ function envString<T extends string>(name: string, fallback: T): T {
 
 const PROFILE = envString<Profile>('PERF_PROFILE', 'large');
 const FORMATS = envList('PERF_FORMATS', ['xml', 'json', 'json5', 'yaml']);
-const DEFAULT_METADATA_TYPES = ['permissionset', 'mutingpermissionset', 'profile', 'flow', 'workflow', 'labels', 'bot'];
+const DEFAULT_METADATA_TYPES = [
+  'permissionset',
+  'mutingpermissionset',
+  'profile',
+  'flow',
+  'workflow',
+  'labels',
+  'bot',
+  'app',
+  'globalValueSet',
+];
 const METADATA_TYPES = envList('PERF_TYPES', DEFAULT_METADATA_TYPES);
 
 const FIXTURE_ROOT = resolve('perf-fixtures');
@@ -57,12 +66,27 @@ const FIXTURE_ROOT = resolve('perf-fixtures');
 // without paying the generation cost more than once.
 let fixtureBytes = 0;
 let fixtureFiles = 0;
+// Per-file byte sizes of the generator output, keyed by path relative to
+// FIXTURE_ROOT (e.g. "force-app/main/default/applications/Mega.app-meta.xml").
+// Used to guard against round-trip data loss: pass-1 recomposed bytes must
+// stay within RETENTION_THRESHOLD of the original. Anything below means the
+// decomposer collapsed distinct elements into one shard (the
+// `actionOverrides` hash collision bug fixed in config-disassembler 0.4.3).
+const fixtureFileBytes = new Map<string, number>();
+const RETENTION_THRESHOLD = 0.99;
 
 describe(`perf: decompose/recompose round-trip (profile=${PROFILE})`, () => {
   beforeAll(async () => {
     const result = await generate({ outDir: FIXTURE_ROOT, profile: PROFILE, cleanFirst: true });
     fixtureBytes = result.totalBytes;
     fixtureFiles = result.files.length;
+    fixtureFileBytes.clear();
+    for (const f of result.files) {
+      // generator emits POSIX-style relative paths already (e.g.
+      // "force-app/main/default/applications/Mega.app-meta.xml"), matching
+      // what snapshotFiles() produces below.
+      fixtureFileBytes.set(f.relPath, f.bytes);
+    }
     // eslint-disable-next-line no-console
     console.log(
       `\n[perf] generated ${fixtureFiles} fixture files (${formatBytes(fixtureBytes)}) using profile "${PROFILE}".\n` +
@@ -122,6 +146,24 @@ describe(`perf: decompose/recompose round-trip (profile=${PROFILE})`, () => {
 
         // Capture the recomposed XML so we can compare to a second round-trip.
         const firstRoundtrip = await snapshotFiles(workDir);
+
+        // ---- non-shrinkage guard ------------------------------------------
+        // Each recomposed -meta.xml must retain at least RETENTION_THRESHOLD
+        // of the original generator-emitted bytes for that file. This catches
+        // mass element-collapse regressions (e.g. the actionOverrides hash
+        // collision bug fixed in config-disassembler 0.4.3) that would still
+        // pass the pass1 == pass2 idempotence check below since both passes
+        // would produce the same shrunken output.
+        for (const [path, content] of firstRoundtrip) {
+          const original = fixtureFileBytes.get(path);
+          if (original === undefined) continue; // sfdx-project.json, generated files
+          const recomposed = Buffer.byteLength(content, 'utf8');
+          const ratio = recomposed / original;
+          expect(
+            ratio,
+            `data loss on round-trip for ${path}: ${recomposed}/${original} bytes (${(ratio * 100).toFixed(2)}%)`,
+          ).toBeGreaterThanOrEqual(RETENTION_THRESHOLD);
+        }
 
         // ---- pass 2: decompose then recompose (idempotence) ----------------
         const { sample: decompose2 } = await measure(`${format}.decompose.pass2`, async () => {
