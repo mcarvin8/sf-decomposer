@@ -1,0 +1,25 @@
+test/perf/README.md
+  69d7acc0b59ec856 107-108,117-137
+.github/workflows/perf.yml
+  69d7acc0b59ec856 10-19,49-58,82-89,93-100,105-108,111,242-300
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "f34ce5a974ad1fd5ee99cb24a8f7507bec3f0ad3",
+  "prompts": {
+    "69d7acc0b59ec856": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "1261b33f-c883-46b0-92ba-7962c6556013",
+        "model": "auto-high"
+      },
+      "human_author": "Matt Carvin",
+      "messages": [],
+      "total_additions": 124,
+      "total_deletions": 9,
+      "accepted_lines": 124,
+      "overriden_lines": 0
+    }
+  }
+}
