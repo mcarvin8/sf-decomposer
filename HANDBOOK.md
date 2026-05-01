@@ -32,7 +32,15 @@ Three knobs cover almost every case:
 Hard rules the plugin always enforces (so you don't have to):
 
 - `labels` and `loyaltyProgramSetup` are always treated as `unique-id` regardless of any override.
-- `loyaltyProgramSetup` automatically gets `multiLevel: programProcesses:programProcesses:parameterName,ruleName` when run under `unique-id` — you can replace it but you don't have to set it.
+
+Built-in `multiLevel` defaults — applied automatically when `strategy` is `unique-id` and you do not supply your own `multiLevel` for that type. You can replace any of them by setting an explicit `multiLevel` on the override.
+
+| Metadata type         | Built-in `multiLevel`                                               |
+| --------------------- | ------------------------------------------------------------------- |
+| `bot`                 | `["botDialogs:botDialogs:developerName", "botSteps:botSteps:type"]` |
+| `loyaltyProgramSetup` | `"programProcesses:programProcesses:parameterName,ruleName"`        |
+
+The full registry lives in [`src/metadata/multiLevelDefaults.ts`](./src/metadata/multiLevelDefaults.ts).
 
 Everything else in this handbook is opt-in.
 
@@ -49,21 +57,13 @@ Everything else in this handbook is opt-in.
 
 A flat `unique-id` decomposition of a `BotVersion` produces one giant per-dialog file with hundreds of nested steps inside. That's only marginally easier to review than the original.
 
-**Recipe — two-rule multi-level decomposition.**
+**The two-rule recipe — applied by default.** Under `strategy: unique-id` (the default) the plugin automatically applies:
 
 ```json
-{
-  "metadataSuffixes": "bot",
-  "strategy": "unique-id",
-  "decomposedFormat": "xml",
-  "overrides": [
-    {
-      "metadataTypes": ["bot"],
-      "multiLevel": ["botDialogs:botDialogs:developerName", "botSteps:botSteps:type"]
-    }
-  ]
-}
+"multiLevel": ["botDialogs:botDialogs:developerName", "botSteps:botSteps:type"]
 ```
+
+to every `bot` you decompose. You don't need to add anything to `.sfdecomposer.config.json` for the canonical Bot layout — just run `sf decomposer decompose --metadata-type bot` and you get the structure documented below. Add an explicit `multiLevel` override only if you want a different layout (see "When to use a single rule instead" further down).
 
 What this produces on disk for `Sample_Chat_Bot/v1.botVersion-meta.xml` (an Einstein chat bot from the plugin's own fixtures):
 
@@ -105,16 +105,26 @@ A few things worth knowing before you commit this:
 - **Each step is one of two shapes**: a leaf `<hash>.botSteps-meta.xml` file when the step has no nested content (e.g. a `Wait` step), or a `<hash>/` directory containing `<hash>.xml` plus subdirectories for the nested content (e.g. a `Message` step with `<botMessages>`, a `Navigation` step with `<botNavigation>`, an Agentforce `Action` step with `<botFlowInvocation>`). Both shapes recompose back to identical `<botSteps>` XML.
 - **The two rules do different things.** The outer `botDialogs` rule is what gives you per-dialog folders — that's the headline win for review-ability. The inner `botSteps` rule additionally splits each step's nested content out of the per-dialog file into per-step subdirectories. For small Einstein bots with shallow steps you can drop the inner rule and still get the dialog-level split; for heavier Agentforce bots the inner rule is the difference between a 50-line per-step subtree and a 500-line per-dialog file.
 
-**When to use a single rule instead.** If your bots have shallow steps (most Einstein chat bots, or pre-Agentforce bots), `multiLevel: ["botDialogs:botDialogs:developerName"]` alone is enough. Each dialog gets its own folder and steps live as flat `*.botSteps-meta.xml` files inside. Recompose is byte-identical either way; the choice is purely about how granular you want the per-step diff to be.
+**When to use a single rule instead.** If your bots have shallow steps (most Einstein chat bots, or pre-Agentforce bots), you can override the default with a single outer rule:
 
-> **Per-bot precision.** Scope the override to a single component when one bot in your repo has a different shape than the rest. The plugin's own bot fixture suite uses this pattern:
+```json
+{
+  "overrides": [{ "metadataTypes": ["bot"], "multiLevel": ["botDialogs:botDialogs:developerName"] }]
+}
+```
+
+Each dialog still gets its own folder, but steps live as flat `*.botSteps-meta.xml` files inside instead of per-type subdirectories. Recompose is byte-identical either way; the choice is purely about how granular you want the per-step diff to be. Your override fully replaces the built-in default — no merging.
+
+> **Per-bot precision.** When one bot in your repo wants a different layout than the rest, scope the override to a single component:
 >
 > ```json
 > {
->   "components": ["bot:Sample_Chat_Bot", "bot:Internal_Copilot_Sample"],
->   "multiLevel": ["botDialogs:botDialogs:developerName", "botSteps:botSteps:type"]
+>   "components": ["bot:Legacy_Chat_Bot"],
+>   "multiLevel": ["botDialogs:botDialogs:developerName"]
 > }
 > ```
+>
+> The default still applies to every other bot.
 
 > **Agentforce vs Einstein.** Both share the `bot` suffix, so a single override entry covers both bot families. The structural difference (Agentforce uses richer `botFlowInvocation` and `genAi*` blocks where Einstein uses `botNavigation` and `mlIntents`) is invisible to this recipe — `multiLevel` rules only target the repeating sections that exist on each side. The plugin ships an `Internal_Copilot_Sample` fixture that exercises the Agentforce-style shape and an Einstein-style `Sample_Chat_Bot` fixture; both round-trip with the same recipe.
 

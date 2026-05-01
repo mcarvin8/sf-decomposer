@@ -22,16 +22,16 @@
     </botDialogs>
     <botDialogs>
         <botSteps>
-            <stepIdentifier>b579204f-b002-42e5-8e0e-3ef2f4f9367a</stepIdentifier>
-            <type>Wait</type>
-        </botSteps>
-        <botSteps>
             <botMessages>
                 <message>Hi! I&apos;m Einstein, an AI assistant. I can do things like search for information, summarize records, and draft and revise emails. What can I help you with?</message>
                 <messageIdentifier>e8a65c22-b4d6-4ab1-a481-5046d941bf14</messageIdentifier>
             </botMessages>
             <stepIdentifier>44bb7b8f-a12c-4951-ae86-8d370c88748e</stepIdentifier>
             <type>Message</type>
+        </botSteps>
+        <botSteps>
+            <stepIdentifier>b579204f-b002-42e5-8e0e-3ef2f4f9367a</stepIdentifier>
+            <type>Wait</type>
         </botSteps>
         <developerName>Welcome</developerName>
         <isPlaceholderDialog>false</isPlaceholderDialog>

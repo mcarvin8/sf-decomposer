@@ -59,7 +59,7 @@ A Salesforce CLI plugin that **decomposes** large metadata XML files into smalle
    sf decomposer decompose -m "flow" -m "labels" --postpurge
    ```
 
-> Combine steps 2 & 3 by configuring the [hooks](#hooks). 
+> Combine steps 2 & 3 by configuring the [hooks](#hooks).
 
 4. **Add decomposed paths to [.forceignore](#forceignore)**  
    This is **required** so the Salesforce CLI does not treat decomposed files as source. Use the [sample .forceignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.forceignore) and adjust extensions for your chosen format (`.xml`, `.json`, `.yaml`, etc.).
@@ -637,18 +637,20 @@ Within one scope, the `(file_pattern, root_to_strip)` pair must be unique across
 ```json
 "overrides": [
   {
-    "metadataTypes": ["loyaltyProgramSetup"],
-    "multiLevel": "programProcesses:programProcesses:parameterName,ruleName"
+    "metadataTypes": ["dashboard"],
+    "multiLevel": "components:components:title"
   },
   {
-    "components": ["bot:Assessment_Bot"],
+    "metadataTypes": ["layout"],
     "multiLevel": [
-      "botDialogs:botDialogs:developerName",
-      "botSteps:botSteps:type"
+      "layoutSections:layoutSections:label",
+      "layoutItems:layoutItems:field,customLink,emptySpace"
     ]
   }
 ]
 ```
+
+> **`bot` and `loyaltyProgramSetup` ship with built-in `multiLevel` defaults**, so you don't need to add an override for either type to get the canonical decomposed layout — supply your own only if you want to replace the default. The full registry lives in [`src/metadata/multiLevelDefaults.ts`](https://github.com/mcarvin8/sf-decomposer/blob/main/src/metadata/multiLevelDefaults.ts).
 
 > **Why one call:** Pass every rule for a given component in a single override. Sequential single-rule decompositions rewrite the on-disk `.multi_level.json` and only the last rule survives — so multi-rule scenarios must travel together.
 
