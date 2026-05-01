@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.16.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.15.1...v6.16.0) (2026-05-01)
+
+
+### Features
+
+* **decompose:** apply multiLevel defaults to bot by default ([#426](https://github.com/mcarvin8/sf-decomposer/issues/426)) ([f824ffe](https://github.com/mcarvin8/sf-decomposer/commit/f824ffef439f7a00153a729330adbcdb31b816b9))
+
 ## [6.15.1](https://github.com/mcarvin8/sf-decomposer/compare/v6.15.0...v6.15.1) (2026-05-01)
 
 
