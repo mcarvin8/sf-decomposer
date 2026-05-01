@@ -38,6 +38,9 @@ node_modules
 # performance fixtures (generated, large, deterministic) and timing artifacts
 perf-fixtures
 perf-results
+# benchmark-action/github-action-benchmark inputs (built from perf-results in CI)
+perf-runtime.json
+perf-memory.json
 
 # --
 # put files here you don't want cleaned with sf-clean

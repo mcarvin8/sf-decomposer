@@ -61,6 +61,11 @@ jobs:
     # noisy to be useful. Correctness is already covered by test.yml's matrix.
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    # contents:write is needed only by the benchmark-action publish steps
+    # below, which push to the gh-pages branch. Read-only triggers (PR-style
+    # workflow_dispatch) skip those steps via their `if:` guard.
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v6.0.2
@@ -136,3 +141,53 @@ jobs:
             perf-results/
           retention-days: 90
           if-no-files-found: warn
+
+      # ---------------------------------------------------------------------
+      # Publish runtime + memory trends to the gh-pages dashboard.
+      #
+      # Gated to schedule (weekly) and workflow_call (release.yml) only so
+      # ad-hoc workflow_dispatch runs - which often vary the profile/types/
+      # formats inputs - don't pollute the timeline. The dashboard renders at
+      #   https://<owner>.github.io/sf-decomposer/dev/bench/runtime/
+      #   https://<owner>.github.io/sf-decomposer/dev/bench/memory/
+      # First publish creates the gh-pages branch automatically. Pages must
+      # be enabled in repo settings (Source: Deploy from branch -> gh-pages).
+      # ---------------------------------------------------------------------
+      - name: Convert perf-results to benchmark-action JSON
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_call'
+        run: node scripts/perf-to-benchmark.mjs
+
+      - name: Publish runtime benchmark
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_call'
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: Decompose Runtime
+          tool: customSmallerIsBetter
+          output-file-path: ./perf-runtime.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+          # GH-hosted runners can swing 20-30% on the same workload; 150% is
+          # loose enough to avoid noise but still flag a genuine 1.5x regression.
+          alert-threshold: '150%'
+          fail-on-alert: false
+          comment-on-alert: true
+          summary-always: true
+          benchmark-data-dir-path: dev/bench/runtime
+
+      - name: Publish memory benchmark
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_call'
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: Decompose Memory
+          tool: customSmallerIsBetter
+          output-file-path: ./perf-memory.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+          # gh-pages was already fetched by the runtime step above; skip the
+          # second fetch to halve checkout time.
+          skip-fetch-gh-pages: true
+          # Memory deltas are noisier than wall-time; use a wider band.
+          alert-threshold: '200%'
+          fail-on-alert: false
+          summary-always: true
+          benchmark-data-dir-path: dev/bench/memory

@@ -91,6 +91,31 @@ Each test writes a JSON report to
 These files are gitignored. Plot them, diff them between branches, or commit
 them to a separate repo to track perf trends over time.
 
+## Published trend dashboard
+
+CI runs that originate from `schedule` (weekly) or `workflow_call`
+(release.yml) also convert the per-run reports into the flat metric arrays
+consumed by [`benchmark-action/github-action-benchmark`][bench] and push them
+to the `gh-pages` branch:
+
+- Runtime: `https://<owner>.github.io/sf-decomposer/dev/bench/runtime/`
+- Memory: `https://<owner>.github.io/sf-decomposer/dev/bench/memory/`
+
+The conversion is done by `scripts/perf-to-benchmark.mjs`, which collapses
+`perf-results/*.json` into `perf-runtime.json` (`elapsedMs`) and
+`perf-memory.json` (`rssDeltaBytes` in MB). Ad-hoc `workflow_dispatch` runs
+intentionally **do not** publish, since they often vary profile/types/formats
+inputs and would pollute the timeline.
+
+To enable on first run:
+
+1. Settings -> Pages -> Source: Deploy from branch -> Branch: `gh-pages`
+   (the workflow creates the branch on first publish).
+2. Trigger one publish-eligible run (e.g. `gh workflow run perf.yml` from a
+   release tag, or wait for the next Monday cron).
+
+[bench]: https://github.com/benchmark-action/github-action-benchmark
+
 ## Generating fixtures standalone
 
 ```bash
