@@ -7,10 +7,16 @@
 #                          updates, runner-image refreshes, V8/Rust upstream.
 #   - workflow_call      : invoked by release.yml after a successful publish so
 #                          every version on npm has a perf artifact attached.
-#
-# Intentionally NOT run on every push - perf needs the same OS/Node every time
-# to be comparable, and PR feedback should stay fast. Contributors who suspect
-# their PR regresses perf can `gh workflow run perf.yml --ref <branch>`.
+#   - pull_request       : compares the PR head against the gh-pages baseline
+#                          and posts a sticky comment with the deltas. Runs the
+#                          same profile/formats as the baseline so bench names
+#                          line up; otherwise the action would render the PR's
+#                          metrics as brand-new charts instead of new points on
+#                          the existing series. Skipped for fork PRs because
+#                          GITHUB_TOKEN is read-only there - re-introduce via
+#                          a workflow_run companion if/when external
+#                          contributions need this. Doc-only PRs are filtered
+#                          out so they don't pay the ~3-4 minute cost.
 name: Performance
 
 on:
@@ -40,6 +46,16 @@ on:
   schedule:
     # Mondays 05:00 UTC - quiet hours on the GitHub-hosted runner pool.
     - cron: '0 5 * * 1'
+  pull_request:
+    # Skip cosmetic/doc-only PRs so they don't burn ~3-4 minutes of CI per push.
+    # Code that can plausibly affect runtime/memory lives outside these paths.
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/PULL_REQUEST_TEMPLATE.md'
+      - '.gitignore'
+      - 'LICENSE'
   workflow_call:
     inputs:
       profile:
@@ -63,18 +79,36 @@ on:
 permissions:
   contents: read
 
+# Cancel in-progress perf runs for the same PR/branch when a new commit lands.
+# Without this, force-pushing N times to a PR queues N x ~3-4 minute jobs. The
+# release/schedule/dispatch flows run on main or detached refs, where each run
+# gets a unique group key, so this only collapses redundant PR runs.
+concurrency:
+  group: perf-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   perf:
     name: Perf (${{ inputs.profile || 'large' }})
+    # Skip fork PRs: GITHUB_TOKEN is read-only on PRs from forks, so the
+    # comment step would fail and the publish steps couldn't push anyway.
+    # If/when external contributions need PR perf comments, split this into a
+    # pull_request_target / workflow_run companion that runs in the base repo
+    # context with elevated perms.
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository
     # Single OS, single Node version: cross-runner / cross-Node perf is too
     # noisy to be useful. Correctness is already covered by test.yml's matrix.
     runs-on: ubuntu-latest
     timeout-minutes: 60
-    # contents:write is needed only by the benchmark-action publish steps
-    # below, which push to the gh-pages branch. Read-only triggers (PR-style
-    # workflow_dispatch) skip those steps via their `if:` guard.
+    # contents:write    - benchmark-action publish steps push to gh-pages.
+    # pull-requests:write - PR comparison step posts/updates the sticky comment.
+    # Steps that don't need a given perm just don't use it; GitHub doesn't
+    # downgrade per-step.
     permissions:
       contents: write
+      pull-requests: write
     steps:
       - name: Checkout
         uses: actions/checkout@v6.0.2
@@ -203,5 +237,64 @@ jobs:
           # Memory deltas are noisier than wall-time; use a wider band.
           alert-threshold: '200%'
           fail-on-alert: false
+          summary-always: true
+          benchmark-data-dir-path: dev/bench/memory
+
+      # ---------------------------------------------------------------------
+      # PR comparison comment (Phase 2).
+      #
+      # On pull_request events, generate the same benchmark JSON as the
+      # publish path, but instead of pushing to gh-pages we ask the action
+      # to read the existing baseline, render a sticky comment with the
+      # per-bench deltas, and discard the new data point. comment-always
+      # (vs comment-on-alert) is intentional: even green runs are useful
+      # signal on perf-sensitive PRs, and a single sticky comment beats
+      # scrolling for a status check.
+      #
+      # auto-push:false + save-data-file:false ensures the timeline on
+      # gh-pages stays a clean record of merged code; PR runs never appear
+      # there. fail-on-alert stays false to match the publish steps - perf
+      # regressions surface as a comment, not a required-check failure.
+      #
+      # If the bench names emitted by this run don't already exist on
+      # gh-pages (e.g. someone changed PERF_FORMATS / PERF_TYPES to something
+      # the baseline doesn't cover), the action posts the values without a
+      # delta. That's fine - it just means there's no apples-to-apples
+      # comparison yet, not that anything is broken.
+      # ---------------------------------------------------------------------
+      - name: Convert perf-results for PR comparison
+        if: github.event_name == 'pull_request'
+        run: node scripts/perf-to-benchmark.mjs
+
+      - name: Compare runtime against baseline (PR)
+        if: github.event_name == 'pull_request'
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: Decompose Runtime
+          tool: customSmallerIsBetter
+          output-file-path: ./perf-runtime.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: false
+          save-data-file: false
+          alert-threshold: '150%'
+          fail-on-alert: false
+          comment-always: true
+          summary-always: true
+          benchmark-data-dir-path: dev/bench/runtime
+
+      - name: Compare memory against baseline (PR)
+        if: github.event_name == 'pull_request'
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: Decompose Memory
+          tool: customSmallerIsBetter
+          output-file-path: ./perf-memory.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: false
+          save-data-file: false
+          skip-fetch-gh-pages: true
+          alert-threshold: '200%'
+          fail-on-alert: false
+          comment-always: true
           summary-always: true
           benchmark-data-dir-path: dev/bench/memory
