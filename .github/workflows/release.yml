@@ -63,4 +63,5 @@ jobs:
     uses: ./.github/workflows/perf.yml
     with:
       profile: large
+      publish: true
     secrets: inherit

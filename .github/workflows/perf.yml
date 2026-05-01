@@ -33,6 +33,10 @@ on:
         description: 'Comma-separated metadata types (blank = defaults from test/perf/decompose.perf.ts)'
         type: string
         default: ''
+      publish:
+        description: 'Publish runtime/memory results to gh-pages (only enable for runs you want on the dashboard)'
+        type: boolean
+        default: false
   schedule:
     # Mondays 05:00 UTC - quiet hours on the GitHub-hosted runner pool.
     - cron: '0 5 * * 1'
@@ -50,6 +54,11 @@ on:
         type: string
         required: false
         default: ''
+      publish:
+        description: 'Publish runtime/memory results to gh-pages'
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -145,20 +154,25 @@ jobs:
       # ---------------------------------------------------------------------
       # Publish runtime + memory trends to the gh-pages dashboard.
       #
-      # Gated to schedule (weekly) and workflow_call (release.yml) only so
-      # ad-hoc workflow_dispatch runs - which often vary the profile/types/
-      # formats inputs - don't pollute the timeline. The dashboard renders at
+      # Gated to schedule (weekly) and explicit publish=true callers
+      # (release.yml) only so ad-hoc workflow_dispatch runs - which often vary
+      # the profile/types/formats inputs - don't pollute the timeline. The
+      # dashboard renders at
       #   https://<owner>.github.io/sf-decomposer/dev/bench/runtime/
       #   https://<owner>.github.io/sf-decomposer/dev/bench/memory/
       # First publish creates the gh-pages branch automatically. Pages must
       # be enabled in repo settings (Source: Deploy from branch -> gh-pages).
+      #
+      # NOTE: do not check `github.event_name == 'workflow_call'` here -
+      # inside a reusable workflow `github.event_name` reflects the caller's
+      # triggering event (e.g. 'push' from release.yml), never 'workflow_call'.
       # ---------------------------------------------------------------------
       - name: Convert perf-results to benchmark-action JSON
-        if: github.event_name == 'schedule' || github.event_name == 'workflow_call'
+        if: github.event_name == 'schedule' || inputs.publish == true
         run: node scripts/perf-to-benchmark.mjs
 
       - name: Publish runtime benchmark
-        if: github.event_name == 'schedule' || github.event_name == 'workflow_call'
+        if: github.event_name == 'schedule' || inputs.publish == true
         uses: benchmark-action/github-action-benchmark@v1
         with:
           name: Decompose Runtime
@@ -175,7 +189,7 @@ jobs:
           benchmark-data-dir-path: dev/bench/runtime
 
       - name: Publish memory benchmark
-        if: github.event_name == 'schedule' || github.event_name == 'workflow_call'
+        if: github.event_name == 'schedule' || inputs.publish == true
         uses: benchmark-action/github-action-benchmark@v1
         with:
           name: Decompose Memory
