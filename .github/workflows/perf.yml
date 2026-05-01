@@ -154,15 +154,11 @@ jobs:
       # be enabled in repo settings (Source: Deploy from branch -> gh-pages).
       # ---------------------------------------------------------------------
       - name: Convert perf-results to benchmark-action JSON
-        # TEMP: workflow_dispatch added to seed the gh-pages branch on the
-        # first run; revert to schedule/workflow_call only after the first
-        # publish has populated the dashboard.
-        if: github.event_name == 'schedule' || github.event_name == 'workflow_call' || github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_call'
         run: node scripts/perf-to-benchmark.mjs
 
       - name: Publish runtime benchmark
-        # TEMP: see note on the converter step above.
-        if: github.event_name == 'schedule' || github.event_name == 'workflow_call' || github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_call'
         uses: benchmark-action/github-action-benchmark@v1
         with:
           name: Decompose Runtime
@@ -179,8 +175,7 @@ jobs:
           benchmark-data-dir-path: dev/bench/runtime
 
       - name: Publish memory benchmark
-        # TEMP: see note on the converter step above.
-        if: github.event_name == 'schedule' || github.event_name == 'workflow_call' || github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_call'
         uses: benchmark-action/github-action-benchmark@v1
         with:
           name: Decompose Memory
