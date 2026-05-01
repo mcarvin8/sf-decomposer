@@ -32,16 +32,23 @@ import { dirBytes, formatBytes, formatMs, measure, writeReport, type MeasureResu
 // many distinct elements into one shard. They are NOT in the default list, but
 // you can include them via PERF_TYPES to time the (lossy) round-trip on the
 // shapes you intend to support next.
-const PROFILE = (process.env.PERF_PROFILE ?? 'large') as Profile;
-const FORMATS = (process.env.PERF_FORMATS ?? 'xml,json,json5,yaml')
-  .split(',')
-  .map((s) => s.trim())
-  .filter(Boolean);
+// Treat unset OR empty-string env vars as "use default". GitHub Actions
+// workflow_dispatch inputs come through as the empty string when not
+// provided, which `??` does not catch.
+function envList(name: string, fallback: string[]): string[] {
+  const raw = process.env[name];
+  if (!raw || raw.trim() === '') return fallback;
+  return raw.split(',').map((s) => s.trim()).filter(Boolean);
+}
+function envString<T extends string>(name: string, fallback: T): T {
+  const raw = process.env[name];
+  return !raw || raw.trim() === '' ? fallback : (raw as T);
+}
+
+const PROFILE = envString<Profile>('PERF_PROFILE', 'large');
+const FORMATS = envList('PERF_FORMATS', ['xml', 'json', 'json5', 'yaml']);
 const DEFAULT_METADATA_TYPES = ['permissionset', 'mutingpermissionset', 'profile', 'flow', 'workflow', 'labels', 'bot'];
-const METADATA_TYPES = (process.env.PERF_TYPES ?? DEFAULT_METADATA_TYPES.join(','))
-  .split(',')
-  .map((s) => s.trim())
-  .filter(Boolean);
+const METADATA_TYPES = envList('PERF_TYPES', DEFAULT_METADATA_TYPES);
 
 const FIXTURE_ROOT = resolve('perf-fixtures');
 
