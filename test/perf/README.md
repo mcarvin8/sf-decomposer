@@ -20,29 +20,22 @@ PERF_TYPES=permissionset,profile npm run test:perf   # only time these two types
 
 ### Type selection
 
-The default type list matches `test/utils/constants.ts#METADATA_UNDER_TEST` minus
-the loyalty/escalation samples that have small fixtures already:
+The default type list covers every shape the generator produces:
 
 ```
-permissionset, mutingpermissionset, profile, flow, workflow, labels, bot
+permissionset, mutingpermissionset, profile, flow, workflow, labels, bot,
+app, globalValueSet
 ```
 
-These are the types whose nested elements have unique-id mappings configured
-in `src/metadata/uniqueIdElements.ts` faithfully enough that decompose +
-recompose is byte-stable.
+These all round-trip faithfully: types with `uniqueIdElements` configured in
+`src/metadata/uniqueIdElements.ts` use those fields, and types without (or
+sub-elements like `CustomApplication.actionOverrides` /
+`profileActionOverrides` that have neither `<fullName>` nor `<name>`) fall back
+to a SHA-256 hash of the full outer element. Since `config-disassembler@1.1.2`
+that hash is computed over the entire element rather than the first text-leaf
+child, so distinct siblings get distinct shards and no data is lost.
 
-The generator also produces fixtures for `globalValueSet` and `app`, but those
-are **not in the default perf list** because some of their child elements
-(notably `CustomApplication.actionOverrides` /
-`CustomApplication.profileActionOverrides`) have neither `<fullName>` nor
-`<name>` and therefore fall back to a SHA-256 hash that collapses many
-distinct items into one shard. Add unique-id coverage for those types in
-`src/metadata/uniqueIdElements.ts` first, then opt them into the perf run with
-`PERF_TYPES=...,app,globalValueSet`.
-
-A perf run with a lossy type still passes the idempotence check (pass2 is
-byte-equal to pass1) but the timing reflects the _shrunken_ file, not the
-original size, so it is not a useful performance signal.
+Override the list with `PERF_TYPES=permissionset,profile` to time a subset.
 
 Profiles:
 
@@ -59,13 +52,19 @@ For each format (`xml`, `json`, `json5`, `yaml`):
 
 1. Decompose the synthetic fixture (timed).
 2. Recompose it back to deployment-ready XML (timed).
-3. Decompose again, recompose again (timed).
-4. **Idempotence:** the bytes after the second round-trip must match the bytes
-   after the first round-trip exactly.
+3. **Non-shrinkage:** every recomposed `-meta.xml` retains at least 99% of
+   the original generator-emitted bytes. Catches mass element-collapse
+   regressions (e.g. the `actionOverrides` SHA-256 hash collision bug fixed
+   in `config-disassembler@0.4.3`) that would otherwise still pass step 4.
+4. Decompose again, recompose again (timed).
+5. **Idempotence:** the bytes after the second round-trip must match the
+   bytes after the first round-trip exactly.
 
 The first round-trip may reorder elements relative to the generator's raw
-output (the decomposer owns sort order). The second round-trip must be
-byte-identical to the first; that's the regression guard.
+output (the decomposer owns sort order) and may differ by a few bytes from
+trailing-newline normalization, hence the 99% threshold rather than 100%.
+The second round-trip must be byte-identical to the first; that's the
+canonical-form regression guard.
 
 ## Output
 

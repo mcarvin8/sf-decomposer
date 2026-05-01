@@ -108,6 +108,14 @@
     </botDialogs>
     <botDialogs>
         <botSteps>
+            <botMessages>
+                <message>Hi! How can i help you?</message>
+                <messageIdentifier>b2c94289-f1e6-449c-8ebf-bc959c14190a</messageIdentifier>
+            </botMessages>
+            <stepIdentifier>81b89693-bce3-4b5c-a5b7-4798e232cb27</stepIdentifier>
+            <type>Message</type>
+        </botSteps>
+        <botSteps>
             <botNavigation>
                 <botNavigationLinks>
                     <targetBotDialog>Main_Menu</targetBotDialog>
@@ -116,14 +124,6 @@
             </botNavigation>
             <stepIdentifier>b2096c4c-4821-4c43-ac2b-34b01413fd23</stepIdentifier>
             <type>Navigation</type>
-        </botSteps>
-        <botSteps>
-            <botMessages>
-                <message>Hi! How can i help you?</message>
-                <messageIdentifier>b2c94289-f1e6-449c-8ebf-bc959c14190a</messageIdentifier>
-            </botMessages>
-            <stepIdentifier>81b89693-bce3-4b5c-a5b7-4798e232cb27</stepIdentifier>
-            <type>Message</type>
         </botSteps>
         <developerName>Welcome</developerName>
         <isPlaceholderDialog>false</isPlaceholderDialog>
