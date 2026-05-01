@@ -1,0 +1,29 @@
+test/perf/README.md
+  9e5dce642f734e14 94-118
+scripts/perf-to-benchmark.mjs
+  9e5dce642f734e14 1-54
+.gitignore
+  9e5dce642f734e14 41-43
+.github/workflows/perf.yml
+  9e5dce642f734e14 64-68,144-193
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "9dee3447a1a9d08065c8813c46b8ad2996043bf3",
+  "prompts": {
+    "9e5dce642f734e14": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "8958c5c4-03c1-4b52-8334-e322b8561933",
+        "model": "auto-high"
+      },
+      "human_author": "Matt Carvin",
+      "messages": [],
+      "total_additions": 138,
+      "total_deletions": 1,
+      "accepted_lines": 137,
+      "overriden_lines": 0
+    }
+  }
+}
