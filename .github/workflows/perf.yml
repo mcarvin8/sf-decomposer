@@ -1,0 +1,138 @@
+# Performance benchmark for the decompose/recompose pipeline against deterministic
+# synthetic large-org fixtures (see scripts/gen-perf-fixtures.ts).
+#
+# Triggers:
+#   - workflow_dispatch  : ad-hoc; pick a profile/formats/types from the UI.
+#   - schedule (weekly)  : Monday 05:00 UTC; catches slow drift from npm dep
+#                          updates, runner-image refreshes, V8/Rust upstream.
+#   - workflow_call      : invoked by release.yml after a successful publish so
+#                          every version on npm has a perf artifact attached.
+#
+# Intentionally NOT run on every push - perf needs the same OS/Node every time
+# to be comparable, and PR feedback should stay fast. Contributors who suspect
+# their PR regresses perf can `gh workflow run perf.yml --ref <branch>`.
+name: Performance
+
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: 'Fixture size profile'
+        type: choice
+        default: large
+        options:
+          - small
+          - medium
+          - large
+          - xlarge
+      formats:
+        description: 'Comma-separated formats to test (xml,json,json5,yaml)'
+        type: string
+        default: 'xml,json,json5,yaml'
+      types:
+        description: 'Comma-separated metadata types (blank = defaults from test/perf/decompose.perf.ts)'
+        type: string
+        default: ''
+  schedule:
+    # Mondays 05:00 UTC - quiet hours on the GitHub-hosted runner pool.
+    - cron: '0 5 * * 1'
+  workflow_call:
+    inputs:
+      profile:
+        type: string
+        required: false
+        default: large
+      formats:
+        type: string
+        required: false
+        default: 'xml,json,json5,yaml'
+      types:
+        type: string
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  perf:
+    name: Perf (${{ inputs.profile || 'large' }})
+    # Single OS, single Node version: cross-runner / cross-Node perf is too
+    # noisy to be useful. Correctness is already covered by test.yml's matrix.
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6.0.2
+
+      - name: Setup Node
+        uses: actions/setup-node@v6.3.0
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run compile
+
+      - name: Print runner facts
+        run: |
+          echo "## Runner facts" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo "image:    $ImageOS / $ImageVersion" >> "$GITHUB_STEP_SUMMARY"
+          echo "node:     $(node --version)" >> "$GITHUB_STEP_SUMMARY"
+          echo "cpu:      $(grep 'model name' /proc/cpuinfo | head -1 | cut -d: -f2 | xargs)" >> "$GITHUB_STEP_SUMMARY"
+          echo "cores:    $(nproc)" >> "$GITHUB_STEP_SUMMARY"
+          echo "mem:      $(free -h | awk '/^Mem:/ {print $2}')" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Run performance suite
+        run: npm run test:perf
+        env:
+          PERF_PROFILE: ${{ inputs.profile || 'large' }}
+          PERF_FORMATS: ${{ inputs.formats || 'xml,json,json5,yaml' }}
+          PERF_TYPES: ${{ inputs.types }}
+          SF_DISABLE_TELEMETRY: true
+          # Node tuning for reproducibility:
+          #   - disable JIT randomization-sensitive optimizations off by default
+          #   - explicit max old space so a leak fails loudly rather than swapping
+          NODE_OPTIONS: '--max-old-space-size=4096'
+
+      - name: Summarize results
+        if: always()
+        run: |
+          if [ ! -d perf-results ]; then
+            echo "No perf-results/ directory; the test likely failed before reporting." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          echo "## Perf results (profile=${PERF_PROFILE:-large})" >> "$GITHUB_STEP_SUMMARY"
+          echo '' >> "$GITHUB_STEP_SUMMARY"
+          echo '| Format | Sample | Elapsed (ms) | RSS Δ (MB) |' >> "$GITHUB_STEP_SUMMARY"
+          echo '|---|---|---:|---:|' >> "$GITHUB_STEP_SUMMARY"
+          node -e '
+            const fs = require("fs"), path = require("path");
+            const dir = "perf-results";
+            const files = fs.readdirSync(dir).filter(f => f.endsWith(".json")).sort();
+            for (const f of files) {
+              const r = JSON.parse(fs.readFileSync(path.join(dir, f), "utf8"));
+              for (const s of r.samples) {
+                const ms = s.elapsedMs.toFixed(1);
+                const rss = (s.rssDeltaBytes / 1024 / 1024).toFixed(2);
+                process.stdout.write(`| ${r.format} | ${s.label} | ${ms} | ${rss} |\n`);
+              }
+            }
+          ' >> "$GITHUB_STEP_SUMMARY"
+        env:
+          PERF_PROFILE: ${{ inputs.profile || 'large' }}
+
+      - name: Upload perf artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: perf-results-${{ inputs.profile || 'large' }}-${{ github.run_id }}
+          path: |
+            perf-results/
+          retention-days: 90
+          if-no-files-found: warn

@@ -5,6 +5,7 @@ export default defineConfig({
     globals: false,
     environment: 'node',
     include: ['test/**/*.test.ts'],
+    exclude: ['test/perf/**', 'node_modules/**'],
     clearMocks: true,
     testTimeout: 600_000,
     hookTimeout: 600_000,

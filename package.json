@@ -93,6 +93,8 @@
     "test": "wireit",
     "test:nuts": "oclif manifest && vitest run --config ./vitest.nut.config.ts",
     "test:only": "wireit",
+    "test:perf": "vitest run --config ./vitest.perf.config.ts",
+    "test:perf:gen": "node --import ts-node/esm scripts/gen-perf-fixtures.ts",
     "version": "oclif readme"
   },
   "publishConfig": {
