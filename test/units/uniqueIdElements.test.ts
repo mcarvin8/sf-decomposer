@@ -14,6 +14,31 @@ describe('uniqueIdElements registry', () => {
     expect(getUniqueIdElements('approvalProcess')).toBe('type');
   });
 
+  it('returns the documented list for the additions audited from a 580+ approvalProcess corpus', () => {
+    // quickAction: <fieldOverrides>/<quickActionLayoutItems> use <field>
+    expect(getUniqueIdElements('quickAction')).toBe('field');
+    // customMetadata records: <values> use <field>
+    expect(getUniqueIdElements('md')).toBe('field');
+    // pathAssistant: <pathAssistantSteps> use <picklistValueName>
+    expect(getUniqueIdElements('pathAssistant')).toBe('picklistValueName');
+    // omniSupervisorConfig: six sibling repeats keyed by user/group/queue/profile/skill/actionName
+    expect(getUniqueIdElements('omniSupervisorConfig')).toBe('user,group,queue,profile,skill,actionName');
+    // genAiPromptTemplate: <templateVersions> use <versionIdentifier>
+    expect(getUniqueIdElements('genAiPromptTemplate')).toBe('versionIdentifier');
+    // mlDomain: <mlIntents> use <developerName>
+    expect(getUniqueIdElements('mlDomain')).toBe('developerName');
+    // liveChatAgentConfig: <transferableButtons>/<supervisorSkills>
+    expect(getUniqueIdElements('liveChatAgentConfig')).toBe('button,skill');
+    // liveChatButton: <skills>/<deployments>
+    expect(getUniqueIdElements('liveChatButton')).toBe('skill,deployment');
+    // duplicateRule: <duplicateRuleMatchRules> use <matchingRule>
+    expect(getUniqueIdElements('duplicateRule')).toBe('matchingRule');
+    // queue: <queueSobject> use <sobjectType>
+    expect(getUniqueIdElements('queue')).toBe('sobjectType');
+    // reportType: <sections> use <masterLabel>
+    expect(getUniqueIdElements('reportType')).toBe('masterLabel');
+  });
+
   it('preserves existing entries for backwards compatibility', () => {
     expect(getUniqueIdElements('bot')).toContain('developerName');
     expect(getUniqueIdElements('bot')).toContain('stepIdentifier');
