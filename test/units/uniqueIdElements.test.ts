@@ -39,6 +39,21 @@ describe('uniqueIdElements registry', () => {
     expect(getUniqueIdElements('reportType')).toBe('masterLabel');
   });
 
+  it('returns the compound-key fallback chain for `app` (covers profileActionOverrides + actionOverrides)', () => {
+    // The natural unique key for CustomApplication's <profileActionOverrides>
+    // and <actionOverrides> is a multi-field tuple. Without compound keys
+    // (config-disassembler >= 0.4.5), every sibling sharing actionName=View
+    // collapses to one filename and silently overwrites peers on disassembly.
+    expect(getUniqueIdElements('app')).toBe(
+      [
+        'actionName+pageOrSobjectType+formFactor+profile+recordType',
+        'actionName+pageOrSobjectType+formFactor+profile',
+        'actionName+pageOrSobjectType+formFactor+recordType',
+        'actionName+pageOrSobjectType+formFactor',
+      ].join(','),
+    );
+  });
+
   it('preserves existing entries for backwards compatibility', () => {
     expect(getUniqueIdElements('bot')).toContain('developerName');
     expect(getUniqueIdElements('bot')).toContain('stepIdentifier');
