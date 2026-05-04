@@ -95,6 +95,9 @@
     "test:only": "wireit",
     "test:perf": "vitest run --config ./vitest.perf.config.ts",
     "test:perf:gen": "node --import ts-node/esm scripts/gen-perf-fixtures.ts",
+    "audit": "node --loader ts-node/esm --no-warnings=ExperimentalWarning scripts/audit/audit.ts",
+    "audit:sweep": "node --loader ts-node/esm --no-warnings=ExperimentalWarning scripts/audit/sweep.ts",
+    "audit:roundtrip": "node --loader ts-node/esm --no-warnings=ExperimentalWarning scripts/audit/roundtrip.ts",
     "version": "oclif readme"
   },
   "publishConfig": {
