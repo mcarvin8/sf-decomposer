@@ -5,6 +5,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.17.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.16.0...v6.17.0) (2026-05-04)
+
+
+### Features
+
+* **decompose:** expand uniqueIdElements coverage for 11 metadata types ([#432](https://github.com/mcarvin8/sf-decomposer/issues/432)) ([7e8d73a](https://github.com/mcarvin8/sf-decomposer/commit/7e8d73a15fbcc860d1aff78067e5851703216c9a))
+
+
+### Bug Fixes
+
+* **decompose:** bump config-disassembler to 1.1.3 and add approval/entitlement uniqueIdElements ([#430](https://github.com/mcarvin8/sf-decomposer/issues/430)) ([82b2458](https://github.com/mcarvin8/sf-decomposer/commit/82b2458a228e2a0a9ff5a7a49ad1fcc763fb0274))
+
 ## [6.16.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.15.1...v6.16.0) (2026-05-01)
 
 
