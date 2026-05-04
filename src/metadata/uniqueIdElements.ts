@@ -71,6 +71,21 @@ export default [
     loyaltyProgramSetup: {
       uniqueIdElements: ['processName'],
     },
+    entitlementProcess: {
+      // `<milestones>` items have no `<fullName>`/`<name>`; the canonical key
+      // is `<milestoneName>`. Without this, every milestone shard falls back
+      // to a SHA-256 hash filename.
+      uniqueIdElements: ['milestoneName'],
+    },
+    approvalProcess: {
+      // `<approvalStep>` already keys off `<name>` via the default list, but
+      // `<allowedSubmitters>` items only carry `<type>` (e.g. `creator`,
+      // `owner`, `queue`). Multiple submitters with the same `<type>` in one
+      // process will collide and fall back to SHA-256, which is acceptable
+      // (and rare in practice) compared to *every* allowedSubmitters shard
+      // hashing today.
+      uniqueIdElements: ['type'],
+    },
     mutingpermissionset: {
       uniqueIdElements: [
         'application',
