@@ -86,6 +86,68 @@ export default [
       // hashing today.
       uniqueIdElements: ['type'],
     },
+    quickAction: {
+      // `<fieldOverrides>` and `<quickActionLayoutItems>` both key off
+      // `<field>`. Singleton wrappers like `<quickActionLayout>` and
+      // `<quickActionSendEmailOptions>` still hash (one stable hash per
+      // parent), which is correct and intentional.
+      uniqueIdElements: ['field'],
+    },
+    md: {
+      // `<values>` items inside a `<CustomMetadata>` record are keyed by
+      // `<field>`. Each customMetadata file holds 1..N values for distinct
+      // fields, so `<field>` is unique per shard.
+      uniqueIdElements: ['field'],
+    },
+    pathAssistant: {
+      // `<pathAssistantSteps>` items use `<picklistValueName>` (a stage
+      // value like "Planning", "Pre-Live Review") as their natural key.
+      uniqueIdElements: ['picklistValueName'],
+    },
+    omniSupervisorConfig: {
+      // Six sibling repeating elements: `<omniSupervisorConfigUser>` /
+      // `<...Group>` / `<...Queue>` / `<...Profile>` / `<...Skill>` /
+      // `<...Action>`. Each item carries exactly one of these inner-name
+      // fields, and `find_id_in_subtree` picks whichever one is present.
+      uniqueIdElements: ['user', 'group', 'queue', 'profile', 'skill', 'actionName'],
+    },
+    genAiPromptTemplate: {
+      // `<templateVersions>` items carry a unique `<versionIdentifier>` per
+      // version. The trailing `_<n>` makes it filesystem-safe.
+      uniqueIdElements: ['versionIdentifier'],
+    },
+    mlDomain: {
+      // `<mlIntents>` items use `<developerName>` as their canonical key.
+      uniqueIdElements: ['developerName'],
+    },
+    liveChatAgentConfig: {
+      // `<transferableButtons>` items carry `<button>`, `<supervisorSkills>`
+      // items carry `<skill>`. `<assignments>` items wrap heterogeneous
+      // user/group payloads with no single keyable field, so they continue
+      // to hash (stable per content).
+      uniqueIdElements: ['button', 'skill'],
+    },
+    liveChatButton: {
+      // `<skills>` items use `<skill>`; `<deployments>` items use
+      // `<deployment>`.
+      uniqueIdElements: ['skill', 'deployment'],
+    },
+    duplicateRule: {
+      // `<duplicateRuleMatchRules>` items carry `<matchingRule>`. Each
+      // match rule appears once per duplicate rule, so the field is unique
+      // within the parent.
+      uniqueIdElements: ['matchingRule'],
+    },
+    queue: {
+      // `<queueSobject>` items are keyed by `<sobjectType>` (e.g. `Case`,
+      // `Lead`). Each sobject appears at most once per queue.
+      uniqueIdElements: ['sobjectType'],
+    },
+    reportType: {
+      // `<sections>` items use `<masterLabel>` as their natural key. Same
+      // pattern as `globalValueSetTranslation`/`standardValueSetTranslation`.
+      uniqueIdElements: ['masterLabel'],
+    },
     mutingpermissionset: {
       uniqueIdElements: [
         'application',
