@@ -104,8 +104,8 @@ to the `gh-pages` branch:
 The conversion is done by `scripts/perf-to-benchmark.mjs`, which collapses
 `perf-results/*.json` into `perf-runtime.json` (`elapsedMs`) and
 `perf-memory.json` (`rssDeltaBytes` in MB). Ad-hoc `workflow_dispatch` runs
-intentionally **do not** publish, since they often vary profile/types/formats
-inputs and would pollute the timeline.
+intentionally do not publish unless `publish: true` is checked, since they
+often vary profile/types/formats inputs and would pollute the timeline.
 
 To enable on first run:
 
@@ -113,6 +113,28 @@ To enable on first run:
    (the workflow creates the branch on first publish).
 2. Trigger one publish-eligible run (e.g. `gh workflow run perf.yml` from a
    release tag, or wait for the next Monday cron).
+
+## Pull-request comparison comment
+
+PRs that touch non-doc files automatically run the same `large` profile and
+post a sticky comment showing per-bench deltas vs the latest gh-pages
+baseline. The comment updates in place on subsequent pushes (the action keys
+off the bench name + PR number).
+
+Behavior:
+
+- Runs only on PRs from branches in this repo. Fork PRs are skipped because
+  `GITHUB_TOKEN` is read-only there and can't post comments.
+- Concurrency-limited: a new push cancels the in-progress perf run for the
+  same PR so we don't queue redundant ~3-4 minute jobs.
+- Does **not** push to `gh-pages` (`auto-push: false`, `save-data-file:
+false`). The PR's numbers are compared against the baseline and discarded;
+  the trend dashboard only contains merged-code data points.
+- Does **not** fail the check on regression (`fail-on-alert: false`). The
+  comment surfaces it; reviewers decide. Tune via `alert-threshold` in
+  `.github/workflows/perf.yml` if the noise floor changes.
+- Honors the same paths-ignore filter the workflow uses, so doc-only PRs
+  skip the run entirely rather than posting a stale comment.
 
 [bench]: https://github.com/benchmark-action/github-action-benchmark
 
