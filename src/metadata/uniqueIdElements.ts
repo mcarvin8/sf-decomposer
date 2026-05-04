@@ -148,6 +148,29 @@ export default [
       // pattern as `globalValueSetTranslation`/`standardValueSetTranslation`.
       uniqueIdElements: ['masterLabel'],
     },
+    app: {
+      // CustomApplication's `<profileActionOverrides>` and `<actionOverrides>`
+      // have a *compound* natural unique key: any single field (e.g. just
+      // `<actionName>`) collides for hundreds of siblings sharing
+      // `<actionName>View</actionName>`, silently merging on disassembly.
+      // Compound keys (config-disassembler >= 0.4.5) join the resolved values
+      // with `__` to form a stable, readable, collision-free filename.
+      //
+      // Fallback chain, widest first:
+      //   1. profileActionOverrides with recordType
+      //   2. profileActionOverrides without recordType
+      //   3. actionOverrides with recordType (no profile)
+      //   4. actionOverrides without recordType (no profile)
+      // Items missing `pageOrSobjectType` or `formFactor` (very rare) fall
+      // through to the SHA-256 outer-element hash, which is correct since
+      // we can't safely name them without those keys.
+      uniqueIdElements: [
+        'actionName+pageOrSobjectType+formFactor+profile+recordType',
+        'actionName+pageOrSobjectType+formFactor+profile',
+        'actionName+pageOrSobjectType+formFactor+recordType',
+        'actionName+pageOrSobjectType+formFactor',
+      ],
+    },
     mutingpermissionset: {
       uniqueIdElements: [
         'application',

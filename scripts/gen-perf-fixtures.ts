@@ -568,10 +568,34 @@ function genApplication(spec: SizeSpec['application']): string {
 
   const formFactors = ['Large', 'Small', 'Medium'] as const;
   const types = ['Flexipage', 'Standard'] as const;
+  // Real Salesforce orgs spread overrides across many action names. Cycling
+  // here keeps the compound `actionName + pageOrSobjectType + formFactor`
+  // key space well above the row count, matching production-shaped data and
+  // avoiding the synthetic collisions that would occur if `actionName` were
+  // a single constant value (`View`) repeated thousands of times.
+  const actionNames = [
+    'Tab',
+    'View',
+    'Edit',
+    'New',
+    'Delete',
+    'Clone',
+    'List',
+    'Save',
+    'Submit',
+    'Approve',
+    'Reject',
+    'Activate',
+    'Comment',
+    'Follow',
+    'Share',
+    'Print',
+    'Refresh',
+  ] as const;
 
   for (let i = 1; i <= spec.actionOverrides; i++) {
     lines.push('    <actionOverrides>');
-    lines.push('        <actionName>View</actionName>');
+    lines.push(`        <actionName>${pick(actionNames, i)}</actionName>`);
     lines.push(`        <comment>Action override created for performance fixture ${i}.</comment>`);
     lines.push(`        <content>Sample_Page_${pad(i, 5)}</content>`);
     lines.push(`        <formFactor>${pick(formFactors, i)}</formFactor>`);
@@ -593,7 +617,7 @@ function genApplication(spec: SizeSpec['application']): string {
 
   for (let i = 1; i <= spec.profileActionOverrides; i++) {
     lines.push('    <profileActionOverrides>');
-    lines.push('        <actionName>View</actionName>');
+    lines.push(`        <actionName>${pick(actionNames, i)}</actionName>`);
     lines.push(`        <content>Sample_Profile_Page_${pad(i, 5)}</content>`);
     lines.push(`        <formFactor>${pick(formFactors, i)}</formFactor>`);
     lines.push(`        <pageOrSobjectType>Sample_Object_${pad((i % 200) + 1, 3)}__c</pageOrSobjectType>`);
