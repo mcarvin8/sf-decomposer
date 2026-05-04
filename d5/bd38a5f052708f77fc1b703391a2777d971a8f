@@ -1,0 +1,32 @@
+src/metadata/uniqueIdElements.ts
+  605f6b93016e2a74 74-88
+package.json
+  605f6b93016e2a74 10
+test/units/uniqueIdElements.test.ts
+  605f6b93016e2a74 1-59
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "d5bd38a5f052708f77fc1b703391a2777d971a8f",
+  "prompts": {
+    "605f6b93016e2a74": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "04055970-e52a-40f0-bd63-cdad11b18062",
+        "model": "auto-high"
+      },
+      "human_author": "Matt Carvin",
+      "messages": [],
+      "total_additions": 75,
+      "total_deletions": 1,
+      "accepted_lines": 75,
+      "overriden_lines": 0
+    }
+  },
+  "humans": {
+    "h_b104b674256482": {
+      "author": "Matt Carvin"
+    }
+  }
+}
