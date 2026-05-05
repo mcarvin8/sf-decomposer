@@ -96,26 +96,26 @@ The default `npm test` runs the full pipeline (compile, lint, unit tests). Use i
 
 ### Metadata and SDR
 
-Metadata attributes (except unique-ID elements) come from this plugin’s version of **@salesforce/source-deploy-retrieve** (SDR). The `-m` / `--metadata-type` flag uses the metadata **suffix** from SDR’s registry.
+Metadata attributes (except unique-ID elements) come from this plugin's pinned version of **@salesforce/source-deploy-retrieve** (SDR). The `-m` / `--metadata-type` flag uses the metadata **suffix** from SDR's registry.
 
-Dependabot will check for SDR updates once a week and open a PR for new versions. If the PR version includes an update to the metadata registry file, a GitHub action will automatically merge the PR assuming all build checks pass. If the PR version of SDR contains no changes to the metadata registry file, the GitHub action will automatically close the PR.
+Dependabot opens a weekly PR for new SDR versions. A GitHub action auto-merges the PR if it bumps the registry file (after build checks pass) and auto-closes it otherwise.
 
 ### Unique ID elements
 
-Unique ID elements are used to name decomposed files for nested elements. The file that holds leaf elements keeps the original metadata file name.
+Unique ID elements name the decomposed files emitted by the `unique-id` strategy. The file that holds leaf elements keeps the original metadata file name.
 
-- **Defaults:** `fullName` and `name` for all metadata types.
-- **Overrides:** Edit `src/metadata/uniqueIdElements.ts`; use the metadata type’s **suffix** as the key.
-- **Fallback:** If no unique ID is found, the plugin uses a SHA-256 hash of the element content for the file name.
+- **Defaults:** `fullName` and `name`, for every metadata type.
+- **Overrides:** Edit `src/metadata/uniqueIdElements.ts`, keyed by the metadata type's **suffix**. Compound keys (e.g. `field1+field2`) join values with `__`.
+- **Fallback:** When no unique ID resolves, the plugin uses an 8-character SHA-256 hash of the element content. When two siblings would collide on the same id after sanitization, every member of the colliding group falls back to a hash and emits a `WARN` line (see [Filename safety](./README.md#filename-safety-unique-id) in the README).
 
 ### Config disassembler
 
-Core decompose/recompose logic lives in **[config-disassembler-node](https://github.com/mcarvin8/config-disassembler-node)**, which uses a Rust crate to handle decomposing and recomposing files on the local disk. This plugin focuses on Salesforce metadata wiring (e.g. package dirs, SDR, strategies).
+The actual decompose/recompose work lives in **[config-disassembler-node](https://github.com/mcarvin8/config-disassembler-node)** (a Rust crate behind a Node binding). This plugin focuses on Salesforce metadata wiring — package dirs, SDR, strategies, override resolution.
 
-- **In this plugin:** `src/service/decompose/decomposeFileHandler.ts` and `src/service/recompose/recomposeFileHandler.ts` call config-disassembler. Per-type / per-component override resolution happens in `src/helpers/configOverrides.ts` and is applied per file inside the decompose handler so different components of the same metadata type can be decomposed with different strategies/formats in one run.
-- **Changes to XML decompose/recompose behavior:** Contribute in the [config-disassembler](https://github.com/mcarvin8/config-disassembler) (Rust crate) and/or [config-disassembler-node](https://github.com/mcarvin8/config-disassembler-node) repo.
+- **Where it's called:** `src/service/decompose/decomposeFileHandler.ts` and `src/service/recompose/recomposeFileHandler.ts`. Override resolution happens per-file in `src/helpers/configOverrides.ts`, so different components of the same metadata type can be decomposed with different strategies/formats in one run.
+- **Changing XML decompose/recompose behavior:** contribute in [config-disassembler](https://github.com/mcarvin8/config-disassembler) (Rust) and/or [config-disassembler-node](https://github.com/mcarvin8/config-disassembler-node).
 
-Dependabot will check for config-disassembler updates once a week.
+Dependabot bumps both packages weekly.
 
 ---
 

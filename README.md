@@ -14,29 +14,17 @@ A Salesforce CLI plugin that **decomposes** large metadata XML files into smalle
   <summary>Table of Contents</summary>
 
 - [Quick Start](#quick-start)
+- [Requirements](#requirements)
 - [Why sf-decomposer?](#why-sf-decomposer)
 - [Commands](#commands)
-  - [sf decomposer decompose](#sf-decomposer-decompose)
-  - [sf decomposer recompose](#sf-decomposer-recompose)
-  - [sf decomposer verify](#sf-decomposer-verify)
 - [Manifest-scoped runs](#manifest-scoped-runs)
 - [Decompose Strategies](#decompose-strategies)
-  - [Custom Labels](#custom-labels-decomposition)
-  - [Permission Sets (grouped-by-tag)](#additional-permission-set-decomposition)
-  - [Loyalty Program Setup](#loyalty-program-setup-decomposition)
 - [Supported Metadata](#supported-metadata)
-  - [Exceptions](#exceptions)
 - [Troubleshooting](#troubleshooting)
 - [Hooks](#hooks)
 - [Per-Type & Per-Component Overrides](#per-type--per-component-overrides)
-  - [splitTags grammar](#splittags-grammar)
-  - [multiLevel grammar](#multilevel-grammar)
 - [Ignore Files](#ignore-files)
-  - [.forceignore](#forceignore)
-  - [.sfdecomposerignore](#sfdecomposerignore)
-  - [.gitignore](#gitignore)
 - [Issues](#issues)
-- [Requirements](#requirements)
 - [Built With](#built-with)
 - [Contributing](#contributing)
 - [License](#license)
@@ -74,14 +62,7 @@ A Salesforce CLI plugin that **decomposes** large metadata XML files into smalle
    sf project deploy start
    ```
 
-   Or scope the recompose to just the components in your deploy manifest:
-
-   ```bash
-   sf decomposer recompose -x "manifest/package.xml"
-   sf project deploy start -x "manifest/package.xml"
-   ```
-
-   Or run the deploy command directly after configuring the [hooks](#hooks) to run the recompose automatically before deploying.
+   Pass `-x manifest/package.xml` to both commands to scope the run to the components in a deploy manifest. Configuring the [hooks](#hooks) automates this step entirely.
 
 ---
 
@@ -101,21 +82,14 @@ If other platforms or architectures require support, please open an issue in [co
 
 ## Why sf-decomposer?
 
-Salesforce’s built-in decomposition is limited. sf-decomposer gives admins and developers more control, flexibility, and better versioning.
+Salesforce's built-in decomposition is limited. sf-decomposer gives admins and developers more control, flexibility, and better versioning.
 
-### Benefits
-
-- **Broader metadata support** – Works with most Metadata API types, not just the subset Salesforce decomposes.
-- **Selective decomposition** – Decompose only what you need; use [.sfdecomposerignore](#sfdecomposerignore) to skip specific files.
-- **Manifest-scoped runs** – Pass `-x package.xml` to decompose or recompose only the components listed in a Salesforce manifest, mirroring `sf project deploy start -x`. Ideal for CI/CD pipelines that only ship a subset of metadata per deployment.
-- **Two [strategies](#decompose-strategies)**:
-  - **unique-id** (default): one file per nested element, named by content or hash.
-  - **grouped-by-tag**: one file per tag (e.g. all `fieldPermissions` in a permission set in `fieldPermissions.xml`). Use `--decompose-nested-permissions` for deeper permission set and muting permission set decomposition.
-- **Full decomposition** – Fully decompose types that Salesforce only partially supports (e.g. permission sets).
-- **Stable ordering** – Elements are sorted consistently to reduce noisy diffs.
-- **Multiple formats** – Output as XML, JSON, JSON5, or YAML.
-- **CI/CD hooks** – Auto decompose after retrieve and recompose before deploy via [.sfdecomposer.config.json](#hooks).
-- **Better reviews** – Smaller, structured files mean clearer pull requests and fewer merge conflicts.
+- **Broader metadata support** — works with most Metadata API types, not just the subset Salesforce decomposes.
+- **Two [strategies](#decompose-strategies)** — `unique-id` (one file per nested element) or `grouped-by-tag` (one file per tag).
+- **Multiple formats** — XML, JSON, JSON5, or YAML.
+- **Manifest-scoped runs** — pass `-x package.xml` to scope a run to just the components in a deploy manifest, the same way `sf project deploy start -x` does.
+- **CI/CD hooks** — auto-decompose after retrieve and auto-recompose before deploy via [.sfdecomposer.config.json](#hooks).
+- **Stable ordering and smaller files** — clearer pull requests, fewer merge conflicts.
 
 ---
 
@@ -238,22 +212,18 @@ sf decomposer verify -m "permissionset" -s "grouped-by-tag" -p
 sf decomposer verify -x "manifest/package.xml" --config
 ```
 
-Files where the **only** delta is sibling or attribute ordering are surfaced separately as informational notices ("Note: N file(s) round-tripped semantically but with sibling/attribute reordering") rather than as drift. This is safe — Salesforce treats metadata as order-agnostic and `config-disassembler` does not preserve original sibling order — but it tells you up front that committing the post-recompose output will produce a diff in git even though the metadata is functionally identical.
+Files whose **only** delta is sibling or attribute ordering are reported as informational notices, not drift. Salesforce treats metadata as order-agnostic, so the deploy is safe — the notice just warns that committing the post-recompose output will show a git diff even though the metadata is functionally identical.
 
 ---
 
 ## Manifest-scoped runs
 
-The `-x` / `--manifest` flag is supported by every `sf decomposer` command (`decompose`, `recompose`, `verify`) and accepts any standard Salesforce `package.xml`, limiting the work to just the components it lists. This is especially useful for CI/CD pipelines that deploy a subset of metadata per change.
+`-x` / `--manifest` is supported by every `sf decomposer` command and accepts the same `package.xml` you pass to `sf project deploy start -x`. Only the listed components are decomposed/recomposed; everything else is left alone.
 
-How it works:
-
-- The manifest is parsed with `@salesforce/source-deploy-retrieve`'s `ManifestResolver`, so the same XML you pass to `sf project deploy start -x` is honored here.
-- For each entry, the plugin resolves the matching parent metadata files in your local package directories (using each metadata type's `directoryName`, `suffix`, `strictDirectoryName`, and `folderType` from the SDR registry).
-- Only those files are decomposed/recomposed; everything else on disk is left untouched.
-- Wildcards (`<members>*</members>`) expand against your local source. Folder-typed members (e.g. `MyFolder/MyReport`) are resolved by walking the folder.
-- Types in the manifest that the plugin does not support (e.g. `CustomObject`, `ApexClass`) are skipped with a warning instead of failing the run, so a single manifest can drive both deploys and decomposer runs.
-- If both `--metadata-type` and `--manifest` are provided, the run is scoped to the intersection (only types present in both).
+- Wildcards (`<members>*</members>`) expand against your local source.
+- Folder members (e.g. `MyFolder/MyReport`) resolve by walking the folder.
+- Types the plugin does not support (e.g. `CustomObject`, `ApexClass`) are skipped with a warning, so the same manifest can drive both deploys and decomposer runs.
+- If both `--metadata-type` and `--manifest` are supplied, the run is scoped to the intersection.
 
 Example manifest:
 
@@ -331,16 +301,16 @@ permissionsets/
 
 ### Filename safety (unique-id)
 
-Two safety nets are applied automatically to every shard filename emitted by the **unique-id** strategy. Neither requires configuration:
+Two safety nets apply automatically to every shard filename emitted by the **unique-id** strategy. Neither requires configuration:
 
-- **Path-segment sanitization.** When a unique-id value contains characters that are illegal or reserved on at least one supported filesystem — path separators (`/`, `\`), Windows-reserved chars (`:`, `*`, `?`, `"`, `<`, `>`, `|`), or ASCII control bytes — each is replaced with `_`, and trailing `.` and spaces are stripped. So an `EntitlementProcess` milestone named `TrustFile Transaction Sync/Import Complete` yields the shard `TrustFile Transaction Sync_Import Complete.milestones-meta.xml` on every platform, instead of `/` being interpreted as a directory separator.
-- **Sibling-collision fallback.** After sanitization, if two or more siblings of the same parent tag would still resolve to the same shard filename (because the configured unique-id elements are too narrow for that metadata type, or because sanitization happened to fold two distinct values into the same form), every sibling in the colliding group falls back to a per-element 8-character SHA-256 hash. No row is silently overwritten on disk.
+- **Path-segment sanitization (silent).** Characters illegal or reserved on at least one supported filesystem — path separators (`/`, `\`), Windows-reserved chars (`:`, `*`, `?`, `"`, `<`, `>`, `|`), and ASCII control bytes — are replaced with `_`; trailing `.` and spaces are stripped. Sanitized filenames are byte-stable across platforms.
+- **Sibling-collision fallback (emits `WARN`).** When two or more siblings of the same parent tag would resolve to the same filename (the configured unique-id elements are too narrow, or sanitization folded two distinct values together), every sibling in the colliding group is written to its own per-element SHA-256 shard instead. No row is silently overwritten.
 
-Path-segment sanitization is silent — sanitized filenames round-trip identically and are byte-stable across platforms, so there is nothing to warn about. Sibling-collision fallback, by contrast, emits one `WARN` line per colliding group (parent tag, collided id, sibling count) so you can decide whether to widen `uniqueIdElements` for that metadata type. By default these are filtered out — see [Rust crate logging](#xml-disassemble-output-rust-crate) below for how to surface them. If you see a hash-named shard in your output and want to know why, that's the first place to look.
+If you see a hash-named shard and want to know whether it came from a collision (vs. simply a missing UID), set `RUST_LOG=warn` and rerun — see [Rust crate logging](#xml-disassemble-output-rust-crate).
 
 ### Custom Labels Decomposition
 
-Custom labels use only the **unique-id** strategy. If you pass `grouped-by-tag`, the plugin overrides to `unique-id` and continues. Grouping labels by tag would produce no difference from the original file since all elements share the same tag. Each label is written to its own file.
+Custom labels are always decomposed with `unique-id` (grouped-by-tag would be a no-op since every element shares the same tag). Each label is written to its own file:
 
 ```
 labels/
@@ -382,12 +352,9 @@ permissionsets/
 
 ### Loyalty Program Setup Decomposition
 
-`loyaltyProgramSetup` supports only the **unique-id** strategy. If you pass `grouped-by-tag`, the plugin overrides to `unique-id` and continues. The metadata is automatically decomposed further under unique-id:
+`loyaltyProgramSetup` is always decomposed with `unique-id`, with a built-in `multiLevel` default that splits `<programProcesses>` into per-process folders containing per-`<parameters>` / per-`<rules>` files.
 
-- Each `<programProcesses>` element → its own file.
-- Each `<parameters>` and `<rules>` child → its own file.
-
-> Recomposition for loyalty program setup removes decomposed files even without `--postpurge`. Use version control or CI to keep them if needed.
+> Recompose for `loyaltyProgramSetup` always removes the decomposed tree, with or without `--postpurge`. Rely on version control if you need to inspect it after a deploy.
 
 ```
 loyaltyProgramSetups/
@@ -470,44 +437,31 @@ For example, if you attempt to decompose Custom Labels but none of your package 
 
 ### XML disassemble output (Rust crate)
 
-The config-disassembler Node plugin uses a **Rust crate** for XML decomposing and recomposing. Disassemble errors and messages are shown in the terminal.
+The underlying Rust crate logs through [env_logger](https://docs.rs/env_logger). Set `RUST_LOG` to opt into more verbosity:
 
-Control verbosity with the `RUST_LOG` environment variable. The crate uses [env_logger](https://docs.rs/env_logger), so the standard level filters apply: `error`, `warn`, `info`, `debug`, `trace`. By default only `error`-level lines are surfaced, which is why you would not see filename-safety warnings (sibling-collision fallback, path-segment sanitization) without opting in.
+| Level            | What it covers                                                                                                                                                                                |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `RUST_LOG=error` | Default. Parse errors and skipped files (leaf-only XML — primitives only, nothing to decompose).                                                                                              |
+| `RUST_LOG=warn`  | Adds [sibling-collision fallback](#filename-safety-unique-id) signals — one line per colliding group (parent tag, collided id, sibling count). **Recommended in CI** when shipping overrides. |
 
-| Level                 | What it covers                                                                                                                                                                                                                                                       |
-| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `RUST_LOG=error`      | Default. Skipped files (leaf-only XML), parse errors.                                                                                                                                                                                                                |
-| `RUST_LOG=warn`       | Adds [sibling-collision fallback](#filename-safety-unique-id) signals — one line per colliding group naming the parent tag, the collided id, and the sibling count, so you can decide whether to widen `uniqueIdElements` for that metadata type. Recommended in CI. |
-| `RUST_LOG=info,debug` | Per-element decomposition tracing. Verbose; useful for plugin development, not day-to-day use.                                                                                                                                                                       |
-
-Example terminal output at the default `error` level (a leaf-only file):
+Example `WARN` (CustomApplication where four `actionOverrides` siblings shared the action name `View`):
 
 ```
-[2026-04-30T12:34:38Z ERROR config_disassembler::xml::builders::build_disassembled_files] The XML file C:\Users\matthew.carvin\Documents\sf-decomposer\fixtures\package-dir-1\permissionsets\only_leafs.permissionset-meta.xml only has leaf elements. This file will not be disassembled.
+[2026-05-04T15:21:09Z WARN config_disassembler::xml::builders::build_disassembled_files]
+  uniqueIdElements collision: <actionOverrides> id "View" matched 4 sibling elements;
+  falling back to SHA-256 content hashes for the colliding group.
+  Consider adding more discriminating fields to uniqueIdElements for this metadata type.
 ```
-
-Example with `RUST_LOG=warn` set, for a `CustomApplication` whose configured unique-id was too narrow for one group of `actionOverrides` siblings:
-
-```
-[2026-05-04T15:21:09Z WARN config_disassembler::xml::builders::build_disassembled_files] uniqueIdElements collision: <actionOverrides> id "View" matched 4 sibling elements; falling back to SHA-256 content hashes for the colliding group. Consider adding more discriminating fields to uniqueIdElements for this metadata type.
-```
-
-### Files with only leaf elements
-
-If a metadata file has only leaf elements (primitives, no nested structure), there is nothing to decompose. The Rust crate skips the file and logs an ERROR like the example above.
 
 ---
 
 ## Hooks
 
-> Configure [.forceignore](#forceignore) so the Salesforce CLI ignores decomposed files; otherwise `sf` commands can fail.
+Put **.sfdecomposer.config.json** in the project root to auto-decompose after `sf project retrieve start` and auto-recompose before `sf project deploy start` / `validate`.
 
-Put **.sfdecomposer.config.json** in the project root to run:
+> Configure [.forceignore](#forceignore) first — the Salesforce CLI must ignore decomposed files or `sf` commands can fail.
 
-- **After** `sf project retrieve start`: decompose.
-- **Before** `sf project deploy start` / `sf project deploy validate`: recompose.
-
-Copy and customize the [sample config](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.sfdecomposer.config.json), or the [sample config with overrides](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.sfdecomposer.config.overrides.json) to vary format/strategy/etc. by metadata type or by individual component.
+Copy and customize the [sample config](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.sfdecomposer.config.json), or the [sample with overrides](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.sfdecomposer.config.overrides.json) to vary format/strategy per metadata type or component.
 
 | Option                       | Required    | Description                                                                                                                                                                                                                   |
 | ---------------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -605,7 +559,7 @@ For each component, each option is resolved independently in this order (highest
 
 Each `<tag>` may appear at most once in a spec. The plugin validates the grammar at config-load time. Deeper checks (e.g. unknown tag names for the metadata type) are surfaced by the underlying disassembler crate at runtime.
 
-#### splitTags cookbook
+**Examples:**
 
 ```json
 "overrides": [
@@ -618,21 +572,13 @@ Each `<tag>` may appear at most once in a spec. The plugin validates the grammar
     "metadataTypes": ["profile"],
     "strategy": "grouped-by-tag",
     "splitTags": "objectPermissions:split:object,fieldPermissions:group:field,layoutAssignments:group:layout"
-  },
-  {
-    "metadataTypes": ["flow"],
-    "strategy": "grouped-by-tag",
-    "splitTags": "actionCalls:split:name,decisions:split:name,assignments:split:name"
-  },
-  {
-    "metadataTypes": ["workflow"],
-    "strategy": "grouped-by-tag",
-    "splitTags": "rules:split:fullName,alerts:split:fullName,fieldUpdates:split:fullName,tasks:split:fullName"
   }
 ]
 ```
 
-> **Caveat:** When using `mode: split`, the chosen `<field>` must produce a unique value for every array item — otherwise two items would map to the same filename. If two items share a field value, prefer `mode: group` instead, which is designed for that case.
+> **Caveat:** With `mode: split`, the chosen `<field>` must produce a unique value across every array item — otherwise two items map to the same filename. If items can share a field value, use `mode: group` instead.
+
+See the [admin handbook](https://github.com/mcarvin8/sf-decomposer/blob/main/HANDBOOK.md) for additional `splitTags` and `multiLevel` recipes (flows, workflows, layouts, flexipages, bots).
 
 ### multiLevel grammar
 
@@ -672,13 +618,9 @@ Within one scope, the `(file_pattern, root_to_strip)` pair must be unique across
 ]
 ```
 
-> **`bot` and `loyaltyProgramSetup` ship with built-in `multiLevel` defaults**, so you don't need to add an override for either type to get the canonical decomposed layout — supply your own only if you want to replace the default. The full registry lives in [`src/metadata/multiLevelDefaults.ts`](https://github.com/mcarvin8/sf-decomposer/blob/main/src/metadata/multiLevelDefaults.ts).
-
-> **Why one call:** Pass every rule for a given component in a single override. Sequential single-rule decompositions rewrite the on-disk `.multi_level.json` and only the last rule survives — so multi-rule scenarios must travel together.
-
-> **Tip:** Use [`sf decomposer verify`](#sf-decomposer-verify) to non-destructively confirm a new override config still round-trips before committing it.
-
-> **Tip:** See the [admin handbook](https://github.com/mcarvin8/sf-decomposer/blob/main/HANDBOOK.md) for end-to-end recipes for Bots, Flexipages, Layouts, and other deeply-nested metadata.
+> **Built-in defaults.** `bot` and `loyaltyProgramSetup` ship with built-in `multiLevel` rules, so you do not need an override to get the canonical layout — supply your own only to replace the default. Full registry: [`src/metadata/multiLevelDefaults.ts`](https://github.com/mcarvin8/sf-decomposer/blob/main/src/metadata/multiLevelDefaults.ts).
+>
+> **Pass all rules at once.** Sequential single-rule decomposes rewrite `.multi_level.json` and only the last rule survives — bundle every rule for a given component into one override. Use [`sf decomposer verify`](#sf-decomposer-verify) to confirm a new config round-trips before committing it.
 
 ### Opting in from the CLI
 
