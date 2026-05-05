@@ -1,0 +1,25 @@
+scripts/gen-perf-fixtures.ts
+  605f6b93016e2a74 50-57,87,115,146,174,766-815,895-900
+test/perf/decompose.perf.ts
+  605f6b93016e2a74 59-63
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "402b58b8fd63282bb735e7f6b8cc3b16d9853370",
+  "prompts": {
+    "605f6b93016e2a74": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "04055970-e52a-40f0-bd63-cdad11b18062",
+        "model": "auto-high"
+      },
+      "human_author": "Matt Carvin",
+      "messages": [],
+      "total_additions": 86,
+      "total_deletions": 0,
+      "accepted_lines": 87,
+      "overriden_lines": 0
+    }
+  }
+}
