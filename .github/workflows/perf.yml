@@ -147,6 +147,14 @@ jobs:
           #   - disable JIT randomization-sensitive optimizations off by default
           #   - explicit max old space so a leak fails loudly rather than swapping
           NODE_OPTIONS: '--max-old-space-size=4096'
+          # Surface sibling-collision fallback signals from the Rust crate
+          # alongside the default `error` lines. A WARN here means a synthetic
+          # fixture has degenerated to share unique-id values across siblings
+          # (the same shape we patch in src/metadata/uniqueIdElements.ts for
+          # real metadata). The 0.99 byte-retention guard still catches actual
+          # data loss; this just makes the cause visible in the action log.
+          # See README -> "XML disassemble output (Rust crate)".
+          RUST_LOG: warn
 
       - name: Summarize results
         if: always()
