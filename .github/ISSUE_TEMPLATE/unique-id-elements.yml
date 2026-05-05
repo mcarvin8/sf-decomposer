@@ -1,0 +1,101 @@
+name: Unique-ID elements coverage
+description: Propose a new entry (or change) for src/metadata/uniqueIdElements.ts so a metadata type produces readable filenames instead of SHA-256 hashes.
+title: 'feat(metadata): expand uniqueIdElements for <suffix>'
+labels:
+  - enhancement
+  - metadata
+  - uniqueIdElements
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template when the **unique-id** decompose strategy emits hash-named shards
+        (e.g. `c5f4a8b2.foo-meta.xml`) for a metadata type, and you have a stable element name
+        (or compound key like `field1+field2`) that would produce readable filenames instead.
+
+        Background: [README - Filename safety](https://github.com/mcarvin8/sf-decomposer#filename-safety-unique-id),
+        [Per-Type & Per-Component Overrides](https://github.com/mcarvin8/sf-decomposer#per-type--per-component-overrides).
+
+        > **Privacy reminder.** Strip org-specific names, IDs, and PII from the XML samples
+        > below. The shape of the XML is what matters for this issue, not the contents of
+        > any particular org.
+
+  - type: input
+    id: suffix
+    attributes:
+      label: Metadata suffix
+      description: The SDR suffix used with `-m` / `--metadata-type` (e.g. `serviceChannel`, `genAiPlugin`, `reportType`).
+      placeholder: e.g. serviceChannel
+    validations:
+      required: true
+
+  - type: input
+    id: parent-tag
+    attributes:
+      label: Parent tag emitting hashes
+      description: The repeating XML tag whose siblings currently fall back to SHA-256 hashes (e.g. `<serviceChannelStatusFieldMappings>`).
+      placeholder: e.g. serviceChannelStatusFieldMappings
+    validations:
+      required: true
+
+  - type: textarea
+    id: xml-sample
+    attributes:
+      label: Sanitized XML sample
+      description: |
+        A small (5–20 line) excerpt of the parent metadata file showing two or more
+        siblings of the parent tag. **Strip org-specific names/IDs.** The element
+        names and structure are what matter.
+      render: xml
+      placeholder: |
+        <ServiceChannel>
+          <serviceChannelStatusFieldMappings>
+            <type>...</type>
+            <value>Open</value>
+          </serviceChannelStatusFieldMappings>
+          <serviceChannelStatusFieldMappings>
+            <type>...</type>
+            <value>Closed</value>
+          </serviceChannelStatusFieldMappings>
+        </ServiceChannel>
+    validations:
+      required: true
+
+  - type: input
+    id: proposed-uid
+    attributes:
+      label: Proposed uniqueIdElements
+      description: |
+        The element name(s) that produce a stable readable filename for each sibling.
+        Multiple keys are tried in order; use `+` to combine fields into a compound key
+        (e.g. `type+value`). See `src/metadata/uniqueIdElements.ts` for examples.
+      placeholder: e.g. type+value, value
+    validations:
+      required: true
+
+  - type: textarea
+    id: audit-before
+    attributes:
+      label: audit:sweep output before (optional)
+      description: |
+        Output from `npm run audit:sweep -- --types <suffix> --root <repo>` before any
+        change. Helps quantify the win. Skip if you don't have a corpus to run it against.
+      render: text
+
+  - type: textarea
+    id: audit-after
+    attributes:
+      label: audit:sweep output after (optional)
+      description: |
+        Same command after editing `src/metadata/uniqueIdElements.ts` locally and
+        running `npm run build`. The hash-count for the parent tag should drop.
+      render: text
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything else?
+      description: |
+        Edge cases worth flagging (singleton wrappers, types with mixed shapes,
+        anything that surprised you). PRs welcome - this template is also a good
+        starting point for the PR description.
