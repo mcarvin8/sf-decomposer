@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.19.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.18.0...v6.19.0) (2026-05-05)
+
+
+### Features
+
+* **metadata:** expand uniqueIdElements coverage from audit pass ([#439](https://github.com/mcarvin8/sf-decomposer/issues/439)) ([a4c6080](https://github.com/mcarvin8/sf-decomposer/commit/a4c6080fbafa0840ff9eb797351dd92ab1b0ecae))
+
 ## [6.18.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.17.0...v6.18.0) (2026-05-05)
 
 
