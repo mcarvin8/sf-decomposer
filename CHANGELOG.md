@@ -5,6 +5,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.18.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.17.0...v6.18.0) (2026-05-05)
+
+
+### Features
+
+* **decompose:** bump config-disassembler to 1.2.1 and use compound keys for app ([#433](https://github.com/mcarvin8/sf-decomposer/issues/433)) ([c087664](https://github.com/mcarvin8/sf-decomposer/commit/c087664a44d73116bc375333275cb6f722662013))
+* **deps:** bump config-disassembler to 1.3.0 (sanitize + collision detection) ([#436](https://github.com/mcarvin8/sf-decomposer/issues/436)) ([d53878b](https://github.com/mcarvin8/sf-decomposer/commit/d53878b8c67b4ca42a35695b605b2c489bed5f6c))
+
 ## [6.17.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.16.0...v6.17.0) (2026-05-04)
 
 
