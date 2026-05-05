@@ -35,8 +35,17 @@ describe('uniqueIdElements registry', () => {
     expect(getUniqueIdElements('duplicateRule')).toBe('matchingRule');
     // queue: <queueSobject> use <sobjectType>
     expect(getUniqueIdElements('queue')).toBe('sobjectType');
-    // reportType: <sections> use <masterLabel>
-    expect(getUniqueIdElements('reportType')).toBe('masterLabel');
+    // reportType: <sections> use <masterLabel>; the singleton <join> uses <relationship>
+    expect(getUniqueIdElements('reportType')).toBe('masterLabel,relationship');
+  });
+
+  it('returns the documented list for the additions audited from the it-business-process corpus', () => {
+    // serviceChannel: each <serviceChannelStatusFieldMappings> row is keyed by
+    // the compound (type, value); single <value> is the fallback when <type>
+    // is absent.
+    expect(getUniqueIdElements('serviceChannel')).toBe('type+value,value');
+    // genAiPlugin: <genAiFunctions>/<functionName> and <genAiPluginInstructions>/<developerName>
+    expect(getUniqueIdElements('genAiPlugin')).toBe('functionName,developerName');
   });
 
   it('returns the compound-key fallback chain for `app` (covers profileActionOverrides + actionOverrides)', () => {

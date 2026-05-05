@@ -144,9 +144,30 @@ export default [
       uniqueIdElements: ['sobjectType'],
     },
     reportType: {
-      // `<sections>` items use `<masterLabel>` as their natural key. Same
+      // `<sections>` items use `<masterLabel>` as their natural key — same
       // pattern as `globalValueSetTranslation`/`standardValueSetTranslation`.
-      uniqueIdElements: ['masterLabel'],
+      // The singleton `<join>` element is keyed by `<relationship>` purely for
+      // readability: without it every reportType that joins a child object
+      // produces a hash-named shard.
+      uniqueIdElements: ['masterLabel', 'relationship'],
+    },
+    serviceChannel: {
+      // Each `<serviceChannelStatusFieldMappings>` row carries `<type>` (a
+      // status category like `COMPLETED` / `IN_PROGRESS`) and `<value>` (the
+      // human-readable status name). `<type>` collides massively (most rows
+      // are `COMPLETED`) and `<value>` alone is usually unique within a
+      // channel, but we observed status names repeated across distinct types
+      // in production data — the compound `type+value` is the only fully
+      // stable id, with `value` as a single-field fallback for any row that
+      // happens to lack `<type>`.
+      uniqueIdElements: ['type+value', 'value'],
+    },
+    genAiPlugin: {
+      // `<genAiFunctions>` items are keyed by `<functionName>`;
+      // `<genAiPluginInstructions>` items by `<developerName>`. Each
+      // repeating child only carries one of these fields, so first-match
+      // wins picks the right one without a compound.
+      uniqueIdElements: ['functionName', 'developerName'],
     },
     app: {
       // CustomApplication's `<profileActionOverrides>` and `<actionOverrides>`
