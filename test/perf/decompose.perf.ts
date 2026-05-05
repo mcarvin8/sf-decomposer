@@ -56,6 +56,11 @@ const DEFAULT_METADATA_TYPES = [
   'bot',
   'app',
   'globalValueSet',
+  // entitlementProcess intentionally exercises path-segment sanitization: the
+  // generator plants `/` and `:` in milestoneName values so a regression of
+  // the config-disassembler 0.5.0 sanitization fix would shrink the
+  // recomposed file below the RETENTION_THRESHOLD guard below.
+  'entitlementProcess',
 ];
 const METADATA_TYPES = envList('PERF_TYPES', DEFAULT_METADATA_TYPES);
 

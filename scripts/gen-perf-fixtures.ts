@@ -47,6 +47,14 @@ export interface SizeSpec {
   application: { actionOverrides: number; profileActionOverrides: number; tabs: number };
   globalValueSet: { customValues: number };
   bot: { dialogs: number; mlIntents: number };
+  // Round-trip regression target for path-segment sanitization (config-disassembler
+  // 0.5.0 / config-disassembler-node 1.3.0). A non-trivial subset of the generated
+  // milestoneName values contains characters that are illegal in a path segment
+  // (`/`, `:`, `*`, `?`, etc.). Sanitization is a no-op for safe identifiers, so
+  // existing perf coverage is unaffected; if sanitization ever regresses, those
+  // milestones either fail to write or land in phantom subdirectories and the
+  // recomposed bytes drop below the 0.99 retention threshold.
+  entitlementProcess: { milestones: number };
 }
 
 const PROFILES: Record<Profile, SizeSpec> = {
@@ -76,6 +84,7 @@ const PROFILES: Record<Profile, SizeSpec> = {
     application: { actionOverrides: 100, profileActionOverrides: 50, tabs: 20 },
     globalValueSet: { customValues: 100 },
     bot: { dialogs: 30, mlIntents: 20 },
+    entitlementProcess: { milestones: 30 },
   },
   medium: {
     permissionSet: {
@@ -103,6 +112,7 @@ const PROFILES: Record<Profile, SizeSpec> = {
     application: { actionOverrides: 500, profileActionOverrides: 250, tabs: 50 },
     globalValueSet: { customValues: 500 },
     bot: { dialogs: 150, mlIntents: 80 },
+    entitlementProcess: { milestones: 80 },
   },
   large: {
     // Calibrated against shapes seen in large 10+ year-old orgs:
@@ -133,6 +143,7 @@ const PROFILES: Record<Profile, SizeSpec> = {
     application: { actionOverrides: 2_500, profileActionOverrides: 1_500, tabs: 100 },
     globalValueSet: { customValues: 1_500 },
     bot: { dialogs: 600, mlIntents: 250 },
+    entitlementProcess: { milestones: 150 },
   },
   xlarge: {
     permissionSet: {
@@ -160,6 +171,7 @@ const PROFILES: Record<Profile, SizeSpec> = {
     application: { actionOverrides: 5_000, profileActionOverrides: 3_000, tabs: 200 },
     globalValueSet: { customValues: 3_000 },
     bot: { dialogs: 1_200, mlIntents: 500 },
+    entitlementProcess: { milestones: 300 },
   },
 };
 
@@ -751,6 +763,56 @@ function genBotVersion(spec: SizeSpec['bot']): string {
   return lines.join('\n') + '\n';
 }
 
+function genEntitlementProcess(spec: SizeSpec['entitlementProcess']): string {
+  // milestoneName is the unique-id key for this metadata type (see
+  // src/metadata/uniqueIdElements.ts). About 30% of the names below contain a
+  // `/` and one contains `:` so the disassembler exercises path-segment
+  // sanitization on every perf run. With sanitization in place the resulting
+  // shard filenames are safe and the file reassembles 1:1; if sanitization
+  // ever regresses the writes either fail (`/` makes the parent dir bogus on
+  // all platforms) or land in phantom subdirectories, dropping the recomposed
+  // bytes well below the 0.99 retention threshold and failing this suite.
+  const milestoneNameTemplates = [
+    'Initial Response',
+    'Sync/Import',
+    'First Engagement',
+    'Standard Resolution',
+    'Customer/Callback',
+    'Verify Action',
+    'Confirm:Step',
+    'Final Closure',
+    'Approval/Reject',
+    'Continue Path',
+  ] as const;
+
+  const lines: string[] = [];
+  lines.push(XML_HEADER + `<EntitlementProcess${NS}>`);
+  lines.push('    <SObjectType>Case</SObjectType>');
+  lines.push('    <active>true</active>');
+  lines.push('    <description>Synthetic entitlement process for performance testing.</description>');
+  lines.push('    <entryStartDateField>EntitlementStartDate</entryStartDateField>');
+  lines.push('    <isRecordTypeApplied>false</isRecordTypeApplied>');
+  lines.push('    <isVersionDefault>true</isVersionDefault>');
+
+  for (let i = 1; i <= spec.milestones; i++) {
+    const template = pick(milestoneNameTemplates, i);
+    lines.push('    <milestones>');
+    lines.push(`        <minutesToComplete>${(i % 240) + 15}</minutesToComplete>`);
+    lines.push('        <startDateField>CreatedDate</startDateField>');
+    // Counter suffix keeps every milestoneName unique so the disassembler is
+    // exercising sanitization (not the SHA-256 collision fallback).
+    lines.push(`        <milestoneName>${template} ${pad(i, 4)}</milestoneName>`);
+    lines.push('    </milestones>');
+  }
+
+  lines.push('    <name>Mega Entitlement Process</name>');
+  lines.push('    <versionMaster>Mega_EntitlementProcess</versionMaster>');
+  lines.push('    <versionNotes>Synthetic v1</versionNotes>');
+  lines.push('    <versionNumber>1</versionNumber>');
+  lines.push('</EntitlementProcess>');
+  return lines.join('\n') + '\n';
+}
+
 // ---------------------------------------------------------------------------
 // Layout / driver
 // ---------------------------------------------------------------------------
@@ -830,6 +892,12 @@ export async function generate(opts: GenerateOptions): Promise<GenerateResult> {
   );
   await writeOut(outDir, `${base}/bots/Mega_Bot/Mega_Bot.bot-meta.xml`, genBot(), files);
   await writeOut(outDir, `${base}/bots/Mega_Bot/v1.botVersion-meta.xml`, genBotVersion(spec.bot), files);
+  await writeOut(
+    outDir,
+    `${base}/entitlementProcesses/Mega_EntitlementProcess.entitlementProcess-meta.xml`,
+    genEntitlementProcess(spec.entitlementProcess),
+    files,
+  );
 
   const totalBytes = files.reduce((s, f) => s + f.bytes, 0);
   return { outDir, profile, files, totalBytes };
