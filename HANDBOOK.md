@@ -280,7 +280,7 @@ sf decomposer verify -t bot --config
 You probably ran two `decompose` invocations back-to-back, one rule each. Don't. The disassembler rewrites `.multi_level.json` on every run, so each call replaces the prior one. Pass every rule for a given component in **one** override entry, in array form.
 
 **2. "My `multiLevel` rule is correct but recompose produces a smaller file."**
-Almost always a unique-id collision. Two array items resolved to the same filename and one overwrote the other on disk. Add a tiebreaker to `unique_id_elements` (e.g. `developerName,id`) and re-decompose with `prePurge: true`.
+This used to be the silent-overwrite symptom of a unique-id collision and was the canonical reason to widen `unique_id_elements`. As of `config-disassembler` Rust 0.5.0 / Node 1.3.0, sibling collisions are detected and every colliding row is written to its own SHA-256-named shard, so a true collision no longer shrinks the recomposed file — it just produces hash-named shards (see pitfall #5 below) and a `WARN` log under `RUST_LOG=warn`. If you genuinely see a smaller recomposed file on a current build, treat it as a regression and capture the offending fixture; otherwise the right next step for hash-named shards is the same: add a tiebreaker to `unique_id_elements` (e.g. `developerName,id`) and re-decompose with `prePurge: true`.
 
 **3. "Component-scope override fields look ignored."**
 Component-scope wins over type-scope, but only for fields **the component override explicitly sets**. Fields it leaves out fall through to the type-scope value, then to the run-wide default. If you set `decomposedFormat: "yaml"` on a type and `strategy: "grouped-by-tag"` on the component, the component still gets `decomposedFormat: "yaml"` from the type override.
@@ -289,7 +289,10 @@ Component-scope wins over type-scope, but only for fields **the component overri
 That's by design for `multiLevel` types only. Multi-level recompose has to clean up inner-level directories so the next level can merge their reassembled XML. If you want the decomposed tree preserved for inspection, copy it before running `recompose`.
 
 **5. "Decompose succeeded but my decomposed files all have hash names."**
-Your `unique_id_elements` (or the rule's third part) didn't resolve to a non-empty value on those items. Check the source XML for the elements you listed — names are case-sensitive and live at the immediate child level of each repeating item. The plugin only walks one level deep when picking a UID.
+There are two distinct causes; run the decompose under `RUST_LOG=warn` to tell them apart:
+
+- **No `WARN` line.** Your `unique_id_elements` (or the rule's third part) didn't resolve to a non-empty value on those items. Check the source XML for the elements you listed — names are case-sensitive and live at the immediate child level of each repeating item. The plugin only walks one level deep when picking a UID.
+- **A `WARN` line of the form `uniqueIdElements collision: <parentTag> id "X" matched N sibling elements`.** The configured key is too narrow — multiple siblings legitimately share the same value, so the collision detector falls back to per-element SHA-256 hashes for that group rather than overwrite. Add a tiebreaker to `unique_id_elements` (e.g. a compound like `name+recordType`) and re-decompose with `prePurge: true`.
 
 ---
 

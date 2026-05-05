@@ -329,6 +329,15 @@ permissionsets/
     └── userPermissions.xml
 ```
 
+### Filename safety (unique-id)
+
+Two safety nets are applied automatically to every shard filename emitted by the **unique-id** strategy. Neither requires configuration:
+
+- **Path-segment sanitization.** When a unique-id value contains characters that are illegal or reserved on at least one supported filesystem — path separators (`/`, `\`), Windows-reserved chars (`:`, `*`, `?`, `"`, `<`, `>`, `|`), or ASCII control bytes — each is replaced with `_`, and trailing `.` and spaces are stripped. So an `EntitlementProcess` milestone named `TrustFile Transaction Sync/Import Complete` yields the shard `TrustFile Transaction Sync_Import Complete.milestones-meta.xml` on every platform, instead of `/` being interpreted as a directory separator.
+- **Sibling-collision fallback.** After sanitization, if two or more siblings of the same parent tag would still resolve to the same shard filename (because the configured unique-id elements are too narrow for that metadata type, or because sanitization happened to fold two distinct values into the same form), every sibling in the colliding group falls back to a per-element 8-character SHA-256 hash. No row is silently overwritten on disk.
+
+Path-segment sanitization is silent — sanitized filenames round-trip identically and are byte-stable across platforms, so there is nothing to warn about. Sibling-collision fallback, by contrast, emits one `WARN` line per colliding group (parent tag, collided id, sibling count) so you can decide whether to widen `uniqueIdElements` for that metadata type. By default these are filtered out — see [Rust crate logging](#xml-disassemble-output-rust-crate) below for how to surface them. If you see a hash-named shard in your output and want to know why, that's the first place to look.
+
 ### Custom Labels Decomposition
 
 Custom labels use only the **unique-id** strategy. If you pass `grouped-by-tag`, the plugin overrides to `unique-id` and continues. Grouping labels by tag would produce no difference from the original file since all elements share the same tag. Each label is written to its own file.
@@ -463,12 +472,24 @@ For example, if you attempt to decompose Custom Labels but none of your package 
 
 The config-disassembler Node plugin uses a **Rust crate** for XML decomposing and recomposing. Disassemble errors and messages are shown in the terminal.
 
-Control verbosity with the `RUST_LOG` environment variable (e.g. `RUST_LOG=debug` for detailed output).
+Control verbosity with the `RUST_LOG` environment variable. The crate uses [env_logger](https://docs.rs/env_logger), so the standard level filters apply: `error`, `warn`, `info`, `debug`, `trace`. By default only `error`-level lines are surfaced, which is why you would not see filename-safety warnings (sibling-collision fallback, path-segment sanitization) without opting in.
 
-Example output in the terminal (Rust log format):
+| Level                 | What it covers                                                                                                                                                                                                                                                       |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `RUST_LOG=error`      | Default. Skipped files (leaf-only XML), parse errors.                                                                                                                                                                                                                |
+| `RUST_LOG=warn`       | Adds [sibling-collision fallback](#filename-safety-unique-id) signals — one line per colliding group naming the parent tag, the collided id, and the sibling count, so you can decide whether to widen `uniqueIdElements` for that metadata type. Recommended in CI. |
+| `RUST_LOG=info,debug` | Per-element decomposition tracing. Verbose; useful for plugin development, not day-to-day use.                                                                                                                                                                       |
+
+Example terminal output at the default `error` level (a leaf-only file):
 
 ```
 [2026-04-30T12:34:38Z ERROR config_disassembler::xml::builders::build_disassembled_files] The XML file C:\Users\matthew.carvin\Documents\sf-decomposer\fixtures\package-dir-1\permissionsets\only_leafs.permissionset-meta.xml only has leaf elements. This file will not be disassembled.
+```
+
+Example with `RUST_LOG=warn` set, for a `CustomApplication` whose configured unique-id was too narrow for one group of `actionOverrides` siblings:
+
+```
+[2026-05-04T15:21:09Z WARN config_disassembler::xml::builders::build_disassembled_files] uniqueIdElements collision: <actionOverrides> id "View" matched 4 sibling elements; falling back to SHA-256 content hashes for the colliding group. Consider adding more discriminating fields to uniqueIdElements for this metadata type.
 ```
 
 ### Files with only leaf elements
