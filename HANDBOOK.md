@@ -126,9 +126,9 @@ Each dialog still gets its own folder, but steps live as flat `*.botSteps-meta.x
 >
 > The default still applies to every other bot.
 
-> **Agentforce vs Einstein.** Both share the `bot` suffix, so a single override entry covers both bot families. The structural difference (Agentforce uses richer `botFlowInvocation` and `genAi*` blocks where Einstein uses `botNavigation` and `mlIntents`) is invisible to this recipe — `multiLevel` rules only target the repeating sections that exist on each side. The plugin ships an `Internal_Copilot_Sample` fixture that exercises the Agentforce-style shape and an Einstein-style `Sample_Chat_Bot` fixture; both round-trip with the same recipe.
-
-> **Sibling order inside `botSteps`.** Recompose orders `<botSteps>` siblings alphabetically by their on-disk filename, not by their original document position. For bot deploys this is a no-op (Salesforce doesn't rely on step order at the XML level), but a freshly-recomposed file may show step entries shuffled compared to the source you originally pulled. The committed fixtures in this repo are baked from the recompose output for that reason — `sf decomposer verify` will treat the baked output as the source of truth.
+> **Agentforce vs Einstein.** Both share the `bot` suffix and are covered by a single override. Their structural differences (Agentforce: `botFlowInvocation`, `genAi*`; Einstein: `botNavigation`, `mlIntents`) are invisible to the recipe — `multiLevel` only targets the repeating sections that exist on each side.
+>
+> **Sibling order inside `botSteps`.** Recompose orders `<botSteps>` siblings alphabetically by on-disk filename, not by document position. Salesforce ignores step order at the XML level, so deploys are unaffected — but a freshly-recomposed file may show steps shuffled compared to the originally-retrieved source. The committed fixtures in this repo are baked from the recompose output for that reason; `sf decomposer verify` treats the baked output as the source of truth.
 
 ## Flexipages (Lightning App / Record / Home pages)
 
@@ -280,7 +280,7 @@ sf decomposer verify -t bot --config
 You probably ran two `decompose` invocations back-to-back, one rule each. Don't. The disassembler rewrites `.multi_level.json` on every run, so each call replaces the prior one. Pass every rule for a given component in **one** override entry, in array form.
 
 **2. "My `multiLevel` rule is correct but recompose produces a smaller file."**
-This used to be the silent-overwrite symptom of a unique-id collision and was the canonical reason to widen `unique_id_elements`. As of `config-disassembler` Rust 0.5.0 / Node 1.3.0, sibling collisions are detected and every colliding row is written to its own SHA-256-named shard, so a true collision no longer shrinks the recomposed file — it just produces hash-named shards (see pitfall #5 below) and a `WARN` log under `RUST_LOG=warn`. If you genuinely see a smaller recomposed file on a current build, treat it as a regression and capture the offending fixture; otherwise the right next step for hash-named shards is the same: add a tiebreaker to `unique_id_elements` (e.g. `developerName,id`) and re-decompose with `prePurge: true`.
+On `config-disassembler` Rust ≥ 0.5.0 / Node ≥ 1.3.0 this should not happen — sibling collisions are written to per-element SHA-256 shards and surfaced as a `WARN` (see pitfall #5), not silently overwritten. If you do see a shrunken recomposed file on a current build, treat it as a regression worth capturing as a fixture.
 
 **3. "Component-scope override fields look ignored."**
 Component-scope wins over type-scope, but only for fields **the component override explicitly sets**. Fields it leaves out fall through to the type-scope value, then to the run-wide default. If you set `decomposedFormat: "yaml"` on a type and `strategy: "grouped-by-tag"` on the component, the component still gets `decomposedFormat: "yaml"` from the type override.

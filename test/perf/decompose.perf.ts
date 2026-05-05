@@ -159,11 +159,19 @@ describe(`perf: decompose/recompose round-trip (profile=${PROFILE})`, () => {
         // collision bug fixed in config-disassembler 0.4.3) that would still
         // pass the pass1 == pass2 idempotence check below since both passes
         // would produce the same shrunken output.
+        //
+        // We also collect every (path, original, recomposed, ratio) tuple so
+        // the per-format summary can print the full distribution. The
+        // RETENTION_THRESHOLD guard only fires below 0.99, but a regression
+        // that nibbles a file from 100.00% down to 99.50% should still be
+        // visible in PR logs before it crosses the floor.
+        const retention: Array<{ path: string; original: number; recomposed: number; ratio: number }> = [];
         for (const [path, content] of firstRoundtrip) {
           const original = fixtureFileBytes.get(path);
           if (original === undefined) continue; // sfdx-project.json, generated files
           const recomposed = Buffer.byteLength(content, 'utf8');
           const ratio = recomposed / original;
+          retention.push({ path, original, recomposed, ratio });
           expect(
             ratio,
             `data loss on round-trip for ${path}: ${recomposed}/${original} bytes (${(ratio * 100).toFixed(2)}%)`,
@@ -218,7 +226,7 @@ describe(`perf: decompose/recompose round-trip (profile=${PROFILE})`, () => {
           samples,
         });
 
-        printSummary(format, fixtureBytes, samples, decomposedSnapshot, reportFile);
+        printSummary(format, fixtureBytes, samples, decomposedSnapshot, retention, reportFile);
       });
     });
   }
@@ -274,6 +282,7 @@ function printSummary(
   inputBytes: number,
   samples: MeasureResult[],
   decomposedSnapshot: { files: number; bytes: number },
+  retention: ReadonlyArray<{ path: string; original: number; recomposed: number; ratio: number }>,
   reportFile: string,
 ): void {
   const totalElapsed = samples.reduce((s, x) => s + x.elapsedMs, 0);
@@ -290,6 +299,36 @@ function printSummary(
     );
   }
   lines.push(`[perf]   total=${formatMs(totalElapsed)}  peak rssΔ=${formatBytes(peakRssDelta)}  report=${reportFile}`);
+
+  // Per-file retention breakdown. Sorted ascending so any file that's eaten
+  // bytes shows at the top - that's where you look first when investigating
+  // a regression that's still above the 0.99 floor but trending downward.
+  if (retention.length > 0) {
+    const sorted = [...retention].sort((a, b) => a.ratio - b.ratio);
+    const minRatio = sorted[0].ratio;
+    const maxRatio = sorted[sorted.length - 1].ratio;
+    const meanRatio = sorted.reduce((s, x) => s + x.ratio, 0) / sorted.length;
+    const pathPad = Math.min(
+      60,
+      sorted.reduce((m, r) => Math.max(m, r.path.length), 0),
+    );
+    lines.push(
+      `[perf] retention (${format}): min=${formatPercent(minRatio)} ` +
+        `mean=${formatPercent(meanRatio)} max=${formatPercent(maxRatio)} ` +
+        `(threshold=${formatPercent(0.99)})`,
+    );
+    for (const r of sorted) {
+      lines.push(
+        `[perf]   ${r.path.padEnd(pathPad)}  ${formatPercent(r.ratio).padStart(7)}  ` +
+          `(${r.recomposed.toLocaleString()} / ${r.original.toLocaleString()} bytes)`,
+      );
+    }
+  }
+
   // eslint-disable-next-line no-console
   console.log(lines.join('\n'));
+}
+
+function formatPercent(ratio: number): string {
+  return `${(ratio * 100).toFixed(2)}%`;
 }
