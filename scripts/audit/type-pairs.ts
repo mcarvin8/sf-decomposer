@@ -79,4 +79,10 @@ export const ROUNDTRIP_PAIRS: readonly TypePair[] = [
   { type: 'applications', suffix: 'app' },
   { type: 'entitlementProcesses', suffix: 'entitlementProcess' },
   { type: 'approvalProcesses', suffix: 'approvalProcess' },
+  // Types added in the compound-uniqueid-expansion pass (PR #439). Keep them
+  // in the round-trip net so any future change that weakens
+  // `serviceChannelStatusFieldMappings` (compound `type+value`) or the
+  // genAiPlugin functionName/developerName keys is caught immediately.
+  { type: 'serviceChannels', suffix: 'serviceChannel' },
+  { type: 'genAiPlugins', suffix: 'genAiPlugin' },
 ];
