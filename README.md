@@ -72,7 +72,9 @@ A Salesforce CLI plugin that **decomposes** large metadata XML files into smalle
 - Node.js 20.x or later
 - A Salesforce DX project with `sfdx-project.json` and package directories
 
-The [config-disassembler-node](https://github.com/mcarvin8/config-disassembler-node) package, which depends on a Rust crate, ships with native binaries for these platforms:
+### Supported Platforms
+
+sf-decomposer depends on [config-disassembler-node](https://github.com/mcarvin8/config-disassembler-node), which includes prebuilt native binaries for:
 
 | Platform    | Architectures                      |
 | ----------- | ---------------------------------- |
@@ -80,7 +82,7 @@ The [config-disassembler-node](https://github.com/mcarvin8/config-disassembler-n
 | **Linux**   | x64, arm64, ia32                   |
 | **Windows** | x64                                |
 
-If other platforms or architectures require support, please open an issue in [config-disassembler-node](https://github.com/mcarvin8/config-disassembler-node/issues).
+If your platform or architecture is not listed, please open an [issue](https://github.com/mcarvin8/sf-decomposer/issues).
 
 ---
 
@@ -662,7 +664,7 @@ Optional. Ignore recomposed metadata so it aren’t committed. See the [sample .
 
 ## Issues
 
-Bugs and feature requests: [open an issue](https://github.com/mcarvin8/sf-decomposer/issues).
+Bugs and feature requests: open an [issue](https://github.com/mcarvin8/sf-decomposer/issues).
 
 ---
 
