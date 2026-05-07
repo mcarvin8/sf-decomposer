@@ -68,6 +68,10 @@ A Salesforce CLI plugin that **decomposes** large metadata XML files into smalle
 
 ## Requirements
 
+- [Salesforce CLI](https://developer.salesforce.com/tools/sfdxcli) (`sf`) installed
+- Node.js 20.x or later
+- A Salesforce DX project with `sfdx-project.json` and package directories
+
 The [config-disassembler-node](https://github.com/mcarvin8/config-disassembler-node) package, which depends on a Rust crate, ships with native binaries for these platforms:
 
 | Platform    | Architectures                      |
