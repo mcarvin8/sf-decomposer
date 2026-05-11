@@ -14,9 +14,14 @@
     "!src/helpers/types.ts",
     "!src/helpers/constants.ts"
   ],
-  "reporters": ["html", "clear-text", "progress"],
+  "reporters": ["html", "clear-text", "progress", "dashboard"],
   "htmlReporter": {
     "fileName": "reports/mutation/index.html"
+  },
+  "dashboard": {
+    "project": "github.com/mcarvin8/sf-decomposer",
+    "version": "main",
+    "reportType": "mutationScore"
   },
   "timeoutMS": 600000,
   "timeoutFactor": 2,

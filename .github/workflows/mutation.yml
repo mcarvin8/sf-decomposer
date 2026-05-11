@@ -89,7 +89,16 @@ jobs:
         # GitHub-hosted ubuntu-latest runners have 4 cores (as of 2026). Stryker
         # defaults concurrency to cores-1; pinning explicitly avoids surprises
         # if GitHub changes runner sizing later.
-        run: npm run test:mutation -- --concurrency 3
+        #
+        # The dashboard reporter (configured in stryker.config.json) uploads the
+        # mutation score to https://dashboard.stryker-mutator.io. The API key is
+        # injected from the STRYKER_DASHBOARD_API_KEY secret; --dashboard.version
+        # overrides the hardcoded `main` so that the dashboard partitions runs
+        # per ref (e.g. release branches, tags) when this job is dispatched from
+        # somewhere other than main.
+        env:
+          STRYKER_DASHBOARD_API_KEY: ${{ secrets.STRYKER_DASHBOARD_API_KEY }}
+        run: npm run test:mutation -- --concurrency 3 --dashboard.version "${{ github.ref_name }}"
 
       - name: Upload mutation report
         if: always()
