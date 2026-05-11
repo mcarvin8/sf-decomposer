@@ -1,0 +1,23 @@
+README.md
+  s_9d8da00257762a::t_a3e63a22994b8d 8
+stryker.config.json
+  s_9d8da00257762a::t_c24840094a84f9 17,21-24
+.github/workflows/mutation.yml
+  s_9d8da00257762a::t_28424508a2e98d 92-101
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "a1f937d24a1c49eceb8f98dccab58f3cfb896d5a",
+  "prompts": {},
+  "sessions": {
+    "s_9d8da00257762a": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "77c37170-73f8-4704-8a45-0df131ebfd06",
+        "model": "auto-high"
+      },
+      "human_author": "Matt Carvin <90224411+mcarvin8@users.noreply.github.com>"
+    }
+  }
+}
