@@ -1,0 +1,24 @@
+test/units/recomposeFileHandler.test.ts
+  s_9d8da00257762a::t_de72af227ed8d2 1-121,123-145,147-262,264-268,281,285-286,288,290,292-323
+  s_9d8da00257762a::t_ed99c4c5149c35 122,146,263,287,291
+test/units/decomposeFileHandler.test.ts
+  s_9d8da00257762a::t_ed99c4c5149c35 139,261,274,387,444,484,514
+  s_9d8da00257762a::t_b25e477ae6d0de 1-12,23-24,28-138,140-260,262-273,275-386,388-443,445-483,485-513,515-521
+  s_9d8da00257762a::t_9a0c947c385948 13-22,25-27
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "36bd216a8c3c0a243e81f90d5f220ce7ac7fa68c",
+  "prompts": {},
+  "sessions": {
+    "s_9d8da00257762a": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "77c37170-73f8-4704-8a45-0df131ebfd06",
+        "model": "auto-high"
+      },
+      "human_author": "Matt Carvin <90224411+mcarvin8@users.noreply.github.com>"
+    }
+  }
+}
