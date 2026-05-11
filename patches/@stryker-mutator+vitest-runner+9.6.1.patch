@@ -1,0 +1,31 @@
+diff --git a/node_modules/@stryker-mutator/vitest-runner/dist/src/vitest-test-runner.js b/node_modules/@stryker-mutator/vitest-runner/dist/src/vitest-test-runner.js
+index 29b77da..d7fbe21 100644
+--- a/node_modules/@stryker-mutator/vitest-runner/dist/src/vitest-test-runner.js
++++ b/node_modules/@stryker-mutator/vitest-runner/dist/src/vitest-test-runner.js
+@@ -33,19 +33,18 @@ export class VitestTestRunner {
+         await fs.promises.copyFile(STRYKER_SETUP, this.localSetupFile);
+         this.ctx = await vitestWrapper.createVitest('test', {
+             config: this.options.vitest?.configFile,
+-            // @ts-expect-error threads got renamed to "pool: threads" in vitest 1.0.0
+-            threads: true,
+-            pool: 'threads',
++            // Use forks pool: native addons (e.g. config-disassembler) and code that calls
++            // process.chdir() are not safe inside worker_threads.
++            pool: 'forks',
+             coverage: { enabled: false },
+             poolOptions: {
+-                // Since vitest 1.0.0
+-                threads: {
+-                    maxThreads: 1,
+-                    minThreads: 1,
++                forks: {
++                    maxForks: 1,
++                    minForks: 1,
++                    singleFork: true,
+                 },
+             },
+             maxWorkers: 1,
+-            singleThread: false,
+             maxConcurrency: 1,
+             watch: false,
+             dir: this.options.vitest.dir,
