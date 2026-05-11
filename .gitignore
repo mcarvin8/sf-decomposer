@@ -42,6 +42,10 @@ perf-results
 perf-runtime.json
 perf-memory.json
 
+# stryker mutation testing
+.stryker-tmp
+reports
+
 # --
 # put files here you don't want cleaned with sf-clean
 
@@ -53,7 +57,7 @@ oclif.manifest.json
 
 oclif.lock
 
-disassemble.log
+*.log
 
 stderr*.txt
 stdout*.txt

@@ -1,0 +1,100 @@
+name: Mutation Testing
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+      - 'examples/**'
+      - 'fixtures/**'
+      - 'messages/**'
+  workflow_dispatch:
+    inputs:
+      full:
+        description: 'Run the full mutation test suite instead of incremental'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: ${{ github.ref }}-mutation
+  cancel-in-progress: true
+
+jobs:
+  incremental:
+    if: ${{ github.event_name == 'pull_request' || !inputs.full }}
+    name: Incremental mutation testing
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          cache: npm
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run compile
+
+      - name: Run incremental mutation testing
+        env:
+          MUTATION_BASE_BRANCH: origin/${{ github.base_ref }}
+        run: npm run test:mutation:incremental
+
+      - name: Upload mutation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mutation-report
+          path: reports/mutation
+          if-no-files-found: ignore
+
+  full:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.full }}
+    name: Full mutation testing
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          cache: npm
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run compile
+
+      - name: Run mutation testing
+        # GitHub-hosted ubuntu-latest runners have 4 cores (as of 2026). Stryker
+        # defaults concurrency to cores-1; pinning explicitly avoids surprises
+        # if GitHub changes runner sizing later.
+        run: npm run test:mutation -- --concurrency 3
+
+      - name: Upload mutation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mutation-report
+          path: reports/mutation
+          if-no-files-found: ignore
