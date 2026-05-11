@@ -1,0 +1,40 @@
+patches/@stryker-mutator+vitest-runner+9.6.1.patch
+  s_9d8da00257762a::t_001d7a67f997e7 1-31
+package.json
+  s_9d8da00257762a::t_dd84dfaa905f1b 28
+  s_9d8da00257762a::t_29de9bfb48f1ef 101
+  s_9d8da00257762a::t_4eaf01bfd4bca5 102
+  s_9d8da00257762a::t_dd39bf0e208f92 20-21
+.github/workflows/mutation.yml
+  s_9d8da00257762a::t_d67916c8e8f541 1-88,93-100
+  s_9d8da00257762a::t_ab25818938bf41 89-92
+stryker.config.json
+  s_9d8da00257762a::t_1d4e1a1114d354 1-5,7-45
+  s_9d8da00257762a::t_a8d2b8f9d00748 6
+scripts/incremental-mutation.mjs
+  s_9d8da00257762a::t_3ed817177a12b0 1-22,24-55
+.gitignore
+  s_9d8da00257762a::t_c2c64de12021c4 45-48
+  h_32c5fe00500658 60
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "d5dfc700b0f9a0ccbebebe9d908d7a02e4376467",
+  "prompts": {},
+  "humans": {
+    "h_32c5fe00500658": {
+      "author": "Matt Carvin <90224411+mcarvin8@users.noreply.github.com>"
+    }
+  },
+  "sessions": {
+    "s_9d8da00257762a": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "77c37170-73f8-4704-8a45-0df131ebfd06",
+        "model": "auto-high"
+      },
+      "human_author": "Matt Carvin <90224411+mcarvin8@users.noreply.github.com>"
+    }
+  }
+}
