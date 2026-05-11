@@ -14,9 +14,12 @@
     "!src/helpers/types.ts",
     "!src/helpers/constants.ts"
   ],
-  "reporters": ["html", "clear-text", "progress", "dashboard"],
+  "reporters": ["html", "json", "clear-text", "progress", "dashboard"],
   "htmlReporter": {
     "fileName": "reports/mutation/index.html"
+  },
+  "jsonReporter": {
+    "fileName": "reports/mutation/mutation-testing-report.json"
   },
   "dashboard": {
     "project": "github.com/mcarvin8/sf-decomposer",
