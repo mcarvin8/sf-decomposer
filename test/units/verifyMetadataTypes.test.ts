@@ -1,6 +1,6 @@
 'use strict';
 
-import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, realpath, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
@@ -61,7 +61,11 @@ const SFDX_PROJECT_BODY = JSON.stringify(
 );
 
 async function makeProject(): Promise<Project> {
-  const root = await mkdtemp(join(tmpdir(), 'verify-mt-'));
+  // mkdtemp on macOS returns a path under `/var/folders/...`, but `process.cwd()` resolves
+  // it through the `/var -> /private/var` symlink to `/private/var/folders/...`. The SUT
+  // builds its return values off the cwd-derived repo root, so we realpath here to make
+  // tests compare against the same root-form the function uses internally.
+  const root = await realpath(await mkdtemp(join(tmpdir(), 'verify-mt-')));
   const forceAppDir = join(root, 'force-app');
   await mkdir(join(forceAppDir, 'permissionsets'), { recursive: true });
   const permsetFile = join(forceAppDir, 'permissionsets', 'HR_Admin.permissionset-meta.xml');
@@ -333,12 +337,21 @@ describe('verifyMetadataTypes', () => {
       '<?xml version="1.0" encoding="UTF-8"?><Package xmlns="http://soap.sforce.com/2006/04/metadata"><version>58.0</version></Package>',
     );
 
-    // Capture the cwd at the moment decompose is called -- this is the temp project root.
+    // Capture the cwd and the manifest path at the moment decompose is called -- this is
+    // when the temp project still exists on disk. We realpath both inside the mock to
+    // normalise away platform-specific path quirks (macOS `/var -> /private/var` and
+    // Windows 8.3 short names like `MATTHE~1.CAR`).
     let cwdDuringDecompose: string | undefined;
     let manifestDuringDecompose: string | undefined;
+    let realManifestDuringDecompose: string | undefined;
+    let realCwdDuringDecompose: string | undefined;
     decomposeSpy.mockImplementationOnce(async (opts: { manifest?: string }) => {
       cwdDuringDecompose = process.cwd();
+      realCwdDuringDecompose = await realpath(cwdDuringDecompose);
       manifestDuringDecompose = opts.manifest;
+      if (manifestDuringDecompose) {
+        realManifestDuringDecompose = await realpath(manifestDuringDecompose);
+      }
       return { metadata: ['permissionset'] };
     });
 
@@ -353,11 +366,9 @@ describe('verifyMetadataTypes', () => {
     });
 
     expect(cwdDuringDecompose).toBeDefined();
-    // The forwarded manifest path must live under the temp project at the same relpath.
-    expect(manifestDuringDecompose).toBe(resolve(cwdDuringDecompose as string, manifestRel));
-    // The file must actually exist on disk (it was rm'd by the time we reach here, so check via
-    // the spy capture above is the only signal we have).
     expect(typeof manifestDuringDecompose).toBe('string');
+    // The forwarded manifest path must live under the temp project at the same relpath.
+    expect(realManifestDuringDecompose).toBe(resolve(realCwdDuringDecompose as string, manifestRel));
   });
 
   it('forwards the same temp manifest path to recompose', async () => {
