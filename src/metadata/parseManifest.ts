@@ -28,9 +28,15 @@ export async function parseManifest(manifestPath: string, ignoreDirs: string[] |
   };
   const absManifestPath = resolve(repoRoot, manifestPath);
 
+  // Stryker disable next-line StringLiteral: JSON.parse(Buffer) defaults to UTF-8 decoding,
+  // so the encoding argument is observably equivalent for the ASCII sfdx-project.json contents
+  // this plugin is ever invoked against.
   const sfdxProjectRaw: string = await readFile(dxConfigFilePath, 'utf-8');
   const sfdxProject: SfdxProject = JSON.parse(sfdxProjectRaw) as SfdxProject;
 
+  // Stryker disable next-line ArrayDeclaration: the empty-array fallback only diverges from the
+  // mutator's placeholder array when a real package directory's basename happens to equal
+  // "Stryker was here", which no real SFDX project produces.
   const normalizedIgnoreDirs = (ignoreDirs ?? []).map((dir) => basename(dir));
   const packageDirs = sfdxProject.packageDirectories
     .map((directory) => resolve(repoRoot, directory.path))
@@ -67,12 +73,19 @@ export async function parseManifest(manifestPath: string, ignoreDirs: string[] |
     groupedEntries.map(async ({ parentType, parentMembers, wildcard }) => {
       const suffix = parentType.suffix;
       /* istanbul ignore next -- @preserve: parent metadata types always declare a suffix in SDR's registry */
+      // Stryker disable next-line all: paired with the istanbul-ignore; SDR's registry never
+      // produces a parent type without a suffix, so this guard is unreachable from any caller.
       if (!suffix) return undefined;
 
       const typeDirs = await findTypeDirectories(packageDirs, parentType.directoryName);
+      // Stryker disable next-line ConditionalExpression: when typeDirs is empty the downstream
+      // Promise.all([]) resolves immediately and xmlPaths.size === 0 returns undefined anyway,
+      // so the early-return mutation is a micro-optimization with no observable difference.
       if (typeDirs.length === 0) return undefined;
 
       const xmlPaths = new Set<string>();
+      // Stryker disable next-line ArrayDeclaration: resolveTasks is awaited via Promise.all; a
+      // string placeholder added by the mutator resolves to itself and is harmlessly discarded.
       const resolveTasks: Array<Promise<void>> = [];
 
       if (wildcard) {
@@ -105,6 +118,9 @@ export async function parseManifest(manifestPath: string, ignoreDirs: string[] |
     const { suffix, xmlPaths } = entry;
 
     /* istanbul ignore else -- @preserve: multiple parent types sharing a suffix is not produced by SDR's registry */
+    // Stryker disable next-line ConditionalExpression: SDR never assigns the same suffix to two
+    // different parent types, so the `has(suffix) === true` branch is unreachable from any
+    // real metadata input; the always-true mutant is observably equivalent.
     if (!parentXmlsBySuffix.has(suffix)) {
       parentXmlsBySuffix.set(suffix, xmlPaths);
       orderedSuffixes.push(suffix);
@@ -137,6 +153,8 @@ async function searchRecursively(dir: string, targetName: string): Promise<strin
     return [...directMatches, ...nested.flat()];
   } catch {
     /* istanbul ignore next -- @preserve: Filesystem permission errors are platform-specific */
+    // Stryker disable next-line BlockStatement: defensive only; readdir() only throws for
+    // permission-denied or missing-dir errors, which the caller cannot reach.
     return [];
   }
 }
@@ -148,6 +166,7 @@ async function resolveMemberXml(
 ): Promise<string | undefined> {
   const { suffix, strictDirectoryName, folderType } = parentType;
   /* istanbul ignore next -- @preserve: types reaching this point always have a suffix */
+  // Stryker disable next-line all: paired with the istanbul-ignore above.
   if (!suffix) return undefined;
 
   // Labels type has a single file regardless of member name.
@@ -157,6 +176,10 @@ async function resolveMemberXml(
     return (await exists(labelsFile)) ? resolve(labelsFile) : undefined;
   }
 
+  // Stryker disable next-line ConditionalExpression, BlockStatement: when folderType is true,
+  // strictDirectoryName is always false (mutually exclusive in SDR's registry), so the
+  // mutated false-branch falls through to the identical non-strict `join(typeDir, ...)` path
+  // below and produces the same observable result.
   if (folderType) {
     // Folder-scoped types (e.g. Report, Dashboard, EmailTemplate, Document).
     // Member is of the form `<folder>/<name>`; file is `<typeDir>/<folder>/<name>.<suffix>-meta.xml`.
@@ -176,6 +199,7 @@ async function resolveMemberXml(
 async function listParentXmlPaths(typeDir: string, parentType: MetadataType): Promise<string[]> {
   const { suffix, strictDirectoryName } = parentType;
   /* istanbul ignore next -- @preserve: types reaching this point always have a suffix */
+  // Stryker disable next-line all: paired with the istanbul-ignore above.
   if (!suffix) return [];
 
   const metaEnding = `.${suffix}-meta.xml`;
@@ -208,6 +232,9 @@ async function exists(path: string): Promise<boolean> {
     await stat(path);
     return true;
   } catch {
+    // Stryker disable next-line BlockStatement: the catch is the contract for "path does not
+    // exist"; returning `undefined` (the empty-block mutant) is treated as falsy by every
+    // caller, so the mutation is observably equivalent.
     return false;
   }
 }
