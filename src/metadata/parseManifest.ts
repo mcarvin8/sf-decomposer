@@ -72,9 +72,7 @@ export async function parseManifest(manifestPath: string, ignoreDirs: string[] |
   const resolvedPerGroup = await Promise.all(
     groupedEntries.map(async ({ parentType, parentMembers, wildcard }) => {
       const suffix = parentType.suffix;
-      /* istanbul ignore next -- @preserve: parent metadata types always declare a suffix in SDR's registry */
-      // Stryker disable next-line all: paired with the istanbul-ignore; SDR's registry never
-      // produces a parent type without a suffix, so this guard is unreachable from any caller.
+      /* istanbul ignore next -- @preserve: parent metadata types always declare a suffix in SDR's registry. Stryker disable next-line all */
       if (!suffix) return undefined;
 
       const typeDirs = await findTypeDirectories(packageDirs, parentType.directoryName);
@@ -117,10 +115,7 @@ export async function parseManifest(manifestPath: string, ignoreDirs: string[] |
     if (!entry) continue;
     const { suffix, xmlPaths } = entry;
 
-    /* istanbul ignore else -- @preserve: multiple parent types sharing a suffix is not produced by SDR's registry */
-    // Stryker disable next-line ConditionalExpression: SDR never assigns the same suffix to two
-    // different parent types, so the `has(suffix) === true` branch is unreachable from any
-    // real metadata input; the always-true mutant is observably equivalent.
+    /* istanbul ignore else -- @preserve: multiple parent types sharing a suffix is not produced by SDR's registry. Stryker disable next-line ConditionalExpression: */
     if (!parentXmlsBySuffix.has(suffix)) {
       parentXmlsBySuffix.set(suffix, xmlPaths);
       orderedSuffixes.push(suffix);
@@ -152,9 +147,7 @@ async function searchRecursively(dir: string, targetName: string): Promise<strin
     const nested = await Promise.all(nestedPromises);
     return [...directMatches, ...nested.flat()];
   } catch {
-    /* istanbul ignore next -- @preserve: Filesystem permission errors are platform-specific */
-    // Stryker disable next-line BlockStatement: defensive only; readdir() only throws for
-    // permission-denied or missing-dir errors, which the caller cannot reach.
+    /* istanbul ignore next -- @preserve: Filesystem permission errors are platform-specific. Stryker disable next-line BlockStatement */
     return [];
   }
 }
@@ -165,8 +158,7 @@ async function resolveMemberXml(
   member: string,
 ): Promise<string | undefined> {
   const { suffix, strictDirectoryName, folderType } = parentType;
-  /* istanbul ignore next -- @preserve: types reaching this point always have a suffix */
-  // Stryker disable next-line all: paired with the istanbul-ignore above.
+  /* istanbul ignore next -- @preserve: types reaching this point always have a suffix Stryker disable next-line all: paired with the istanbul-ignore above. */
   if (!suffix) return undefined;
 
   // Labels type has a single file regardless of member name.
@@ -198,8 +190,7 @@ async function resolveMemberXml(
 
 async function listParentXmlPaths(typeDir: string, parentType: MetadataType): Promise<string[]> {
   const { suffix, strictDirectoryName } = parentType;
-  /* istanbul ignore next -- @preserve: types reaching this point always have a suffix */
-  // Stryker disable next-line all: paired with the istanbul-ignore above.
+  /* istanbul ignore next -- @preserve: types reaching this point always have a suffix Stryker disable next-line all: paired with the istanbul-ignore above. */
   if (!suffix) return [];
 
   const metaEnding = `.${suffix}-meta.xml`;
