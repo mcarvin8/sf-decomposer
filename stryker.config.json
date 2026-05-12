@@ -10,6 +10,8 @@
     "src/**/*.ts",
     "!src/**/*.d.ts",
     "!src/index.ts",
+    "!src/commands/**/*.ts",
+    "!src/hooks/*.ts",
     "!src/metadata/uniqueIdElements.ts",
     "!src/helpers/types.ts",
     "!src/helpers/constants.ts"
