@@ -1,0 +1,19 @@
+test/units/configOverrides.test.ts
+  s_9d8da00257762a::t_b7ffe688271736 745-880,882-916,918-958,960-997,999-1002,1004-1044
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "4d20b9bd9eaa7cc944c90b273517036945415e8d",
+  "prompts": {},
+  "sessions": {
+    "s_9d8da00257762a": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "77c37170-73f8-4704-8a45-0df131ebfd06",
+        "model": "auto-high"
+      },
+      "human_author": "Matt Carvin <90224411+mcarvin8@users.noreply.github.com>"
+    }
+  }
+}
