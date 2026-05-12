@@ -1,0 +1,26 @@
+test/units/getRegistryValuesBySuffix.test.ts
+  s_9d8da00257762a::t_cc14444a89cb97 28-32
+  s_9d8da00257762a::t_b74bee9bca88c9 3
+test/units/parseManifest.test.ts
+  s_9d8da00257762a::t_53ddca8acc28b4 26-30
+  s_9d8da00257762a::t_12378222761fb1 3
+test/units/getPackageDirectories.test.ts
+  s_9d8da00257762a::t_2141458a97060c 3
+  s_9d8da00257762a::t_9ffc6397a16a29 24-28
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "81e462af49228a6d52e93cde10113390e51b9559",
+  "prompts": {},
+  "sessions": {
+    "s_9d8da00257762a": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "77c37170-73f8-4704-8a45-0df131ebfd06",
+        "model": "auto-high"
+      },
+      "human_author": "Matt Carvin <90224411+mcarvin8@users.noreply.github.com>"
+    }
+  }
+}
