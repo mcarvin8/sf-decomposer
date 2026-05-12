@@ -1,0 +1,25 @@
+test/units/configOverrides.test.ts
+  s_9d8da00257762a::t_3904435bd4d5db 1008-1110,1112-1125
+CONTRIBUTING.md
+  s_9d8da00257762a::t_c739d3b0b1b57b 93-126
+test/units/parseManifest.test.ts
+  s_9d8da00257762a::t_51cb4f51f455ae 408-508
+test/units/moveFiles.test.ts
+  s_9d8da00257762a::t_5e08cc82e30a37 81-126
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "126914c32223c70e89ed7e5f6eba040a580c5bb6",
+  "prompts": {},
+  "sessions": {
+    "s_9d8da00257762a": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "77c37170-73f8-4704-8a45-0df131ebfd06",
+        "model": "auto-high"
+      },
+      "human_author": "Matt Carvin <90224411+mcarvin8@users.noreply.github.com>"
+    }
+  }
+}
