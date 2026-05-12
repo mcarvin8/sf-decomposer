@@ -1,6 +1,6 @@
 'use strict';
 
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, realpath, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -25,7 +25,11 @@ type Project = {
 };
 
 async function makeProject(): Promise<Project> {
-  const root = await mkdtemp(join(tmpdir(), 'gvbs-'));
+  // mkdtemp on macOS returns a path under `/var/folders/...`, but `process.cwd()` resolves
+  // it through the `/var -> /private/var` symlink to `/private/var/folders/...`. The SUT
+  // builds its return values off the cwd-derived repo root, so we realpath here to make
+  // tests compare against the same root-form the function uses internally.
+  const root = await realpath(await mkdtemp(join(tmpdir(), 'gvbs-')));
   const forceAppDir = join(root, 'force-app');
   await mkdir(forceAppDir, { recursive: true });
 
