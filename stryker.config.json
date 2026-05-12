@@ -24,7 +24,7 @@
   "dashboard": {
     "project": "github.com/mcarvin8/sf-decomposer",
     "version": "main",
-    "reportType": "mutationScore"
+    "reportType": "full"
   },
   "timeoutMS": 600000,
   "timeoutFactor": 2,
@@ -47,7 +47,6 @@
     "perf-results",
     "test/perf",
     "test/**/*.nut.ts",
-    ".stryker-tmp",
-    "reports"
+    ".stryker-tmp"
   ]
 }
