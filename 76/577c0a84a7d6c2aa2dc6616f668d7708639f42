@@ -1,0 +1,45 @@
+src/helpers/configOverrides.ts
+  s_9d8da00257762a::t_059b79dd7dd9de 368-370
+  s_9d8da00257762a::t_3cee6b6894785c 384-385
+  s_9d8da00257762a::t_132d093486bbee 396-397
+  s_9d8da00257762a::t_439e328aae4c9f 65-67
+  s_9d8da00257762a::t_891604ed4a8872 18-19
+  s_9d8da00257762a::t_a2bd6c448434b1 350-353
+src/metadata/parseManifest.ts
+  s_9d8da00257762a::t_1a726ad387aeba 76-77,81-83,87-88
+  s_9d8da00257762a::t_05afa2e3bbc0c0 169,179-182
+  s_9d8da00257762a::t_c1bd48a93cd5bb 31-33,37-39
+  s_9d8da00257762a::t_282ab21b16e14a 121-123
+  s_9d8da00257762a::t_046180bb4c3bc8 156-157
+  s_9d8da00257762a::t_b871a957edb479 202
+  s_9d8da00257762a::t_9410d7233b6655 235-237
+src/service/recompose/recomposeFileHandler.ts
+  s_9d8da00257762a::t_396003fe9da311 116-117
+  s_9d8da00257762a::t_3966654680be68 78-80
+src/core/decomposeMetadataTypes.ts
+  s_9d8da00257762a::t_7082f918d4c587 30-33
+src/service/decompose/decomposeFileHandler.ts
+  s_9d8da00257762a::t_60d2f8fbaa0c9c 221-222
+src/service/verify/diffDirectories.ts
+  s_9d8da00257762a::t_72abd1987de1ad 148-150,152
+  s_9d8da00257762a::t_cab496382e6776 11-14,19-21
+  s_9d8da00257762a::t_f92e86e21044eb 102-104
+src/core/recomposeMetadataTypes.ts
+  s_9d8da00257762a::t_84091d59354c33 18-20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "76577c0a84a7d6c2aa2dc6616f668d7708639f42",
+  "prompts": {},
+  "sessions": {
+    "s_9d8da00257762a": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "77c37170-73f8-4704-8a45-0df131ebfd06",
+        "model": "auto-high"
+      },
+      "human_author": "Matt Carvin <90224411+mcarvin8@users.noreply.github.com>"
+    }
+  }
+}
