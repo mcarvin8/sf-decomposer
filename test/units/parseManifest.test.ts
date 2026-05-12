@@ -405,4 +405,105 @@ describe('parseManifest', () => {
 
     expect(result.suffixes).toEqual([]);
   });
+
+  // ---- Mutation-gap closures (searchRecursively / listParentXmlPaths) -------
+  // These tests pin two delicate behaviors that the broader fixtures above do not isolate:
+  //  1. searchRecursively must only match a directory whose basename equals the targetName --
+  //     a file that happens to share the targetName is NOT a type directory.
+  //  2. searchRecursively must NOT recurse into a directory that already matched (to avoid
+  //     pathological paths like `permissionsets/permissionsets/...` being treated as a second
+  //     valid type dir).
+  // Stryker was previously free to mutate the name-equality and not-equal checks on lines 129
+  // and 133 without any test catching it; the assertions below close that window.
+
+  it('ignores a FILE whose name matches the typeDir name (only directories qualify as type dirs)', async () => {
+    // A file literally named "permissionsets" (no extension) sits alongside a real
+    // permissionsets/ directory. Under the L129 LogicalOperator mutant (`||` instead of `&&`)
+    // or the L129 ConditionalExpression mutant (`entry.name === targetName` -> true), the file
+    // would be matched and routed through listParentXmlPaths(), which would readdir() it and
+    // throw -- the searchRecursively catch swallows that and yields an empty list, so the
+    // permissionsets/ resolution behind it goes unobserved. We assert that the real dir's
+    // member file is still resolved exactly once with the expected path.
+    const real = join(project.forceAppDir, 'permissionsets', 'HR.permissionset-meta.xml');
+    await writeMetaFile(real);
+    // Also create a file literally named `permissionsets` directly under force-app.
+    await writeFile(join(project.forceAppDir, 'permissionsets-as-file'), 'not a directory');
+    // And rename to the exact target name -- a sibling FILE called `permissionsets`.
+    // We create it under altDir to avoid colliding with the real type directory above.
+    await writeFile(join(project.altDir, 'permissionsets'), 'definitely not a directory');
+
+    const manifest = await writeManifest(project.root, [{ name: 'PermissionSet', members: ['HR'] }]);
+    const result = await parseManifest(manifest, undefined);
+
+    expect(new Set(result.parentXmlsBySuffix.get('permissionset'))).toEqual(new Set([resolve(real)]));
+  });
+
+  it('does not double-list a parent xml when a same-named type dir is nested inside another type dir', async () => {
+    // force-app/permissionsets/HR.permissionset-meta.xml is the legitimate match.
+    // force-app/permissionsets/permissionsets/Buried.permissionset-meta.xml is a malformed
+    // duplicate that searchRecursively would only pick up under the L133 ConditionalExpression
+    // mutant (`entry.name !== targetName` -> true), which removes the guard preventing recursion
+    // into an already-matched directory. We assert exactly one file is resolved.
+    const outer = join(project.forceAppDir, 'permissionsets', 'HR.permissionset-meta.xml');
+    const buried = join(project.forceAppDir, 'permissionsets', 'permissionsets', 'Buried.permissionset-meta.xml');
+    await writeMetaFile(outer);
+    await writeMetaFile(buried);
+
+    // Wildcard listing exercises listParentXmlPaths through every matched type dir; the buried
+    // file would surface as an extra hit only if searchRecursively recursed into the outer
+    // permissionsets/ directory.
+    const manifest = await writeManifest(project.root, [{ name: 'PermissionSet', members: ['*'] }]);
+    const result = await parseManifest(manifest, undefined);
+
+    const out = result.parentXmlsBySuffix.get('permissionset');
+    expect(out).toBeDefined();
+    // Under the L133 mutant the buried file would also appear here. Pinning the exact set keeps
+    // both the search-recursion guard AND the wildcard listing honest.
+    expect(new Set(out)).toEqual(new Set([resolve(outer)]));
+  });
+
+  it('listParentXmlPaths only returns FILES whose name ends in the meta-suffix for non-strict types', async () => {
+    // Targets L186 MethodExpression mutant on `entries.filter(...).map(...)` (replaced by
+    // `entries`). Without the filter+map, every dirent -- including the sidecar directory and
+    // the unrelated file below -- would flow into the results array, blowing up the wildcard
+    // listing. Asserting an exact-size set of paths kills the mutant.
+    const wf = join(project.forceAppDir, 'workflows', 'A.workflow-meta.xml');
+    // A directory whose name ends in `.workflow-meta.xml` -- a real-world land mine.
+    const lookalikeDir = join(project.forceAppDir, 'workflows', 'Trap.workflow-meta.xml');
+    // An unrelated file in the workflows dir that must NOT be listed.
+    const stray = join(project.forceAppDir, 'workflows', 'README.md');
+    await writeMetaFile(wf);
+    await mkdir(lookalikeDir, { recursive: true });
+    await writeFile(join(lookalikeDir, 'inner.txt'), '');
+    await writeMetaFile(stray);
+
+    const manifest = await writeManifest(project.root, [{ name: 'Workflow', members: ['*'] }]);
+    const result = await parseManifest(manifest, undefined);
+
+    const out = result.parentXmlsBySuffix.get('workflow');
+    expect(out).toBeDefined();
+    expect(out!.size).toBe(1);
+    expect(new Set(out)).toEqual(new Set([resolve(wf)]));
+  });
+
+  it('isWildcard branch must add to the parent-type entry.wildcard flag, not to parentMembers', async () => {
+    // Targets L48 ConditionalExpression -> false. Under that mutant, isWildcard is always false
+    // for `<members>*</members>`, which causes `entry.parentMembers.add('*')` to be invoked.
+    // resolveMemberXml then searches for `<typeDir>/*.workflow-meta.xml` literally, finds
+    // nothing, and the suffix never appears in the result. Asserting exact wildcard expansion
+    // (two real files for `*`) pins the correct behaviour.
+    const a = join(project.forceAppDir, 'workflows', 'Alpha.workflow-meta.xml');
+    const b = join(project.forceAppDir, 'workflows', 'Beta.workflow-meta.xml');
+    // Decoy file that should NOT be returned because it has the wrong suffix.
+    const decoy = join(project.forceAppDir, 'workflows', 'Gamma.flow-meta.xml');
+    await writeMetaFile(a);
+    await writeMetaFile(b);
+    await writeMetaFile(decoy);
+
+    const manifest = await writeManifest(project.root, [{ name: 'Workflow', members: ['*'] }]);
+    const result = await parseManifest(manifest, undefined);
+
+    expect(result.suffixes).toEqual(['workflow']);
+    expect(new Set(result.parentXmlsBySuffix.get('workflow'))).toEqual(new Set([resolve(a), resolve(b)]));
+  });
 });

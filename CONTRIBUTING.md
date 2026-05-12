@@ -90,6 +90,40 @@ npm run test:nuts
 
 The default `npm test` runs the full pipeline (compile, lint, unit tests). Use it before pushing.
 
+### Mutation testing
+
+This plugin runs [Stryker](https://stryker-mutator.io/) over `src/` to keep the unit-test suite honest. Two modes are supported:
+
+- **Incremental (PR jobs):** `npm run mutation:incremental` — runs Stryker only against files changed in the current diff (the workflow in `.github/workflows/mutation.yml` invokes this on every pull request).
+- **Full (on demand):** `npm run mutation` — full suite; published to the [Stryker Dashboard](https://dashboard.stryker-mutator.io/reports/github.com/mcarvin8/sf-decomposer/main) via the `Run Full Mutation Suite` workflow_dispatch.
+
+Local runs honor the `commands/` and `hooks/` exclusions (those folders are only meaningfully exercised by NUTs, which Stryker does not run). The current mutation badge in the README reflects the last `main` run.
+
+#### Documented mutation-survivor gaps
+
+A small number of mutants are not killable by unit tests against this codebase. They survive every run and are tracked here so reviewers don't chase them:
+
+- **`src/metadata/parseManifest.ts`**
+  - Lines 31, 34 (ignore-fallback empty array; UTF-8 encoding on `sfdx-project.json`): Node's `readFile` without an explicit encoding still produces a UTF-8 string when fed to `JSON.parse`, and a mutated `[]` fallback to `["Stryker was here"]` for `ignoreDirs` only diverges when a real package directory happens to be basename-equal to the mutator placeholder — an unrealistic and self-inflicted state.
+  - Lines 70, 73, 76, 108, 132, 133 (cond), 151, 160, 179, 210: covered by `/* istanbul ignore … */` annotations because the inputs that could reach these branches are precluded by SDR's own registry (parent types always declare a suffix; multiple parent types do not share a suffix; folder-typed members and strict-directory members are mutually exclusive). Mutating these guards yields code paths that no in-registry metadata type can drive.
+- **`src/helpers/configOverrides.ts`**
+  - Line 18 (`if (!repoRoot)`): istanbul-ignored — `getRepoRoot()` throws before this guard can ever see a falsy `repoRoot`, so no test can observe the difference between the guard and a `false` mutant.
+  - Lines 345 (`colonIdx <= 0` / `colonIdx === key.length - 1` / `key.length + 1`): `parseComponentKey` rejects any key with a leading colon, trailing colon, or no colon. The follow-on `metadataType.trim()` / `fullName.trim()` checks already cover the same input space, so flipping the offset checks produces identical reject decisions on every input the function is ever invoked with.
+  - Lines 359, 372, 382 (`if (!overrides || overrides.length === 0)`): The three look-up helpers short-circuit on empty inputs but `Array.prototype.find`/`some` already return falsy on an empty array — mutating the guard to `false` produces the same return value through a slightly slower path.
+- **`src/service/verify/diffDirectories.ts`**
+  - Lines 11, 15 (`attributeNamePrefix`, `ignoreDeclaration`): `fast-xml-parser` produces equivalent canonical JSON for the inputs this plugin actually compares (no element/attribute name collisions; XML declarations are stripped by the disassembler before files land on disk), so toggling these constructor options has no observable effect on `xmlEquivalent`.
+  - Lines 94, 109, 116 (defensive `try/catch` returning `false`): the istanbul-ignored catch handlers exist for filesystem-permission errors and malformed XML — both unreachable in this plugin's pipeline because the upstream disassembler guarantees well-formed output.
+  - Line 138/139 sort-comparator equality mutants: the comparator is fed strings produced by `canonicalJson`, which already deduplicates identical objects before sorting. Two strings that compare equal can never reach the comparator in a way that would let a test observe `<` vs `<=`.
+- **`src/core/decomposeMetadataTypes.ts` & `src/core/recomposeMetadataTypes.ts`**
+  - `metadataTypes.length === 0` / `metadataTypes.length >= 0` mutants on the manifest-branch path: the function only reaches this expression when a manifest was supplied AND `metadataTypes` was non-empty — both `=== 0` and `>= 0` evaluate identically for a non-empty array, so the mutation cannot be observed without violating the function's documented preconditions.
+- **`src/service/decompose/decomposeFileHandler.ts` & `src/service/recompose/recomposeFileHandler.ts`**
+  - `stripMetaSuffix` (decomposeFileHandler L221) and `decomposedDirForXml` (recomposeFileHandler L102): both helpers are wrapped in `/* istanbul ignore next */` because `parseManifest` only ever builds xml paths from `${member}.${suffix}-meta.xml`, so the "no metaEnding suffix" branch is unreachable from any public API call.
+  - `directoryExists` catch blocks (L94, L210, L112): defensive only; the calling sites always invoke `directoryExists` after the file has just been produced by the disassembler crate, so the catch can only ever fire for filesystem-permission errors that no test can portably reproduce.
+- **`src/service/decompose/customLabels.ts` line 16 (`{ recursive: true }`)**: `prePurgeLabels` only `rm()`s entries that `stat().isFile()` reports as files; for files, the `recursive` option is a no-op and Stryker's mutations (`{}` or `recursive: false`) produce identical behaviour. Triggering a difference would require a non-file dirent to reach the branch, which the surrounding `isFile()` guard precludes.
+- **`src/service/recompose/reassembleLabels.ts` line 11**: the Stryker location reported here is a transpilation artifact (column 117 is past the line end); the function is exercised end-to-end by the labels NUT and by `reassembleLabels` integration tests.
+
+When adding new code, prefer making genuinely unreachable branches `/* istanbul ignore next -- @preserve: <reason> */` so future mutation runs surface them as expected gaps rather than as new survivors.
+
 ---
 
 ## Code and Architecture
