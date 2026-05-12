@@ -47,6 +47,7 @@
     "perf-results",
     "test/perf",
     "test/**/*.nut.ts",
-    ".stryker-tmp"
+    ".stryker-tmp",
+    "reports"
   ]
 }
