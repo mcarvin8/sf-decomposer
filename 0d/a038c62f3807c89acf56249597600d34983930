@@ -1,0 +1,24 @@
+test/units/verifyMetadataTypes.test.ts
+  s_9d8da00257762a::t_d977896aeeff46 3
+  s_9d8da00257762a::t_3766a3d59ed180 341-343,347,350
+  s_9d8da00257762a::t_ab450120daeae8 64-68
+  s_9d8da00257762a::t_bef4baed115c79 370
+  s_9d8da00257762a::t_1df03051ef49ca 340,346,352-354
+  s_9d8da00257762a::t_e8bddac89a703c 371
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "0da038c62f3807c89acf56249597600d34983930",
+  "prompts": {},
+  "sessions": {
+    "s_9d8da00257762a": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "77c37170-73f8-4704-8a45-0df131ebfd06",
+        "model": "auto-high"
+      },
+      "human_author": "Matt Carvin <90224411+mcarvin8@users.noreply.github.com>"
+    }
+  }
+}
