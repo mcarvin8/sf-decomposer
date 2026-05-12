@@ -1,0 +1,29 @@
+test/units/diffDirectories.test.ts
+  s_9d8da00257762a::t_d9fd6d4c3f0bc9 161-171,173-175,177-262
+test/units/verifyMetadataTypes.test.ts
+  s_9d8da00257762a::t_6585482eb58b76 9
+  s_9d8da00257762a::t_9080b29fc3e9ad 33-41
+  s_9d8da00257762a::t_017a1f2ae47feb 323
+  s_9d8da00257762a::t_26024e47598f65 425-427,451,469,486,500
+  s_9d8da00257762a::t_19dfa8b013e278 201
+  s_9d8da00257762a::t_b0a412f87c6cb7 1-8,10-32,42-140,142-200,202-220,222-278,280-300,302,306-322,324-404,407-424,428-450,452-468,470-485,487-499,501-536
+  s_9d8da00257762a::t_53e143df9ff2b8 405-406
+  s_9d8da00257762a::t_8e38ec63220862 279
+  s_9d8da00257762a::t_462cb4b59d453b 221
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "bb7ed314e81087c8bf51b9f0b6932fe7fed21e54",
+  "prompts": {},
+  "sessions": {
+    "s_9d8da00257762a": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "77c37170-73f8-4704-8a45-0df131ebfd06",
+        "model": "auto-high"
+      },
+      "human_author": "Matt Carvin <90224411+mcarvin8@users.noreply.github.com>"
+    }
+  }
+}
