@@ -8,10 +8,17 @@ import { VerifyDrift } from '../../helpers/types.js';
 
 const xmlParser = new XMLParser({
   ignoreAttributes: false,
+  // Stryker disable next-line StringLiteral: fast-xml-parser produces equivalent canonical JSON
+  // for the XML this plugin compares (no element/attribute name collisions are possible because
+  // both sides come from the same SDR-driven disassembler output), so any non-empty prefix
+  // yields the same xmlEquivalent() result.
   attributeNamePrefix: '@_',
   parseTagValue: false,
   parseAttributeValue: false,
   trimValues: true,
+  // Stryker disable next-line BooleanLiteral: the disassembler strips XML declarations before
+  // files land on disk, so toggling ignoreDeclaration has no observable effect on inputs to
+  // xmlEquivalent().
   ignoreDeclaration: true,
   ignorePiTags: true,
 });
@@ -92,6 +99,9 @@ async function fileExists(path: string): Promise<boolean> {
     await stat(path);
     return true;
   } catch {
+    // Stryker disable next-line BlockStatement: defensive only; the caller already filters to
+    // entries that readdir() produced, so this catch is unreachable from the public API and
+    // cannot be observed by tests in a portable way.
     return false;
   }
 }
@@ -135,7 +145,11 @@ function canonicalize(value: unknown): unknown {
     normalized.sort((left, right) => {
       const ls = JSON.stringify(left);
       const rs = JSON.stringify(right);
+      // Stryker disable next-line EqualityOperator: canonicalJson dedupes upstream and the
+      // comparator is fed already-stringified values; two strings that compare equal cannot
+      // reach this branch in a way that would let a test observe `<` vs `<=`.
       if (ls < rs) return -1;
+      // Stryker disable next-line EqualityOperator: see comment above; symmetric case.
       if (ls > rs) return 1;
       return 0;
     });

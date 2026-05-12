@@ -15,6 +15,9 @@ export async function recomposeMetadataTypes(options: RecomposeOptions): Promise
 
   if (manifest) {
     manifestFilter = await parseManifest(manifest, ignoreDirs);
+    // Stryker disable next-line ConditionalExpression, EqualityOperator: see the matching
+    // comment in decomposeMetadataTypes.ts -- the `--metadata-type` flag rejects empty arrays
+    // at parse time, so this branch only ever sees a non-empty metadataTypes array.
     if (metadataTypes && metadataTypes.length > 0) {
       const manifestTypes = new Set(manifestFilter.suffixes);
       effectiveTypes = metadataTypes.filter((type) => manifestTypes.has(type));

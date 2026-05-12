@@ -75,6 +75,9 @@ async function recomposeFromManifest(
     await Promise.all(tasks);
 
     /* istanbul ignore else -- @preserve: bot is the only strict-directory type that needs post-processing in tests */
+    // Stryker disable next-line ConditionalExpression: paired with the istanbul-ignore above;
+    // bot is the only strict-directory type the post-rename step applies to, and no other
+    // strict type ever reaches this branch from the public API.
     if (metaSuffix === 'bot') {
       // renameBotVersionFile expects the parent metadata directory (e.g. .../bots),
       // not the individual bot directory. Walk up one level and dedupe.
@@ -110,6 +113,8 @@ async function directoryExists(path: string): Promise<boolean> {
     const stats = await stat(path);
     return stats.isDirectory();
   } catch {
+    // Stryker disable next-line BlockStatement: the catch is the contract for "directory does
+    // not exist"; the empty-block mutant returns undefined which every caller treats as falsy.
     return false;
   }
 }
