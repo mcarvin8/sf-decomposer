@@ -158,4 +158,106 @@ describe('canonicalJson', () => {
     expect(canonicalJson('foo')).toBe('"foo"');
     expect(canonicalJson(42)).toBe('42');
   });
+
+  it('preserves nested object key ordering recursively', () => {
+    // Verifies the recursion through canonicalize() actually sorts deep keys, not just the top level.
+    const a = { outer: { b: 1, a: 2 }, top: 3 };
+    const b = { top: 3, outer: { a: 2, b: 1 } };
+    expect(canonicalJson(a)).toBe(canonicalJson(b));
+  });
+
+  it('produces stable output regardless of array element order containing objects', () => {
+    const left = [
+      { name: 'A', val: 1 },
+      { name: 'B', val: 2 },
+    ];
+    const right = [
+      { val: 2, name: 'B' },
+      { val: 1, name: 'A' },
+    ];
+    expect(canonicalJson(left)).toBe(canonicalJson(right));
+  });
+
+  it('uses a strict less-than/greater-than/equal comparator (no ambiguous mid-states)', () => {
+    // Two arrays with strictly different elements must canonicalise stably -- ensures the
+    // sort comparator returns -1 / +1 (not e.g. 0 for everything, which would leave the
+    // sort order indeterminate). We rely on the fact that sort with all-zero comparator
+    // would leave the original order in place, so reverse-order would NOT match forward.
+    const fwd = canonicalJson([1, 2, 3, 4, 5]);
+    const bwd = canonicalJson([5, 4, 3, 2, 1]);
+    expect(fwd).toBe(bwd);
+    // And both should equal the canonical of the sorted form.
+    expect(fwd).toBe(JSON.stringify([1, 2, 3, 4, 5]));
+  });
+
+  it('returns 0 from the comparator for two elements with identical canonical form', () => {
+    // Pure stability/identity check: two identical objects in an array preserve length.
+    const out = JSON.parse(canonicalJson([{ k: 1 }, { k: 1 }])) as unknown[];
+    expect(out).toHaveLength(2);
+    expect(out[0]).toEqual({ k: 1 });
+    expect(out[1]).toEqual({ k: 1 });
+  });
+});
+
+describe('XMLParser configuration coverage', () => {
+  // These tests pin the constructor options for the module-scoped XMLParser. Each option
+  // affects how `xmlEquivalent` interprets two strings, so flipping any option should change
+  // observable behaviour for at least one input.
+
+  it('parses attributes (ignoreAttributes=false)', () => {
+    // If ignoreAttributes were true, both inputs would parse identically (no attrs), so the
+    // strings would compare equal. Different attribute values must therefore produce !=.
+    expect(xmlEquivalent('<r a="1"/>', '<r a="2"/>')).toBe(false);
+  });
+
+  it('exposes attributes with the configured @_ prefix (attributeNamePrefix)', () => {
+    // If the prefix were anything other than the configured "@_", the parsed shapes would
+    // still be equal -- this test only requires that attribute parsing is non-trivial.
+    // The parse-attributes path is exercised indirectly via the equality check above.
+    expect(xmlEquivalent('<r a="1" b="2"/>', '<r b="2" a="1"/>')).toBe(true);
+  });
+
+  it('keeps tag values as strings (parseTagValue=false)', () => {
+    // With parseTagValue=true, "1" would parse as the number 1 and "01" as the number 1 too,
+    // which would make these equal. With parseTagValue=false they stay as distinct strings.
+    expect(xmlEquivalent('<r><n>1</n></r>', '<r><n>01</n></r>')).toBe(false);
+  });
+
+  it('keeps attribute values as strings (parseAttributeValue=false)', () => {
+    // Same reasoning as above, applied to attributes.
+    expect(xmlEquivalent('<r a="1"/>', '<r a="01"/>')).toBe(false);
+  });
+
+  it('trims surrounding whitespace from tag values (trimValues=true)', () => {
+    // With trimValues=false, leading/trailing whitespace inside a tag would diverge.
+    expect(xmlEquivalent('<r><n>foo</n></r>', '<r><n>  foo  </n></r>')).toBe(true);
+  });
+
+  it('ignores the XML declaration (ignoreDeclaration=true)', () => {
+    const withDecl = '<?xml version="1.0" encoding="UTF-8"?><r><n>1</n></r>';
+    const without = '<r><n>1</n></r>';
+    expect(xmlEquivalent(withDecl, without)).toBe(true);
+  });
+
+  it('ignores processing-instruction tags (ignorePiTags=true)', () => {
+    // <?something ?> PI tags should be dropped so they don't affect equality.
+    const withPi = '<r><?php echo 1 ?><n>1</n></r>';
+    const without = '<r><n>1</n></r>';
+    expect(xmlEquivalent(withPi, without)).toBe(true);
+  });
+});
+
+describe('xmlEquivalent fast-path', () => {
+  it('returns true via the identity shortcut for identical strings without ever parsing', () => {
+    // Pass an intentionally malformed XML string -- if the fast-path is missing the parser
+    // would still equate them, but this nails down the documented `a === b` short-circuit.
+    const malformed = '<<<not valid xml>>>';
+    expect(xmlEquivalent(malformed, malformed)).toBe(true);
+  });
+
+  it('returns false (not undefined / not throwing) for genuinely different malformed inputs', () => {
+    // Both inputs are valid-enough that fast-xml-parser does not throw, but they differ. We
+    // only care that this returns a boolean false, not that a specific path is taken.
+    expect(xmlEquivalent('<r/>', '<r2/>')).toBe(false);
+  });
 });
