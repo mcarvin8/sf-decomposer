@@ -78,4 +78,50 @@ describe('moveFiles', () => {
     const srcFiles = await readdir(srcDir);
     expect(srcFiles).toContain('testfile.txt');
   });
+
+  // ---- Mutation-gap closures ------------------------------------------
+  // The Windows-only error codes EPERM and EEXIST are part of the recoverable-rename branch on
+  // line 15 of moveFiles.ts. Until these tests existed, only EXDEV was exercised, so Stryker was
+  // free to mutate `code === 'EPERM'` and `code === 'EEXIST'` (the conditionals AND their string
+  // literals) without any test ever observing the difference. Each test below pins the SUT
+  // behavior for one of those codes specifically: the rename must throw with that exact code,
+  // and moveFiles must fall back to copyFile + unlink, leaving the destination populated and the
+  // source empty. Together with the EXDEV test above, this covers all three OR branches of the
+  // recovery condition.
+
+  it('falls back to copyFile + unlink when rename fails with EPERM (Windows destination busy)', async () => {
+    // Mutants killed: ConditionalExpression at line 15:29 (`code === 'EPERM'` → false) and
+    // StringLiteral at line 15:38 (`'EPERM'` → `''`). Both mutations turn this branch into a
+    // re-throw; the explicit success assertions below would then fail.
+    renameMock.mockImplementationOnce(() => {
+      const err = new Error('operation not permitted') as NodeJS.ErrnoException;
+      err.code = 'EPERM';
+      throw err;
+    });
+
+    await moveFiles(srcDir, destDir, () => true);
+
+    const destFiles = await readdir(destDir);
+    expect(destFiles).toContain('testfile.txt');
+    const srcFiles = await readdir(srcDir);
+    expect(srcFiles).not.toContain('testfile.txt');
+  });
+
+  it('falls back to copyFile + unlink when rename fails with EEXIST (Windows destination exists)', async () => {
+    // Mutants killed: ConditionalExpression at line 15:49 (`code === 'EEXIST'` → false) and
+    // StringLiteral at line 15:58 (`'EEXIST'` → `''`). As above, mutating this branch to false
+    // causes a re-throw; the success assertions below pin the SUT to the recover path.
+    renameMock.mockImplementationOnce(() => {
+      const err = new Error('file already exists') as NodeJS.ErrnoException;
+      err.code = 'EEXIST';
+      throw err;
+    });
+
+    await moveFiles(srcDir, destDir, () => true);
+
+    const destFiles = await readdir(destDir);
+    expect(destFiles).toContain('testfile.txt');
+    const srcFiles = await readdir(srcDir);
+    expect(srcFiles).not.toContain('testfile.txt');
+  });
 });

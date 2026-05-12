@@ -1005,6 +1005,124 @@ describe('configOverrides helper', () => {
       });
     });
 
+    describe('strict-message capture (kills mutants where toThrow(substring) was insufficient)', () => {
+      // These tests assert the *exact* Error.message via toBe(...) rather than substring
+      // matching. A Stryker mutant that converts one of these targeted guards into `false`
+      // (skipping the early throw) lets the SUT fall through to a sibling guard which throws a
+      // *different* message; toBe makes that divergence fatal so the mutant cannot survive.
+      const captureMessage = (fn: () => unknown): string => {
+        try {
+          fn();
+        } catch (err) {
+          return (err as Error).message;
+        }
+        throw new Error('expected the function to throw, but it returned normally');
+      };
+
+      it('throws the exact "empty splitTags string" wording when spec is the empty string', () => {
+        // Targets L178 ConditionalExpression -> false. If the early guard is skipped, the SUT
+        // falls through to the per-rule loop and throws "...contains an empty rule." instead.
+        const message = captureMessage(() => validateSplitTagsSpec('', 0));
+        expect(message).toBe('Override at index 0 has an empty "splitTags" string.');
+      });
+
+      it('throws the exact "empty splitTags string" wording for a whitespace-only spec', () => {
+        // Same guard; a pure-whitespace spec still resolves to trim()==='' and must be caught
+        // by the early guard so the wording stays "empty splitTags string", not "empty rule".
+        const message = captureMessage(() => validateSplitTagsSpec('   \t  ', 0));
+        expect(message).toBe('Override at index 0 has an empty "splitTags" string.');
+      });
+
+      it('throws the exact "must have 3 or 4 colon-separated parts" wording for a 2-part rule', () => {
+        // Targets L207 ConditionalExpression -> true. Mutating `(parts.length === 4 && !parts[1])`
+        // to `true` would short-circuit a 3-part rule into the "empty parts" branch; this assertion
+        // pins the SUT to the correct part-count error for a 2-part rule (must throw the "3 or 4"
+        // wording), which is unaffected by the L207 mutant but provides redundant pinning.
+        const message = captureMessage(() => validateSplitTagsSpec('Decision:split', 0));
+        expect(message).toBe(
+          'Override at index 0 "splitTags" rule "Decision:split" must have 3 or 4 colon-separated parts ' +
+            '("tag:mode:field" or "tag:path:mode:field").',
+        );
+      });
+
+      it('throws the exact "has empty parts" wording when the 4-part path segment is blank', () => {
+        // Targets L207 ConditionalExpression -> true / false. The `(parts.length === 4 && !parts[1])`
+        // sub-expression is only reachable for 4-part rules with an empty path segment. With this
+        // exact-message assertion, mutating that sub-expression to either true or false changes
+        // which branch fires (or which message is emitted) and breaks the test.
+        const message = captureMessage(() => validateSplitTagsSpec('Decision::split:label', 0));
+        expect(message).toBe('Override at index 0 "splitTags" rule "Decision::split:label" has empty parts.');
+      });
+
+      it('throws the exact "empty multiLevel array" wording for an empty array spec', () => {
+        // Targets normalizeMultiLevelRules. Mutating the empty-array branch to false would let
+        // the SUT continue and return an empty `[]`, with no throw at all.
+        const message = captureMessage(() => validateMultiLevelSpec([], 0));
+        expect(message).toBe('Override at index 0 has an empty "multiLevel" array.');
+      });
+
+      it('throws the exact "empty or non-string entry" wording for a whitespace-only array entry', () => {
+        // Targets L259 ConditionalExpression -> false. Skipping the per-entry guard lets the SUT
+        // fall through to validateSingleMultiLevelRule which throws "must have exactly 3" instead.
+        const message = captureMessage(() => validateMultiLevelSpec(['valid:Root:id', '   '], 0));
+        expect(message).toBe('Override at index 0 "multiLevel" array contains an empty or non-string entry.');
+      });
+
+      it('throws the exact "empty or non-string entry" wording for a non-string array entry', () => {
+        // Same guard as above but covers the `typeof entry !== 'string'` half of the OR.
+        const message = captureMessage(() => validateMultiLevelSpec(['valid:Root:id', 123 as unknown as string], 0));
+        expect(message).toBe('Override at index 0 "multiLevel" array contains an empty or non-string entry.');
+      });
+
+      it('throws the exact "empty multiLevel string" wording for an empty string spec', () => {
+        // Targets L265 ConditionalExpression -> false. Skipping this branch lets the SUT
+        // continue with `''.split(';').map(trim).filter(len>0)` -> []`, then iterate nothing,
+        // so the function returns silently without throwing -- captureMessage would re-throw.
+        const message = captureMessage(() => validateMultiLevelSpec('', 0));
+        expect(message).toBe('Override at index 0 has an empty "multiLevel" string.');
+      });
+
+      it('throws the exact "empty or non-string metadata type" wording for whitespace-only entry', () => {
+        // Targets L306 ConditionalExpression -> false. Skipping this branch lets the SUT fall
+        // through to the duplicate-type check or proceed silently, producing no throw at all.
+        const message = captureMessage(() =>
+          validateOverrides([{ metadataTypes: ['flow', '   '] } as unknown as DecomposerOverride]),
+        );
+        expect(message).toBe('Override at index 0 contains an empty or non-string metadata type.');
+      });
+
+      it('throws the exact "empty or non-string metadata type" wording for a non-string entry', () => {
+        // Same guard, covering the `typeof metadataType !== 'string'` half of the OR.
+        const message = captureMessage(() =>
+          validateOverrides([{ metadataTypes: ['flow', 42 as unknown as string] } as unknown as DecomposerOverride]),
+        );
+        expect(message).toBe('Override at index 0 contains an empty or non-string metadata type.');
+      });
+
+      it('throws the exact "empty rule" wording for a splitTags spec with a trailing comma', () => {
+        // Targets L178/L186. With L178 mutated to false, the SUT still enters the per-rule loop
+        // for a non-empty spec; this case asserts the specific "empty rule" message lands.
+        const message = captureMessage(() => validateSplitTagsSpec('Decision:split:label,', 0));
+        expect(message).toBe('Override at index 0 "splitTags" contains an empty rule.');
+      });
+
+      it('throws the exact "duplicate tag" wording when the same tag appears twice', () => {
+        // Pins the duplicate-tag branch with its full remediation hint.
+        const message = captureMessage(() => validateSplitTagsSpec('Decision:split:label,Decision:group:label2', 0));
+        expect(message).toBe(
+          'Override at index 0 "splitTags" contains duplicate tag "Decision". Each tag may appear at most once.',
+        );
+      });
+
+      it('throws the exact "invalid mode" wording with the allowed values listed', () => {
+        // Pins the mode-allow-list branch.
+        const message = captureMessage(() => validateSplitTagsSpec('Decision:foo:label', 0));
+        expect(message).toBe(
+          'Override at index 0 "splitTags" rule "Decision:foo:label" has invalid mode "foo". Allowed values: split, group.',
+        );
+      });
+    });
+
     describe('loadOverridesFromConfig encoding', () => {
       let tempDir: string;
 
