@@ -216,10 +216,7 @@ function applyHardStrategyRules(metaSuffix: string, strategy: string): string {
 
 function stripMetaSuffix(fileName: string, metaSuffix: string): string {
   const metaEnding = `.${metaSuffix}-meta.xml`;
-  /* istanbul ignore next -- @preserve: parseManifest always builds xml paths from `${member}.${suffix}-meta.xml`,
-     so non-matching basenames cannot reach this helper through the public API. */
-  // Stryker disable next-line all: paired with the istanbul-ignore above; non-matching
-  // basenames are unreachable from any caller because parseManifest builds these xml paths.
+  /* istanbul ignore next -- @preserve: parseManifest always builds xml paths from `${member}.${suffix}-meta.xml`. Stryker disable next-line all */
   return fileName.endsWith(metaEnding) ? fileName.slice(0, -metaEnding.length) : fileName;
 }
 
