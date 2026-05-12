@@ -742,5 +742,305 @@ describe('configOverrides helper', () => {
         /--config was provided but \.sfdecomposer\.config\.json was not found/,
       );
     });
+
+    it('includes the actionable "Create the file in the repo root" remediation hint in the missing-config error', async () => {
+      // Pins the back half of the error message that nudges the user toward the fix; the
+      // existing test only checks the leading "was not found" segment.
+      await expect(resolveDefaultConfigPath()).rejects.toThrow(/Create the file in the repo root or omit --config\./);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // Targeted mutation-coverage tests
+  //
+  // These tests close specific surviving mutants from the Stryker run on
+  // src/helpers/configOverrides.ts. Each block names the mutant(s) it covers so
+  // the intent is preserved if anyone later reorganises the file.
+  // ---------------------------------------------------------------------------
+  describe('mutation-gap closures', () => {
+    describe('FORBIDDEN_OVERRIDE_KEYS', () => {
+      // Kills the StringLiteral "" mutants on the FORBIDDEN_OVERRIDE_KEYS Set entries
+      // (`metadataSuffixes`, `ignorePackageDirectories`). The existing "rejects forbidden
+      // run-scope keys" test only covers the `manifest` entry.
+      it('rejects "metadataSuffixes" inside an override entry', () => {
+        const overrides = [
+          { metadataTypes: ['flow'], metadataSuffixes: 'flow,permissionset' },
+        ] as unknown as DecomposerOverride[];
+        expect(() => validateOverrides(overrides)).toThrow(
+          'Override at index 0 contains "metadataSuffixes", which is a run-scope option and cannot be set per metadata type.',
+        );
+      });
+
+      it('rejects "ignorePackageDirectories" inside an override entry', () => {
+        const overrides = [
+          { metadataTypes: ['flow'], ignorePackageDirectories: 'force-app,my-package' },
+        ] as unknown as DecomposerOverride[];
+        expect(() => validateOverrides(overrides)).toThrow(
+          'Override at index 0 contains "ignorePackageDirectories", which is a run-scope option and cannot be set per metadata type.',
+        );
+      });
+    });
+
+    describe('hasMetadataTypes / hasComponents gating in validateOverride', () => {
+      // Kills the ConditionalExpression/EqualityOperator mutants on line 119
+      // (`override.components.length > 0`). The override must reach the
+      // "non-empty metadataTypes or components" guard even when an empty
+      // `components: []` is supplied, which only happens when the length check is strict.
+      it('rejects an override that supplies both an empty metadataTypes AND an empty components array', () => {
+        const overrides: DecomposerOverride[] = [{ metadataTypes: [], components: [] }];
+        expect(() => validateOverrides(overrides)).toThrow(
+          'Override at index 0 must include a non-empty "metadataTypes" or "components" array.',
+        );
+      });
+
+      it('does not validate components when components is supplied as an empty array (length > 0 short-circuits)', () => {
+        // An empty components array combined with a populated metadataTypes must NOT cause
+        // validateComponentEntries to run — proves the `length > 0` check is strict.
+        const overrides: DecomposerOverride[] = [{ metadataTypes: ['flow'], components: [] }];
+        expect(() => validateOverrides(overrides)).not.toThrow();
+      });
+
+      it('does not validate metadataTypes when metadataTypes is supplied as an empty array (length > 0 short-circuits)', () => {
+        // Symmetric case for the analogous `metadataTypes.length > 0` check on line 118.
+        const overrides: DecomposerOverride[] = [{ metadataTypes: [], components: ['flow:My_Flow'] }];
+        expect(() => validateOverrides(overrides)).not.toThrow();
+      });
+    });
+
+    describe('validateOverrideValues error messages', () => {
+      // Kills the StringLiteral / template-literal mutants in the decomposedFormat and
+      // strategy error messages (lines 151 and 158). These mutants empty out either the
+      // whole template literal or the `, ` join separator on the allowed-values list.
+      it('includes the offending decomposedFormat value AND the allowed-values list joined by ", "', () => {
+        const overrides: DecomposerOverride[] = [{ metadataTypes: ['flow'], decomposedFormat: 'toml' }];
+        const allowed = 'xml, json, yaml, json5';
+        expect(() => validateOverrides(overrides)).toThrow(
+          `Override at index 0 has invalid "decomposedFormat": "toml". Allowed values: ${allowed}.`,
+        );
+      });
+
+      it('includes the offending strategy value AND the allowed-values list joined by ", "', () => {
+        const overrides: DecomposerOverride[] = [{ metadataTypes: ['flow'], strategy: 'one-file-per-flag' }];
+        expect(() => validateOverrides(overrides)).toThrow(
+          'Override at index 0 has invalid "strategy": "one-file-per-flag". Allowed values: unique-id, grouped-by-tag.',
+        );
+      });
+    });
+
+    describe('validateSplitTagsSpec edge-case mutants', () => {
+      it('emits the exact "empty splitTags string" wording for an empty spec', () => {
+        // Kills the ConditionalExpression `false` mutant on the empty-string guard at the
+        // top of validateSplitTagsSpec (line 178). With the guard disabled, validation
+        // continues into the `.split(',')` path and throws a different "empty rule" message;
+        // pinning the exact phrasing here ensures the guard remains intact.
+        expect(() => validateSplitTagsSpec('', 0)).toThrow('Override at index 0 has an empty "splitTags" string.');
+      });
+
+      it('trims rules before checking for empties so a whitespace-only rule still throws "contains an empty rule"', () => {
+        // Kills the MethodExpression mutant on `rules.map(rule => rule.trim())` (line 182).
+        // A rule that is whitespace-only must collapse to '' after the per-rule trim and
+        // trigger the "contains an empty rule" branch; without the trim it would instead
+        // fail the parts-length check with a different message.
+        expect(() =>
+          validateSplitTagsSpec('objectPermissions:split:object,   ,fieldPermissions:group:field', 0),
+        ).toThrow('Override at index 0 "splitTags" contains an empty rule.');
+      });
+
+      it('parts-count error message names both allowed shapes (3-part and 4-part)', () => {
+        // Kills the StringLiteral mutant on line 203 by pinning the remediation hint.
+        expect(() => validateSplitTagsSpec('a:b', 0)).toThrow(
+          'Override at index 0 "splitTags" rule "a:b" must have 3 or 4 colon-separated parts ("tag:mode:field" or "tag:path:mode:field").',
+        );
+      });
+
+      it('does not flag a valid 3-part rule as having "empty parts"', () => {
+        // Kills the ConditionalExpression mutant on (parts.length === 4 && !parts[1]) at
+        // line 207. With that subclause stuck at `true`, a perfectly valid 3-part rule
+        // would be reported as having empty parts.
+        expect(() => validateSplitTagsSpec('objectPermissions:split:object', 0)).not.toThrow();
+      });
+
+      it('does not flag a valid 4-part rule with a populated path as having "empty parts"', () => {
+        // Same line-207 mutant from a different angle: with the subclause always-true the
+        // 4-part form would also misfire. parts[1] here is a non-empty path.
+        expect(() => validateSplitTagsSpec('items:nested.items:group:label', 0)).not.toThrow();
+      });
+
+      it('emits the full invalid-mode error message including the allowed list', () => {
+        // Kills the StringLiteral mutants on line 213 (the template literal and the join
+        // separator). Tracks both the offending mode and the list-of-allowed-modes formatting.
+        expect(() => validateSplitTagsSpec('actionCalls:explode:name', 0)).toThrow(
+          'Override at index 0 "splitTags" rule "actionCalls:explode:name" has invalid mode "explode". Allowed values: split, group.',
+        );
+      });
+    });
+
+    describe('validateMultiLevelSpec edge-case mutants', () => {
+      it('emits the exact "empty multiLevel string" wording for an empty string spec', () => {
+        // Kills the ConditionalExpression `false` mutant on line 265.
+        expect(() => validateMultiLevelSpec('', 0)).toThrow('Override at index 0 has an empty "multiLevel" string.');
+      });
+
+      it('drops empty segments produced by adjacent ";" separators before validating each rule', () => {
+        // Kills the MethodExpression mutants on lines 269 and 271-272 that strip away
+        // `.filter((rule) => rule.length > 0)` or the per-rule trim. Without the filter,
+        // an empty segment would reach validateSingleMultiLevelRule and trip the parts-count
+        // check instead of being silently skipped.
+        expect(() =>
+          validateMultiLevelSpec('botDialogs:botDialogs:developerName;;botSteps:botSteps:type', 0),
+        ).not.toThrow();
+      });
+
+      it('drops whitespace-only segments after trimming', () => {
+        // Kills the MethodExpression mutant on `.map((rule) => rule.trim())` (line 271).
+        // Without the trim, ' ' is kept (length=1 > 0) and reaches the rule validator.
+        expect(() => validateMultiLevelSpec(' ; botDialogs:botDialogs:developerName', 0)).not.toThrow();
+      });
+
+      it('rejects a whitespace-only entry in the array form', () => {
+        // Kills the MethodExpression mutant on `entry.trim()` (line 259). Without the trim,
+        // '   ' is treated as a valid non-empty string and reaches the rule validator,
+        // which throws a different "exactly 3 colon-separated parts" message.
+        expect(() => validateMultiLevelSpec(['botDialogs:botDialogs:developerName', '   '], 0)).toThrow(
+          'Override at index 0 "multiLevel" array contains an empty or non-string entry.',
+        );
+      });
+
+      it('trims array entries before deduplicating (pair-key dedup is whitespace-insensitive)', () => {
+        // Kills the MethodExpression mutant on line 263 (`.map((rule) => rule.trim())` in
+        // the array branch). If un-trimmed, the two rules below would produce different
+        // pair keys (`botDialogs:botDialogs` vs `  botDialogs:botDialogs`) and dedup would
+        // silently fail to trigger.
+        expect(() =>
+          validateMultiLevelSpec(['botDialogs:botDialogs:developerName', '  botDialogs:botDialogs:label  '], 0),
+        ).toThrow(
+          'Override at index 0 "multiLevel" has duplicate (file_pattern, root_to_strip) pair "botDialogs:botDialogs".',
+        );
+      });
+
+      it('emits the full duplicate-pair error message verbatim', () => {
+        // Kills the StringLiteral mutant on the duplicate-pair message (line 246).
+        expect(() =>
+          validateMultiLevelSpec(['botDialogs:botDialogs:developerName', 'botDialogs:botDialogs:label'], 0),
+        ).toThrow(
+          'Override at index 0 "multiLevel" has duplicate (file_pattern, root_to_strip) pair "botDialogs:botDialogs". Each pair may appear at most once per scope.',
+        );
+      });
+
+      it('emits the parts-count error message including the canonical rule form hint', () => {
+        // Kills the StringLiteral mutant on line 280.
+        expect(() => validateMultiLevelSpec('items:items', 0)).toThrow(
+          'Override at index 0 "multiLevel" rule "items:items" must have exactly 3 colon-separated parts ("<file_pattern>:<root_to_strip>:<unique_id_elements>").',
+        );
+      });
+
+      it('trims colon-separated parts before checking for emptiness', () => {
+        // Kills the MethodExpression mutant on `.map((part) => part.trim())` (line 276).
+        // The middle part is " " (whitespace); only the trim turns it into "" so the
+        // "empty parts" branch fires. Without the trim, " " is truthy and validation
+        // continues, splitting " z" by comma and silently succeeding.
+        expect(() => validateMultiLevelSpec('items: :z', 0)).toThrow(
+          'Override at index 0 "multiLevel" rule "items: :z" has empty parts.',
+        );
+      });
+
+      it('trims comma-separated unique-id entries before deduplicating', () => {
+        // Kills the MethodExpression mutant on `.map((id) => id.trim())` (line 289).
+        // Without the trim, "a" and " a" are different strings and the duplicate check
+        // never fires.
+        expect(() => validateMultiLevelSpec('items:items:a, a', 0)).toThrow(
+          'Override at index 0 "multiLevel" rule "items:items:a, a" unique-id list has duplicate entry "a".',
+        );
+      });
+
+      it('emits the empty multiLevel string error for a whitespace-only spec', () => {
+        // Symmetric case for line 265 — kills the same ConditionalExpression mutant when
+        // typeof check is satisfied but trim leaves an empty string.
+        expect(() => validateMultiLevelSpec('   ', 0)).toThrow('Override at index 0 has an empty "multiLevel" string.');
+      });
+    });
+
+    describe('validateMetadataTypeEntries / validateComponentEntries', () => {
+      it('treats a whitespace-only metadata type as empty (kills metadataType.trim() mutant)', () => {
+        // Kills the MethodExpression mutant on `metadataType.trim()` (line 306). Without
+        // the trim, "   " === "" is false and the empty-string guard silently lets the
+        // type through, the seenTypes set then accepts "   " as a valid metadata type.
+        const overrides = [{ metadataTypes: ['   '] }] as unknown as DecomposerOverride[];
+        expect(() => validateOverrides(overrides)).toThrow(
+          'Override at index 0 contains an empty or non-string metadata type.',
+        );
+      });
+
+      it('treats a whitespace-only component as empty (kills component.trim() mutant)', () => {
+        // Kills the MethodExpression and StringLiteral mutants on line 320 (component.trim()
+        // and the empty-string literal "" that drives the comparison).
+        const overrides = [{ components: ['   '] }] as unknown as DecomposerOverride[];
+        expect(() => validateOverrides(overrides)).toThrow(
+          'Override at index 0 contains an empty or non-string component.',
+        );
+      });
+
+      it('emits the full "invalid component key" error message including the canonical example', () => {
+        // Kills the StringLiteral mutant on line 326 by pinning the remediation hint that
+        // shows the expected `<metadataSuffix>:<fullName>` format.
+        const overrides: DecomposerOverride[] = [{ components: ['flowMyFlow'] }];
+        expect(() => validateOverrides(overrides)).toThrow(
+          'Override at index 0 has invalid component key "flowMyFlow". Expected format: "<metadataSuffix>:<fullName>" (e.g. "permissionset:HR_Admin").',
+        );
+      });
+    });
+
+    describe('hasComponentOverridesForType internal `.some` semantics', () => {
+      it('returns true when ONLY ONE of several component keys in an override targets the type', () => {
+        // Kills the MethodExpression mutant on `override.components?.some(...)` (line 384)
+        // which replaces the inner `.some` with `.every`. With `.every`, an override that
+        // mixes prefixes (one matching the lookup type, others not) would return false.
+        const overrides: DecomposerOverride[] = [{ components: ['permissionset:HR_Admin', 'flow:OtherEntry'] }];
+        expect(hasComponentOverridesForType('permissionset', overrides)).toBe(true);
+      });
+
+      it('still returns true when the type prefix matches every component in an override', () => {
+        const overrides: DecomposerOverride[] = [{ components: ['permissionset:A', 'permissionset:B'] }];
+        expect(hasComponentOverridesForType('permissionset', overrides)).toBe(true);
+      });
+    });
+
+    describe('loadOverridesFromConfig encoding', () => {
+      let tempDir: string;
+
+      beforeEach(async () => {
+        tempDir = await mkdtemp(join(tmpdir(), 'cfg-overrides-utf8-'));
+      });
+
+      afterEach(async () => {
+        await rm(tempDir, { recursive: true, force: true });
+      });
+
+      it('reads the config file as UTF-8 so non-ASCII override values round-trip intact', async () => {
+        // Kills the StringLiteral mutant on the readFile('utf-8') encoding argument (line 63).
+        // Without the explicit utf-8 encoding, readFile returns a Buffer and JSON.parse
+        // would still work for ASCII -- but non-ASCII chars in a string value would either
+        // throw or be replaced with replacement chars (depending on Node's default behavior),
+        // breaking round-tripping. We assert exact equality of a non-ASCII splitTags spec.
+        const configPath = join(tempDir, '.sfdecomposer.config.json');
+        const exoticSplitTags = 'décisions:split:éname';
+        await writeFile(
+          configPath,
+          JSON.stringify({
+            overrides: [
+              {
+                metadataTypes: ['flow'],
+                strategy: 'grouped-by-tag',
+                splitTags: exoticSplitTags,
+              },
+            ],
+          }),
+          'utf-8',
+        );
+        const overrides = await loadOverridesFromConfig(configPath);
+        expect(overrides).toHaveLength(1);
+        expect(overrides[0].splitTags).toBe(exoticSplitTags);
+      });
+    });
   });
 });
