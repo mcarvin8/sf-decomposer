@@ -1,0 +1,21 @@
+package.json
+  s_92b509fbfd0706::t_ac776e417cc0e0 10
+README.md
+  s_92b509fbfd0706::t_4afcece4716c0f 78,83-84
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "835b22dae0a069c7ab0e22d881b9530f490834e5",
+  "prompts": {},
+  "sessions": {
+    "s_92b509fbfd0706": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "1f2d6592-dbb0-4726-a9aa-efde60b3f9e0",
+        "model": "auto-high"
+      },
+      "human_author": "Matt Carvin <90224411+mcarvin8@users.noreply.github.com>"
+    }
+  }
+}
