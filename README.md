@@ -75,13 +75,13 @@ A Salesforce CLI plugin that **decomposes** large metadata XML files into smalle
 
 ### Supported Platforms
 
-sf-decomposer depends on [config-disassembler-node](https://github.com/mcarvin8/config-disassembler-node), which includes prebuilt native binaries for:
+sf-decomposer depends on [config-disassembler-node](https://github.com/mcarvin8/config-disassembler-node), which ships prebuilt native binaries as platform-specific optional npm packages — your package manager installs only the one matching your `os` / `cpu` / `libc`:
 
 | Platform    | Architectures                      |
 | ----------- | ---------------------------------- |
 | **macOS**   | x64 (Intel), arm64 (Apple Silicon) |
-| **Linux**   | x64, arm64, ia32                   |
-| **Windows** | x64, arm64                         |
+| **Linux**   | x64 (gnu), arm64 (gnu)             |
+| **Windows** | x64, arm64, ia32                   |
 
 If your platform or architecture is not listed, please open an [issue](https://github.com/mcarvin8/sf-decomposer/issues).
 
