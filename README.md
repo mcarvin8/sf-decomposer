@@ -81,7 +81,7 @@ sf-decomposer depends on [config-disassembler-node](https://github.com/mcarvin8/
 | ----------- | ---------------------------------- |
 | **macOS**   | x64 (Intel), arm64 (Apple Silicon) |
 | **Linux**   | x64, arm64, ia32                   |
-| **Windows** | x64                                |
+| **Windows** | x64, arm64                         |
 
 If your platform or architecture is not listed, please open an [issue](https://github.com/mcarvin8/sf-decomposer/issues).
 
