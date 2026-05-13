@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.20.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.19.0...v6.20.0) (2026-05-13)
+
+
+### Features
+
+* bump config-disassembler to support win32-arm64 ([#452](https://github.com/mcarvin8/sf-decomposer/issues/452)) ([b5dd140](https://github.com/mcarvin8/sf-decomposer/commit/b5dd140f2fc5448c0edd0ac28fb30589371ec6d6))
+
 ## [6.19.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.18.0...v6.19.0) (2026-05-05)
 
 
