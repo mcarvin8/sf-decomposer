@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.23.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.22.0...v6.23.0) (2026-05-14)
+
+
+### Features
+
+* **metadata:** bump @salesforce/source-deploy-retrieve ([#458](https://github.com/mcarvin8/sf-decomposer/issues/458)) ([ff25271](https://github.com/mcarvin8/sf-decomposer/commit/ff25271cb1f509b59435f37e495a43c9b47f3a4b))
+
 ## [6.22.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.21.0...v6.22.0) (2026-05-13)
 
 
