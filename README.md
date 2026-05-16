@@ -409,11 +409,7 @@ Use the metadata **suffix** for `-m` / `--metadata-type`, as in [SDR’s metadat
 | Marketing App Extension     | `marketingappextension`    |                                                                                                                                                                            |
 | Loyalty Program Setup       | `loyaltyProgramSetup`      | Only `unique-id` strategy supported; `grouped-by-tag` is overridden. Automatically decomposed further (see [Loyalty Program Setup](#loyalty-program-setup-decomposition)). |
 
----
-
-## Supported Metadata
-
-The supported metadata table above provides a quick reference. For a comprehensive breakdown of supported, leaf-only, and unsupported metadata types — including multi-level decomposition patterns, Salesforce native decomposition conflicts, and adapter strategy limitations — see [**METADATA_COVERAGE.md**](./METADATA_COVERAGE.md).
+The supported metadata table above provides a quick reference for some types. For a comprehensive breakdown of supported, leaf-only, and unsupported metadata types — including multi-level decomposition patterns, Salesforce native decomposition conflicts, and adapter strategy limitations — see [**METADATA_COVERAGE.md**](./METADATA_COVERAGE.md).
 
 ### Exceptions
 
