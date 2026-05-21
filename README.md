@@ -321,7 +321,7 @@ Custom labels are always decomposed with `unique-id` (grouped-by-tag would be a 
 
 ```
 labels/
-├── CustomLabels.labels-meta.xml                    ← original wrapper kept (empty after decompose)
+├── CustomLabels.labels-meta.xml                    ← original file (safe to delete after decompose)
 ├── quoteAuto.label-meta.xml                        ← one file per <labels> entry, named by fullName
 └── quoteManual.label-meta.xml
 ```
