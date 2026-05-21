@@ -14,14 +14,12 @@ This document provides a comprehensive breakdown of Salesforce metadata types fr
 
 Salesforce provides native metadata decomposition support for a limited set of metadata types. If you have opted into [Salesforce's decomposed metadata types](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_ws_decomposed_md_types.htm), **do not use sf-decomposer on those same types**. Mixing both decomposition approaches will cause conflicts, version control issues, and potential deployment failures.
 
-**Salesforce's supported decomposed types** (as of the current SFDX version):
+**Salesforce's supported decomposed beta types** (as of the current SFDX version):
 - Custom Labels
 - Workflows
-- Profiles
 - Permission Sets
-- Muting Permission Sets
-- AI Scoring Model Definition
-- Decision Matrix Definition
+- Sharing Rules
+- External Services Registration
 
 **Recommended approach:**
 - Use **Salesforce's native decomposition** if your org is on a recent CLI version and you want managed, built-in support.
@@ -126,22 +124,6 @@ These types are ignored by design; attempting to decompose them produces a no-op
 - **Workflow Send** (`workflowsend`)
 - **Workflow Task** (`workflowtask`)
 
-### Custom Object Sub-Types (Child types)
-> **Note:** Custom Object types must be accessed via parent type; individual sub-types are not supported.
-- **Assignment Rule** (`assignmentrule`) — Inside AssignmentRules
-- **Business Process** (`businessprocess`) — Inside CustomObject
-- **Compact Layout** (`compactlayout`) — Inside CustomObject
-- **Custom Field** (`customfield`) — Inside CustomObject
-- **Escalation Rule** (`escalationrule`) — Inside EscalationRules
-- **Field Set** (`fieldset`) — Inside CustomObject
-- **Index** (`index`) — Inside CustomObject
-- **List View** (`listview`) — Inside CustomObject
-- **Record Type** (`recordtype`) — Inside CustomObject
-- **Validation Rule** (`validationrule`) — Inside CustomObject
-- **Web Link** (`weblink`) — Inside CustomObject
-- **Auto Response Rule** (`autoresponserule`) — Inside AutoResponseRules
-- **Matching Rule** (`matchingrule`) — Inside MatchingRules
-
 ### Configuration & Settings Types
 - **Account Forecast Settings** (`accountforecastsettings`)
 - **Accounting Field Mapping** (`accountingfieldmapping`)
@@ -221,10 +203,8 @@ Custom Objects are not supported by this plugin.
 
 ### Category 3: Child Types & Invalid Suffixes
 
-Attempting to use child type suffixes (e.g., `field`, `recordType`, `validationrule`) directly will fail. These types must be accessed through their parent types:
+Attempting to use child type suffixes (e.g., `workflowRule`, `validationrule`) directly will fail. These types must be accessed through their parent types:
 
-- **Custom Field** → Use `customobject` (fields are part of custom objects)
-- **Record Type** → Use `customobject` (accessed as children)
 - **Workflow Rule** → Use `workflow` (accessed as children)
 - **Assignment Rule** → Use `assignmentrules` (accessed as children)
 
@@ -257,7 +237,6 @@ Examples (supported but folder-scoped):
 When you decompose a parent type, child types are automatically included:
 
 - **Workflow** includes: alerts, field updates, flow actions, knowledge publishes, outbound messages, rules, sends, tasks
-- **CustomObject** includes: fields, validation rules, record types, list views, compact layouts, business processes, field sets, sharing reasons, web links, custom field translations, indexes
 - **AssignmentRules** includes: assignment rule items
 - **AutoResponseRules** includes: auto response rule items
 - **EscalationRules** includes: escalation rule items
@@ -418,10 +397,9 @@ RUST_LOG=warn sf decomposer decompose -m "flow"   # Shows sibling-collision warn
 - Digital Experience Bundles
 - All configuration/settings-only types
 - Workflow sub-types (use parent `workflow` instead)
-- Custom object sub-types (use parent `customobject` instead)
 
 ### ❌ Never Supported
-- Custom Objects (as a whole)
+- Custom Objects and object children (as a whole)
 - Types with `matchingContentFile` adapter strategy (code-based types)
 - Types with `bundle` adapter strategy (bundle structures)
 - Types with `digitalExperience` adapter strategy
