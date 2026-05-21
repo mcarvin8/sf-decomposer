@@ -1,4 +1,4 @@
-# sf-decomposer Metadata Coverage Guide
+# Metadata Coverage
 
 This document provides a comprehensive breakdown of Salesforce metadata types from the [source-deploy-retrieve (SDR) registry](https://github.com/forcedotcom/source-deploy-retrieve/blob/main/src/registry/metadataRegistry.json) and their support status in **sf-decomposer**.
 
@@ -194,7 +194,7 @@ Metadata types with [matchingContentFile, digitalExperience, mixedContent, bundl
 
 ### Category 2: Custom Objects (Not Supported)
 
-- **Custom Object** (`object`) — Custom objects are not decomposable as a whole type. Individual sub-components (fields, validation rules, record types, etc.) are stored and versioned separately. To manage custom object components, version control the individual components (e.g., custom fields, validation rules) rather than the object definition itself.
+- **Custom Object** (`object`) — Custom objects are already decomposed by default. This plugin will not decompose them further unless there is interest for decomposing a custom object child (i.e record type) further past the CLI default.
 
 **Error message:**
 ```
@@ -398,25 +398,14 @@ RUST_LOG=warn sf decomposer decompose -m "flow"   # Shows sibling-collision warn
 - All configuration/settings-only types
 - Workflow sub-types (use parent `workflow` instead)
 
-### ❌ Never Supported
-- Custom Objects and object children (as a whole)
+### ❌ Not Currently Supported
+- Custom Objects and object children
 - Types with `matchingContentFile` adapter strategy (code-based types)
 - Types with `bundle` adapter strategy (bundle structures)
 - Types with `digitalExperience` adapter strategy
 - Types with `mixedContent` adapter strategy
 - Child type suffixes when used directly (use parent types)
 - `botVersion` directly (use `bot`)
-
----
-
-## Summary Table
-
-| Category | Count | Examples |
-|---|---|---|
-| **Fully Supported** | 10 | Labels, Workflow, Profile, PermissionSet, Bot, LoyaltyProgramSetup, etc. |
-| **Leaf-Only (No Decomposition Needed)** | 500+ | ApexClass, LWC, StaticResource, Settings types, etc. |
-| **Unsupported (Rejected)** | ~150+ | Types using matchingContentFile, bundle, digitalExperience, mixedContent strategies |
-| **Child Types (Decompose via Parent)** | 30+ | Custom object sub-types, workflow sub-types, rule items |
 
 ---
 
