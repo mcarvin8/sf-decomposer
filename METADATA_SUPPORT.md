@@ -16,8 +16,6 @@ Use the metadata **suffix** (the CLI value) with `-m` / `--metadata-type`, e.g. 
 
 > **Note on ⚠️ leaf-only types:** These are not errors. sf-decomposer will accept the suffix but the underlying Rust disassembler will log a skip at `RUST_LOG=error` because the file contains only primitive leaf elements with nothing to decompose. The file is left untouched.
 
-> **Conflict warning:** If you have opted into [Salesforce's native decomposition](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_ws_decomposed_md_types.htm) for types like `CustomLabels`, `Workflow`, `PermissionSet`, or `SharingRules`, **do not also run sf-decomposer on those same types** — mixing both approaches causes conflicts and potential deploy failures.
-
 ---
 
 ## ⚠️ Salesforce Native Decomposition Conflict
