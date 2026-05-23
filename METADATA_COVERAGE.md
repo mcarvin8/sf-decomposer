@@ -1,417 +1,295 @@
-# Metadata Coverage
+# sf-decomposer Metadata Support
 
-This document provides a comprehensive breakdown of Salesforce metadata types from the [source-deploy-retrieve (SDR) registry](https://github.com/forcedotcom/source-deploy-retrieve/blob/main/src/registry/metadataRegistry.json) and their support status in **sf-decomposer**.
+This table lists every metadata type from the [Salesforce SDR registry](https://github.com/forcedotcom/source-deploy-retrieve/blob/main/src/registry/metadataRegistry.json) (v66) and its support status in **sf-decomposer**.
 
-## Overview
+Use the metadata **suffix** (the CLI value) with `-m` / `--metadata-type`, e.g. `sf decomposer decompose -m "flow"`.
 
-- **Supported Types**: Metadata types that sf-decomposer can decompose and recompose.
-- **Leaf-Only Types**: Types with no nested decomposable elements—they contain only primitive values and cannot be broken down further.
-- **Unsupported Types**: Types that sf-decomposer explicitly does not support, with reasons documented.
+## Legend
 
----
+| Symbol | Meaning |
+|:---|:---|
+| ✅ | **Decomposable** — sf-decomposer can split and recompose this type |
+| 🔀 | **Decomposable with notes** — supported but with forced strategy, multi-level decomposition, or special behavior |
+| ⚠️ | **Leaf-only / no-op** — type is valid XML metadata but has no nested repeatable children to split; decompose silently skips these files |
+| ❌ | **Unsupported** — explicitly blocked due to adapter strategy or hard-coded rejection |
+| ➡️ | **Use parent type** — this is a child type; access it through its parent suffix instead |
 
-## ⚠️ Important: Salesforce Native Decomposition Conflict
+> **Note on ⚠️ leaf-only types:** These are not errors. sf-decomposer will accept the suffix but the underlying Rust disassembler will log a skip at `RUST_LOG=error` because the file contains only primitive leaf elements with nothing to decompose. The file is left untouched.
 
-Salesforce provides native metadata decomposition support for a limited set of metadata types. If you have opted into [Salesforce's decomposed metadata types](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_ws_decomposed_md_types.htm), **do not use sf-decomposer on those same types**. Mixing both decomposition approaches will cause conflicts, version control issues, and potential deployment failures.
-
-**Salesforce's supported decomposed beta types** (as of the current SFDX version):
-- Custom Labels
-- Workflows
-- Permission Sets
-- Sharing Rules
-- External Services Registration
-
-**Recommended approach:**
-- Use **Salesforce's native decomposition** if your org is on a recent CLI version and you want managed, built-in support.
-- Use **sf-decomposer** if you need multi-level decomposition (e.g., Bots, Loyalty Program Setup), additional strategies (grouped-by-tag), or support for metadata types Salesforce doesn't decompose.
-- **Never mix both** on the same metadata type in the same project.
-
-For details on Salesforce's decomposed metadata types, see the [official documentation](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_ws_decomposed_md_types.htm).
+> **Conflict warning:** If you have opted into [Salesforce's native decomposition](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_ws_decomposed_md_types.htm) for types like `CustomLabels`, `Workflow`, `PermissionSet`, or `SharingRules`, **do not also run sf-decomposer on those same types** — mixing both approaches causes conflicts and potential deploy failures.
 
 ---
 
-## Supported Metadata Types (Fully Decomposable)
+## Supported Metadata Types (v66)
 
-These metadata types have nested, repeatable elements and are fully supported by sf-decomposer. Use the **CLI value** (suffix) with the `-m` / `--metadata-type` flag.
-
-| Metadata Type | CLI Value | Notes |
-|---|---|---|
-| **Custom Labels** | `labels` | Strategy overridden to `unique-id` (grouping by tag would be identical to the original file). |
-| **Workflows** | `workflow` | Fully decomposable with workflow sub-types (alerts, field updates, rules, tasks, etc.). |
-| **Profiles** | `profile` | Supports decomposition of permissions (applications, classes, fields, objects, pages, tabs, etc.). |
-| **Permission Sets** | `permissionset` | Supports `--decompose-nested-permissions` with `grouped-by-tag` strategy for nested object and field permissions. |
-| **Muting Permission Sets** | `mutingpermissionset` | Extends permission set metadata type; also supports nested permissions decomposition. |
-| **AI Scoring Model Definition** | `aiScoringModelDefinition` | Contains versioned definitions with `aiScoringModelDefVersion` children. |
-| **Decision Matrix Definition** | `decisionMatrixDefinition` | Decomposes decision matrix versions and rows. |
-| **Bot** | `bot` | Multi-level decomposition: `botVersion` → `botDialogs` (by `developerName`) → `botSteps` (by `type`). Uses multiLevel defaults. |
-| **Marketing App Extension** | `marketingappextension` | Decomposable with app extension elements. |
-| **Loyalty Program Setup** | `loyaltyProgramSetup` | Multi-level decomposition: `programProcesses` → `parameters`/`rules`. Only supports `unique-id` strategy (grouped-by-tag is automatically overridden). Three-level layout: `programName` → `ruleName` or `parameterName`. |
-
-### Multi-Level Decomposition Details
-
-Two metadata types have automatic multi-level decomposition built in:
-
-#### **Bot** (multi-level defaults)
-```
-bots/
-└── My_Bot/
-    ├── My_Bot.bot-meta.xml                  ← leaf properties
-    └── botDialogs/
-        ├── greeting_dialog/
-        │   ├── greeting_dialog.botDialogs-meta.xml
-        │   └── botSteps/
-        │       ├── Message_1.botSteps-meta.xml
-        │       ├── Navigation_1.botSteps-meta.xml
-        │       └── Wait_1.botSteps-meta.xml
-        └── farewell_dialog/
-            └── ...
-```
-**Pattern:** `botDialogs:botDialogs:developerName`, `botSteps:botSteps:type`
-
-#### **Loyalty Program Setup** (multi-level defaults)
-```
-loyaltyProgramSetups/
-└── LoyaltyProgramSetup1/
-    └── Member Enrollment Process/
-        ├── Member Enrollment Process.programProcesses-meta.xml
-        ├── parameters/
-        │   └── fee.parameters-meta.xml
-        └── rules/
-            ├── Bulk Voucher Upload.rules-meta.xml
-            ├── Finalize.rules-meta.xml
-            └── Set Up Step.rules-meta.xml
-```
-**Pattern:** `programProcesses:programProcesses:parameterName,ruleName`
-
----
-
-## Leaf-Only Metadata Types
-
-Leaf-only types contain **no nested repeatable elements**—they consist entirely of primitive fields (strings, booleans, dates, etc.). sf-decomposer cannot decompose these types because there is nothing to break apart. When encountered during a decompose run, leaf-only files are skipped at `ERROR` log level (or `WARN` with `RUST_LOG=warn`).
-
-These types are ignored by design; attempting to decompose them produces a no-op with a skip message.
-
-### Apex & Code-Related (Content-Based, matchingContentFile adapter)
-- **ApexClass** (`cls`) — Stored separately; contains .cls + .cls-meta.xml
-- **ApexComponent** (`component`) — Stored separately; contains .component + .component-meta.xml
-- **ApexPage** (`page`) — Stored separately; contains .page + .page-meta.xml
-- **ApexTrigger** (`trigger`) — Stored separately; contains .trigger + .trigger-meta.xml
-- **ApexTestSuite** (`testSuite`) — Contains only test configuration, no decomposable structure
-- **ApexEmailNotifications** (`notifications`) — Configuration-only
-
-### Bundled/Asset Types (Bundle adapter)
-- **Aura Definition Bundle** (`auradefinitionbundle`) — Aura components stored as bundles
-- **Lightning Component Bundle** (`lightningcomponentbundle`) — LWC stored as bundles
-- **Static Resource** (`staticresource`) — Binary/archive content
-- **Lightning Web Component** (LWC) — Package structure with .js, .html, .css, etc.
-
-### Digital Experience & UI Bundles (digitalExperience / bundle adapters)
-- **Digital Experience Bundle** (`digitalexperiencebundle`) — Complex bundle structure
-- **Experience Bundle** (`experiencebundle`) — Site/portal experiences
-- **Wave Template Bundle** (`wavetemplatebundle`) — Analytics templates
-- **Custom Site** (`customsite`) — Sites structure
-- **SiteDotCom** (`sitedotcom`) — SiteDotCom sites
-- **UI Bundle** (`uibundle`) — Composite UI experiences
-
-### Workflow Sub-Types (Child types via matchingContentFile)
-> **Note:** Workflow sub-types should always be accessed via the parent `workflow` type, not individually.
-- **Workflow Alert** (`workflowalert`)
-- **Workflow Field Update** (`workflowfieldupdate`)
-- **Workflow Flow Action** (`workflowflowaction`)
-- **Workflow Knowledge Publish** (`workflowknowledgepublish`)
-- **Workflow Outbound Message** (`workflowoutboundmessage`)
-- **Workflow Rule** (`workflowrule`)
-- **Workflow Send** (`workflowsend`)
-- **Workflow Task** (`workflowtask`)
-
-### Configuration & Settings Types
-- **Account Forecast Settings** (`accountforecastsettings`)
-- **Accounting Field Mapping** (`accountingfieldmapping`)
-- **Accounting Model Config** (`accountingmodelconfig`)
-- **Accounting Plan Obj Measure Calc Definition** (`accountplanobjmeascalcdef`)
-- **Account Relationship Share Rule** (`accountrelationshipsharerule`)
-- **AcctMgr Target Settings** (`acctmgrtargetsettings`)
-- **Actionable Event Orch Definition** (`actionableeventorchdef`)
-- **Actionable Event Type Definition** (`actionableeventtypedef`)
-- **Actionable List Definition** (`actionablelistdefinition`)
-- **Action Launcher Item Definition** (`actionlauncheritemdef`)
-- **Action Link Group Template** (`actionlinkgrouptemplate`)
-- **Action Plan Template** (`actionplantemplate`)
-- **Activation Platform** (`activationplatform`)
-- **AI Application** (`aiapplication`)
-- **AI Application Config** (`aiapplicationconfig`)
-- **AI Agent Scorer Definition** (`aiagentscorerdefinition`)
-- **AI Assistant Template** (`aiassistanttemplate`)
-- **AI Response Format** (`airesponseformat`)
-- **AI Surface** (`aisurface`)
-- **AI Testing Definition** (`aitestingdefinition`)
-- **AI Use Case Definition** (`aiusecasedefinition`)
-- **Analytic Snapshot** (`analyticsnapshot`)
-- **Animation Rule** (`animationrule`)
-- **App Menu** (`appmenu`)
-- **Appointment Assignment Policy** (`appointmentassignmentpolicy`)
-- **Appointment Scheduling Policy** (`appointmentschedulingpolicy`)
-- **Application Record Type Config** (`applicationrecordtypeconfig`)
-- **Application Subtype Definition** (`applicationsubtypedefinition`)
-- **Asset** (Content Asset, `asset`)
-- **Auth Provider** (`authprovider`)
-- **Batch Calc Job Definition** (`batchcalcjobdefinition`)
-- **Batch Process Job Definition** (`batchprocessjobdefinition`)
-- **Benefit Action** (`benefitaction`)
-- **Bot Block** (`botblock`)
-- **Bot Template** (`bottemplate`)
-- **Branding Set** (`brandingset`)
-- **Briefcase Definition** (`briefcasedefinition`)
-- **Building Energy Intensity Config** (`bldgenrgyintensitycnfg`)
-- **Business Process Feedback Configuration** (`businessprocessfeedbackconfiguration`)
-- **Business Process Group** (`businessprocessgroup`)
-- **Business Process Type Definition** (`businessprocesstypedefinition`)
-- **Cache Partition** (Platform Cache Partition, `cachePartition`)
-- **Call Center** (`callcenter`)
-- **Call Center Routing Map** (`callcenterroutingmap`)
-- **Call Coaching Media Provider** (`callcoachingmediaprovider`)
-- ... and many more settings/configuration types
-
----
-
-## Unsupported Metadata Types
-
-### Category 1: Unsupported Adapter Strategies
-
-The following types use SDR adapter strategies that sf-decomposer does not support. These types are explicitly rejected with a clear error message:
-
-| Strategy | Types Using This Strategy |
-|---|---|
-| **`matchingContentFile`** | ApexClass, ApexComponent, ApexPage, ApexTrigger, and their workflow equivalents. These map code content to separate files (.cls, .component, .page, .trigger). They require specialized handling beyond XML decomposition. |
-| **`bundle`** | Aura Definition Bundle, Lightning Component Bundle, Static Resource, and other bundle-structured metadata types. Bundles contain multiple files in a directory structure; decomposing the XML wrapper alone would break the bundle integrity. |
-| **`digitalExperience`** | Digital Experience Bundle, Experience Bundle, Site definitions, etc. These types have complex multi-file structures that include assets, configurations, and templates in a unified bundle. |
-| **`mixedContent`** | Types combining XML metadata with binary/text content files. These require special handling to preserve both the structure and content. |
-
-**Error message when attempting unsupported strategies:**
-```
-Metadata types with [matchingContentFile, digitalExperience, mixedContent, bundle] strategies are not supported by this plugin.
-```
-
-### Category 2: Custom Objects (Not Supported)
-
-- **Custom Object** (`object`) — Custom objects are already decomposed by default. This plugin will not decompose them further unless there is interest for decomposing a custom object child (i.e record type) further past the CLI default.
-
-**Error message:**
-```
-Custom Objects are not supported by this plugin.
-```
-
-### Category 3: Child Types & Invalid Suffixes
-
-Attempting to use child type suffixes (e.g., `workflowRule`, `validationrule`) directly will fail. These types must be accessed through their parent types:
-
-- **Workflow Rule** → Use `workflow` (accessed as children)
-- **Assignment Rule** → Use `assignmentrules` (accessed as children)
-
-**Error message:**
-```
-Metadata type not found for the given suffix: field.
-```
-
-### Category 4: Folder-Based Types (Partially Limited)
-
-Folder-based metadata types (e.g., `report`, `dashboard`, `document`, `email`) are supported but require folder-level scoping due to SDR architecture. These types:
-- Are scoped at the **folder level**, not individual component level
-- Can be decomposed/recomposed but with `--manifest` or component-scope overrides for fine-grained control
-- Have the unit of decomposition as the **folder** (e.g., `report:MyFolder`), not individual reports
-
-Examples (supported but folder-scoped):
-- **Report** (`report`)
-- **Dashboard** (`dashboard`)
-- **Document** (`document`)
-- **Email Template** (`email`)
-- **Document Folder** (`documentfolder`)
-- **Dashboard Folder** (`dashboardfolder`)
-
----
-
-## Special Cases & Exceptions
-
-### Child Types via Parent Decomposition
-
-When you decompose a parent type, child types are automatically included:
-
-- **Workflow** includes: alerts, field updates, flow actions, knowledge publishes, outbound messages, rules, sends, tasks
-- **AssignmentRules** includes: assignment rule items
-- **AutoResponseRules** includes: auto response rule items
-- **EscalationRules** includes: escalation rule items
-- **MatchingRules** includes: matching rule items
-
-### The `botVersion` Exception
-
-`botVersion` should **never** be used directly. Instead, use the parent `bot` type:
-```
-sf decomposer decompose -m "bot"
-```
-Attempting to use `botVersion` directly will fail with:
-```
-botVersion suffix should not be used. Please use bot to decompose/recompose bot and bot version files.
-```
-
----
-
-## Decomposition Strategy Support
-
-| Metadata Type | `unique-id` Strategy | `grouped-by-tag` Strategy | Notes |
-|---|---|---|---|
-| Custom Labels | ✅ Yes (forced) | ⚠️ Overridden to unique-id | Grouping by tag is semantically identical to the original, so it's forced to `unique-id`. |
-| Workflows | ✅ Yes | ✅ Yes | Both strategies work; workflows decompose well with either approach. |
-| Profiles | ✅ Yes | ✅ Yes | Supports both strategies; nested permissions can be further split with `--decompose-nested-permissions`. |
-| Permission Sets | ✅ Yes | ✅ Yes | Supports both; nested permissions decomposition available with `grouped-by-tag` + `--decompose-nested-permissions`. |
-| Muting Permission Sets | ✅ Yes | ✅ Yes | Same as Permission Sets. |
-| AI Scoring Model Definition | ✅ Yes | ✅ Yes | Decomposes versions and rows. |
-| Decision Matrix Definition | ✅ Yes | ✅ Yes | Decomposes definitions and versions. |
-| Bot | ✅ Yes | ✅ Yes | Multi-level decomposition applied regardless of strategy; `multiLevel` defaults always active. |
-| Marketing App Extension | ✅ Yes | ✅ Yes | Both strategies supported. |
-| Loyalty Program Setup | ✅ Yes (forced) | ⚠️ Overridden to unique-id | Only `unique-id` is supported; `grouped-by-tag` is automatically overridden. Multi-level decomposition is applied by default. |
+|Metadata Type|CLI Suffix|Support|Notes|
+|:---|:---|:---|:---|
+|AIApplication|`aiapplication`|⚠️|Leaf-only — no nested repeatable elements|
+|AIApplicationConfig|`aiapplicationconfig`|⚠️|Leaf-only|
+|AIReplyRecommendationsSettings|`aireplyrecommendationssettings`|⚠️|Settings type — leaf-only|
+|AIScoringModelDefVersion|`aiscoringmodeldefversion`|➡️|Child of `AIScoringModelDefinition` — use `aiScoringModelDefinition`|
+|AIScoringModelDefinition|`aiScoringModelDefinition`|✅|Contains versioned definitions with `aiScoringModelDefVersion` children|
+|AIUsecaseDefinition|`aiusecasedefinition`|⚠️|Leaf-only|
+|AccountForecastSettings|`accountforecastsettings`|⚠️|Settings type — leaf-only|
+|AccountIntelligenceSettings|`accountintelligencesettings`|⚠️|Settings type — leaf-only|
+|AccountPlanObjMeasCalcDef|`accountplanobjmeascalcdef`|⚠️|Leaf-only|
+|AccountPlanSettings|`accountplansettings`|⚠️|Settings type — leaf-only|
+|AccountRelationshipShareRule|`accountrelationshipsharerule`|⚠️|Leaf-only|
+|AccountSettings|`accountsettings`|⚠️|Settings type — leaf-only|
+|AccountingFieldMapping|`accountingfieldmapping`|⚠️|Leaf-only|
+|AccountingModelConfig|`accountingmodelconfig`|⚠️|Leaf-only|
+|AccountingSettings|`accountingsettings`|⚠️|Settings type — leaf-only|
+|AcctMgrTargetSettings|`acctmgrtargetsettings`|⚠️|Settings type — leaf-only|
+|ActionLauncherItemDef|`actionlauncheritemdef`|⚠️|Leaf-only|
+|ActionLinkGroupTemplate|`actionlinkgrouptemplate`|⚠️|Leaf-only|
+|ActionPlanTemplate|`actionplantemplate`|✅|Contains nested repeatable elements|
+|ActionableEventOrchDef|`actionableeventorchdef`|⚠️|Leaf-only|
+|ActionableEventTypeDef|`actionableeventtypedef`|⚠️|Leaf-only|
+|ActionableListDefinition|`actionablelistdefinition`|⚠️|Leaf-only|
+|ActionsSettings|`actionssettings`|⚠️|Settings type — leaf-only|
+|ActivationPlatform|`activationplatform`|⚠️|Leaf-only|
+|ActivitiesSettings|`activitiessettings`|⚠️|Settings type — leaf-only|
+|AddressSettings|`addresssettings`|⚠️|Settings type — leaf-only|
+|AnalyticSnapshot|`analyticsnapshot`|⚠️|Leaf-only|
+|AnimationRule|`animationrule`|⚠️|Leaf-only|
+|ApexClass|`cls`|❌|`matchingContentFile` adapter — code content files are not XML-decomposable|
+|ApexComponent|`component`|❌|`matchingContentFile` adapter — not supported|
+|ApexEmailNotifications|`notifications`|⚠️|Leaf-only|
+|ApexPage|`page`|❌|`matchingContentFile` adapter — not supported|
+|ApexSettings|`apexsettings`|⚠️|Settings type — leaf-only|
+|ApexTestSuite|`testSuite`|⚠️|Leaf-only — contains only test class references|
+|ApexTrigger|`trigger`|❌|`matchingContentFile` adapter — not supported|
+|AppMenu|`appmenu`|✅|Contains nested `<appMenuItems>` elements|
+|ApplicationRecordTypeConfig|`applicationrecordtypeconfig`|⚠️|Leaf-only|
+|ApplicationSubtypeDefinition|`applicationsubtypedefinition`|⚠️|Leaf-only|
+|AppointmentAssignmentPolicy|`appointmentassignmentpolicy`|⚠️|Leaf-only|
+|AppointmentSchedulingPolicy|`appointmentschedulingpolicy`|⚠️|Leaf-only|
+|ApprovalProcess|`approvalProcess`|✅|Custom `uniqueIdElements`: `type`. Contains `<approvalSteps>` and `<approvalSubmitters>`|
+|AssignmentRules|`assignmentRules`|✅|Contains nested `<assignmentRule>` children|
+|AuraDefinitionBundle|`auradefinitionbundle`|❌|`bundle` adapter — multi-file bundle structure, not supported|
+|AuthProvider|`authprovider`|⚠️|Leaf-only|
+|AutoResponseRules|`autoResponseRules`|✅|Contains nested `<autoResponseRule>` children|
+|BatchCalcJobDefinition|`batchcalcjobdefinition`|✅|Contains nested repeatable elements|
+|BatchProcessJobDefinition|`batchprocessjobdefinition`|⚠️|Leaf-only|
+|BenefitAction|`benefitaction`|⚠️|Leaf-only|
+|Bot|`bot`|🔀|Multi-level decomposition: `botVersion` → `botDialogs` (by `developerName`) → `botSteps` (by `type`). Built-in `multiLevel` defaults applied automatically. Custom `uniqueIdElements` defined.|
+|BotBlock|`botblock`|⚠️|Leaf-only|
+|BotSettings|`botsettings`|⚠️|Settings type — leaf-only|
+|BotTemplate|`bottemplate`|⚠️|Leaf-only|
+|BotVersion|`botVersion`|❌|**Never use directly.** Use `bot` instead — sf-decomposer hard-rejects this suffix with a clear error|
+|BrandingSet|`brandingset`|⚠️|Leaf-only|
+|BriefcaseDefinition|`briefcasedefinition`|✅|Contains nested repeatable elements|
+|BusinessProcess|`businessProcess`|➡️|Child type — access via parent `CustomObject`; Custom Objects are not supported|
+|BusinessProcessGroup|`businessprocessgroup`|⚠️|Leaf-only|
+|BusinessProcessTypeDefinition|`businessprocesstypedefinition`|⚠️|Leaf-only|
+|CallCenter|`callcenter`|⚠️|Leaf-only|
+|CallCenterRoutingMap|`callcenterroutingmap`|⚠️|Leaf-only|
+|CampaignInfluenceModel|`campaigninfluencemodel`|⚠️|Leaf-only|
+|CampaignSettings|`campaignsettings`|⚠️|Settings type — leaf-only|
+|CanvasMetadata|`canvasmetadata`|⚠️|Leaf-only|
+|CaseSettings|`casesettings`|⚠️|Settings type — leaf-only|
+|Certificate|`certificate`|⚠️|Leaf-only|
+|ChannelLayout|`channellayout`|✅|Contains nested repeatable elements|
+|ChatterSettings|`chattersettings`|⚠️|Settings type — leaf-only|
+|CleanDataService|`cleandataservice`|⚠️|Leaf-only|
+|CompactLayout|`compactLayout`|➡️|Child type — access via parent `CustomObject`; Custom Objects are not supported|
+|ConnectedApp|`connectedapp`|✅|Contains nested `<oauthConfig>`, `<pluginExecutionUser>` etc.|
+|ContentAsset|`asset`|⚠️|`mixedContent` adapter — not supported|
+|CustomApplication|`app`|✅|Custom `uniqueIdElements`: compound `actionName+pageOrSobjectType+formFactor+...` chain for collision-free `actionOverrides` shards|
+|CustomField|`field`|➡️|Child type — access via parent `CustomObject`; Custom Objects are not supported|
+|CustomHelpMenuSection|`customhelpsection`|⚠️|Leaf-only|
+|CustomLabels|`labels`|🔀|Always decomposed with `unique-id` strategy (grouped-by-tag would be a no-op). Each `<labels>` entry becomes its own `.label-meta.xml` file. Strategy override to `grouped-by-tag` is silently ignored.|
+|CustomMetadata|`md`|✅|Custom `uniqueIdElements`: `field`. Each `<values>` item is keyed by `<field>`|
+|CustomNotificationType|`customnotificationtype`|⚠️|Leaf-only|
+|CustomObject|`object`|❌|**Explicitly unsupported.** Custom Objects are already decomposed by default Salesforce CLI behavior. Hard-rejected with a clear error message.|
+|CustomObjectTranslation|`objectTranslation`|✅|Contains nested repeatable elements|
+|CustomPageWebLink|`customPageWebLink`|➡️|Child type — access via parent `CustomObject`; Custom Objects are not supported|
+|CustomPermission|`customPermission`|⚠️|Leaf-only|
+|CustomSite|`site`|❌|`bundle` adapter — not supported|
+|CustomTab|`tab`|⚠️|Leaf-only|
+|Dashboard|`dashboard`|✅|Folder-scoped. Override with `multiLevel: "components:components:title"` for deeper decomposition. See [admin handbook](https://github.com/mcarvin8/sf-decomposer/blob/main/HANDBOOK.md).|
+|DashboardFolder|`dashboardFolder`|⚠️|Folder container — leaf-only, no nested decomposable children|
+|DataCategoryGroup|`datacategorygroup`|✅|Contains nested `<dataCategory>` children|
+|DataConnector|`dataconnector`|⚠️|Leaf-only|
+|DataSource|`datasource`|⚠️|Leaf-only|
+|DataSourceObject|`datasourceobject`|⚠️|Leaf-only|
+|DataStreamDefinition|`datastreamdefinition`|⚠️|Leaf-only|
+|DataWeaveResource|`dataweaveresource`|⚠️|Leaf-only|
+|DecisionMatrixDefinition|`decisionMatrixDefinition`|✅|Contains versioned definitions and rows|
+|DecisionMatrixDefinitionVersion|`decisionMatrixDefinitionVersion`|➡️|Child of `DecisionMatrixDefinition` — use `decisionMatrixDefinition`|
+|DecisionTable|`decisionTable`|✅|Contains nested repeatable elements|
+|DelegateGroup|`delegateGroup`|⚠️|Leaf-only|
+|DigitalExperience|`digitalexperience`|❌|`digitalExperience` adapter — not supported|
+|DigitalExperienceBundle|`digitalexperiencebundle`|❌|`digitalExperience` adapter — not supported|
+|DigitalExperienceConfig|`digitalexperienceconfig`|❌|`digitalExperience` adapter — not supported|
+|Document|`document`|✅|Folder-scoped. Unit of decomposition is the folder.|
+|DocumentFolder|`documentFolder`|⚠️|Folder container — leaf-only|
+|DuplicateRule|`duplicateRule`|✅|Custom `uniqueIdElements`: `matchingRule`|
+|EmbeddedServiceConfig|`embeddedserviceconfig`|✅|Contains nested repeatable elements|
+|EmailFolder|`emailFolder`|⚠️|Folder container — leaf-only|
+|EmailServicesFunction|`emailservices`|✅|Contains nested `<functions>` elements|
+|EmailTemplate|`email`|✅|Folder-scoped. Unit of decomposition is the folder.|
+|EmailTemplateFolder|`emailTemplateFolder`|⚠️|Folder container — leaf-only|
+|EntitlementProcess|`entitlementProcess`|✅|Custom `uniqueIdElements`: `milestoneName`. Contains `<milestones>` children.|
+|EntitlementTemplate|`entitlementTemplate`|⚠️|Leaf-only|
+|EscalationRules|`escalationRules`|✅|Contains nested `<escalationRule>` children|
+|ExperienceBundle|`experiencebundle`|❌|`bundle` adapter — not supported|
+|ExternalDataSource|`dataSources`|⚠️|Leaf-only|
+|ExternalServiceRegistration|`externalServiceRegistration`|✅|Contains nested repeatable elements|
+|FieldSet|`fieldSet`|➡️|Child type — access via parent `CustomObject`; Custom Objects are not supported|
+|FlexiPage|`flexipage`|✅|Contains nested `<flexiPageRegions>` and `<flexiPageEvents>`. See [admin handbook](https://github.com/mcarvin8/sf-decomposer/blob/main/HANDBOOK.md) for `multiLevel` recipes.|
+|Flow|`flow`|✅|Custom `uniqueIdElements`: `apexClass`, `object`, `field`, `layout`, `actionName`, `targetReference`, `assignToReference`, `choiceText`, `promptText`|
+|FlowCategory|`flowCategory`|⚠️|Leaf-only|
+|FlowDefinition|`flowDefinition`|⚠️|Deprecated — leaf-only|
+|FlowSettings|`flowsettings`|⚠️|Settings type — leaf-only|
+|FlowTest|`flowTest`|✅|Contains nested repeatable elements|
+|ForecastingSettings|`forecastingsettings`|⚠️|Settings type — leaf-only|
+|ForecastingType|`forecastingType`|✅|Contains nested repeatable elements|
+|GenAiPlugin|`genAiPlugin`|✅|Custom `uniqueIdElements`: `functionName`, `developerName`. Contains `<genAiFunctions>` and `<genAiPluginInstructions>`.|
+|GenAiPromptTemplate|`genAiPromptTemplate`|✅|Custom `uniqueIdElements`: `versionIdentifier`. Contains `<templateVersions>`.|
+|GlobalValueSet|`globalValueSet`|✅|Contains nested `<customValue>` children|
+|GlobalValueSetTranslation|`globalValueSetTranslation`|✅|Custom `uniqueIdElements`: `masterLabel`|
+|Group|`group`|⚠️|Leaf-only|
+|HomePageComponent|`homePageComponent`|⚠️|Leaf-only|
+|HomePageLayout|`homePageLayout`|✅|Contains nested `<homePageComponents>` children|
+|IPAddressRange|`ipAddressRange`|⚠️|Leaf-only|
+|KeywordList|`keywordList`|✅|Contains nested `<keywords>` children|
+|Layout|`layout`|✅|Contains deeply nested `<layoutSections>` and `<layoutItems>`. See [admin handbook](https://github.com/mcarvin8/sf-decomposer/blob/main/HANDBOOK.md) for recommended `multiLevel` recipe.|
+|Letterhead|`letterhead`|⚠️|Leaf-only|
+|LightningComponentBundle|`lightningcomponentbundle`|❌|`bundle` adapter — LWC multi-file structure, not supported|
+|LightningExperienceTheme|`lightningExperienceTheme`|⚠️|Leaf-only|
+|LightningMessageChannel|`lightningMessageChannel`|⚠️|Leaf-only|
+|LightningOnboardingConfig|`lightningOnboardingConfig`|⚠️|Leaf-only|
+|ListView|`listView`|➡️|Child type — access via parent `CustomObject`; Custom Objects are not supported|
+|LiveChatAgentConfig|`liveChatAgentConfig`|✅|Custom `uniqueIdElements`: `button`, `skill`. Contains `<transferableButtons>` and `<supervisorSkills>`.|
+|LiveChatButton|`liveChatButton`|✅|Custom `uniqueIdElements`: `skill`, `deployment`. Contains `<skills>` and `<deployments>`.|
+|LiveChatDeployment|`liveChat`|⚠️|Leaf-only|
+|LiveChatSensitiveDataRule|`liveChatSensitiveData`|⚠️|Leaf-only|
+|LoyaltyProgramSetup|`loyaltyProgramSetup`|🔀|**Multi-level decomposition.** Always `unique-id` (grouped-by-tag overridden). Built-in `multiLevel` splits `<programProcesses>` → `<parameters>` / `<rules>`. Custom `uniqueIdElements`: `processName`.|
+|MacroSettings|`macrosettings`|⚠️|Settings type — leaf-only|
+|MarketingAppExtension|`marketingappextension`|✅|Custom `uniqueIdElements`: `apiName`|
+|MatchingRules|`matchingRules`|✅|Contains nested `<matchingRule>` children|
+|MilestoneType|`milestoneType`|⚠️|Leaf-only|
+|MlDomain|`mlDomain`|✅|Custom `uniqueIdElements`: `developerName`. Contains `<mlIntents>`.|
+|MobileSettings|`mobilesettings`|⚠️|Settings type — leaf-only|
+|ModerationRule|`moderationRule`|⚠️|Leaf-only|
+|MutingPermissionSet|`mutingpermissionset`|✅|Custom `uniqueIdElements` identical to `permissionset`. Supports `--decompose-nested-permissions` with `grouped-by-tag`. Extends the permission set metadata type.|
+|NamedCredential|`namedCredential`|⚠️|Leaf-only|
+|NavigationMenu|`navigationMenu`|✅|Contains nested `<menuItems>` children|
+|Network|`network`|✅|Contains nested repeatable elements|
+|OmniSupervisorConfig|`omniSupervisorConfig`|✅|Custom `uniqueIdElements`: `user`, `group`, `queue`, `profile`, `skill`, `actionName`|
+|PathAssistant|`pathAssistant`|✅|Custom `uniqueIdElements`: `picklistValueName`. Contains `<pathAssistantSteps>`.|
+|PathAssistantSettings|`pathassistantsettings`|⚠️|Settings type — leaf-only|
+|PermissionSet|`permissionset`|✅|Custom `uniqueIdElements`: `application`, `apexClass`, `externalDataSource`, `flow`, `object`, `apexPage`, `recordType`, `tab`, `field`, `agentName`, `externalCredentialPrincipal`, `servicePresenceStatus`. Supports `--decompose-nested-permissions` with `grouped-by-tag` for nested object/field permissions.|
+|PermissionSetGroup|`permissionSetGroup`|⚠️|Leaf-only|
+|PlatformCachePartition|`cachePartition`|⚠️|Leaf-only|
+|PlatformEventChannel|`platformEventChannel`|⚠️|Leaf-only|
+|PlatformEventChannelMember|`platformEventChannelMember`|⚠️|Leaf-only|
+|PresenceDeclineReason|`presenceDeclineReason`|⚠️|Leaf-only|
+|PresenceUserConfig|`presenceUserConfig`|✅|Contains nested repeatable elements|
+|Profile|`profile`|✅|Custom `uniqueIdElements`: `application`, `apexClass`, `externalDataSource`, `flow`, `object`, `apexPage`, `recordType`, `tab`, `field`, `startAddress`, `dataCategoryGroup`, `layout`, `weekdayStart`, `friendlyname`, `agentName`|
+|Prompt|`prompt`|✅|Contains nested repeatable elements|
+|Queue|`queue`|✅|Custom `uniqueIdElements`: `sobjectType`. Contains `<queueSobject>` children.|
+|QueueRoutingConfig|`queueRoutingConfig`|⚠️|Leaf-only|
+|QuickAction|`quickAction`|✅|Custom `uniqueIdElements`: `field`. Contains `<fieldOverrides>` and `<quickActionLayoutItems>`.|
+|RecommendationStrategy|`recommendationStrategy`|✅|Contains nested repeatable elements|
+|RecordActionDeployment|`recordActionDeployment`|✅|Contains nested repeatable elements|
+|RecordType|`recordType`|➡️|Child type — access via parent `CustomObject`; Custom Objects are not supported|
+|RemoteSiteSetting|`remoteSite`|⚠️|Leaf-only|
+|Report|`report`|✅|Folder-scoped. Unit of decomposition is the folder.|
+|ReportFolder|`reportFolder`|⚠️|Folder container — leaf-only|
+|ReportType|`reportType`|✅|Custom `uniqueIdElements`: `masterLabel`, `relationship`. Contains `<sections>`.|
+|RestrictionRule|`restrictionRule`|⚠️|Leaf-only|
+|Role|`role`|⚠️|Leaf-only|
+|SamlSsoConfig|`samlssoconfig`|⚠️|Leaf-only|
+|SchedulingObjective|`schedulingObjective`|⚠️|Leaf-only|
+|SchedulingRule|`schedulingRule`|⚠️|Leaf-only|
+|ServiceChannel|`serviceChannel`|✅|Custom `uniqueIdElements`: `type+value`, `value`. Contains `<serviceChannelStatusFieldMappings>`.|
+|ServicePresenceStatus|`servicePresenceStatus`|⚠️|Leaf-only|
+|ServiceProcess|`serviceProcess`|✅|Contains nested repeatable elements|
+|SharingCriteriaRule|`sharingCriteriaRules`|➡️|Child type — access via parent `SharingRules`|
+|SharingGuestRule|`sharingGuestRules`|➡️|Child type — access via parent `SharingRules`|
+|SharingOwnerRule|`sharingOwnerRules`|➡️|Child type — access via parent `SharingRules`|
+|SharingRules|`sharingRules`|✅|Contains nested `<sharingCriteriaRules>`, `<sharingOwnerRules>`, `<sharingGuestRules>`, `<sharingTerritoryRules>` children|
+|SharingSet|`sharingSet`|⚠️|Leaf-only|
+|SharingSettings|`sharingsettings`|⚠️|Settings type — leaf-only|
+|SharingTerritoryRule|`sharingTerritoryRules`|➡️|Child type — access via parent `SharingRules`|
+|SiteDotCom|`sitedotcom`|❌|`bundle` adapter — not supported|
+|Skill|`skill`|⚠️|Leaf-only|
+|StandardValueSet|`standardValueSet`|✅|Contains nested `<standardValue>` children|
+|StandardValueSetTranslation|`standardValueSetTranslation`|✅|Custom `uniqueIdElements`: `masterLabel`|
+|StaticResource|`resource`|❌|`bundle` adapter — binary/archive content, not supported|
+|Territory|`territory`|⚠️|Leaf-only|
+|Territory2|`territory2`|⚠️|Leaf-only|
+|Territory2Model|`territory2Model`|✅|Contains nested repeatable elements|
+|Territory2Rule|`territory2Rule`|⚠️|Leaf-only|
+|Territory2Type|`territory2Type`|⚠️|Leaf-only|
+|TopicsForObjects|`topicsForObjects`|⚠️|Leaf-only|
+|TransactionSecurityPolicy|`transactionSecurityPolicy`|⚠️|Leaf-only|
+|Translations|`translations`|✅|Contains nested `<customApplications>`, `<customLabels>`, `<customPageWebLinks>` etc.|
+|UIObjectRelationConfig|`uiObjectRelationConfig`|⚠️|Leaf-only|
+|UserCriteria|`userCriteria`|⚠️|Leaf-only|
+|UserProvisioningConfig|`userprovisioning`|⚠️|Leaf-only|
+|ValidationRule|`validationRule`|➡️|Child type — access via parent `CustomObject`; Custom Objects are not supported|
+|WaveApplication|`waveapp`|⚠️|Leaf-only|
+|WaveDashboard|`wavedashboard`|⚠️|Leaf-only|
+|WaveDataflow|`wavedataflow`|⚠️|Leaf-only|
+|WaveDataset|`wavedataset`|⚠️|Leaf-only|
+|WaveLens|`wavelens`|⚠️|Leaf-only|
+|WaveRecipe|`waverecipe`|⚠️|Leaf-only|
+|WaveTemplateBundle|`wavetemplatebundle`|❌|`bundle` adapter — not supported|
+|WaveXmd|`wavexmd`|⚠️|Leaf-only|
+|WebLink|`webLink`|➡️|Child type — access via parent `CustomObject`; Custom Objects are not supported|
+|WebStoreBundle|`webstore`|❌|`bundle` adapter — not supported|
+|Workflow|`workflow`|✅|Contains nested `<alerts>`, `<fieldUpdates>`, `<rules>`, `<tasks>` etc. Workflow sub-type files are automatically renamed after decomposition (e.g. `.alerts-meta.xml` → `.workflowAlert-meta.xml`).|
+|WorkflowAlert|`workflowAlert`|➡️|Child type — use `workflow` instead|
+|WorkflowFieldUpdate|`workflowFieldUpdate`|➡️|Child type — use `workflow` instead|
+|WorkflowFlowAction|`workflowFlowAction`|➡️|Child type — use `workflow` instead|
+|WorkflowKnowledgePublish|`workflowKnowledgePublish`|➡️|Child type — use `workflow` instead|
+|WorkflowOutboundMessage|`workflowOutboundMessage`|➡️|Child type — use `workflow` instead|
+|WorkflowRule|`workflowRule`|➡️|Child type — use `workflow` instead|
+|WorkflowSend|`workflowSend`|➡️|Child type — use `workflow` instead|
+|WorkflowTask|`workflowTask`|➡️|Child type — use `workflow` instead|
 
 ---
 
-## File Formats
+## Special Behaviors & Hard Rules
 
-sf-decomposer supports decomposing to multiple file formats. The choice of format does not affect which metadata types can be decomposed—only the output file extension:
-
-| Format | Extension | Notes |
-|---|---|---|
-| XML (default) | `.xml` | Native Salesforce format; 1:1 with SDR. |
-| JSON | `.json` | Strict JSON output. |
-| YAML | `.yaml` | Human-friendly YAML format. |
-| JSON5 | `.json5` | Relaxed JSON (comments, trailing commas, unquoted keys). |
-
-Format is **not** tied to strategy; both `unique-id` and `grouped-by-tag` work with any format.
+| Metadata Type | CLI Suffix | Behavior |
+|:---|:---|:---|
+|CustomLabels|`labels`|Strategy always forced to `unique-id`; `grouped-by-tag` is silently overridden. Each label becomes a `.label-meta.xml` file.|
+|LoyaltyProgramSetup|`loyaltyProgramSetup`|Strategy always forced to `unique-id`. Built-in 3-level `multiLevel` decomposition applied automatically. Recompose always removes the decomposed tree (postpurge is implicit).|
+|Bot|`bot`|Built-in `multiLevel` defaults: `botDialogs:botDialogs:developerName` and `botSteps:botSteps:type`. BotVersion files are automatically renamed on recompose.|
+|BotVersion|`botVersion`|Hard-rejected with error: `"botVersion suffix should not be used. Please use bot…"`|
+|CustomObject|`object`|Hard-rejected with error: `"Custom Objects are not supported by this plugin."`. Custom objects are already decomposed by default. If further decomposition on custom object children (i.e. fields, validation rules) is desired, please open a feature request. |
 
 ---
 
-## Configuration & Overrides
+## Error Reference
 
-### Per-Type Configuration
-
-Set different strategies, formats, or nested-permission settings per metadata type:
-
-```json
-{
-  "metadataSuffixes": "labels,workflow,profile,flow,permissionset",
-  "strategy": "unique-id",
-  "decomposedFormat": "xml",
-  "overrides": [
-    {
-      "metadataTypes": ["flow"],
-      "decomposedFormat": "yaml"
-    },
-    {
-      "metadataTypes": ["permissionset", "mutingpermissionset"],
-      "strategy": "grouped-by-tag",
-      "decomposeNestedPermissions": true
-    }
-  ]
-}
-```
-
-### Per-Component Configuration
-
-Scope overrides to specific components using the `<suffix>:<fullName>` syntax:
-
-```json
-{
-  "overrides": [
-    {
-      "components": ["permissionset:HR_Admin", "permissionset:Big_PermSet"],
-      "strategy": "grouped-by-tag",
-      "decomposeNestedPermissions": true
-    }
-  ]
-}
-```
+| Situation | Error Message |
+|:---|:---|
+|`botVersion` used directly|`botVersion suffix should not be used. Please use bot to decompose/recompose bot and bot version files.`|
+|Custom Object|`Custom Objects are not supported by this plugin.`|
+|Unsupported adapter (`matchingContentFile`, `bundle`, `digitalExperience`, `mixedContent`)|`Metadata types with [adapter] strategies are not supported by this plugin.`|
+|Child type or invalid suffix|`Metadata type not found for the given suffix: [suffix].`|
+|No matching package directory|`No directories named [directoryName] were found in any package directory.`|
+|`--config` set but no config file|`--config was provided but .sfdecomposer.config.json was not found at [path]. Create the file in the repo root or omit --config.`|
 
 ---
 
-## Manifest-Scoped Runs
+## Quick Reference Summary
 
-Decompose or recompose only the metadata listed in a manifest:
+### ✅ Fully Decomposable (recommended types)
+`aiScoringModelDefinition`, `app`, `approvalProcess`, `assignmentRules`, `autoResponseRules`, `bot`, `briefcasedefinition`, `channellayout`, `customApplication`, `datacategorygroup`, `decisionMatrixDefinition`, `decisionTable`, `duplicateRule`, `emailservices`, `entitlementProcess`, `escalationRules`, `externalServiceRegistration`, `flexipage`, `flow`, `flowTest`, `forecastingType`, `genAiPlugin`, `genAiPromptTemplate`, `globalValueSet`, `globalValueSetTranslation`, `homePageLayout`, `keywordList`, `labels`, `layout`, `liveChatAgentConfig`, `liveChatButton`, `loyaltyProgramSetup`, `marketingappextension`, `matchingRules`, `md`, `mlDomain`, `mutingpermissionset`, `navigationMenu`, `network`, `objectTranslation`, `omniSupervisorConfig`, `pathAssistant`, `permissionset`, `presenceUserConfig`, `profile`, `prompt`, `queue`, `quickAction`, `recommendationStrategy`, `recordActionDeployment`, `report`, `reportType`, `serviceChannel`, `serviceProcess`, `sharingRules`, `standardValueSet`, `standardValueSetTranslation`, `territory2Model`, `translations`, `workflow`
 
-```bash
-sf decomposer decompose -x "manifest/package.xml"
-sf decomposer recompose -x "manifest/package.xml"
-```
+**Folder-scoped:** `dashboard`, `document`, `email`, `report`
 
-Manifest entries specify the component fullName and type:
+### 🔀 Decomposable with special behavior
+`bot` (multi-level), `labels` (forced unique-id), `loyaltyProgramSetup` (forced unique-id + multi-level)
 
-```xml
-<types>
-  <members>HR_Admin</members>
-  <name>PermissionSet</name>
-</types>
-<types>
-  <members>Case</members>
-  <name>Workflow</name>
-</types>
-```
+### ❌ Explicitly Unsupported
+`cls` (ApexClass), `component` (ApexComponent), `page` (ApexPage), `trigger` (ApexTrigger), `auradefinitionbundle`, `lightningcomponentbundle`, `resource` (StaticResource), `wavetemplatebundle`, `experiencebundle`, `site` (CustomSite), `sitedotcom`, `digitalexperience*`, `object` (CustomObject), `botVersion`
 
-Unsupported types in the manifest are silently skipped with a warning.
-
----
-
-## Logging & Debugging
-
-### Rust Log Levels
-
-The underlying Rust disassembler logs through `env_logger`. Set `RUST_LOG` to control verbosity:
-
-```bash
-RUST_LOG=error sf decomposer decompose -m "flow"  # Default; shows errors and skipped files
-RUST_LOG=warn sf decomposer decompose -m "flow"   # Shows sibling-collision warnings
-```
-
-#### What Each Level Shows
-
-| Level | Content |
-|---|---|
-| **error** (default) | Parse errors and skipped files (leaf-only XML files). |
-| **warn** | Sibling-collision fallback signals (when unique-id fields are too narrow, files fall back to SHA-256 hashes). |
-
----
-
-## Quick Reference: Supported vs. Unsupported
-
-### ✅ Always Supported (Fully Decomposable)
-- Custom Labels
-- Workflows
-- Profiles
-- Permission Sets
-- Muting Permission Sets
-- AI Scoring Model Definition
-- Decision Matrix Definition
-- Bot (with multi-level)
-- Marketing App Extension
-- Loyalty Program Setup (with multi-level)
-
-### ⚠️ Leaf-Only (No-Op)
-- ApexClass, ApexComponent, ApexPage, ApexTrigger
-- Aura Bundles, LWC
-- Static Resources
-- Digital Experience Bundles
-- All configuration/settings-only types
-- Workflow sub-types (use parent `workflow` instead)
-
-### ❌ Not Currently Supported
-- Custom Objects and object children
-- Types with `matchingContentFile` adapter strategy (code-based types)
-- Types with `bundle` adapter strategy (bundle structures)
-- Types with `digitalExperience` adapter strategy
-- Types with `mixedContent` adapter strategy
-- Child type suffixes when used directly (use parent types)
-- `botVersion` directly (use `bot`)
-
----
-
-## For More Information
-
-- **SDR Metadata Registry:** [source-deploy-retrieve/metadataRegistry.json](https://github.com/forcedotcom/source-deploy-retrieve/blob/main/src/registry/metadataRegistry.json)
-- **sf-decomposer Repository:** [mcarvin8/sf-decomposer](https://github.com/mcarvin8/sf-decomposer)
-- **Admin Handbook:** [sf-decomposer HANDBOOK.md](https://github.com/mcarvin8/sf-decomposer/blob/main/HANDBOOK.md)
-- **README:** [sf-decomposer README.md](https://github.com/mcarvin8/sf-decomposer/blob/main/README.md)
+### ➡️ Use Parent Type
+`botVersion` → `bot`; Workflow sub-types → `workflow`; SharingRules child types → `sharingRules`; CustomObject children (`field`, `recordType`, `listView`, `validationRule`, etc.) → unsupported
