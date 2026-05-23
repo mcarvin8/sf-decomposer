@@ -20,6 +20,30 @@ Use the metadata **suffix** (the CLI value) with `-m` / `--metadata-type`, e.g. 
 
 ---
 
+## ⚠️ Salesforce Native Decomposition Conflict
+
+Salesforce CLI provides its own beta decomposition for a growing subset of metadata types
+(see [official documentation](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_ws_decomposed_md_types.htm)).
+**Never use both on the same metadata type in the same project** — mixing the two approaches
+causes conflicts, version control issues, and potential deploy failures.
+
+Currently overlapping types include `CustomLabels`, `Workflow`, `PermissionSet`,
+`SharingRules`, and `ExternalServiceRegistration`. Check the official docs for the current
+list, as Salesforce continues to expand it.
+
+**Choosing between them:**
+
+| Need | Recommendation |
+|:---|:---|
+| Native CLI support, no extra tooling | Salesforce's built-in decomposition |
+| grouped-by-tag strategy | sf-decomposer |
+| Multi-level decomposition (Bots, LoyaltyProgramSetup) | sf-decomposer |
+| YAML, JSON, or JSON5 output | sf-decomposer |
+| Types Salesforce doesn't decompose (Flow, Profile, Bot, etc.) | sf-decomposer |
+| Per-component overrides | sf-decomposer |
+
+---
+
 ## Supported Metadata Types (v66)
 
 |Metadata Type|CLI Suffix|Support|Notes|
