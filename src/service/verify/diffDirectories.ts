@@ -2,26 +2,9 @@
 
 import { readdir, readFile, stat } from 'node:fs/promises';
 import { extname, join } from 'node:path';
-import { XMLParser } from 'fast-xml-parser';
+import { parseXml } from 'config-disassembler';
 
 import { VerifyDrift } from '../../helpers/types.js';
-
-const xmlParser = new XMLParser({
-  ignoreAttributes: false,
-  // Stryker disable next-line StringLiteral: fast-xml-parser produces equivalent canonical JSON
-  // for the XML this plugin compares (no element/attribute name collisions are possible because
-  // both sides come from the same SDR-driven disassembler output), so any non-empty prefix
-  // yields the same xmlEquivalent() result.
-  attributeNamePrefix: '@_',
-  parseTagValue: false,
-  parseAttributeValue: false,
-  trimValues: true,
-  // Stryker disable next-line BooleanLiteral: the disassembler strips XML declarations before
-  // files land on disk, so toggling ignoreDeclaration has no observable effect on inputs to
-  // xmlEquivalent().
-  ignoreDeclaration: true,
-  ignorePiTags: true,
-});
 
 export type DirDiffResult = {
   /** Files whose contents are semantically different (real drift). */
@@ -81,7 +64,7 @@ export async function diffDirectories(referenceDir: string, mockDir: string, pre
 
     if (isXmlFile(entry.name)) {
       // Byte-different but maybe semantically identical — e.g. siblings reordered on round trip.
-      if (xmlEquivalent(ref, mock)) {
+      if (xmlEquivalent(refPath, mockPath)) {
         out.reordered.push(relPath);
       } else {
         out.drift.push({ path: relPath, reason: 'content drift' });
@@ -111,21 +94,14 @@ function isXmlFile(fileName: string): boolean {
 }
 
 /**
- * Compare two XML strings for structural equality, ignoring sibling order and attribute order.
+ * Compare two XML files for structural equality, ignoring sibling order and attribute order.
  * Falls back to `false` if either side fails to parse, so genuinely malformed output still
  * surfaces as drift through the caller.
  */
-export function xmlEquivalent(a: string, b: string): boolean {
-  if (a === b) return true;
-  let parsedA: unknown;
-  let parsedB: unknown;
-  try {
-    parsedA = xmlParser.parse(a);
-    parsedB = xmlParser.parse(b);
-  } catch {
-    /* istanbul ignore next -- @preserve: fast-xml-parser is permissive; this is defensive only */
-    return false;
-  }
+export function xmlEquivalent(refPath: string, mockPath: string): boolean {
+  const parsedA = parseXml(refPath) as unknown;
+  const parsedB = parseXml(mockPath) as unknown;
+  if (parsedA === null || parsedB === null) return false;
   return canonicalJson(parsedA) === canonicalJson(parsedB);
 }
 
