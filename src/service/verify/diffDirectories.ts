@@ -99,8 +99,8 @@ function isXmlFile(fileName: string): boolean {
  * surfaces as drift through the caller.
  */
 export function xmlEquivalent(refPath: string, mockPath: string): boolean {
-  const parsedA = parseXml(refPath);
-  const parsedB = parseXml(mockPath);
+  const parsedA = parseXml(refPath) as unknown;
+  const parsedB = parseXml(mockPath) as unknown;
   if (parsedA === null || parsedB === null) return false;
   return canonicalJson(parsedA) === canonicalJson(parsedB);
 }
