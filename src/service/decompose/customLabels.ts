@@ -3,9 +3,9 @@
 
 import { join } from 'node:path';
 import { readdir, stat, rm, rename } from 'node:fs/promises';
-import pLimit from 'p-limit';
 
 import { CUSTOM_LABELS_FILE, CONCURRENCY_LIMITS } from '../../helpers/constants.js';
+import { pLimit } from '../../helpers/pLimit.js';
 import { moveFiles } from '../core/moveFiles.js';
 
 export async function prePurgeLabels(metadataPath: string): Promise<void> {

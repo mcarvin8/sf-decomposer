@@ -2,8 +2,8 @@
 
 import { readdir, stat, rename, copyFile, unlink, mkdir } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
-import pLimit from 'p-limit';
 import { CONCURRENCY_LIMITS } from '../../helpers/constants.js';
+import { pLimit } from '../../helpers/pLimit.js';
 
 async function moveFile(source: string, destination: string): Promise<void> {
   await mkdir(dirname(destination), { recursive: true });

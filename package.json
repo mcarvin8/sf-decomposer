@@ -7,8 +7,7 @@
     "@salesforce/core": "^8.26.3",
     "@salesforce/sf-plugins-core": "^12.2.6",
     "@salesforce/source-deploy-retrieve": "^12.35.9",
-    "config-disassembler": "^2.3.0",
-    "p-limit": "^7.3.0"
+    "config-disassembler": "^2.3.0"
   },
   "devDependencies": {
     "@commitlint/config-conventional": "^20.4.2",

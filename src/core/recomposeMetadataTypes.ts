@@ -1,10 +1,10 @@
 'use strict';
 
-import pLimit from 'p-limit';
 import { getRegistryValuesBySuffix } from '../metadata/getRegistryValuesBySuffix.js';
 import { parseManifest, ManifestFilter } from '../metadata/parseManifest.js';
 import { recomposeFileHandler } from '../service/recompose/recomposeFileHandler.js';
 import { CONCURRENCY_LIMITS } from '../helpers/constants.js';
+import { pLimit } from '../helpers/pLimit.js';
 import { DecomposerResult, RecomposeOptions } from '../helpers/types.js';
 
 export async function recomposeMetadataTypes(options: RecomposeOptions): Promise<DecomposerResult> {

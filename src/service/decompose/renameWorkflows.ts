@@ -3,9 +3,9 @@
 
 import { join } from 'node:path';
 import { readdir, rename } from 'node:fs/promises';
-import pLimit from 'p-limit';
 
 import { WORKFLOW_SUFFIX_MAPPING, CONCURRENCY_LIMITS } from '../../helpers/constants.js';
+import { pLimit } from '../../helpers/pLimit.js';
 
 export async function renameWorkflows(directory: string): Promise<void> {
   const files = await readdir(directory, { recursive: true });
