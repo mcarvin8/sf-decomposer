@@ -8,14 +8,11 @@ on:
 permissions:
   contents: write
   pull-requests: write
-  id-token: write # Required for OIDC
+  id-token: write
 
 jobs:
-  test:
-    uses: ./.github/workflows/test.yml
-    secrets: inherit
-  release:
-    name: Release
+  release-please:
+    name: Release Please
     runs-on: ubuntu-latest
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
@@ -26,40 +23,50 @@ jobs:
         with:
           release-type: node
 
+  release:
+    name: Release
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true'
+    runs-on: ubuntu-latest
+
+    outputs:
+      published: ${{ steps.publish.outputs.published }}
+
+    steps:
       - name: Checkout
         uses: actions/checkout@v6.0.2
-        if: ${{ steps.release.outputs.release_created == 'true' }}
 
       - name: Setup Node
         uses: actions/setup-node@v6.3.0
         with:
           node-version: 24
           cache: npm
-          registry-url: 'https://registry.npmjs.org'
-        if: ${{ steps.release.outputs.release_created == 'true' }}
+          registry-url: https://registry.npmjs.org
 
       - name: Install Dependencies
         run: npm ci
-        if: ${{ steps.release.outputs.release_created == 'true' }}
 
       - name: Build
         run: npm run build
-        if: ${{ steps.release.outputs.release_created == 'true' }}
 
       - name: Publish to NPM
-        run: NODE_AUTH_TOKEN="" npm publish --access public --tag latest --provenance
-        if: ${{ steps.release.outputs.release_created == 'true' }}
+        id: publish
+        run: |
+          NODE_AUTH_TOKEN="" npm publish --access public --tag latest --provenance
+          echo "published=true" >> "$GITHUB_OUTPUT"
+
   smoke-test:
     needs: release
-    if: ${{ needs.release.outputs.release_created == 'true' }}
+    if: needs.release.outputs.published == 'true'
     uses: ./.github/workflows/smoke-test.yml
     secrets: inherit
+
   perf-baseline:
     # Runs after a successful publish so every released version has a
     # comparable timing artifact attached to its run. Does not gate the
     # release - it's an observability run, not a quality gate.
     needs: smoke-test
-    if: ${{ needs.release.outputs.release_created == 'true' }}
+    if: needs.release.outputs.published == 'true'
     uses: ./.github/workflows/perf.yml
     with:
       profile: large
