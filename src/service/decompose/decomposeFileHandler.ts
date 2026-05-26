@@ -3,10 +3,10 @@
 import { resolve, relative, join, dirname, basename } from 'node:path';
 import { readdir, stat } from 'node:fs/promises';
 import { DisassembleXMLFileHandler } from 'config-disassembler';
-import pLimit from 'p-limit';
 
 import { CUSTOM_LABELS_FILE, CONCURRENCY_LIMITS } from '../../helpers/constants.js';
 import { DecomposerOverride } from '../../helpers/types.js';
+import { pLimit } from '../../helpers/pLimit.js';
 import {
   ResolvedDecomposeTypeOptions,
   hasComponentOverridesForType,

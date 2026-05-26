@@ -3,9 +3,9 @@
 import { readdir, stat } from 'node:fs/promises';
 import { join, dirname, basename } from 'node:path';
 import { ReassembleXMLFileHandler } from 'config-disassembler';
-import pLimit from 'p-limit';
 
 import { CONCURRENCY_LIMITS } from '../../helpers/constants.js';
+import { pLimit } from '../../helpers/pLimit.js';
 import { reassembleLabels } from './reassembleLabels.js';
 import { renameBotVersionFile } from './renameBotVersionFiles.js';
 
