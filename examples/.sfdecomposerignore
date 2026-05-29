@@ -1,0 +1,21 @@
+# Paths and patterns listed here are skipped when decomposing (and will not be recomposed from).
+# Syntax is identical to .gitignore (https://git-scm.com/docs/gitignore).
+# Paths are relative to the project root (the directory containing sfdx-project.json).
+#
+# Place this file in your project root, not in this examples/ directory.
+
+# Skip a specific component
+# **/permissionsets/Managed_Package_Admin.permissionset-meta.xml
+
+# Skip all files of a metadata type inside one package directory
+# force-app/main/default/flows/**
+
+# Skip metadata under a managed/installed package namespace directory
+# **/namespaces/my_namespace/**
+
+# Skip archived or deprecated flows by naming convention
+# **/flows/Archive_*.flow-meta.xml
+# **/flows/DEPRECATED_*.flow-meta.xml
+
+# Skip an entire metadata type across all package directories
+# **/profiles/**
