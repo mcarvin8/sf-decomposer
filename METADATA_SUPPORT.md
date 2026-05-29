@@ -23,7 +23,8 @@ Use the metadata **suffix** (the CLI value) with `-m` / `--metadata-type`, e.g. 
 Salesforce CLI provides its own beta decomposition for a growing subset of metadata types
 (see [official documentation](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_ws_decomposed_md_types.htm)).
 **Never use both on the same metadata type in the same project** — mixing the two approaches
-causes conflicts, version control issues, and potential deploy failures.
+causes conflicts, version control issues, and potential deploy failures. If you are switching
+from native decomposition to sf-decomposer, follow [MIGRATION.md](./MIGRATION.md).
 
 Currently overlapping types include `CustomLabels`, `Workflow`, `PermissionSet`,
 `SharingRules`, and `ExternalServiceRegistration`. Check the official docs for the current

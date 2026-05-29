@@ -29,6 +29,7 @@ A Salesforce CLI plugin that **decomposes** large metadata XML files into smalle
   - [Ignore Files](#ignore-files)
   - [Troubleshooting](#troubleshooting)
   - [Built With](#built-with)
+- [Migrating from Salesforce Native Decomposition](#migrating-from-salesforce-native-decomposition)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -673,6 +674,10 @@ Example `WARN` (CustomApplication where four `actionOverrides` siblings shared t
 - [@salesforce/source-deploy-retrieve](https://github.com/forcedotcom/source-deploy-retrieve) – JavaScript toolkit for working with Salesforce metadata.
 
 ---
+
+## Migrating from Salesforce Native Decomposition
+
+Already using `decomposePermissionSetBeta2`, `decomposeCustomLabelsBeta`, or similar flags? See [MIGRATION.md](https://github.com/mcarvin8/sf-decomposer/blob/main/MIGRATION.md) before installing sf-decomposer on that project.
 
 ## Contributing
 
