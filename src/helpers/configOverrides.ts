@@ -60,9 +60,7 @@ const SPLIT_TAGS_MODES = new Set<string>(['split', 'group']);
 export async function loadOverridesFromConfig(configPath: string): Promise<DecomposerOverride[]> {
   let raw: string;
   try {
-    // Stryker disable next-line StringLiteral: JSON.parse(Buffer) defaults to UTF-8 decoding,
-    // so the encoding argument is observably equivalent for the ASCII configs this plugin
-    // accepts; round-tripping is asserted in test/units/configOverrides.test.ts.
+    // Stryker disable next-line StringLiteral: JSON.parse(Buffer) defaults to UTF-8 decoding
     raw = await readFile(configPath, 'utf-8');
   } catch {
     return [];
@@ -345,10 +343,7 @@ function validateComponentEntries(components: string[], i: number, seenComponent
  */
 export function parseComponentKey(key: string): { metadataType: string; fullName: string } | undefined {
   const colonIdx = key.indexOf(':');
-  // Stryker disable next-line EqualityOperator, ConditionalExpression, ArithmeticOperator: the
-  // follow-on `!metadataType || !fullName` guard catches every input these mutations could
-  // diverge on (leading/trailing colon, no colon), so each mutation produces an identical
-  // reject decision for every reachable input.
+  // Stryker disable next-line EqualityOperator, ConditionalExpression, ArithmeticOperator
   if (colonIdx <= 0 || colonIdx === key.length - 1) return undefined;
   const metadataType = key.slice(0, colonIdx).trim();
   const fullName = key.slice(colonIdx + 1).trim();
@@ -363,9 +358,7 @@ export function getOverrideForType(
   metadataType: string,
   overrides?: DecomposerOverride[],
 ): DecomposerOverride | undefined {
-  // Stryker disable next-line ConditionalExpression: Array.prototype.find already returns
-  // undefined for an empty array, so guarding with `overrides.length === 0` is redundant from
-  // an observable-behavior perspective; the explicit guard is a micro-optimization only.
+  // Stryker disable next-line ConditionalExpression
   if (!overrides || overrides.length === 0) return undefined;
   return overrides.find((override) => override.metadataTypes?.includes(metadataType));
 }
@@ -379,8 +372,7 @@ export function getOverrideForComponent(
   fullName: string,
   overrides?: DecomposerOverride[],
 ): DecomposerOverride | undefined {
-  // Stryker disable next-line ConditionalExpression: see getOverrideForType comment; Array.find
-  // already returns undefined for empty input.
+  // Stryker disable next-line ConditionalExpression
   if (!overrides || overrides.length === 0) return undefined;
   const key = `${metadataType}:${fullName}`;
   return overrides.find((override) => override.components?.includes(key));
@@ -391,8 +383,7 @@ export function getOverrideForComponent(
  * Used by the decompose handler to decide whether per-component enumeration is required.
  */
 export function hasComponentOverridesForType(metadataType: string, overrides?: DecomposerOverride[]): boolean {
-  // Stryker disable next-line ConditionalExpression: see getOverrideForType comment; Array.some
-  // already returns false for empty input.
+  // Stryker disable next-line ConditionalExpression
   if (!overrides || overrides.length === 0) return false;
   const prefix = `${metadataType}:`;
   return overrides.some((override) => override.components?.some((component) => component.startsWith(prefix)));

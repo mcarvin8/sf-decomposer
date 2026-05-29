@@ -110,8 +110,7 @@ async function directoryExists(path: string): Promise<boolean> {
     const stats = await stat(path);
     return stats.isDirectory();
   } catch {
-    // Stryker disable next-line BlockStatement: the catch is the contract for "directory does
-    // not exist"; the empty-block mutant returns undefined which every caller treats as falsy.
+    // Stryker disable next-line BlockStatement
     return false;
   }
 }

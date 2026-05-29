@@ -82,9 +82,7 @@ async function fileExists(path: string): Promise<boolean> {
     await stat(path);
     return true;
   } catch {
-    // Stryker disable next-line BlockStatement: defensive only; the caller already filters to
-    // entries that readdir() produced, so this catch is unreachable from the public API and
-    // cannot be observed by tests in a portable way.
+    // Stryker disable next-line BlockStatement: defensive only
     return false;
   }
 }
@@ -121,11 +119,9 @@ function canonicalize(value: unknown): unknown {
     normalized.sort((left, right) => {
       const ls = JSON.stringify(left);
       const rs = JSON.stringify(right);
-      // Stryker disable next-line EqualityOperator: canonicalJson dedupes upstream and the
-      // comparator is fed already-stringified values; two strings that compare equal cannot
-      // reach this branch in a way that would let a test observe `<` vs `<=`.
+      // Stryker disable next-line EqualityOperator
       if (ls < rs) return -1;
-      // Stryker disable next-line EqualityOperator: see comment above; symmetric case.
+      // Stryker disable next-line EqualityOperator
       if (ls > rs) return 1;
       return 0;
     });

@@ -28,15 +28,11 @@ export async function parseManifest(manifestPath: string, ignoreDirs: string[] |
   };
   const absManifestPath = resolve(repoRoot, manifestPath);
 
-  // Stryker disable next-line StringLiteral: JSON.parse(Buffer) defaults to UTF-8 decoding,
-  // so the encoding argument is observably equivalent for the ASCII sfdx-project.json contents
-  // this plugin is ever invoked against.
+  // Stryker disable next-line StringLiteral
   const sfdxProjectRaw: string = await readFile(dxConfigFilePath, 'utf-8');
   const sfdxProject: SfdxProject = JSON.parse(sfdxProjectRaw) as SfdxProject;
 
-  // Stryker disable next-line ArrayDeclaration: the empty-array fallback only diverges from the
-  // mutator's placeholder array when a real package directory's basename happens to equal
-  // "Stryker was here", which no real SFDX project produces.
+  // Stryker disable next-line ArrayDeclaration
   const normalizedIgnoreDirs = (ignoreDirs ?? []).map((dir) => basename(dir));
   const packageDirs = sfdxProject.packageDirectories
     .map((directory) => resolve(repoRoot, directory.path))
@@ -76,14 +72,11 @@ export async function parseManifest(manifestPath: string, ignoreDirs: string[] |
       if (!suffix) return undefined;
 
       const typeDirs = await findTypeDirectories(packageDirs, parentType.directoryName);
-      // Stryker disable next-line ConditionalExpression: when typeDirs is empty the downstream
-      // Promise.all([]) resolves immediately and xmlPaths.size === 0 returns undefined anyway,
-      // so the early-return mutation is a micro-optimization with no observable difference.
+      // Stryker disable next-line ConditionalExpression
       if (typeDirs.length === 0) return undefined;
 
       const xmlPaths = new Set<string>();
-      // Stryker disable next-line ArrayDeclaration: resolveTasks is awaited via Promise.all; a
-      // string placeholder added by the mutator resolves to itself and is harmlessly discarded.
+      // Stryker disable next-line ArrayDeclaration
       const resolveTasks: Array<Promise<void>> = [];
 
       if (wildcard) {
@@ -168,10 +161,7 @@ async function resolveMemberXml(
     return (await exists(labelsFile)) ? resolve(labelsFile) : undefined;
   }
 
-  // Stryker disable next-line ConditionalExpression, BlockStatement: when folderType is true,
-  // strictDirectoryName is always false (mutually exclusive in SDR's registry), so the
-  // mutated false-branch falls through to the identical non-strict `join(typeDir, ...)` path
-  // below and produces the same observable result.
+  // Stryker disable next-line ConditionalExpression, BlockStatement
   if (folderType) {
     // Folder-scoped types (e.g. Report, Dashboard, EmailTemplate, Document).
     // Member is of the form `<folder>/<name>`; file is `<typeDir>/<folder>/<name>.<suffix>-meta.xml`.
@@ -223,9 +213,7 @@ async function exists(path: string): Promise<boolean> {
     await stat(path);
     return true;
   } catch {
-    // Stryker disable next-line BlockStatement: the catch is the contract for "path does not
-    // exist"; returning `undefined` (the empty-block mutant) is treated as falsy by every
-    // caller, so the mutation is observably equivalent.
+    // Stryker disable next-line BlockStatement
     return false;
   }
 }
