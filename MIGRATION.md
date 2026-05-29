@@ -52,25 +52,7 @@ Currently overlapping types (check [Salesforce docs](https://developer.salesforc
 
 ## Migration steps
 
-### 1. Recompose natively-decomposed files back to full XML
-
-The Salesforce CLI can reassemble natively-decomposed files. Run a retrieve against a scratch org or sandbox that has the affected metadata — the CLI will write back the full parent XML files:
-
-```bash
-sf project retrieve start -m "CustomLabels" -m "PermissionSet" -m "Workflow"
-```
-
-Alternatively, if you have the native decomposed files committed, use `sf project deploy start` on a scratch org and then retrieve. The goal is to have full, un-decomposed parent XML files in your package directories before proceeding.
-
-Verify no native-decomposed fragments remain:
-
-```bash
-# Should return empty for each type you are migrating off
-find . -name "*.label-meta.xml" -not -path "*/node_modules/*"
-find . -name "*.permissionset-field-meta.xml" -not -path "*/node_modules/*"
-```
-
-### 2. Disable native decomposition in sfdx-project.json
+### 1. Disable native decomposition and recompose to full XML
 
 Remove the relevant flags from `sourceBehaviorOptions` in `sfdx-project.json`. For example:
 
@@ -90,19 +72,41 @@ becomes:
 
 Remove only the flags for types you are migrating to sf-decomposer. Leave flags for types you are keeping under native decomposition.
 
-### 3. Install sf-decomposer
+Then run:
+
+```bash
+sf convert source behavior
+```
+
+This converts natively-decomposed fragments back to full parent XML files locally, with no org connection required. The CLI reads the updated `sfdx-project.json` and rewrites your local source in-place.
+
+If your local source is missing or stale (e.g., the decomposed files were never committed), retrieve from a scratch org or sandbox instead:
+
+```bash
+sf project retrieve start -m "CustomLabels" -m "PermissionSet" -m "Workflow"
+```
+
+Either way, verify no native-decomposed fragments remain before continuing:
+
+```bash
+# Should return empty for each type you are migrating off
+find . -name "*.label-meta.xml" -not -path "*/node_modules/*"
+find . -name "*.permissionset-field-meta.xml" -not -path "*/node_modules/*"
+```
+
+### 2. Install sf-decomposer
 
 ```bash
 sf plugins install sf-decomposer@x.y.z
 ```
 
-### 4. Configure .forceignore
+### 3. Configure .forceignore
 
 **Required before running any sf command.** Copy the [sample .forceignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.forceignore) and add ignore patterns for the extensions and types you will be decomposing. Without this, `sf project retrieve start` and `sf project deploy start` will treat the decomposed files as source and fail.
 
 Remove any native-decomposition-era ignore patterns from your existing `.forceignore` — they will conflict.
 
-### 5. Configure .sfdecomposer.config.json
+### 4. Configure .sfdecomposer.config.json
 
 Add a hook config to your project root. Adjust `metadataSuffixes` to the types you are migrating:
 
@@ -117,7 +121,7 @@ Add a hook config to your project root. Adjust `metadataSuffixes` to the types y
 
 See [Configure Hooks](./README.md#4-configure-hooks-recommended) for the full option reference. Use the [sample with overrides](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.sfdecomposer.config.overrides.json) if you need per-type strategies or formats.
 
-### 6. Run the initial decompose
+### 5. Run the initial decompose
 
 With the full parent XML files in place and `.forceignore` configured:
 
@@ -127,7 +131,7 @@ sf decomposer decompose -m "labels" -m "workflow" -m "permissionset" --prepurge 
 
 `--prepurge` removes any leftover native-decomposed fragments before writing the new layout. `--postpurge` removes the parent XML files after decomposing (matching the hook behavior going forward).
 
-### 7. Verify the round-trip
+### 6. Verify the round-trip
 
 Before committing, confirm that sf-decomposer's output recomposes back to byte-equivalent XML:
 
@@ -137,7 +141,7 @@ sf decomposer verify -m "labels" -m "workflow" -m "permissionset"
 
 Fix any drift before continuing. See [Common pitfalls](./HANDBOOK.md#common-pitfalls) if the verify reports hash-named files or unexpected differences.
 
-### 8. Commit
+### 7. Commit
 
 Stage and commit all changes together — the `sfdx-project.json` change, the removed native fragments, the new decomposed tree, and the updated `.forceignore`:
 
