@@ -11,12 +11,12 @@ If you want the underlying option grammar instead of recipes, see the [main READ
 ## Contents
 
 - [Choosing a strategy](#choosing-a-strategy)
+- [Common pitfalls](#common-pitfalls)
 - [Bots (Agentforce and Einstein)](#bots-agentforce-and-einstein)
 - [Flexipages (Lightning App / Record / Home pages)](#flexipages-lightning-app--record--home-pages)
 - [Layouts (page layouts)](#layouts-page-layouts)
 - [Other deeply-nested types](#other-deeply-nested-types)
 - [The verification workflow](#the-verification-workflow)
-- [Common pitfalls](#common-pitfalls)
 
 ## Choosing a strategy
 
@@ -43,6 +43,26 @@ Built-in `multiLevel` defaults — applied automatically when `strategy` is `uni
 The full registry lives in [`src/metadata/multiLevelDefaults.ts`](./src/metadata/multiLevelDefaults.ts).
 
 Everything else in this handbook is opt-in.
+
+## Common pitfalls
+
+**1. "I added two `multiLevel` rules but only one survived."**
+You probably ran two `decompose` invocations back-to-back, one rule each. Don't. The disassembler rewrites `.multi_level.json` on every run, so each call replaces the prior one. Pass every rule for a given component in **one** override entry, in array form.
+
+**2. "My `multiLevel` rule is correct but recompose produces a smaller file."**
+On `config-disassembler` Rust ≥ 0.5.0 / Node ≥ 1.3.0 this should not happen — sibling collisions are written to per-element SHA-256 shards and surfaced as a `WARN` (see pitfall #5), not silently overwritten. If you do see a shrunken recomposed file on a current build, treat it as a regression worth capturing as a fixture.
+
+**3. "Component-scope override fields look ignored."**
+Component-scope wins over type-scope, but only for fields **the component override explicitly sets**. Fields it leaves out fall through to the type-scope value, then to the run-wide default. If you set `decomposedFormat: "yaml"` on a type and `strategy: "grouped-by-tag"` on the component, the component still gets `decomposedFormat: "yaml"` from the type override.
+
+**4. "Reassembly removed my decomposed directory even though I didn't pass `postPurge`."**
+That's by design for `multiLevel` types only. Multi-level recompose has to clean up inner-level directories so the next level can merge their reassembled XML. If you want the decomposed tree preserved for inspection, copy it before running `recompose`.
+
+**5. "Decompose succeeded but my decomposed files all have hash names."**
+There are two distinct causes; run the decompose under `RUST_LOG=warn` to tell them apart:
+
+- **No `WARN` line.** Your `unique_id_elements` (or the rule's third part) didn't resolve to a non-empty value on those items. Check the source XML for the elements you listed — names are case-sensitive and live at the immediate child level of each repeating item. The plugin only walks one level deep when picking a UID.
+- **A `WARN` line of the form `uniqueIdElements collision: <parentTag> id "X" matched N sibling elements`.** The configured key is too narrow — multiple siblings legitimately share the same value, so the collision detector falls back to per-element SHA-256 hashes for that group rather than overwrite. Add a tiebreaker to `unique_id_elements` (e.g. a compound like `name+recordType`) and re-decompose with `prePurge: true`.
 
 ## Bots (Agentforce and Einstein)
 
@@ -263,36 +283,16 @@ Always verify a new override before committing it:
 git stash --include-untracked
 
 # 2. Decompose with the new override.
-sf decomposer decompose -t bot --config
+sf decomposer decompose -m "bot" --config
 
 # 3. Recompose back from the decomposed tree.
-sf decomposer recompose -t bot
+sf decomposer recompose -m "bot"
 
 # 4. Check the round-trip didn't drift.
-sf decomposer verify -t bot --config
+sf decomposer verify -m "bot" --config
 ```
 
 `sf decomposer verify` is non-destructive: it decomposes into a temp dir, recomposes from the temp dir, and compares the result to your committed source. If anything drifts (content, missing file, sibling reorder) it tells you exactly which paths broke. Treat any drift as a blocker — fix the override (or fall back to the previous one) before committing.
-
-## Common pitfalls
-
-**1. "I added two `multiLevel` rules but only one survived."**
-You probably ran two `decompose` invocations back-to-back, one rule each. Don't. The disassembler rewrites `.multi_level.json` on every run, so each call replaces the prior one. Pass every rule for a given component in **one** override entry, in array form.
-
-**2. "My `multiLevel` rule is correct but recompose produces a smaller file."**
-On `config-disassembler` Rust ≥ 0.5.0 / Node ≥ 1.3.0 this should not happen — sibling collisions are written to per-element SHA-256 shards and surfaced as a `WARN` (see pitfall #5), not silently overwritten. If you do see a shrunken recomposed file on a current build, treat it as a regression worth capturing as a fixture.
-
-**3. "Component-scope override fields look ignored."**
-Component-scope wins over type-scope, but only for fields **the component override explicitly sets**. Fields it leaves out fall through to the type-scope value, then to the run-wide default. If you set `decomposedFormat: "yaml"` on a type and `strategy: "grouped-by-tag"` on the component, the component still gets `decomposedFormat: "yaml"` from the type override.
-
-**4. "Reassembly removed my decomposed directory even though I didn't pass `postPurge`."**
-That's by design for `multiLevel` types only. Multi-level recompose has to clean up inner-level directories so the next level can merge their reassembled XML. If you want the decomposed tree preserved for inspection, copy it before running `recompose`.
-
-**5. "Decompose succeeded but my decomposed files all have hash names."**
-There are two distinct causes; run the decompose under `RUST_LOG=warn` to tell them apart:
-
-- **No `WARN` line.** Your `unique_id_elements` (or the rule's third part) didn't resolve to a non-empty value on those items. Check the source XML for the elements you listed — names are case-sensitive and live at the immediate child level of each repeating item. The plugin only walks one level deep when picking a UID.
-- **A `WARN` line of the form `uniqueIdElements collision: <parentTag> id "X" matched N sibling elements`.** The configured key is too narrow — multiple siblings legitimately share the same value, so the collision detector falls back to per-element SHA-256 hashes for that group rather than overwrite. Add a tiebreaker to `unique_id_elements` (e.g. a compound like `name+recordType`) and re-decompose with `prePurge: true`.
 
 ---
 

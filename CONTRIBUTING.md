@@ -128,6 +128,51 @@ When adding new code, prefer making genuinely unreachable branches `/* istanbul 
 
 ## Code and Architecture
 
+### Source layout
+
+```
+src/
+├── commands/decomposer/        # oclif entry points — parse flags, call core, nothing else
+│   ├── decompose.ts
+│   ├── recompose.ts
+│   └── verify.ts
+├── core/                       # orchestration — walks package dirs, applies manifest filter, fans out to service
+│   ├── decomposeMetadataTypes.ts
+│   ├── recomposeMetadataTypes.ts
+│   └── verifyMetadataTypes.ts
+├── helpers/                    # cross-cutting utilities
+│   ├── configOverrides.ts      # parses .sfdecomposer.config.json; resolves per-type/per-component precedence
+│   ├── constants.ts
+│   ├── pLimit.ts               # in-house concurrency limiter
+│   └── types.ts                # shared TypeScript interfaces
+├── hooks/                      # sf CLI lifecycle hooks
+│   ├── prerun.ts               # recompose hook (fires before sf project deploy start / validate)
+│   └── scopedPostRetrieve.ts   # decompose hook (fires after sf project retrieve start)
+├── metadata/                   # SDR registry integration
+│   ├── getMultiLevelDefault.ts
+│   ├── getPackageDirectories.ts
+│   ├── getRegistryValuesBySuffix.ts
+│   ├── getUniqueIdElements.ts
+│   ├── multiLevelDefaults.ts   # built-in multiLevel rules for bot and loyaltyProgramSetup
+│   ├── parseManifest.ts        # package.xml → filtered component list
+│   └── uniqueIdElements.ts     # per-suffix unique ID element overrides (edit here to add a new type)
+└── service/                    # per-file work delegated by core
+    ├── core/
+    │   ├── getRepoRoot.ts
+    │   └── moveFiles.ts
+    ├── decompose/
+    │   ├── customLabels.ts         # labels-specific pre/post purge logic
+    │   ├── decomposeFileHandler.ts # calls config-disassembler-node per file
+    │   └── renameWorkflows.ts      # renames workflow sub-type files after decompose
+    ├── recompose/
+    │   ├── deleteFilesinDirectory.ts
+    │   ├── reassembleLabels.ts
+    │   ├── recomposeFileHandler.ts # calls config-disassembler-node per file
+    │   └── renameBotVersionFiles.ts
+    └── verify/
+        └── diffDirectories.ts      # structural XML equality comparison (order-agnostic)
+```
+
 ### Metadata and SDR
 
 Metadata attributes (except unique-ID elements) come from this plugin's pinned version of **@salesforce/source-deploy-retrieve** (SDR). The `-m` / `--metadata-type` flag uses the metadata **suffix** from SDR's registry.

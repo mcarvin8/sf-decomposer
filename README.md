@@ -14,66 +14,39 @@ A Salesforce CLI plugin that **decomposes** large metadata XML files into smalle
 <details>
   <summary>Table of Contents</summary>
 
-- [Quick Start](#quick-start)
-- [Requirements](#requirements)
-- [Why sf-decomposer?](#why-sf-decomposer)
-- [Commands](#commands)
-- [Manifest-scoped runs](#manifest-scoped-runs)
-- [Decompose Strategies](#decompose-strategies)
-- [Supported Metadata](#supported-metadata)
-- [Troubleshooting](#troubleshooting)
-- [Hooks](#hooks)
-- [Per-Type & Per-Component Overrides](#per-type--per-component-overrides)
-- [Ignore Files](#ignore-files)
-- [Issues](#issues)
-- [Built With](#built-with)
+- [Setup](#setup)
+  - [1. Requirements](#1-requirements)
+  - [2. Install the Plugin](#2-install-the-plugin)
+  - [3. Configure .forceignore](#3-configure-forceignore)
+  - [4. Configure Hooks](#4-configure-hooks-recommended)
+- [Daily Workflow](#daily-workflow)
+- [Reference](#reference)
+  - [Commands](#commands)
+  - [Decompose Strategies](#decompose-strategies)
+  - [Supported Metadata](#supported-metadata)
+  - [Manifest-scoped Runs](#manifest-scoped-runs)
+  - [Per-Type & Per-Component Overrides](#per-type--per-component-overrides)
+  - [Ignore Files](#ignore-files)
+  - [Troubleshooting](#troubleshooting)
+  - [Built With](#built-with)
 - [Contributing](#contributing)
 - [License](#license)
+
 </details>
 
 ---
 
-## Quick Start
+## Setup
 
-1. **Install the plugin**
+Complete these steps once per project. After setup, see [Daily Workflow](#daily-workflow).
 
-   ```bash
-   sf plugins install sf-decomposer@x.y.z
-   ```
-
-2. **Retrieve metadata** into your Salesforce DX project (e.g. `sf project retrieve start`).
-
-3. **Decompose** the metadata types you need:
-
-   ```bash
-   sf decomposer decompose -m "flow" -m "labels" --postpurge
-   ```
-
-> Combine steps 2 & 3 by configuring the [hooks](#hooks).
-
-4. **Add decomposed paths to [.forceignore](#forceignore)**  
-   This is **required** so the Salesforce CLI does not treat decomposed files as source. Use the [sample .forceignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.forceignore) and adjust extensions for your chosen format (`.xml`, `.json`, `.yaml`, etc.).
-
-5. **Commit** the decomposed files to version control.
-
-6. **Before deploy**, recompose and then deploy:
-
-   ```bash
-   sf decomposer recompose -m "flow" -m "labels"
-   sf project deploy start
-   ```
-
-   Pass `-x manifest/package.xml` to both commands to scope the run to the components in a deploy manifest. Configuring the [hooks](#hooks) automates this step entirely.
-
----
-
-## Requirements
+### 1. Requirements
 
 - [Salesforce CLI](https://developer.salesforce.com/tools/sfdxcli) (`sf`) installed
 - Node.js 20.x or later
 - A Salesforce DX project with `sfdx-project.json` and package directories
 
-### Supported Platforms
+**Supported Platforms**
 
 sf-decomposer depends on [config-disassembler-node](https://github.com/mcarvin8/config-disassembler-node), which ships prebuilt native binaries as platform-specific optional npm packages — your package manager installs only the one matching your `os` / `cpu` / `libc`:
 
@@ -83,24 +56,75 @@ sf-decomposer depends on [config-disassembler-node](https://github.com/mcarvin8/
 | **Linux**   | x64 (gnu + musl), arm64 (gnu + musl) |
 | **Windows** | x64, arm64, ia32                     |
 
-If your platform or architecture is not listed, please open an [issue](https://github.com/mcarvin8/sf-decomposer/issues).
+If your platform or architecture is not listed, open an [issue](https://github.com/mcarvin8/sf-decomposer/issues).
+
+### 2. Install the Plugin
+
+```bash
+sf plugins install sf-decomposer@x.y.z
+```
+
+### 3. Configure .forceignore
+
+**Required.** The Salesforce CLI must ignore decomposed files or `sf` commands will fail. Configure this before running any decompose or retrieve commands.
+
+Copy the [sample .forceignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.forceignore) into your project root and adjust the extension patterns for your chosen format (`.xml`, `.json`, `.yaml`, etc.).
+
+### 4. Configure Hooks (Recommended)
+
+Hooks auto-decompose after `sf project retrieve start` and auto-recompose before `sf project deploy start` / `validate` — eliminating manual steps entirely.
+
+Add `.sfdecomposer.config.json` to your project root. Copy and customize one of the sample configs:
+
+- [Basic sample](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.sfdecomposer.config.json) — one format and strategy for all types
+- [Sample with overrides](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.sfdecomposer.config.overrides.json) — vary format/strategy per metadata type or component
+
+| Option                       | Required    | Description                                                                                                                                        |
+| ---------------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `metadataSuffixes`           | Conditional | Comma-separated metadata suffixes to decompose/recompose. Required unless `manifest` is set; when both are set, run is scoped to the intersection. |
+| `manifest`                   | Conditional | Path (relative to project root) to a `package.xml` manifest. When set, only listed components are decomposed/recomposed.                           |
+| `ignorePackageDirectories`   | No          | Comma-separated package directories to skip.                                                                                                       |
+| `prePurge`                   | No          | Remove existing decomposed files before decomposing (default: false).                                                                              |
+| `postPurge`                  | No          | After decompose: remove originals; after recompose: remove decomposed files (default: false).                                                      |
+| `decomposedFormat`           | No          | `xml`, `json`, `json5`, or `yaml` (default: xml).                                                                                                  |
+| `strategy`                   | No          | `unique-id` \| `grouped-by-tag` (default: unique-id).                                                                                              |
+| `decomposeNestedPermissions` | No          | With `grouped-by-tag`, set `true` to further decompose permission set and muting permission set object/field permissions.                          |
+| `overrides`                  | No          | Array of per-type and/or per-component overrides. See [Per-Type & Per-Component Overrides](#per-type--per-component-overrides).                    |
 
 ---
 
-## Why sf-decomposer?
+## Daily Workflow
 
-Salesforce's built-in decomposition is limited. sf-decomposer gives admins and developers more control, flexibility, and better versioning.
+**With hooks configured** (recommended):
 
-- **Broader metadata support** — works with most Metadata API types, not just the subset Salesforce decomposes.
-- **Two [strategies](#decompose-strategies)** — `unique-id` (one file per nested element) or `grouped-by-tag` (one file per tag).
-- **Multiple formats** — XML, JSON, JSON5, or YAML.
-- **Manifest-scoped runs** — pass `-x package.xml` to scope a run to just the components in a deploy manifest, the same way `sf project deploy start -x` does.
-- **CI/CD hooks** — auto-decompose after retrieve and auto-recompose before deploy via [.sfdecomposer.config.json](#hooks).
-- **Stable ordering and smaller files** — clearer pull requests, fewer merge conflicts.
+```
+retrieve → auto-decomposes → review & commit → deploy → auto-recomposes
+```
+
+```bash
+sf project retrieve start          # hooks decompose automatically
+git add . && git commit -m "..."   # commit decomposed files
+sf project deploy start            # hooks recompose automatically
+```
+
+**Without hooks** (manual):
+
+```bash
+# After retrieve: decompose
+sf decomposer decompose -m "flow" -m "labels" --postpurge
+
+# Before deploy: recompose, then deploy
+sf decomposer recompose -m "flow" -m "labels"
+sf project deploy start
+```
+
+Pass `-x manifest/package.xml` to both `decompose` and `recompose` (and `deploy`) to scope a run to just the components in a deploy manifest.
 
 ---
 
-## Commands
+## Reference
+
+### Commands
 
 | Command                   | Description                                                                         |
 | ------------------------- | ----------------------------------------------------------------------------------- |
@@ -108,7 +132,7 @@ Salesforce's built-in decomposition is limited. sf-decomposer gives admins and d
 | `sf decomposer recompose` | Recompose decomposed files back into deployment-ready metadata.                     |
 | `sf decomposer verify`    | Round-trip check: decompose + recompose in a temp directory and diff the originals. |
 
-### sf decomposer decompose
+#### sf decomposer decompose
 
 Decomposes metadata in all local package directories (from `sfdx-project.json`) into smaller files.
 
@@ -125,13 +149,13 @@ FLAGS
   --prepurge                              Remove existing decomposed files before decomposing [default: false]
   --postpurge                             Remove original metadata files after decomposing [default: false]
   -p, --decompose-nested-permissions      With grouped-by-tag, further decompose permission set and muting permission set object/field permissions
-  -c, --config                            Load per-type and per-component overrides from .sfdecomposer.config.json in the repo root. Only the "overrides" array is consumed. See Per-Type & Per-Component Overrides. [default: false]
+  -c, --config                            Load per-type and per-component overrides from .sfdecomposer.config.json in the repo root. Only the "overrides" array is consumed. [default: false]
 
 GLOBAL FLAGS
   --json  Output as JSON.
 ```
 
-> At least one of `--metadata-type` or `--manifest` is required. When both are supplied, the run is scoped to the intersection of the two.
+> At least one of `--metadata-type` or `--manifest` is required. When both are supplied, the run is scoped to their intersection.
 
 **Examples**
 
@@ -152,7 +176,7 @@ sf decomposer decompose -x "manifest/package.xml" --prepurge
 sf decomposer decompose -x "manifest/package.xml" -m "permissionset"
 ```
 
-### sf decomposer recompose
+#### sf decomposer recompose
 
 Recomposes decomposed files into deployment-compatible metadata.
 
@@ -170,7 +194,7 @@ GLOBAL FLAGS
   --json  Output as JSON.
 ```
 
-> At least one of `--metadata-type` or `--manifest` is required. When both are supplied, the run is scoped to the intersection of the two.
+> At least one of `--metadata-type` or `--manifest` is required. When both are supplied, the run is scoped to their intersection.
 
 **Examples**
 
@@ -183,7 +207,7 @@ sf decomposer recompose -x "manifest/package.xml"
 sf project deploy start -x "manifest/package.xml"
 ```
 
-### sf decomposer verify
+#### sf decomposer verify
 
 Non-destructive round-trip check: copies your package directories into a temp directory under your OS's `tmpdir()`, runs decompose then recompose there, and diffs the rebuilt parents against the originals using **structural XML equality** (sibling and attribute order are ignored). Exits non-zero on any drift; your working tree is never modified.
 
@@ -198,13 +222,13 @@ FLAGS
   -i, --ignore-package-directory=<value>  Package directory to skip. Repeatable.
   -s, --strategy=<value>                  unique-id | grouped-by-tag [default: unique-id]
   -p, --decompose-nested-permissions      With grouped-by-tag, further decompose permission set and muting permission set object/field permissions.
-  -c, --config                            Load per-type and per-component overrides from .sfdecomposer.config.json in the repo root, the same as `decompose --config`. [default: false]
+  -c, --config                            Load per-type and per-component overrides from .sfdecomposer.config.json in the repo root. [default: false]
 
 GLOBAL FLAGS
   --json  Output as JSON.
 ```
 
-> At least one of `--metadata-type` or `--manifest` is required. When both are supplied, the run is scoped to the intersection of the two.
+> At least one of `--metadata-type` or `--manifest` is required. When both are supplied, the run is scoped to their intersection.
 
 **Examples**
 
@@ -219,44 +243,11 @@ sf decomposer verify -m "permissionset" -s "grouped-by-tag" -p
 sf decomposer verify -x "manifest/package.xml" --config
 ```
 
-Files whose **only** delta is sibling or attribute ordering are reported as informational notices, not drift. Salesforce treats metadata as order-agnostic, so the deploy is safe — the notice just warns that committing the post-recompose output will show a git diff even though the metadata is functionally identical.
+Files whose **only** delta is sibling or attribute ordering are reported as informational notices, not drift. Salesforce treats metadata as order-agnostic, so the deploy is safe — the notice warns that committing the post-recompose output will show a git diff even though the metadata is functionally identical.
 
 ---
 
-## Manifest-scoped runs
-
-`-x` / `--manifest` is supported by every `sf decomposer` command and accepts the same `package.xml` you pass to `sf project deploy start -x`. Only the listed components are decomposed/recomposed; everything else is left alone.
-
-- Wildcards (`<members>*</members>`) expand against your local source.
-- Folder members (e.g. `MyFolder/MyReport`) resolve by walking the folder.
-- Types the plugin does not support (e.g. `CustomObject`, `ApexClass`) are skipped with a warning, so the same manifest can drive both deploys and decomposer runs.
-- If both `--metadata-type` and `--manifest` are supplied, the run is scoped to the intersection.
-
-Example manifest:
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<Package xmlns="http://soap.sforce.com/2006/04/metadata">
-  <types>
-    <members>HR_Admin</members>
-    <name>PermissionSet</name>
-  </types>
-  <types>
-    <members>Case</members>
-    <name>Workflow</name>
-  </types>
-  <version>58.0</version>
-</Package>
-```
-
-```bash
-sf decomposer recompose -x "manifest/package.xml"
-sf project deploy start -x "manifest/package.xml"
-```
-
----
-
-## Decompose Strategies
+### Decompose Strategies
 
 > **Tip:** A single decompose run can mix strategies and formats across metadata types — and even across components within the same type — through the `overrides` array (see [Per-Type & Per-Component Overrides](#per-type--per-component-overrides)). Recompose is deterministic from the on-disk sidecar, so any combination round-trips. When switching strategies for an existing component, pass `--prepurge` (or set `prePurge: true`) so leftover files from the previous strategy are removed before the new ones are written.
 
@@ -306,16 +297,16 @@ permissionsets/
     └── userPermissions.xml
 ```
 
-### Filename safety (unique-id)
+#### Filename safety (unique-id)
 
 Two safety nets apply automatically to every shard filename emitted by the **unique-id** strategy. Neither requires configuration:
 
 - **Path-segment sanitization (silent).** Characters illegal or reserved on at least one supported filesystem — path separators (`/`, `\`), Windows-reserved chars (`:`, `*`, `?`, `"`, `<`, `>`, `|`), and ASCII control bytes — are replaced with `_`; trailing `.` and spaces are stripped. Sanitized filenames are byte-stable across platforms.
 - **Sibling-collision fallback (emits `WARN`).** When two or more siblings of the same parent tag would resolve to the same filename (the configured unique-id elements are too narrow, or sanitization folded two distinct values together), every sibling in the colliding group is written to its own per-element SHA-256 shard instead. No row is silently overwritten.
 
-If you see a hash-named shard and want to know whether it came from a collision (vs. simply a missing UID), set `RUST_LOG=warn` and rerun — see [Rust crate logging](#xml-disassemble-output-rust-crate).
+If you see a hash-named shard and want to know whether it came from a collision (vs. a missing UID), set `RUST_LOG=warn` and rerun — see [Rust crate logging](#xml-disassemble-output-rust-crate).
 
-### Custom Labels Decomposition
+#### Custom Labels Decomposition
 
 Custom labels are always decomposed with `unique-id` (grouped-by-tag would be a no-op since every element shares the same tag). Each label is written to its own file:
 
@@ -326,14 +317,14 @@ labels/
 └── quoteManual.label-meta.xml
 ```
 
-### Additional Permission Set Decomposition
+#### Additional Permission Set Decomposition
 
 With **grouped-by-tag**, use `--decompose-nested-permissions` (`-p`) to further decompose permission sets and muting permission sets:
 
 - Write each `<objectPermissions>` to its own file under `objectPermissions/`.
 - Group `<fieldPermissions>` by object under `fieldPermissions/`.
 
-Similar to Salesforce’s `decomposePermissionSetBeta2`, with more control and format options. Muting permission sets extend the permission set metadata type and support the same decomposition.
+Similar to Salesforce's `decomposePermissionSetBeta2`, with more control and format options. Muting permission sets extend the permission set metadata type and support the same decomposition.
 
 ```bash
 sf decomposer decompose -m "permissionset" -s "grouped-by-tag" -p
@@ -357,7 +348,7 @@ permissionsets/
         └── Job_Request__c.objectPermissions-meta.xml
 ```
 
-### Loyalty Program Setup Decomposition
+#### Loyalty Program Setup Decomposition
 
 `loyaltyProgramSetup` is always decomposed with `unique-id`, with a built-in `multiLevel` default that splits `<programProcesses>` into per-process folders containing per-`<parameters>` / per-`<rules>` files.
 
@@ -386,15 +377,15 @@ loyaltyProgramSetups/
         └── ...
 ```
 
-> **Tip:** This three-level layout (`programProcesses` → `parameters`/`rules`) is exactly the multi-level decomposition pattern. The same pattern powers Bots, Flexipages, and Layouts via opt-in `multiLevel` overrides — see the [admin handbook](https://github.com/mcarvin8/sf-decomposer/blob/main/HANDBOOK.md) for those recipes.
+> **Tip:** This three-level layout (`programProcesses` → `parameters`/`rules`) is the multi-level decomposition pattern. The same pattern powers Bots, Flexipages, and Layouts via opt-in `multiLevel` overrides — see the [admin handbook](https://github.com/mcarvin8/sf-decomposer/blob/main/HANDBOOK.md) for those recipes.
 
 ---
 
-## Supported Metadata
+### Supported Metadata
 
-All parent metadata types from this plugin’s version of **@salesforce/source-deploy-retrieve** (SDR) are supported, except where noted below.
+All parent metadata types from this plugin's version of **@salesforce/source-deploy-retrieve** (SDR) are supported, except where noted below.
 
-Use the metadata **suffix** for `-m` / `--metadata-type`, as in [SDR’s metadataRegistry.json](https://github.com/forcedotcom/source-deploy-retrieve/blob/main/src/registry/metadataRegistry.json), or infer from the file name: `*.{suffix}-meta.xml`.
+Use the metadata **suffix** for `-m` / `--metadata-type`, as in [SDR's metadataRegistry.json](https://github.com/forcedotcom/source-deploy-retrieve/blob/main/src/registry/metadataRegistry.json), or infer from the file name: `*.{suffix}-meta.xml`.
 
 | Metadata Type               | CLI value                  | Notes                                                                                                                                                                      |
 | --------------------------- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -409,9 +400,9 @@ Use the metadata **suffix** for `-m` / `--metadata-type`, as in [SDR’s metadat
 | Marketing App Extension     | `marketingappextension`    |                                                                                                                                                                            |
 | Loyalty Program Setup       | `loyaltyProgramSetup`      | Only `unique-id` strategy supported; `grouped-by-tag` is overridden. Automatically decomposed further (see [Loyalty Program Setup](#loyalty-program-setup-decomposition)). |
 
-The supported metadata table above provides a quick reference for some types. For a comprehensive breakdown of supported, leaf-only, and unsupported metadata types — including multi-level decomposition patterns, Salesforce native decomposition conflicts, and adapter strategy limitations — see [**METADATA_SUPPORT.md**](./METADATA_SUPPORT.md).
+For a comprehensive breakdown of supported, leaf-only, and unsupported metadata types — including multi-level decomposition patterns, Salesforce native decomposition conflicts, and adapter strategy limitations — see [**METADATA_SUPPORT.md**](./METADATA_SUPPORT.md).
 
-### Exceptions
+#### Exceptions
 
 | Situation                                                                                      | Message                                                                                                                           |
 | ---------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
@@ -422,71 +413,40 @@ The supported metadata table above provides a quick reference for some types. Fo
 
 ---
 
-## Troubleshooting
+### Manifest-scoped Runs
 
-### Missing sfdx-project.json
+`-x` / `--manifest` is supported by every `sf decomposer` command and accepts the same `package.xml` you pass to `sf project deploy start -x`. Only the listed components are decomposed/recomposed; everything else is left alone.
 
-The plugin looks for `sfdx-project.json` from the current directory up to the drive root. If it’s not found:
+- Wildcards (`<members>*</members>`) expand against your local source.
+- Folder members (e.g. `MyFolder/MyReport`) resolve by walking the folder.
+- Types the plugin does not support (e.g. `CustomObject`, `ApexClass`) are skipped with a warning, so the same manifest can drive both deploys and decomposer runs.
+- If both `--metadata-type` and `--manifest` are supplied, the run is scoped to their intersection.
 
+Example manifest:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+  <types>
+    <members>HR_Admin</members>
+    <name>PermissionSet</name>
+  </types>
+  <types>
+    <members>Case</members>
+    <name>Workflow</name>
+  </types>
+  <version>58.0</version>
+</Package>
 ```
-Error (1): sfdx-project.json not found in any parent directory.
-```
 
-### Package Directories Not Found for Given Metadata Type
-
-This plugin relies on the @salesforce/source-deploy-retrieve metadata registry to map each metadata type to its expected directory name.
-
-If you provide a metadata type whose corresponding directory does not exist in any of your package directories, the plugin will fail with the following error:
-
-```
-No directories named ${metadataTypeEntry.directoryName} were found in any package directory.
-```
-
-For example, if you attempt to decompose Custom Labels but none of your package directories contain a "labels" folder, the plugin will throw this error.
-
-### XML disassemble output (Rust crate)
-
-The underlying Rust crate logs through [env_logger](https://docs.rs/env_logger). Set `RUST_LOG` to opt into more verbosity:
-
-| Level            | What it covers                                                                                                                                                                                |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `RUST_LOG=error` | Default. Parse errors and skipped files (leaf-only XML — primitives only, nothing to decompose).                                                                                              |
-| `RUST_LOG=warn`  | Adds [sibling-collision fallback](#filename-safety-unique-id) signals — one line per colliding group (parent tag, collided id, sibling count). **Recommended in CI** when shipping overrides. |
-
-Example `WARN` (CustomApplication where four `actionOverrides` siblings shared the action name `View`):
-
-```
-[2026-05-04T15:21:09Z WARN config_disassembler::xml::builders::build_disassembled_files]
-  uniqueIdElements collision: <actionOverrides> id "View" matched 4 sibling elements;
-  falling back to SHA-256 content hashes for the colliding group.
-  Consider adding more discriminating fields to uniqueIdElements for this metadata type.
+```bash
+sf decomposer recompose -x "manifest/package.xml"
+sf project deploy start -x "manifest/package.xml"
 ```
 
 ---
 
-## Hooks
-
-Put **.sfdecomposer.config.json** in the project root to auto-decompose after `sf project retrieve start` and auto-recompose before `sf project deploy start` / `validate`.
-
-> Configure [.forceignore](#forceignore) first — the Salesforce CLI must ignore decomposed files or `sf` commands can fail.
-
-Copy and customize the [sample config](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.sfdecomposer.config.json), or the [sample with overrides](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.sfdecomposer.config.overrides.json) to vary format/strategy per metadata type or component.
-
-| Option                       | Required    | Description                                                                                                                                                                                                                   |
-| ---------------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `metadataSuffixes`           | Conditional | Comma-separated metadata suffixes to decompose/recompose. Required unless `manifest` is set; when both are set, the run is scoped to the intersection.                                                                        |
-| `manifest`                   | Conditional | Path (relative to the project root) to a `package.xml` manifest. When set, only the components listed in the manifest are decomposed/recomposed. See `-x` above.                                                              |
-| `ignorePackageDirectories`   | No          | Comma-separated package directories to skip.                                                                                                                                                                                  |
-| `prePurge`                   | No          | Remove existing decomposed files before decomposing (default: false).                                                                                                                                                         |
-| `postPurge`                  | No          | After decompose: remove originals; after recompose: remove decomposed files (default: false).                                                                                                                                 |
-| `decomposedFormat`           | No          | xml, json, json5, or yaml (default: xml).                                                                                                                                                                                     |
-| `strategy`                   | No          | `unique-id` \| `grouped-by-tag` (default: unique-id).                                                                                                                                                                         |
-| `decomposeNestedPermissions` | No          | With grouped-by-tag, set true to further decompose permission set and muting permission set object/field permissions.                                                                                                         |
-| `overrides`                  | No          | Array of per-type and/or per-component overrides for `decomposedFormat`, `strategy`, `decomposeNestedPermissions`, `prePurge`, and `postPurge`. See [Per-Type & Per-Component Overrides](#per-type--per-component-overrides). |
-
----
-
-## Per-Type & Per-Component Overrides
+### Per-Type & Per-Component Overrides
 
 Overrides apply to **decompose only**. Recompose is a deterministic round-trip — it auto-detects format from the on-disk files and does not depend on strategy — so it ignores the `overrides` array.
 
@@ -516,7 +476,7 @@ By default, a single decompose run uses one format and one strategy across every
 }
 ```
 
-### What can be overridden
+#### What can be overridden
 
 | Field                        | Notes                                                                                                                                                                                                                                                        |
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -543,7 +503,7 @@ The `<fullName>` part of a component key is the SDR fullName for the component, 
 
 Component overrides are not a filter. If `--metadata` / `metadataSuffixes` includes `permissionset`, every permission set is still decomposed; the override only changes how the named ones are decomposed. Use `--manifest` / the hook's `manifest` field if you want to scope the run itself to a subset of components.
 
-### Precedence
+#### Precedence
 
 For each component, each option is resolved independently in this order (highest first):
 
@@ -552,7 +512,7 @@ For each component, each option is resolved independently in this order (highest
 3. The run-wide value (CLI flag, hook config top-level field, or built-in default).
 4. Hard plugin rules (e.g. `labels` and `loyaltyProgramSetup` forced to `unique-id`) override all of the above.
 
-### splitTags grammar
+#### splitTags grammar
 
 `splitTags` lets you control how `grouped-by-tag` writes nested arrays for any metadata type. The plugin already applies a known-good default for permission sets when `decomposeNestedPermissions: true` is set; setting `splitTags` directly takes precedence and works for any metadata type.
 
@@ -589,7 +549,7 @@ Each `<tag>` may appear at most once in a spec. The plugin validates the grammar
 
 See the [admin handbook](https://github.com/mcarvin8/sf-decomposer/blob/main/HANDBOOK.md) for additional `splitTags` and `multiLevel` recipes (flows, workflows, layouts, flexipages, bots).
 
-### multiLevel grammar
+#### multiLevel grammar
 
 `multiLevel` enables a second decomposition pass on inner-level files for metadata types whose XML has deeply nested repeatable blocks (e.g. `loyaltyProgramSetup`'s `programProcesses → parameters → ...`, or a Bot's `botVersion → botDialogs → botSteps`). The plugin already applies a known-good default for `loyaltyProgramSetup` when running the `unique-id` strategy; setting `multiLevel` directly takes precedence and works for any metadata type.
 
@@ -631,7 +591,7 @@ Within one scope, the `(file_pattern, root_to_strip)` pair must be unique across
 >
 > **Pass all rules at once.** Sequential single-rule decomposes rewrite `.multi_level.json` and only the last rule survives — bundle every rule for a given component into one override. Use [`sf decomposer verify`](#sf-decomposer-verify) to confirm a new config round-trips before committing it.
 
-### Opting in from the CLI
+#### Opting in from the CLI
 
 CLI users can opt into overrides on `decompose` with the boolean `--config` (`-c`) flag. When set, the plugin reads `.sfdecomposer.config.json` from the repo root (the nearest ancestor directory that contains `sfdx-project.json`):
 
@@ -649,31 +609,67 @@ The post-retrieve hook automatically picks up `overrides` from `.sfdecomposer.co
 
 ---
 
-## Ignore Files
+### Ignore Files
 
-### .forceignore
+#### .forceignore
 
 The Salesforce CLI must **ignore** decomposed files and **allow** recomposed files. Use the [sample .forceignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.forceignore) and set patterns for the extensions you use (`.xml`, `.json`, `.yaml`, etc.).
 
-### .sfdecomposerignore
+#### .sfdecomposerignore
 
 Optional. In the project root, list paths/patterns to skip when **decomposing** (same syntax as [.gitignore 2.22.1](https://git-scm.com/docs/gitignore)). Ignored files are not recomposed from.
 
-### .gitignore
+#### .gitignore
 
-Optional. Ignore recomposed metadata so it aren’t committed. See the [sample .gitignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.gitignore).
-
----
-
-## Issues
-
-Bugs and feature requests: open an [issue](https://github.com/mcarvin8/sf-decomposer/issues).
+Optional. Ignore recomposed metadata so it isn't committed. See the [sample .gitignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.gitignore).
 
 ---
 
-## Built With
+### Troubleshooting
 
-- [config-disassembler-node](https://github.com/mcarvin8/config-disassembler-node) – Disassemble XML (and other config formats) into smaller, manageable files and reassemble when needed. Node.js + Rust (NAPI-RS). See [Requirements](#requirements).
+#### Missing sfdx-project.json
+
+The plugin looks for `sfdx-project.json` from the current directory up to the drive root. If it's not found:
+
+```
+Error (1): sfdx-project.json not found in any parent directory.
+```
+
+#### Package Directories Not Found for Given Metadata Type
+
+This plugin relies on the @salesforce/source-deploy-retrieve metadata registry to map each metadata type to its expected directory name.
+
+If you provide a metadata type whose corresponding directory does not exist in any of your package directories, the plugin will fail with:
+
+```
+No directories named ${metadataTypeEntry.directoryName} were found in any package directory.
+```
+
+For example, if you attempt to decompose Custom Labels but none of your package directories contain a "labels" folder, the plugin will throw this error.
+
+#### XML disassemble output (Rust crate)
+
+The underlying Rust crate logs through [env_logger](https://docs.rs/env_logger). Set `RUST_LOG` to opt into more verbosity:
+
+| Level            | What it covers                                                                                                                                                                                |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `RUST_LOG=error` | Default. Parse errors and skipped files (leaf-only XML — primitives only, nothing to decompose).                                                                                              |
+| `RUST_LOG=warn`  | Adds [sibling-collision fallback](#filename-safety-unique-id) signals — one line per colliding group (parent tag, collided id, sibling count). **Recommended in CI** when shipping overrides. |
+
+Example `WARN` (CustomApplication where four `actionOverrides` siblings shared the action name `View`):
+
+```
+[2026-05-04T15:21:09Z WARN config_disassembler::xml::builders::build_disassembled_files]
+  uniqueIdElements collision: <actionOverrides> id "View" matched 4 sibling elements;
+  falling back to SHA-256 content hashes for the colliding group.
+  Consider adding more discriminating fields to uniqueIdElements for this metadata type.
+```
+
+---
+
+### Built With
+
+- [config-disassembler-node](https://github.com/mcarvin8/config-disassembler-node) – Disassemble XML (and other config formats) into smaller, manageable files and reassemble when needed. Node.js + Rust (NAPI-RS).
 - [@salesforce/source-deploy-retrieve](https://github.com/forcedotcom/source-deploy-retrieve) – JavaScript toolkit for working with Salesforce metadata.
 
 ---
