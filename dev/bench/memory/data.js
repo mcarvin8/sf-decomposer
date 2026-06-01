@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1780016285831,
+  "lastUpdate": 1780309828137,
   "repoUrl": "https://github.com/mcarvin8/sf-decomposer",
   "entries": {
     "Decompose Memory": [
@@ -1549,6 +1549,108 @@ window.BENCHMARK_DATA = {
           {
             "name": "large.yaml.recompose.pass2",
             "value": -43.879,
+            "unit": "MB"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Matt Carvin",
+            "username": "mcarvin8",
+            "email": "90224411+mcarvin8@users.noreply.github.com"
+          },
+          "committer": {
+            "name": "Matt Carvin",
+            "username": "mcarvin8",
+            "email": "90224411+mcarvin8@users.noreply.github.com"
+          },
+          "id": "7353536cf6881c4ba40d171f9b7e9d95782adcfd",
+          "message": "docs(migration): simplify step 1 to use sf convert source behavior\n\nReplace the retrieve-from-org approach with `sf convert source behavior`,\nwhich recomposes natively-decomposed files locally without an org connection.\nMerged the old steps 1 and 2 (disable flags + recompose) into a single step\nand renumbered accordingly. Retrieve path retained as a fallback for stale/missing local source.\n\nCo-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>",
+          "timestamp": "2026-05-29T21:08:17Z",
+          "url": "https://github.com/mcarvin8/sf-decomposer/commit/7353536cf6881c4ba40d171f9b7e9d95782adcfd"
+        },
+        "date": 1780309828097,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "large.xml.decompose.pass1",
+            "value": 84.578,
+            "unit": "MB"
+          },
+          {
+            "name": "large.xml.recompose.pass1",
+            "value": -260.555,
+            "unit": "MB"
+          },
+          {
+            "name": "large.xml.decompose.pass2",
+            "value": -17.094,
+            "unit": "MB"
+          },
+          {
+            "name": "large.xml.recompose.pass2",
+            "value": 12.891,
+            "unit": "MB"
+          },
+          {
+            "name": "large.json.decompose.pass1",
+            "value": -56.074,
+            "unit": "MB"
+          },
+          {
+            "name": "large.json.recompose.pass1",
+            "value": 83.152,
+            "unit": "MB"
+          },
+          {
+            "name": "large.json.decompose.pass2",
+            "value": -12.691,
+            "unit": "MB"
+          },
+          {
+            "name": "large.json.recompose.pass2",
+            "value": 0,
+            "unit": "MB"
+          },
+          {
+            "name": "large.json5.decompose.pass1",
+            "value": -26.898,
+            "unit": "MB"
+          },
+          {
+            "name": "large.json5.recompose.pass1",
+            "value": 15.359,
+            "unit": "MB"
+          },
+          {
+            "name": "large.json5.decompose.pass2",
+            "value": 2.125,
+            "unit": "MB"
+          },
+          {
+            "name": "large.json5.recompose.pass2",
+            "value": -27.469,
+            "unit": "MB"
+          },
+          {
+            "name": "large.yaml.decompose.pass1",
+            "value": 2,
+            "unit": "MB"
+          },
+          {
+            "name": "large.yaml.recompose.pass1",
+            "value": -7.66,
+            "unit": "MB"
+          },
+          {
+            "name": "large.yaml.decompose.pass2",
+            "value": -14.035,
+            "unit": "MB"
+          },
+          {
+            "name": "large.yaml.recompose.pass2",
+            "value": 0,
             "unit": "MB"
           }
         ]
