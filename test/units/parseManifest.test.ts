@@ -238,6 +238,18 @@ describe('parseManifest', () => {
 
     expect(result.suffixes).toEqual([]);
     expect(result.parentXmlsBySuffix.size).toBe(0);
+    expect(result.unresolvedComponents).toEqual([{ type: 'permissionset', member: 'HR_Admin' }]);
+  });
+
+  it('omits a wildcard type when no package directory contains its type dir and produces no unresolved components', async () => {
+    // Wildcard manifests that find no type dir are silently dropped — not surfaced as
+    // unresolved components, because the user asked for "whatever exists", not a named component.
+    const manifest = await writeManifest(project.root, [{ name: 'PermissionSet', members: ['*'] }]);
+    const result = await parseManifest(manifest, undefined);
+
+    expect(result.suffixes).toEqual([]);
+    expect(result.parentXmlsBySuffix.size).toBe(0);
+    expect(result.unresolvedComponents).toEqual([]);
   });
 
   it('omits a type when its type dir exists but no declared member resolves to an XML on disk', async () => {
@@ -249,6 +261,7 @@ describe('parseManifest', () => {
 
     expect(result.suffixes).toEqual([]);
     expect(result.parentXmlsBySuffix.size).toBe(0);
+    expect(result.unresolvedComponents).toEqual([{ type: 'permissionset', member: 'DoesNotExist' }]);
   });
 
   it('returns the same Set for one parent type irrespective of member declaration order', async () => {

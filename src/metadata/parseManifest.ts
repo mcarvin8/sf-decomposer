@@ -120,6 +120,7 @@ export async function parseManifest(
   const unresolvedComponents: Array<{ type: string; member: string }> = [];
 
   for (const entry of resolvedPerGroup) {
+    /* istanbul ignore next -- @preserve: undefined only reachable via the suffix-less branch already ignored above. Stryker disable next-line ConditionalExpression */
     if (!entry) continue;
     const { suffix, xmlPaths, unresolvedMembers } = entry;
 
