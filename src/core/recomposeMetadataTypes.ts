@@ -8,13 +8,16 @@ import { pLimit } from '../helpers/pLimit.js';
 import { DecomposerResult, RecomposeOptions } from '../helpers/types.js';
 
 export async function recomposeMetadataTypes(options: RecomposeOptions): Promise<DecomposerResult> {
-  const { metadataTypes, postpurge, ignoreDirs, manifest, log } = options;
+  const { metadataTypes, postpurge, ignoreDirs, manifest, log, repoRoot } = options;
 
   let manifestFilter: ManifestFilter | undefined;
   let effectiveTypes: string[];
 
   if (manifest) {
-    manifestFilter = await parseManifest(manifest, ignoreDirs);
+    manifestFilter = await parseManifest(manifest, ignoreDirs, repoRoot);
+    for (const { type, member } of manifestFilter.unresolvedComponents) {
+      log(`Warning: manifest component ${type}:${member} not found in local source; skipping.`);
+    }
     // Stryker disable next-line ConditionalExpression, EqualityOperator
     if (metadataTypes && metadataTypes.length > 0) {
       const manifestTypes = new Set(manifestFilter.suffixes);
@@ -45,7 +48,7 @@ export async function recomposeMetadataTypes(options: RecomposeOptions): Promise
 
       let metaAttributes;
       try {
-        ({ metaAttributes } = await getRegistryValuesBySuffix(metadataType, 'recompose', ignoreDirs));
+        ({ metaAttributes } = await getRegistryValuesBySuffix(metadataType, 'recompose', ignoreDirs, repoRoot));
       } catch (err) {
         /* istanbul ignore if -- @preserve: preserves non-manifest behavior; unreachable via known CLI types */
         if (!manifestFilter) throw err;

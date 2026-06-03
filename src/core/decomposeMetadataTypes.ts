@@ -20,13 +20,17 @@ export async function decomposeMetadataTypes(options: DecomposeOptions): Promise
     manifest,
     overrides,
     log,
+    repoRoot,
   } = options;
 
   let manifestFilter: ManifestFilter | undefined;
   let effectiveTypes: string[];
 
   if (manifest) {
-    manifestFilter = await parseManifest(manifest, ignoreDirs);
+    manifestFilter = await parseManifest(manifest, ignoreDirs, repoRoot);
+    for (const { type, member } of manifestFilter.unresolvedComponents) {
+      log(`Warning: manifest component ${type}:${member} not found in local source; skipping.`);
+    }
     // Stryker disable next-line ConditionalExpression, EqualityOperator
     if (metadataTypes && metadataTypes.length > 0) {
       const manifestTypes = new Set(manifestFilter.suffixes);
@@ -58,7 +62,12 @@ export async function decomposeMetadataTypes(options: DecomposeOptions): Promise
       let metaAttributes;
       let ignorePath: string;
       try {
-        ({ metaAttributes, ignorePath } = await getRegistryValuesBySuffix(metadataType, 'decompose', ignoreDirs));
+        ({ metaAttributes, ignorePath } = await getRegistryValuesBySuffix(
+          metadataType,
+          'decompose',
+          ignoreDirs,
+          repoRoot,
+        ));
       } catch (err) {
         /* istanbul ignore if -- @preserve: preserves non-manifest behavior; unreachable via known CLI types */
         if (!manifestFilter) throw err;
