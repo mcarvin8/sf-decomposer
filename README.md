@@ -479,17 +479,18 @@ By default, a single decompose run uses one format and one strategy across every
 
 #### What can be overridden
 
-| Field                        | Notes                                                                                                                                                                                                                                                        |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `metadataTypes`              | Optional (required if `components` is omitted). Array of metadata suffixes (same vocabulary as `--metadata-type` / `metadataSuffixes`). Each suffix may appear in at most one override.                                                                      |
-| `components`                 | Optional (required if `metadataTypes` is omitted). Array of `<metadataSuffix>:<fullName>` keys (e.g. `permissionset:HR_Admin`, `report:MyFolder/MyReport`). Each component may appear in at most one override.                                               |
-| `decomposedFormat`           | `xml` \| `json` \| `json5` \| `yaml`.                                                                                                                                                                                                                        |
-| `strategy`                   | `unique-id` \| `grouped-by-tag`. Hard rules still win — `labels` and `loyaltyProgramSetup` are always treated as `unique-id`.                                                                                                                                |
-| `decomposeNestedPermissions` | Only applies to `permissionset` / `mutingpermissionset` with `grouped-by-tag`. Sets a known-good `splitTags` default; ignored if `splitTags` is also set in the same scope.                                                                                  |
-| `splitTags`                  | Custom `splitTags` spec for `grouped-by-tag` strategy. See [splitTags grammar](#splittags-grammar). Ignored when the resolved strategy is not `grouped-by-tag`.                                                                                              |
-| `multiLevel`                 | One or more `multiLevel` specs for nested-array decomposition. Pass a string, a `string[]`, or a `;`-separated string. See [multiLevel grammar](#multilevel-grammar). When set, replaces the hardcoded `loyaltyProgramSetup` default for the targeted scope. |
-| `prePurge`                   | Per-scope prePurge (decompose). Component-scope `prePurge` only purges the named component's decomposed directory.                                                                                                                                           |
-| `postPurge`                  | Per-scope postPurge (decompose: remove originals after decomposing).                                                                                                                                                                                         |
+| Field                        | Notes                                                                                                                                                                                                                                                                             |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `metadataTypes`              | Optional (required if `components` is omitted). Array of metadata suffixes (same vocabulary as `--metadata-type` / `metadataSuffixes`). Each suffix may appear in at most one override.                                                                                           |
+| `components`                 | Optional (required if `metadataTypes` is omitted). Array of `<metadataSuffix>:<fullName>` keys (e.g. `permissionset:HR_Admin`, `report:MyFolder/MyReport`). Each component may appear in at most one override.                                                                    |
+| `decomposedFormat`           | `xml` \| `json` \| `json5` \| `yaml`.                                                                                                                                                                                                                                             |
+| `strategy`                   | `unique-id` \| `grouped-by-tag`. Hard rules still win — `labels` and `loyaltyProgramSetup` are always treated as `unique-id`.                                                                                                                                                     |
+| `decomposeNestedPermissions` | Only applies to `permissionset` / `mutingpermissionset` with `grouped-by-tag`. Sets a known-good `splitTags` default; ignored if `splitTags` is also set in the same scope.                                                                                                       |
+| `splitTags`                  | Custom `splitTags` spec for `grouped-by-tag` strategy. See [splitTags grammar](#splittags-grammar). Ignored when the resolved strategy is not `grouped-by-tag`.                                                                                                                   |
+| `multiLevel`                 | One or more `multiLevel` specs for nested-array decomposition. Pass a string, a `string[]`, or a `;`-separated string. See [multiLevel grammar](#multilevel-grammar). When set, replaces the hardcoded `loyaltyProgramSetup` default for the targeted scope.                      |
+| `uniqueIdElements`           | Comma-separated list of XML element names (or compound `+`-joined keys) used to derive stable filenames for `unique-id` decomposition. When set, replaces the built-in per-type registry entry for the targeted scope. See [uniqueIdElements grammar](#uniqueidelements-grammar). |
+| `prePurge`                   | Per-scope prePurge (decompose). Component-scope `prePurge` only purges the named component's decomposed directory.                                                                                                                                                                |
+| `postPurge`                  | Per-scope postPurge (decompose: remove originals after decomposing).                                                                                                                                                                                                              |
 
 Run-scope options (`metadataSuffixes`, `manifest`, `ignorePackageDirectories`) are **not** valid inside an override; the plugin will throw if they are present.
 
@@ -591,6 +592,48 @@ Within one scope, the `(file_pattern, root_to_strip)` pair must be unique across
 > **Built-in defaults.** `bot` and `loyaltyProgramSetup` ship with built-in `multiLevel` rules, so you do not need an override to get the canonical layout — supply your own only to replace the default. Full registry: [`src/metadata/multiLevelDefaults.ts`](https://github.com/mcarvin8/sf-decomposer/blob/main/src/metadata/multiLevelDefaults.ts).
 >
 > **Pass all rules at once.** Sequential single-rule decomposes rewrite `.multi_level.json` and only the last rule survives — bundle every rule for a given component into one override. Use [`sf decomposer verify`](#sf-decomposer-verify) to confirm a new config round-trips before committing it.
+
+#### uniqueIdElements grammar
+
+`uniqueIdElements` lets you specify which XML element names the disassembler crate uses to derive stable, human-readable filenames during `unique-id` decomposition. The plugin ships with a built-in registry covering the most common metadata types ([`src/metadata/uniqueIdElements.ts`](https://github.com/mcarvin8/sf-decomposer/blob/main/src/metadata/uniqueIdElements.ts)); use this override when a type is missing from the registry or when the built-in selection produces collisions for your org's data.
+
+**When to use:**
+
+- A metadata type released after the last plugin update is not in the built-in registry and produces SHA-256 hash filenames (`abc1234.mytype-meta.xml`) instead of readable ones.
+- You see `RUST_LOG=warn` collision warnings for an existing type and want to add a tiebreaker compound key without waiting for a plugin release.
+- You want to replace the built-in element list for a specific type or component with a narrower or wider set.
+
+**Spec:** Comma-separated list of element names. Each entry is either a simple name or a compound key whose fields are joined by `+`. The disassembler tries each entry in order; the first one that resolves to a non-empty, unique value within the parent element wins. The global defaults `fullName` and `name` are always prepended regardless — you do not need to include them.
+
+```
+<element>[+<element>...][,<element>[+<element>...]...]
+```
+
+**Error behaviour:**
+
+- An empty string or an entry with empty comma slots is rejected at **config-load time** — the command fails immediately before any decomposition starts.
+- Element names that pass format validation but do not exist in the XML are silently ignored by the disassembler crate; it falls back to SHA-256 hash filenames for the affected elements (the same behaviour as today when no registry entry matches). The plugin does not throw an error and continues decomposing all remaining files.
+
+**Examples:**
+
+```json
+"overrides": [
+  {
+    "metadataTypes": ["myNewSalesforceType"],
+    "uniqueIdElements": "developerName"
+  },
+  {
+    "metadataTypes": ["serviceChannel"],
+    "uniqueIdElements": "type+value,value"
+  },
+  {
+    "components": ["app:My_App"],
+    "uniqueIdElements": "actionName+pageOrSobjectType+formFactor+profile+recordType,actionName+pageOrSobjectType+formFactor+profile,actionName+pageOrSobjectType+formFactor+recordType,actionName+pageOrSobjectType+formFactor"
+  }
+]
+```
+
+> **Tip:** If you resolve a collision by adding a compound key and it works, consider opening an issue or PR to add it to the built-in registry so other orgs benefit automatically.
 
 #### Opting in from the CLI
 

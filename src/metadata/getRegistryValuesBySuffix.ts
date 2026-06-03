@@ -22,6 +22,7 @@ export async function getRegistryValuesBySuffix(
   command: string,
   ignoreDirs: string[] | undefined,
   repoRootOverride?: string,
+  uniqueIdOverride?: string,
 ): Promise<{ metaAttributes: MetaAttributes; ignorePath: string }> {
   if (metaSuffix === 'object') {
     throw Error('Custom Objects are not supported by this plugin.');
@@ -47,7 +48,7 @@ export async function getRegistryValuesBySuffix(
   }
 
   let uniqueIdElements: string | undefined;
-  if (command === 'decompose') uniqueIdElements = getUniqueIdElements(metaSuffix);
+  if (command === 'decompose') uniqueIdElements = uniqueIdOverride ?? getUniqueIdElements(metaSuffix);
   const { metadataPaths, ignorePath } = await getPackageDirectories(
     `${metadataTypeEntry.directoryName}`,
     ignoreDirs,

@@ -10,6 +10,7 @@ import {
   validateOverrides,
   validateSplitTagsSpec,
   validateMultiLevelSpec,
+  validateUniqueIdElementsSpec,
   getOverrideForType,
   getOverrideForComponent,
   hasComponentOverridesForType,
@@ -208,6 +209,35 @@ describe('configOverrides helper', () => {
       ];
       expect(() => validateOverrides(overrides)).not.toThrow();
     });
+
+    it('accepts a well-formed uniqueIdElements spec (single element)', () => {
+      const overrides: DecomposerOverride[] = [{ metadataTypes: ['myCustomType'], uniqueIdElements: 'developerName' }];
+      expect(() => validateOverrides(overrides)).not.toThrow();
+    });
+
+    it('accepts a well-formed uniqueIdElements spec (multiple comma-separated elements)', () => {
+      const overrides: DecomposerOverride[] = [
+        { metadataTypes: ['myCustomType'], uniqueIdElements: 'developerName,apiName' },
+      ];
+      expect(() => validateOverrides(overrides)).not.toThrow();
+    });
+
+    it('accepts a well-formed uniqueIdElements spec (compound key with +)', () => {
+      const overrides: DecomposerOverride[] = [
+        { metadataTypes: ['app'], uniqueIdElements: 'actionName+pageOrSobjectType+formFactor' },
+      ];
+      expect(() => validateOverrides(overrides)).not.toThrow();
+    });
+
+    it('rejects an empty uniqueIdElements string', () => {
+      const overrides: DecomposerOverride[] = [{ metadataTypes: ['flow'], uniqueIdElements: '' }];
+      expect(() => validateOverrides(overrides)).toThrow(/empty "uniqueIdElements" string/);
+    });
+
+    it('rejects a uniqueIdElements string with an empty entry between commas', () => {
+      const overrides: DecomposerOverride[] = [{ metadataTypes: ['flow'], uniqueIdElements: 'developerName,,apiName' }];
+      expect(() => validateOverrides(overrides)).toThrow(/"uniqueIdElements" contains an empty entry/);
+    });
   });
 
   describe('validateSplitTagsSpec', () => {
@@ -386,6 +416,49 @@ describe('configOverrides helper', () => {
     });
   });
 
+  describe('validateUniqueIdElementsSpec', () => {
+    it('accepts a single element name', () => {
+      expect(() => validateUniqueIdElementsSpec('developerName', 0)).not.toThrow();
+    });
+
+    it('accepts multiple comma-separated elements', () => {
+      expect(() => validateUniqueIdElementsSpec('developerName,apiName', 0)).not.toThrow();
+    });
+
+    it('accepts a compound key joined by "+"', () => {
+      expect(() => validateUniqueIdElementsSpec('actionName+pageOrSobjectType+formFactor', 0)).not.toThrow();
+    });
+
+    it('accepts a mix of simple elements and compound keys', () => {
+      expect(() =>
+        validateUniqueIdElementsSpec(
+          'actionName+pageOrSobjectType+formFactor+profile,actionName+pageOrSobjectType+formFactor',
+          0,
+        ),
+      ).not.toThrow();
+    });
+
+    it('rejects an empty string', () => {
+      expect(() => validateUniqueIdElementsSpec('', 0)).toThrow(/empty "uniqueIdElements" string/);
+    });
+
+    it('rejects a whitespace-only string', () => {
+      expect(() => validateUniqueIdElementsSpec('   ', 0)).toThrow(/empty "uniqueIdElements" string/);
+    });
+
+    it('rejects an empty entry between commas', () => {
+      expect(() => validateUniqueIdElementsSpec('developerName,,apiName', 0)).toThrow(
+        /"uniqueIdElements" contains an empty entry/,
+      );
+    });
+
+    it('rejects a trailing comma that produces an empty entry', () => {
+      expect(() => validateUniqueIdElementsSpec('developerName,', 0)).toThrow(
+        /"uniqueIdElements" contains an empty entry/,
+      );
+    });
+  });
+
   describe('getOverrideForType', () => {
     const overrides: DecomposerOverride[] = [
       { metadataTypes: ['flow'], decomposedFormat: 'yaml' },
@@ -554,6 +627,20 @@ describe('configOverrides helper', () => {
         'botSteps:botSteps:type',
       ]);
     });
+
+    it('threads a type-scope uniqueIdElements through resolution', () => {
+      const overrides: DecomposerOverride[] = [
+        { metadataTypes: ['myCustomType'], uniqueIdElements: 'developerName,apiName' },
+      ];
+      expect(resolveDecomposeOptionsForType('myCustomType', base, overrides).uniqueIdElements).toBe(
+        'developerName,apiName',
+      );
+    });
+
+    it('returns undefined uniqueIdElements when no override sets one', () => {
+      const overrides: DecomposerOverride[] = [{ metadataTypes: ['flow'], decomposedFormat: 'yaml' }];
+      expect(resolveDecomposeOptionsForType('flow', base, overrides).uniqueIdElements).toBeUndefined();
+    });
   });
 
   describe('resolveDecomposeOptionsForComponent', () => {
@@ -632,6 +719,22 @@ describe('configOverrides helper', () => {
       expect(
         resolveDecomposeOptionsForComponent('loyaltyProgramSetup', 'Custom', typeResolved, overrides).multiLevel,
       ).toBe('rules:rules:ruleName');
+    });
+
+    it('lets a component override replace a type-scoped uniqueIdElements', () => {
+      const typeResolved = { ...base, uniqueIdElements: 'developerName' };
+      const overrides: DecomposerOverride[] = [{ components: ['myType:Special'], uniqueIdElements: 'apiName,label' }];
+      expect(resolveDecomposeOptionsForComponent('myType', 'Special', typeResolved, overrides).uniqueIdElements).toBe(
+        'apiName,label',
+      );
+    });
+
+    it('inherits a type-scoped uniqueIdElements when the component override does not set one', () => {
+      const typeResolved = { ...base, uniqueIdElements: 'developerName' };
+      const overrides: DecomposerOverride[] = [{ components: ['myType:Other'], decomposedFormat: 'yaml' }];
+      expect(resolveDecomposeOptionsForComponent('myType', 'Other', typeResolved, overrides).uniqueIdElements).toBe(
+        'developerName',
+      );
     });
 
     it('inherits a type-scoped multiLevel when the component override does not set one', () => {

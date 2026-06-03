@@ -50,7 +50,7 @@ Additionally decompose object and field permissions on a permission set when str
 
 # flags.config.summary
 
-Load per-type and per-component overrides from .sfdecomposer.config.json in the repo root. When set, the file's "overrides" array is applied (format, strategy, decomposeNestedPermissions, prePurge, postPurge per type or per individual component). Other top-level config fields are ignored when invoking the CLI directly.
+Load per-type and per-component overrides from .sfdecomposer.config.json in the repo root. When set, the file's "overrides" array is applied (format, strategy, decomposeNestedPermissions, uniqueIdElements, prePurge, postPurge per type or per individual component). Other top-level config fields are ignored when invoking the CLI directly.
 
 # error.missingMetadataOrManifest
 
