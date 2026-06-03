@@ -92,6 +92,7 @@
     "prepack": "wireit",
     "prepare": "husky && patch-package",
     "test": "wireit",
+    "test:compile": "wireit",
     "test:nuts": "oclif manifest && vitest run --config ./vitest.nut.config.ts",
     "test:only": "wireit",
     "test:perf": "vitest run --config ./vitest.perf.config.ts",

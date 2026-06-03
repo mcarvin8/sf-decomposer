@@ -240,10 +240,10 @@ describe('recomposeFileHandler', () => {
       await recomposeFileHandler(makeAttrs({ metaSuffix: 'labels' }), true, xmls);
 
       expect(reassembleLabelsSpy).toHaveBeenCalledTimes(2);
-      const dirs = reassembleLabelsSpy.mock.calls.map((c) => c[0] as string).sort();
+      const dirs = (reassembleLabelsSpy.mock.calls as unknown[][]).map((c) => c[0] as string).sort();
       expect(dirs).toEqual(['force-app/labels', 'other-pkg/labels']);
       // Postpurge propagates.
-      for (const call of reassembleLabelsSpy.mock.calls) {
+      for (const call of reassembleLabelsSpy.mock.calls as unknown[][]) {
         expect(call[2]).toBe(true);
       }
     });
@@ -287,7 +287,7 @@ describe('recomposeFileHandler', () => {
       await recomposeFileHandler(makeAttrs({ metaSuffix: 'bot', strictDirectoryName: true }), false, xmls);
 
       expect(renameBotVersionFileSpy).toHaveBeenCalledTimes(2);
-      const containerDirs = renameBotVersionFileSpy.mock.calls.map((c) => c[0] as string).sort();
+      const containerDirs = (renameBotVersionFileSpy.mock.calls as unknown[][]).map((c) => c[0] as string).sort();
       expect(containerDirs).toEqual([join(TMP_ROOT, 'force-app', 'bots'), join(TMP_ROOT, 'other-pkg', 'bots')]);
     });
 
