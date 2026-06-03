@@ -5,6 +5,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.26.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.25.0...v6.26.0) (2026-06-03)
+
+
+### Features
+
+* support user-configurable uniqueIdElements in overrides config ([#472](https://github.com/mcarvin8/sf-decomposer/issues/472)) ([6d7ed7d](https://github.com/mcarvin8/sf-decomposer/commit/6d7ed7dec516a77205af6d9304f68e2a97942d83))
+
+
+### Bug Fixes
+
+* remove process.chdir from verify; warn on missing manifest components ([#470](https://github.com/mcarvin8/sf-decomposer/issues/470)) ([81d893e](https://github.com/mcarvin8/sf-decomposer/commit/81d893e323016af712d10c6c0cb818bb1fec34af))
+
 ## [6.25.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.24.1...v6.25.0) (2026-05-29)
 
 
