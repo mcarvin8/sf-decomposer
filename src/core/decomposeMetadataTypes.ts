@@ -59,24 +59,6 @@ export async function decomposeMetadataTypes(options: DecomposeOptions): Promise
     limit(async () => {
       const manifestXmlPaths = manifestFilter?.parentXmlsBySuffix.get(metadataType);
 
-      let metaAttributes;
-      let ignorePath: string;
-      try {
-        ({ metaAttributes, ignorePath } = await getRegistryValuesBySuffix(
-          metadataType,
-          'decompose',
-          ignoreDirs,
-          repoRoot,
-        ));
-      } catch (err) {
-        /* istanbul ignore if -- @preserve: preserves non-manifest behavior; unreachable via known CLI types */
-        if (!manifestFilter) throw err;
-        /* istanbul ignore next -- @preserve: getRegistryValuesBySuffix always throws Error instances */
-        const message = err instanceof Error ? err.message : String(err);
-        log(`Skipping ${metadataType}: ${message}`);
-        return;
-      }
-
       // Type-scope resolved options serve as the base for component-scope resolution further
       // down the call stack. Hard strategy rules (labels / loyaltyProgramSetup) are applied per
       // file inside the disassembler so they remain in force even when a component-scope override
@@ -86,6 +68,25 @@ export async function decomposeMetadataTypes(options: DecomposeOptions): Promise
         { format, strategy, decomposeNestedPerms, prepurge, postpurge },
         overrides,
       );
+
+      let metaAttributes;
+      let ignorePath: string;
+      try {
+        ({ metaAttributes, ignorePath } = await getRegistryValuesBySuffix(
+          metadataType,
+          'decompose',
+          ignoreDirs,
+          repoRoot,
+          typeResolved.uniqueIdElements,
+        ));
+      } catch (err) {
+        /* istanbul ignore if -- @preserve: preserves non-manifest behavior; unreachable via known CLI types */
+        if (!manifestFilter) throw err;
+        /* istanbul ignore next -- @preserve: getRegistryValuesBySuffix always throws Error instances */
+        const message = err instanceof Error ? err.message : String(err);
+        log(`Skipping ${metadataType}: ${message}`);
+        return;
+      }
 
       await decomposeFileHandler(metaAttributes, typeResolved, ignorePath, overrides, manifestXmlPaths);
 

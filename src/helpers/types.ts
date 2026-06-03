@@ -32,6 +32,15 @@ export type DecomposerOverride = {
    * works on a per-file pattern.
    */
   multiLevel?: string | string[];
+  /**
+   * Comma-separated list of XML element names (and optional compound keys joined by `+`)
+   * used to derive stable filenames during `unique-id` decomposition. When set, this
+   * replaces the hardcoded per-type list from the built-in registry (the global defaults
+   * `fullName` and `name` are always prepended regardless). Useful for metadata types not
+   * yet covered by the built-in registry, or when the default selection produces collisions.
+   * Example: `"developerName,apiName"` or `"actionName+pageOrSobjectType+formFactor"`.
+   */
+  uniqueIdElements?: string;
   prePurge?: boolean;
   postPurge?: boolean;
 };

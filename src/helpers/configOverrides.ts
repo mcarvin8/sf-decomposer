@@ -49,6 +49,12 @@ export type ResolvedDecomposeTypeOptions = {
    * a single `;`-separated string is treated by the crate as multiple rules.
    */
   multiLevel?: string | string[];
+  /**
+   * Resolved custom `uniqueIdElements` spec, when explicitly set in an override. Replaces
+   * the hardcoded per-type list; the global defaults (`fullName`, `name`) are still
+   * prepended by `getRegistryValuesBySuffix` regardless.
+   */
+  uniqueIdElements?: string;
 };
 
 const SPLIT_TAGS_MODES = new Set<string>(['split', 'group']);
@@ -166,6 +172,10 @@ function validateOverrideValues(override: DecomposerOverride, i: number): void {
 
   if (override.multiLevel !== undefined) {
     validateMultiLevelSpec(override.multiLevel, i);
+  }
+
+  if (override.uniqueIdElements !== undefined) {
+    validateUniqueIdElementsSpec(override.uniqueIdElements, i);
   }
 }
 
@@ -302,6 +312,26 @@ function validateSingleMultiLevelRule(rule: string, i: number): { filePattern: s
   return { filePattern, rootToStrip };
 }
 
+/**
+ * Validate the `uniqueIdElements` spec at config-load time. Must be a non-empty
+ * comma-separated list of element names. Each entry may use `+` to join fields
+ * into a compound key (e.g. `"actionName+pageOrSobjectType+formFactor"`). Deeper
+ * validation (whether the named elements actually exist in the XML) is left to the
+ * runtime crate.
+ */
+export function validateUniqueIdElementsSpec(spec: string, i: number): void {
+  if (typeof spec !== 'string' || spec.trim() === '') {
+    throw new Error(`Override at index ${i} has an empty "uniqueIdElements" string.`);
+  }
+
+  const entries = spec.split(',').map((e) => e.trim());
+  for (const entry of entries) {
+    if (entry === '') {
+      throw new Error(`Override at index ${i} "uniqueIdElements" contains an empty entry.`);
+    }
+  }
+}
+
 function validateMetadataTypeEntries(metadataTypes: string[], i: number, seenTypes: Set<string>): void {
   for (const metadataType of metadataTypes) {
     if (typeof metadataType !== 'string' || metadataType.trim() === '') {
@@ -409,6 +439,7 @@ export function resolveDecomposeOptionsForType(
     postpurge: override.postPurge ?? base.postpurge,
     splitTags: override.splitTags ?? base.splitTags,
     multiLevel: override.multiLevel ?? base.multiLevel,
+    uniqueIdElements: override.uniqueIdElements ?? base.uniqueIdElements,
   };
 }
 
@@ -438,5 +469,6 @@ export function resolveDecomposeOptionsForComponent(
     postpurge: componentOverride.postPurge ?? typeResolved.postpurge,
     splitTags: componentOverride.splitTags ?? typeResolved.splitTags,
     multiLevel: componentOverride.multiLevel ?? typeResolved.multiLevel,
+    uniqueIdElements: componentOverride.uniqueIdElements ?? typeResolved.uniqueIdElements,
   };
 }

@@ -149,6 +149,34 @@ describe('getRegistryValuesBySuffix', () => {
     expect(second.ignorePath).toBe(first.ignorePath);
   });
 
+  it('uses the uniqueIdOverride in place of the hardcoded registry elements when provided', async () => {
+    await mkdir(join(project.forceAppDir, 'permissionsets'), { recursive: true });
+
+    const { metaAttributes } = await getRegistryValuesBySuffix(
+      'permissionset',
+      'decompose',
+      undefined,
+      undefined,
+      'customField,customKey',
+    );
+
+    expect(metaAttributes.uniqueIdElements).toBe(`${DEFAULT_UNIQUE_ID_ELEMENTS},customField,customKey`);
+  });
+
+  it('uniqueIdOverride has no effect for the recompose command', async () => {
+    await mkdir(join(project.forceAppDir, 'permissionsets'), { recursive: true });
+
+    const { metaAttributes } = await getRegistryValuesBySuffix(
+      'permissionset',
+      'recompose',
+      undefined,
+      undefined,
+      'customField,customKey',
+    );
+
+    expect(metaAttributes.uniqueIdElements).toBe(DEFAULT_UNIQUE_ID_ELEMENTS);
+  });
+
   it('threads ignoreDirs through to getPackageDirectories so filtered packages drop out', async () => {
     // Two package dirs; ignore the alt one. (Note: this test rewrites the sfdx-project.json
     // for this run only — the per-test temp project is torn down in afterEach.)

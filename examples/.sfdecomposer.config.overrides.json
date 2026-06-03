@@ -21,6 +21,10 @@
       "components": ["permissionset:HR_Admin"],
       "strategy": "unique-id",
       "decomposedFormat": "json"
+    },
+    {
+      "metadataTypes": ["myNewSalesforceType"],
+      "uniqueIdElements": "developerName,apiName"
     }
   ]
 }
