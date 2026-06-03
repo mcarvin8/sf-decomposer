@@ -177,6 +177,19 @@ describe('getRegistryValuesBySuffix', () => {
     expect(metaAttributes.uniqueIdElements).toBe(DEFAULT_UNIQUE_ID_ELEMENTS);
   });
 
+  it('resolves a suffix present in the internal registry but absent from SDR', async () => {
+    // `activationPlatformField` is not in SDR 12.36.0; the internal registry supplies it.
+    const dir = join(project.forceAppDir, 'activationPlatformFields');
+    await mkdir(dir, { recursive: true });
+
+    const { metaAttributes } = await getRegistryValuesBySuffix('activationPlatformField', 'decompose', undefined);
+
+    expect(metaAttributes.metaSuffix).toBe('activationPlatformField');
+    expect(metaAttributes.metadataPaths[0]).toContain('activationPlatformFields');
+    expect(metaAttributes.strictDirectoryName).toBe(false);
+    expect(metaAttributes.uniqueIdElements).toBe(DEFAULT_UNIQUE_ID_ELEMENTS);
+  });
+
   it('threads ignoreDirs through to getPackageDirectories so filtered packages drop out', async () => {
     // Two package dirs; ignore the alt one. (Note: this test rewrites the sfdx-project.json
     // for this run only — the per-test temp project is torn down in afterEach.)

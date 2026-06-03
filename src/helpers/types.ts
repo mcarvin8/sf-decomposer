@@ -7,6 +7,13 @@ export type DecomposerResult = {
   metadata: string[];
 };
 
+export type InternalMetadataType = {
+  suffix: string;
+  directoryName: string;
+  strictDirectoryName?: boolean;
+  folderType?: string;
+};
+
 export type DecomposerOverride = {
   /** Suffix-scoped targets (e.g. `permissionset`). Applies to every component of the type. */
   metadataTypes?: string[];
