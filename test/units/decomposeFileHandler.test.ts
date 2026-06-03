@@ -481,7 +481,7 @@ describe('decomposeFileHandler', () => {
       );
 
       expect(renameWorkflowsSpy).toHaveBeenCalledTimes(2);
-      const calledDirs = renameWorkflowsSpy.mock.calls.map((c) => c[0] as string).sort();
+      const calledDirs = (renameWorkflowsSpy.mock.calls as unknown[][]).map((c) => c[0] as string).sort();
       expect(calledDirs).toEqual(['force-app/workflows', 'other-pkg/workflows']);
     });
 
