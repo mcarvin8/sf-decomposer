@@ -5,17 +5,16 @@ import { readFile, readdir } from 'node:fs/promises';
 
 import { getRepoRoot } from '../service/core/getRepoRoot.js';
 import { SfdxProject } from '../helpers/types.js';
-import { IGNORE_FILE } from '../helpers/constants.js';
+import { IGNORE_FILE, SFDX_PROJECT_FILE_NAME } from '../helpers/constants.js';
 
 export async function getPackageDirectories(
   metaDirectory: string,
-  ignoreDirs: string[] | undefined
+  ignoreDirs: string[] | undefined,
+  repoRootOverride?: string,
 ): Promise<{ metadataPaths: string[]; ignorePath: string }> {
-  const { repoRoot, dxConfigFilePath } = (await getRepoRoot()) as {
-    repoRoot: string;
-    dxConfigFilePath: string;
-  };
-  process.chdir(repoRoot);
+  const { repoRoot, dxConfigFilePath } = repoRootOverride
+    ? { repoRoot: repoRootOverride, dxConfigFilePath: join(repoRootOverride, SFDX_PROJECT_FILE_NAME) }
+    : ((await getRepoRoot()) as { repoRoot: string; dxConfigFilePath: string });
   const ignorePath = resolve(repoRoot, IGNORE_FILE);
   const sfdxProjectRaw: string = await readFile(dxConfigFilePath, 'utf-8');
   const sfdxProject: SfdxProject = JSON.parse(sfdxProjectRaw) as SfdxProject;

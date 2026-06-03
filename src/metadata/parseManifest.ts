@@ -6,6 +6,7 @@ import { ManifestResolver, RegistryAccess, MetadataType } from '@salesforce/sour
 
 import { getRepoRoot } from '../service/core/getRepoRoot.js';
 import { SfdxProject } from '../helpers/types.js';
+import { SFDX_PROJECT_FILE_NAME } from '../helpers/constants.js';
 
 export type ManifestFilter = {
   // Maps metadata suffix to the set of absolute parent metadata xml file paths
@@ -13,6 +14,8 @@ export type ManifestFilter = {
   parentXmlsBySuffix: Map<string, Set<string>>;
   // Ordered list of suffixes discovered in the manifest.
   suffixes: string[];
+  // Non-wildcard manifest members whose XML file was not found in local source.
+  unresolvedComponents: Array<{ type: string; member: string }>;
 };
 
 type GroupedMembers = {
@@ -21,11 +24,14 @@ type GroupedMembers = {
   wildcard: boolean;
 };
 
-export async function parseManifest(manifestPath: string, ignoreDirs: string[] | undefined): Promise<ManifestFilter> {
-  const { repoRoot, dxConfigFilePath } = (await getRepoRoot()) as {
-    repoRoot: string;
-    dxConfigFilePath: string;
-  };
+export async function parseManifest(
+  manifestPath: string,
+  ignoreDirs: string[] | undefined,
+  repoRootOverride?: string,
+): Promise<ManifestFilter> {
+  const { repoRoot, dxConfigFilePath } = repoRootOverride
+    ? { repoRoot: repoRootOverride, dxConfigFilePath: join(repoRootOverride, SFDX_PROJECT_FILE_NAME) }
+    : ((await getRepoRoot()) as { repoRoot: string; dxConfigFilePath: string });
   const absManifestPath = resolve(repoRoot, manifestPath);
 
   // Stryker disable next-line StringLiteral
@@ -73,9 +79,13 @@ export async function parseManifest(manifestPath: string, ignoreDirs: string[] |
 
       const typeDirs = await findTypeDirectories(packageDirs, parentType.directoryName);
       // Stryker disable next-line ConditionalExpression
-      if (typeDirs.length === 0) return undefined;
+      if (typeDirs.length === 0) {
+        const unresolvedMembers = wildcard ? [] : [...parentMembers];
+        return { suffix, xmlPaths: new Set<string>(), unresolvedMembers };
+      }
 
       const xmlPaths = new Set<string>();
+      const resolvedMembers = new Set<string>();
       // Stryker disable next-line ArrayDeclaration
       const resolveTasks: Array<Promise<void>> = [];
 
@@ -92,21 +102,33 @@ export async function parseManifest(manifestPath: string, ignoreDirs: string[] |
         resolveTasks.push(
           ...typeDirs.map(async (typeDir) => {
             const xmlPath = await resolveMemberXml(typeDir, parentType, member);
-            if (xmlPath) xmlPaths.add(xmlPath);
+            if (xmlPath) {
+              xmlPaths.add(xmlPath);
+              resolvedMembers.add(member);
+            }
           }),
         );
       }
 
       await Promise.all(resolveTasks);
 
-      if (xmlPaths.size === 0) return undefined;
-      return { suffix, xmlPaths };
+      const unresolvedMembers = [...parentMembers].filter((m) => !resolvedMembers.has(m));
+      return { suffix, xmlPaths, unresolvedMembers };
     }),
   );
 
+  const unresolvedComponents: Array<{ type: string; member: string }> = [];
+
   for (const entry of resolvedPerGroup) {
+    /* istanbul ignore next -- @preserve: undefined only reachable via the suffix-less branch already ignored above. Stryker disable next-line ConditionalExpression */
     if (!entry) continue;
-    const { suffix, xmlPaths } = entry;
+    const { suffix, xmlPaths, unresolvedMembers } = entry;
+
+    for (const member of unresolvedMembers) {
+      unresolvedComponents.push({ type: suffix, member });
+    }
+
+    if (xmlPaths.size === 0) continue;
 
     /* istanbul ignore else -- @preserve: multiple parent types sharing a suffix is not produced by SDR's registry. Stryker disable next-line ConditionalExpression: */
     if (!parentXmlsBySuffix.has(suffix)) {
@@ -118,7 +140,7 @@ export async function parseManifest(manifestPath: string, ignoreDirs: string[] |
     }
   }
 
-  return { parentXmlsBySuffix, suffixes: orderedSuffixes };
+  return { parentXmlsBySuffix, suffixes: orderedSuffixes, unresolvedComponents };
 }
 
 async function findTypeDirectories(packageDirs: string[], directoryName: string): Promise<string[]> {

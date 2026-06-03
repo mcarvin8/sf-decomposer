@@ -20,14 +20,15 @@ function getRegistryAccessInstance(): RegistryAccess {
 export async function getRegistryValuesBySuffix(
   metaSuffix: string,
   command: string,
-  ignoreDirs: string[] | undefined
+  ignoreDirs: string[] | undefined,
+  repoRootOverride?: string,
 ): Promise<{ metaAttributes: MetaAttributes; ignorePath: string }> {
   if (metaSuffix === 'object') {
     throw Error('Custom Objects are not supported by this plugin.');
   }
   if (metaSuffix === 'botVersion') {
     throw Error(
-      '`botVersion` suffix should not be used. Please use `bot` to decompose/recompose bot and bot version files.'
+      '`botVersion` suffix should not be used. Please use `bot` to decompose/recompose bot and bot version files.',
     );
   }
   const registryAccess = getRegistryAccessInstance();
@@ -37,17 +38,21 @@ export async function getRegistryValuesBySuffix(
   if (
     metadataTypeEntry.strategies?.adapter &&
     ['matchingContentFile', 'digitalExperience', 'mixedContent', 'bundle'].includes(
-      metadataTypeEntry.strategies.adapter
+      metadataTypeEntry.strategies.adapter,
     )
   ) {
     throw Error(
-      `Metadata types with ${metadataTypeEntry.strategies.adapter} strategies are not supported by this plugin.`
+      `Metadata types with ${metadataTypeEntry.strategies.adapter} strategies are not supported by this plugin.`,
     );
   }
 
   let uniqueIdElements: string | undefined;
   if (command === 'decompose') uniqueIdElements = getUniqueIdElements(metaSuffix);
-  const { metadataPaths, ignorePath } = await getPackageDirectories(`${metadataTypeEntry.directoryName}`, ignoreDirs);
+  const { metadataPaths, ignorePath } = await getPackageDirectories(
+    `${metadataTypeEntry.directoryName}`,
+    ignoreDirs,
+    repoRootOverride,
+  );
   if (metadataPaths.length === 0)
     throw Error(`No directories named ${metadataTypeEntry.directoryName} were found in any package directory.`);
 

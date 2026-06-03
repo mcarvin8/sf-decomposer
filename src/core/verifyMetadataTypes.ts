@@ -54,7 +54,7 @@ export async function verifyMetadataTypes(options: VerifyOptions): Promise<Verif
 
     // Manifests are validated by oclif's `Flags.file({ exists: true })`, so when one is supplied
     // it always points to a real file under the user's repo. Mirror it into the temp project at
-    // the same relative path so parseManifest (which is repoRoot-relative once we chdir) finds it.
+    // the same relative path so parseManifest finds it via the tempProjectDir repoRoot.
     let tempManifest: string | undefined;
     if (manifest) {
       const absManifest = resolve(originalCwd, manifest);
@@ -64,8 +64,6 @@ export async function verifyMetadataTypes(options: VerifyOptions): Promise<Verif
       await cp(absManifest, tempManifestAbs);
       tempManifest = tempManifestAbs;
     }
-
-    process.chdir(tempProjectDir);
 
     // Strip any user-supplied prePurge/postPurge from the overrides for verify only. Verify needs
     // the parent XML to survive the decompose phase so that manifest-driven recompose can
@@ -92,6 +90,7 @@ export async function verifyMetadataTypes(options: VerifyOptions): Promise<Verif
       manifest: tempManifest,
       overrides: verifyOverrides,
       log,
+      repoRoot: tempProjectDir,
     });
 
     if (decomposed.metadata.length > 0) {
@@ -103,10 +102,9 @@ export async function verifyMetadataTypes(options: VerifyOptions): Promise<Verif
         ignoreDirs,
         manifest: tempManifest,
         log,
+        repoRoot: tempProjectDir,
       });
     }
-
-    process.chdir(originalCwd);
 
     const drift: VerifyDrift[] = [];
     const reordered: string[] = [];
@@ -144,10 +142,6 @@ export async function verifyMetadataTypes(options: VerifyOptions): Promise<Verif
 
     return { metadata: decomposed.metadata, drift, reordered };
   } finally {
-    /* istanbul ignore next -- @preserve: defensive guard; we already chdir back on the happy path */
-    if (process.cwd() !== originalCwd) {
-      process.chdir(originalCwd);
-    }
     await rm(tempProjectDir, { recursive: true, force: true });
   }
 }

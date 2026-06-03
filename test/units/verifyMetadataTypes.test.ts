@@ -337,17 +337,19 @@ describe('verifyMetadataTypes', () => {
       '<?xml version="1.0" encoding="UTF-8"?><Package xmlns="http://soap.sforce.com/2006/04/metadata"><version>58.0</version></Package>',
     );
 
-    // Capture the cwd and the manifest path at the moment decompose is called -- this is
+    // Capture the repoRoot and manifest path at the moment decompose is called -- this is
     // when the temp project still exists on disk. We realpath both inside the mock to
     // normalise away platform-specific path quirks (macOS `/var -> /private/var` and
     // Windows 8.3 short names like `MATTHE~1.CAR`).
-    let cwdDuringDecompose: string | undefined;
+    let repoRootDuringDecompose: string | undefined;
     let manifestDuringDecompose: string | undefined;
     let realManifestDuringDecompose: string | undefined;
-    let realCwdDuringDecompose: string | undefined;
-    decomposeSpy.mockImplementationOnce(async (opts: { manifest?: string }) => {
-      cwdDuringDecompose = process.cwd();
-      realCwdDuringDecompose = await realpath(cwdDuringDecompose);
+    let realRepoRootDuringDecompose: string | undefined;
+    decomposeSpy.mockImplementationOnce(async (opts: { manifest?: string; repoRoot?: string }) => {
+      repoRootDuringDecompose = opts.repoRoot;
+      if (repoRootDuringDecompose) {
+        realRepoRootDuringDecompose = await realpath(repoRootDuringDecompose);
+      }
       manifestDuringDecompose = opts.manifest;
       if (manifestDuringDecompose) {
         realManifestDuringDecompose = await realpath(manifestDuringDecompose);
@@ -365,10 +367,10 @@ describe('verifyMetadataTypes', () => {
       log: logMock,
     });
 
-    expect(cwdDuringDecompose).toBeDefined();
+    expect(repoRootDuringDecompose).toBeDefined();
     expect(typeof manifestDuringDecompose).toBe('string');
     // The forwarded manifest path must live under the temp project at the same relpath.
-    expect(realManifestDuringDecompose).toBe(resolve(realCwdDuringDecompose as string, manifestRel));
+    expect(realManifestDuringDecompose).toBe(resolve(realRepoRootDuringDecompose as string, manifestRel));
   });
 
   it('forwards the same temp manifest path to recompose', async () => {
@@ -435,8 +437,8 @@ describe('verifyMetadataTypes', () => {
     let tempDirSeenByMock: string | undefined;
     // `mockImplementation` (not Once) wins over the default mockResolvedValue from beforeEach
     // and avoids any queueing surprises with mockImplementationOnce + mockResolvedValue.
-    decomposeSpy.mockImplementation(async () => {
-      tempDirSeenByMock = process.cwd();
+    decomposeSpy.mockImplementation(async (opts: { repoRoot?: string }) => {
+      tempDirSeenByMock = opts.repoRoot;
       throw new Error('boom from decompose');
     });
 
@@ -459,8 +461,8 @@ describe('verifyMetadataTypes', () => {
 
   it('cleans up the temp project on the happy path too', async () => {
     let seen: string | undefined;
-    decomposeSpy.mockImplementation(async () => {
-      seen = process.cwd();
+    decomposeSpy.mockImplementation(async (opts: { repoRoot?: string }) => {
+      seen = opts.repoRoot;
       return { metadata: ['permissionset'] };
     });
     await verifyMetadataTypes({
@@ -477,8 +479,10 @@ describe('verifyMetadataTypes', () => {
 
   it('mirrors sfdx-project.json verbatim into the temp project', async () => {
     let copiedSfdxBody: string | undefined;
-    decomposeSpy.mockImplementation(async () => {
-      copiedSfdxBody = await readFile(join(process.cwd(), SFDX_CONFIG_FILE), 'utf-8');
+    decomposeSpy.mockImplementation(async (opts: { repoRoot?: string }) => {
+      if (opts.repoRoot) {
+        copiedSfdxBody = await readFile(join(opts.repoRoot, SFDX_CONFIG_FILE), 'utf-8');
+      }
       return { metadata: ['permissionset'] };
     });
     await verifyMetadataTypes({
@@ -494,8 +498,8 @@ describe('verifyMetadataTypes', () => {
 
   it('runs decomposition against a copy under the temp project, not the user repo', async () => {
     let cwdSeen: string | undefined;
-    decomposeSpy.mockImplementation(async () => {
-      cwdSeen = process.cwd();
+    decomposeSpy.mockImplementation(async (opts: { repoRoot?: string }) => {
+      cwdSeen = opts.repoRoot;
       return { metadata: ['permissionset'] };
     });
     await verifyMetadataTypes({

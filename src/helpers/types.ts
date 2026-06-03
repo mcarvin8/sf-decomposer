@@ -85,6 +85,7 @@ export type DecomposeOptions = {
   manifest?: string;
   overrides?: DecomposerOverride[];
   log: (msg: string) => void;
+  repoRoot?: string;
 };
 
 export type RecomposeOptions = {
@@ -93,6 +94,7 @@ export type RecomposeOptions = {
   ignoreDirs?: string[];
   manifest?: string;
   log: (msg: string) => void;
+  repoRoot?: string;
 };
 
 export type VerifyOptions = {
