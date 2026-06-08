@@ -43,6 +43,9 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Compile
+        run: npm run test:compile
+
       - name: Test
         run: npm run test:only
         env:
