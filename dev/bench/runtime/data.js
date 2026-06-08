@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1780607055575,
+  "lastUpdate": 1780911093442,
   "repoUrl": "https://github.com/mcarvin8/sf-decomposer",
   "entries": {
     "Decompose Runtime": [
@@ -1859,6 +1859,108 @@ window.BENCHMARK_DATA = {
           {
             "name": "large.yaml.recompose.pass2",
             "value": 5099.82,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "github-actions[bot]",
+            "username": "github-actions[bot]",
+            "email": "41898282+github-actions[bot]@users.noreply.github.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "0bf847206e587427316086a89023597558c4ff09",
+          "message": "chore(main): release 6.27.0 (#478)",
+          "timestamp": "2026-06-04T20:52:05Z",
+          "url": "https://github.com/mcarvin8/sf-decomposer/commit/0bf847206e587427316086a89023597558c4ff09"
+        },
+        "date": 1780911092909,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "large.xml.decompose.pass1",
+            "value": 13648.54,
+            "unit": "ms"
+          },
+          {
+            "name": "large.xml.recompose.pass1",
+            "value": 35751.12,
+            "unit": "ms"
+          },
+          {
+            "name": "large.xml.decompose.pass2",
+            "value": 13514.29,
+            "unit": "ms"
+          },
+          {
+            "name": "large.xml.recompose.pass2",
+            "value": 34174.96,
+            "unit": "ms"
+          },
+          {
+            "name": "large.json.decompose.pass1",
+            "value": 11010.28,
+            "unit": "ms"
+          },
+          {
+            "name": "large.json.recompose.pass1",
+            "value": 6847.6,
+            "unit": "ms"
+          },
+          {
+            "name": "large.json.decompose.pass2",
+            "value": 11707.48,
+            "unit": "ms"
+          },
+          {
+            "name": "large.json.recompose.pass2",
+            "value": 6768.88,
+            "unit": "ms"
+          },
+          {
+            "name": "large.json5.decompose.pass1",
+            "value": 11201.68,
+            "unit": "ms"
+          },
+          {
+            "name": "large.json5.recompose.pass1",
+            "value": 6930.19,
+            "unit": "ms"
+          },
+          {
+            "name": "large.json5.decompose.pass2",
+            "value": 11594.31,
+            "unit": "ms"
+          },
+          {
+            "name": "large.json5.recompose.pass2",
+            "value": 6668.81,
+            "unit": "ms"
+          },
+          {
+            "name": "large.yaml.decompose.pass1",
+            "value": 11745.94,
+            "unit": "ms"
+          },
+          {
+            "name": "large.yaml.recompose.pass1",
+            "value": 7940.24,
+            "unit": "ms"
+          },
+          {
+            "name": "large.yaml.decompose.pass2",
+            "value": 12424.6,
+            "unit": "ms"
+          },
+          {
+            "name": "large.yaml.recompose.pass2",
+            "value": 7779.84,
             "unit": "ms"
           }
         ]
