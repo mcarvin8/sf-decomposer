@@ -194,7 +194,7 @@ The actual decompose/recompose work lives in **[config-disassembler-node](https:
 - **Where it's called:** `src/service/decompose/decomposeFileHandler.ts` and `src/service/recompose/recomposeFileHandler.ts`. Override resolution happens per-file in `src/helpers/configOverrides.ts`, so different components of the same metadata type can be decomposed with different strategies/formats in one run.
 - **Changing XML decompose/recompose behavior:** contribute in [config-disassembler](https://github.com/mcarvin8/config-disassembler) (Rust) and/or [config-disassembler-node](https://github.com/mcarvin8/config-disassembler-node).
 
-Dependabot bumps both packages weekly.
+Dependabot bumps config-disassembler-node weekly.
 
 ---
 
@@ -213,4 +213,4 @@ Reviewers may ask for changes; once approved, a maintainer will merge.
 
 ## Questions
 
-If something is unclear, open a [discussion](https://github.com/mcarvin8/sf-decomposer/discussions) or an [issue](https://github.com/mcarvin8/sf-decomposer/issues).
+If something is unclear, open an [issue](https://github.com/mcarvin8/sf-decomposer/issues).

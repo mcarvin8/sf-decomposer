@@ -722,9 +722,19 @@ Example `WARN` (CustomApplication where four `actionOverrides` siblings shared t
 
 Already using `decomposePermissionSetBeta2`, `decomposeCustomLabelsBeta`, or similar flags? See [MIGRATION.md](https://github.com/mcarvin8/sf-decomposer/blob/main/MIGRATION.md) before installing sf-decomposer on that project.
 
+---
+
 ## Contributing
 
 Contributions are welcome. See [CONTRIBUTING.md](https://github.com/mcarvin8/sf-decomposer/blob/main/CONTRIBUTING.md).
+
+---
+
+## Issues
+
+Please open an [issue](https://github.com/mcarvin8/sf-decomposer/issues) to report any bugs or suggest new features.
+
+---
 
 ## License
 
