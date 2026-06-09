@@ -1,6 +1,6 @@
 'use strict';
 
-import { dirname } from 'node:path';
+import { dirname, basename } from 'node:path';
 
 import { getRegistryValuesBySuffix } from '../metadata/getRegistryValuesBySuffix.js';
 import { parseManifest, ManifestFilter } from '../metadata/parseManifest.js';
@@ -99,9 +99,10 @@ export async function decomposeMetadataTypes(options: DecomposeOptions): Promise
       processed.push(metadataType);
       if (updateForceignore) {
         processedMeta.push({
-          metadataPaths: metaAttributes.metadataPaths,
+          directoryName: basename(metaAttributes.metadataPaths[0]),
           metaSuffix: metaAttributes.metaSuffix,
           strictDirectoryName: metaAttributes.strictDirectoryName,
+          format: typeResolved.format,
         });
         effectiveRepoRoot ??= dirname(ignorePath);
       }

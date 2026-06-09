@@ -230,7 +230,8 @@ describe('Edge case coverage tests', () => {
       expect(output).toContain('Updated .forceignore with decomposed file paths.');
 
       const forceignoreContent = await readFile(join(tempProjectDir, '.forceignore'), 'utf-8');
-      expect(forceignoreContent).toContain('*.label-meta.xml');
+      expect(forceignoreContent).toContain('**/labels/*.xml');
+      expect(forceignoreContent).toContain('!**/labels/CustomLabels.labels-meta.xml');
     });
   });
 });
