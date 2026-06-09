@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.29.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.28.0...v6.29.0) (2026-06-09)
+
+
+### Features
+
+* **updateForceignore:** add support for bots ([#482](https://github.com/mcarvin8/sf-decomposer/issues/482)) ([17d40d4](https://github.com/mcarvin8/sf-decomposer/commit/17d40d4321ed9f37cd9fc83b168fbdb915593b29))
+
 ## [6.28.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.27.0...v6.28.0) (2026-06-09)
 
 
