@@ -101,7 +101,6 @@ export async function decomposeMetadataTypes(options: DecomposeOptions): Promise
         processedMeta.push({
           directoryName: basename(metaAttributes.metadataPaths[0]),
           metaSuffix: metaAttributes.metaSuffix,
-          strictDirectoryName: metaAttributes.strictDirectoryName,
           format: typeResolved.format,
         });
         effectiveRepoRoot ??= dirname(ignorePath);

@@ -28,7 +28,7 @@ describe('updateForceignoreFile', () => {
 
   it('creates .forceignore with ignore and allow patterns for a standard type', async () => {
     const processedMeta: ProcessedMeta[] = [
-      { directoryName: 'permissionsets', metaSuffix: 'permissionset', strictDirectoryName: false, format: 'xml' },
+      { directoryName: 'permissionsets', metaSuffix: 'permissionset', format: 'xml' },
     ];
     await updateForceignoreFile(processedMeta, repoRoot);
 
@@ -42,9 +42,7 @@ describe('updateForceignoreFile', () => {
   });
 
   it('adds flat ignore and specific allow pattern for labels', async () => {
-    const processedMeta: ProcessedMeta[] = [
-      { directoryName: 'labels', metaSuffix: 'labels', strictDirectoryName: false, format: 'xml' },
-    ];
+    const processedMeta: ProcessedMeta[] = [{ directoryName: 'labels', metaSuffix: 'labels', format: 'xml' }];
     await updateForceignoreFile(processedMeta, repoRoot);
 
     const content = await readForceignore();
@@ -56,9 +54,7 @@ describe('updateForceignoreFile', () => {
   });
 
   it('uses the decomposed format in the ignore pattern', async () => {
-    const processedMeta: ProcessedMeta[] = [
-      { directoryName: 'flows', metaSuffix: 'flow', strictDirectoryName: false, format: 'yaml' },
-    ];
+    const processedMeta: ProcessedMeta[] = [{ directoryName: 'flows', metaSuffix: 'flow', format: 'yaml' }];
     await updateForceignoreFile(processedMeta, repoRoot);
 
     const content = await readForceignore();
@@ -72,9 +68,7 @@ describe('updateForceignoreFile', () => {
   it('appends new entries to existing .forceignore', async () => {
     await writeForceignore('# existing entry\nsome/path\n');
 
-    const processedMeta: ProcessedMeta[] = [
-      { directoryName: 'flows', metaSuffix: 'flow', strictDirectoryName: false, format: 'xml' },
-    ];
+    const processedMeta: ProcessedMeta[] = [{ directoryName: 'flows', metaSuffix: 'flow', format: 'xml' }];
     await updateForceignoreFile(processedMeta, repoRoot);
 
     const content = await readForceignore();
@@ -86,9 +80,7 @@ describe('updateForceignoreFile', () => {
   it('preserves existing content at the top with no blank line between', async () => {
     await writeForceignore('# sf-decomposer\n*.xml\n');
 
-    const processedMeta: ProcessedMeta[] = [
-      { directoryName: 'flows', metaSuffix: 'flow', strictDirectoryName: false, format: 'xml' },
-    ];
+    const processedMeta: ProcessedMeta[] = [{ directoryName: 'flows', metaSuffix: 'flow', format: 'xml' }];
     await updateForceignoreFile(processedMeta, repoRoot);
 
     const content = await readForceignore();
@@ -99,7 +91,7 @@ describe('updateForceignoreFile', () => {
     await writeForceignore('**/permissionsets/**/*.xml\n!**/permissionsets/*.permissionset-meta.xml\n');
 
     const processedMeta: ProcessedMeta[] = [
-      { directoryName: 'permissionsets', metaSuffix: 'permissionset', strictDirectoryName: false, format: 'xml' },
+      { directoryName: 'permissionsets', metaSuffix: 'permissionset', format: 'xml' },
     ];
     await updateForceignoreFile(processedMeta, repoRoot);
 
@@ -113,9 +105,7 @@ describe('updateForceignoreFile', () => {
   it('deduplicates entries with surrounding whitespace in .forceignore', async () => {
     await writeForceignore('  **/flows/**/*.xml  \n');
 
-    const processedMeta: ProcessedMeta[] = [
-      { directoryName: 'flows', metaSuffix: 'flow', strictDirectoryName: false, format: 'xml' },
-    ];
+    const processedMeta: ProcessedMeta[] = [{ directoryName: 'flows', metaSuffix: 'flow', format: 'xml' }];
     await updateForceignoreFile(processedMeta, repoRoot);
 
     const content = await readForceignore();
@@ -127,27 +117,27 @@ describe('updateForceignoreFile', () => {
     const existingContent = '**/flows/**/*.xml\n!**/flows/*.flow-meta.xml\n';
     await writeForceignore(existingContent);
 
-    const processedMeta: ProcessedMeta[] = [
-      { directoryName: 'flows', metaSuffix: 'flow', strictDirectoryName: false, format: 'xml' },
-    ];
+    const processedMeta: ProcessedMeta[] = [{ directoryName: 'flows', metaSuffix: 'flow', format: 'xml' }];
     await updateForceignoreFile(processedMeta, repoRoot);
 
     expect(await readForceignore()).toBe(existingContent);
   });
 
-  it('skips strict-directory types without creating .forceignore', async () => {
-    const processedMeta: ProcessedMeta[] = [
-      { directoryName: 'bots', metaSuffix: 'bot', strictDirectoryName: true, format: 'xml' },
-    ];
+  it('adds bot patterns with component dir depth and two allow entries', async () => {
+    const processedMeta: ProcessedMeta[] = [{ directoryName: 'bots', metaSuffix: 'bot', format: 'xml' }];
     await updateForceignoreFile(processedMeta, repoRoot);
 
-    await expect(readForceignore()).rejects.toThrow();
+    const content = await readForceignore();
+    const lines = content.split('\n').filter(Boolean);
+    expect(lines).toContain('**/bots/**/*.xml');
+    expect(lines).toContain('!**/bots/*/*.bot-meta.xml');
+    expect(lines).toContain('!**/bots/*/*.botVersion-meta.xml');
   });
 
   it('handles multiple metadata types in a single call', async () => {
     const processedMeta: ProcessedMeta[] = [
-      { directoryName: 'flows', metaSuffix: 'flow', strictDirectoryName: false, format: 'xml' },
-      { directoryName: 'permissionsets', metaSuffix: 'permissionset', strictDirectoryName: false, format: 'xml' },
+      { directoryName: 'flows', metaSuffix: 'flow', format: 'xml' },
+      { directoryName: 'permissionsets', metaSuffix: 'permissionset', format: 'xml' },
     ];
     await updateForceignoreFile(processedMeta, repoRoot);
 
