@@ -69,7 +69,13 @@ sf plugins install sf-decomposer@x.y.z
 
 **Required.** The Salesforce CLI must ignore decomposed files or `sf` commands will fail. Configure this before running any decompose or retrieve commands.
 
-Copy the [sample .forceignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.forceignore) into your project root and adjust the extension patterns for your chosen format (`.xml`, `.json`, `.yaml`, etc.).
+**Option A — Automatic (recommended):** Pass `--update-forceignore` on your first `sf decomposer decompose` run. The plugin scans each processed metadata directory and appends the decomposed component paths to `.forceignore`, creating the file if it doesn't exist. Subsequent runs only add new entries; existing ones are never duplicated.
+
+```bash
+sf decomposer decompose -m "flow" -m "permissionset" --postpurge --update-forceignore
+```
+
+**Option B — Manual:** Copy the [sample .forceignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.forceignore) into your project root and adjust the extension patterns for your chosen format (`.xml`, `.json`, `.yaml`, etc.).
 
 ### 4. Configure Hooks (Recommended)
 
@@ -90,6 +96,7 @@ Add `.sfdecomposer.config.json` to your project root. Copy and customize one of 
 | `decomposedFormat`           | No          | `xml`, `json`, `json5`, or `yaml` (default: xml).                                                                                                  |
 | `strategy`                   | No          | `unique-id` \| `grouped-by-tag` (default: unique-id).                                                                                              |
 | `decomposeNestedPermissions` | No          | With `grouped-by-tag`, set `true` to further decompose permission set and muting permission set object/field permissions.                          |
+| `updateForceignore`          | No          | Set `true` to automatically add decomposed file paths to `.forceignore` after each hook-triggered decomposition (default: false).                  |
 | `overrides`                  | No          | Array of per-type and/or per-component overrides. See [Per-Type & Per-Component Overrides](#per-type--per-component-overrides).                    |
 
 ---
@@ -139,7 +146,7 @@ Decomposes metadata in all local package directories (from `sfdx-project.json`) 
 
 ```
 USAGE
-  $ sf decomposer decompose [-m <value>] [-x <value>] [-f <value>] [-i <value>] [-s <value>] [--prepurge --postpurge -p -c --json]
+  $ sf decomposer decompose [-m <value>] [-x <value>] [-f <value>] [-i <value>] [-s <value>] [--prepurge --postpurge -p -c --update-forceignore --json]
 
 FLAGS
   -m, --metadata-type=<value>             Metadata suffix to process (e.g. flow, labels). Repeatable. Optional when --manifest is provided.
@@ -151,6 +158,7 @@ FLAGS
   --postpurge                             Remove original metadata files after decomposing [default: false]
   -p, --decompose-nested-permissions      With grouped-by-tag, further decompose permission set and muting permission set object/field permissions
   -c, --config                            Load per-type and per-component overrides from .sfdecomposer.config.json in the repo root. Only the "overrides" array is consumed. [default: false]
+  --update-forceignore                    Automatically add decomposed file paths to .forceignore after successful decomposition [default: false]
 
 GLOBAL FLAGS
   --json  Output as JSON.
@@ -657,7 +665,9 @@ The post-retrieve hook automatically picks up `overrides` from `.sfdecomposer.co
 
 #### .forceignore
 
-The Salesforce CLI must **ignore** decomposed files and **allow** recomposed files. Use the [sample .forceignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.forceignore) and set patterns for the extensions you use (`.xml`, `.json`, `.yaml`, etc.).
+The Salesforce CLI must **ignore** decomposed files and **allow** recomposed files. Use `--update-forceignore` on your first `sf decomposer decompose` run to populate this file automatically, or copy the [sample .forceignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.forceignore) and set patterns for the extensions you use (`.xml`, `.json`, `.yaml`, etc.).
+
+> **Note:** `--update-forceignore` adds per-component directory paths for most metadata types. For labels it adds a `labels/*.label-meta.xml` glob pattern. Strict-directory types (e.g. `bot`) are skipped — their component directories are already valid SF DX source.
 
 #### .sfdecomposerignore
 

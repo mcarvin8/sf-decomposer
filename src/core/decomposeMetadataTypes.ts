@@ -1,5 +1,7 @@
 'use strict';
 
+import { dirname } from 'node:path';
+
 import { getRegistryValuesBySuffix } from '../metadata/getRegistryValuesBySuffix.js';
 import { parseManifest, ManifestFilter } from '../metadata/parseManifest.js';
 import { decomposeFileHandler } from '../service/decompose/decomposeFileHandler.js';
@@ -7,6 +9,7 @@ import { CONCURRENCY_LIMITS } from '../helpers/constants.js';
 import { pLimit } from '../helpers/pLimit.js';
 import { DecomposerResult, DecomposeOptions } from '../helpers/types.js';
 import { resolveDecomposeOptionsForType } from '../helpers/configOverrides.js';
+import { ProcessedMeta, updateForceignoreFile } from '../service/core/updateForceignore.js';
 
 export async function decomposeMetadataTypes(options: DecomposeOptions): Promise<DecomposerResult> {
   const {
@@ -19,6 +22,7 @@ export async function decomposeMetadataTypes(options: DecomposeOptions): Promise
     decomposeNestedPerms,
     manifest,
     overrides,
+    updateForceignore,
     log,
     repoRoot,
   } = options;
@@ -54,6 +58,8 @@ export async function decomposeMetadataTypes(options: DecomposeOptions): Promise
   const limit = pLimit(CONCURRENCY_LIMITS.METADATA_TYPES);
 
   const processed: string[] = [];
+  const processedMeta: ProcessedMeta[] = [];
+  let effectiveRepoRoot: string | undefined;
 
   const tasks = effectiveTypes.map((metadataType) =>
     limit(async () => {
@@ -91,11 +97,24 @@ export async function decomposeMetadataTypes(options: DecomposeOptions): Promise
       await decomposeFileHandler(metaAttributes, typeResolved, ignorePath, overrides, manifestXmlPaths);
 
       processed.push(metadataType);
+      if (updateForceignore) {
+        processedMeta.push({
+          metadataPaths: metaAttributes.metadataPaths,
+          metaSuffix: metaAttributes.metaSuffix,
+          strictDirectoryName: metaAttributes.strictDirectoryName,
+        });
+        effectiveRepoRoot ??= dirname(ignorePath);
+      }
       log(`All metadata files have been decomposed for the metadata type: ${metadataType}`);
     }),
   );
 
   await Promise.all(tasks);
+
+  if (updateForceignore && processedMeta.length > 0 && effectiveRepoRoot) {
+    await updateForceignoreFile(processedMeta, effectiveRepoRoot);
+    log('Updated .forceignore with decomposed file paths.');
+  }
 
   return { metadata: processed };
 }

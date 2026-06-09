@@ -3,5 +3,6 @@
   "ignorePackageDirectories": "force-app,examples",
   "prePurge": true,
   "postPurge": true,
-  "decomposedFormat": "xml"
+  "decomposedFormat": "xml",
+  "updateForceignore": false
 }
