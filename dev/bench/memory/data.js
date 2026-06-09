@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1781010649550,
+  "lastUpdate": 1781015400021,
   "repoUrl": "https://github.com/mcarvin8/sf-decomposer",
   "entries": {
     "Decompose Memory": [
@@ -2065,6 +2065,110 @@ window.BENCHMARK_DATA = {
           {
             "name": "large.yaml.recompose.pass2",
             "value": -16.555,
+            "unit": "MB"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "41898282+github-actions[bot]@users.noreply.github.com",
+            "name": "github-actions[bot]",
+            "username": "github-actions[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b8fecab60a21ee919c1a94767b978d40f8d15f21",
+          "message": "chore(main): release 6.29.0 (#483)\n\nCo-authored-by: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>",
+          "timestamp": "2026-06-09T10:14:55-04:00",
+          "tree_id": "6eaf5e34e8e0cd2fb5393a432b19271475ac8881",
+          "url": "https://github.com/mcarvin8/sf-decomposer/commit/b8fecab60a21ee919c1a94767b978d40f8d15f21"
+        },
+        "date": 1781015399978,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "large.xml.decompose.pass1",
+            "value": 86.242,
+            "unit": "MB"
+          },
+          {
+            "name": "large.xml.recompose.pass1",
+            "value": -259.223,
+            "unit": "MB"
+          },
+          {
+            "name": "large.xml.decompose.pass2",
+            "value": -16.223,
+            "unit": "MB"
+          },
+          {
+            "name": "large.xml.recompose.pass2",
+            "value": 13.863,
+            "unit": "MB"
+          },
+          {
+            "name": "large.json.decompose.pass1",
+            "value": -55.238,
+            "unit": "MB"
+          },
+          {
+            "name": "large.json.recompose.pass1",
+            "value": 13.512,
+            "unit": "MB"
+          },
+          {
+            "name": "large.json.decompose.pass2",
+            "value": 9.75,
+            "unit": "MB"
+          },
+          {
+            "name": "large.json.recompose.pass2",
+            "value": -16.082,
+            "unit": "MB"
+          },
+          {
+            "name": "large.json5.decompose.pass1",
+            "value": 3.125,
+            "unit": "MB"
+          },
+          {
+            "name": "large.json5.recompose.pass1",
+            "value": -11.063,
+            "unit": "MB"
+          },
+          {
+            "name": "large.json5.decompose.pass2",
+            "value": -0.648,
+            "unit": "MB"
+          },
+          {
+            "name": "large.json5.recompose.pass2",
+            "value": 31.527,
+            "unit": "MB"
+          },
+          {
+            "name": "large.yaml.decompose.pass1",
+            "value": -26.336,
+            "unit": "MB"
+          },
+          {
+            "name": "large.yaml.recompose.pass1",
+            "value": -1.707,
+            "unit": "MB"
+          },
+          {
+            "name": "large.yaml.decompose.pass2",
+            "value": -14.031,
+            "unit": "MB"
+          },
+          {
+            "name": "large.yaml.recompose.pass2",
+            "value": 11.66,
             "unit": "MB"
           }
         ]
