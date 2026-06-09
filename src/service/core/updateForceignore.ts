@@ -6,7 +6,6 @@ import { readFile, writeFile } from 'node:fs/promises';
 export type ProcessedMeta = {
   directoryName: string;
   metaSuffix: string;
-  strictDirectoryName: boolean;
   format: string;
 };
 
@@ -15,6 +14,15 @@ function buildPatterns(directoryName: string, metaSuffix: string, format: string
     // Labels decompose to flat files in the labels dir — one level deep is enough.
     // Allow only the original monolithic file; all individual label files stay ignored.
     return [`**/${directoryName}/*.${format}`, `!**/${directoryName}/CustomLabels.labels-meta.xml`];
+  }
+  if (metaSuffix === 'bot') {
+    // Bots have component dirs at bots/BotName/ containing decomposed pieces; originals are
+    // BotName.bot-meta.xml and BotName.botVersion-meta.xml at that level.
+    return [
+      `**/${directoryName}/**/*.${format}`,
+      `!**/${directoryName}/*/*.bot-meta.xml`,
+      `!**/${directoryName}/*/*.botVersion-meta.xml`,
+    ];
   }
   // General case: ignore everything nested inside the type dir (decomposed pieces),
   // then re-allow the original -meta.xml at the root level of that dir.
@@ -36,11 +44,7 @@ export async function updateForceignoreFile(processedMeta: ProcessedMeta[], repo
   const existingSet = new Set(existingLines.map((l) => l.trim()));
 
   const toAdd: string[] = [];
-  for (const { directoryName, metaSuffix, strictDirectoryName, format } of processedMeta) {
-    // Component container dirs for strict types (e.g. bots/MyBot/) are valid SF DX source.
-    // The decomposed pieces inside are handled by the component's main XML; skip them.
-    if (strictDirectoryName) continue;
-
+  for (const { directoryName, metaSuffix, format } of processedMeta) {
     for (const pattern of buildPatterns(directoryName, metaSuffix, format)) {
       if (!existingSet.has(pattern)) {
         toAdd.push(pattern);
