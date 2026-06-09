@@ -667,7 +667,7 @@ The post-retrieve hook automatically picks up `overrides` from `.sfdecomposer.co
 
 The Salesforce CLI must **ignore** decomposed files and **allow** recomposed files. Use `--update-forceignore` on your first `sf decomposer decompose` run to populate this file automatically, or copy the [sample .forceignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.forceignore) and set patterns for the extensions you use (`.xml`, `.json`, `.yaml`, etc.).
 
-> **Note:** For each processed type, `--update-forceignore` adds a pattern like `**/flows/**/*.xml` (ignore all decomposed pieces) plus `!**/flows/*.flow-meta.xml` (re-allow the original file). Labels use a flat pattern (`**/labels/*.xml` + `!**/labels/CustomLabels.labels-meta.xml`) since they decompose directly into the type directory. Strict-directory types (e.g. `bot`) are skipped — their component directories are already valid SF DX source.
+> **Note:** For each processed type, `--update-forceignore` adds a pattern like `**/flows/**/*.xml` (ignore all decomposed pieces) plus `!**/flows/*.flow-meta.xml` (re-allow the original file). Labels use a flat pattern (`**/labels/*.xml` + `!**/labels/CustomLabels.labels-meta.xml`) since they decompose directly into the type directory. Strict-directory types (e.g. `bot`) are skipped — their patterns require multiple allow entries at a non-standard path depth; add them manually using the [sample .forceignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.forceignore) as a reference.
 
 #### .sfdecomposerignore
 
