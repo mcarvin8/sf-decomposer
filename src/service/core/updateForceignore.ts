@@ -19,12 +19,14 @@ async function resolvePathEntries(task: PathTask, repoRoot: string): Promise<Pat
     // Decomposed label output is flat *.label-meta.xml files, not subdirectories.
     // Without opting into Salesforce's beta label decomposition in sfdx-project.json,
     // the CLI won't recognize them as source — ignore them via a glob pattern.
+    // Stryker disable next-line StringLiteral -- backslash replacement is Windows-only; Linux CI paths never contain backslashes
     const rel = relative(repoRoot, metadataPath).replace(/\\/g, '/');
     return { type: 'labels', pattern: `${rel}/*.label-meta.xml` };
   }
   const entries = await readdir(metadataPath, { withFileTypes: true });
   const rels = entries
     .filter((e) => e.isDirectory())
+    // Stryker disable next-line StringLiteral -- backslash replacement is Windows-only; Linux CI paths never contain backslashes
     .map((entry) => relative(repoRoot, join(metadataPath, entry.name)).replace(/\\/g, '/'));
   return { type: 'dirs', rels };
 }
@@ -39,6 +41,7 @@ export async function updateForceignoreFile(processedMeta: ProcessedMeta[], repo
     // .forceignore doesn't exist yet; start fresh
   }
 
+  // Stryker disable next-line ArrayDeclaration -- empty-array fallback for missing file; ["Stryker was here"] is observationally equivalent since no real path matches that sentinel
   const existingLines = existingContent ? existingContent.split('\n') : [];
   const existingSet = new Set(existingLines.map((l) => l.trim()));
 
@@ -53,18 +56,23 @@ export async function updateForceignoreFile(processedMeta: ProcessedMeta[], repo
   const toAdd: string[] = [];
   for (const result of results) {
     if (result.status === 'rejected') continue;
-    if (result.value.type === 'labels') {
-      const { pattern } = result.value;
-      if (!existingSet.has(pattern)) {
-        toAdd.push(pattern);
-        existingSet.add(pattern);
-      }
-    } else {
-      for (const rel of result.value.rels) {
-        if (!existingSet.has(rel) && !existingSet.has(`${rel}/`)) {
-          toAdd.push(rel);
-          existingSet.add(rel);
+    switch (result.value.type) {
+      case 'labels': {
+        const { pattern } = result.value;
+        if (!existingSet.has(pattern)) {
+          toAdd.push(pattern);
+          existingSet.add(pattern);
         }
+        break;
+      }
+      case 'dirs': {
+        for (const rel of result.value.rels) {
+          if (!existingSet.has(rel) && !existingSet.has(`${rel}/`)) {
+            toAdd.push(rel);
+            existingSet.add(rel);
+          }
+        }
+        break;
       }
     }
   }
@@ -73,5 +81,6 @@ export async function updateForceignoreFile(processedMeta: ProcessedMeta[], repo
 
   const trimmedContent = existingContent.trimEnd();
   const content = (trimmedContent ? trimmedContent + '\n' : '') + toAdd.join('\n') + '\n';
+  // Stryker disable next-line StringLiteral -- encoding sentinel "" is not a meaningful substitution; Node behaviour with invalid encoding is environment-specific
   await writeFile(forceignorePath, content, 'utf-8');
 }

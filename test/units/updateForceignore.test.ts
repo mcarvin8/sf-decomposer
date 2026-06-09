@@ -41,8 +41,12 @@ describe('updateForceignoreFile', () => {
     await updateForceignoreFile(processedMeta, repoRoot);
 
     const content = await readForceignore();
-    expect(content).toContain('force-app/main/default/permissionsets/HR_Admin');
-    expect(content).toContain('force-app/main/default/permissionsets/Dev_Admin');
+    // File created from scratch — must start with a real path, not a residual initial-value sentinel
+    expect(content.startsWith('force-app/main/default/permissionsets/')).toBe(true);
+    // Each entry must be its own line, not concatenated together
+    const lines = content.split('\n').filter(Boolean);
+    expect(lines).toContain('force-app/main/default/permissionsets/HR_Admin');
+    expect(lines).toContain('force-app/main/default/permissionsets/Dev_Admin');
     expect(content.endsWith('\n')).toBe(true);
   });
 
@@ -75,8 +79,8 @@ describe('updateForceignoreFile', () => {
     await updateForceignoreFile(processedMeta, repoRoot);
 
     const content = await readForceignore();
-    expect(content.startsWith('# sf-decomposer\n*.xml\n')).toBe(true);
-    expect(content.endsWith('\n')).toBe(true);
+    // Exact match: existing content preserved, new entry on its own line, no blank line between, file ends with newline
+    expect(content).toBe('# sf-decomposer\n*.xml\nforce-app/main/default/flows/My_Flow\n');
   });
 
   it('deduplicates entries already present in .forceignore', async () => {
@@ -92,6 +96,22 @@ describe('updateForceignoreFile', () => {
     const content = await readForceignore();
     const occurrences = content.split('force-app/main/default/permissionsets/HR_Admin').length - 1;
     expect(occurrences).toBe(1);
+  });
+
+  it('deduplicates entries with surrounding whitespace in .forceignore', async () => {
+    const metadataPath = join(repoRoot, 'force-app', 'main', 'default', 'permissionsets');
+    await makeComponentDir(metadataPath, 'HR_Admin');
+    // Entry has leading/trailing whitespace — trim() must normalize it for dedup to work
+    await writeForceignore('  force-app/main/default/permissionsets/HR_Admin  \n');
+
+    const processedMeta: ProcessedMeta[] = [
+      { metadataPaths: [metadataPath], metaSuffix: 'permissionset', strictDirectoryName: false },
+    ];
+    await updateForceignoreFile(processedMeta, repoRoot);
+
+    const content = await readForceignore();
+    const hrAdminLines = content.split('\n').filter((l) => l.includes('HR_Admin'));
+    expect(hrAdminLines.length).toBe(1);
   });
 
   it('deduplicates trailing-slash variant already present in .forceignore', async () => {
@@ -211,7 +231,9 @@ describe('updateForceignoreFile', () => {
     await updateForceignoreFile(processedMeta, repoRoot);
 
     const content = await readForceignore();
-    expect(content).toContain('force-app/main/default/flows/My_Flow');
-    expect(content).toContain('force-app/main/default/permissionsets/HR_Admin');
+    // Each entry must be its own line (not concatenated together)
+    const lines = content.split('\n').filter(Boolean);
+    expect(lines).toContain('force-app/main/default/flows/My_Flow');
+    expect(lines).toContain('force-app/main/default/permissionsets/HR_Admin');
   });
 });
