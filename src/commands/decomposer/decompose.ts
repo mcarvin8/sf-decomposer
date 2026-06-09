@@ -73,6 +73,11 @@ export default class DecomposerDecompose extends SfCommand<DecomposerResult> {
       required: false,
       default: false,
     }),
+    'update-forceignore': Flags.boolean({
+      summary: messages.getMessage('flags.update-forceignore.summary'),
+      required: false,
+      default: false,
+    }),
   };
 
   public async run(): Promise<DecomposerResult> {
@@ -94,6 +99,7 @@ export default class DecomposerDecompose extends SfCommand<DecomposerResult> {
       decomposeNestedPerms: flags['decompose-nested-permissions'],
       manifest: flags['manifest'],
       overrides,
+      updateForceignore: flags['update-forceignore'],
       log: this.log.bind(this),
     });
   }

@@ -53,6 +53,7 @@ export type ConfigFile = {
   ignorePackageDirectories: string;
   strategy: string;
   decomposeNestedPermissions: boolean;
+  updateForceignore?: boolean;
   manifest?: string;
   overrides?: DecomposerOverride[];
 };
@@ -93,6 +94,7 @@ export type DecomposeOptions = {
   decomposeNestedPerms: boolean;
   manifest?: string;
   overrides?: DecomposerOverride[];
+  updateForceignore?: boolean;
   log: (msg: string) => void;
   repoRoot?: string;
 };

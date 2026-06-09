@@ -1,6 +1,6 @@
 'use strict';
 
-import { mkdtemp, rm, writeFile, readdir } from 'node:fs/promises';
+import { mkdtemp, rm, writeFile, readFile, readdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { cp } from 'node:fs/promises';
@@ -180,6 +180,58 @@ describe('Edge case coverage tests', () => {
 
       const output = logMock.mock.calls.flat().join('\n');
       expect(output).toContain('All metadata files have been recomposed for the metadata type: labels');
+    });
+  });
+
+  describe('updateForceignore branch coverage', () => {
+    let tempProjectDir: string;
+    let forceAppDir: string;
+    const originalDirectory: string = resolve('fixtures/package-dir-1');
+    const originalCwd = process.cwd();
+
+    const configFile = {
+      packageDirectories: [{ path: 'force-app', default: true }],
+      namespace: '',
+      sfdcLoginUrl: 'https://login.salesforce.com',
+      sourceApiVersion: '58.0',
+    };
+
+    beforeAll(async () => {
+      tempProjectDir = await mkdtemp(join(tmpdir(), 'update-forceignore-coverage-'));
+      forceAppDir = join(tempProjectDir, 'force-app');
+
+      await cp(originalDirectory, forceAppDir, { recursive: true, force: true });
+      await writeFile(join(tempProjectDir, SFDX_CONFIG_FILE), JSON.stringify(configFile, null, 2));
+      process.chdir(tempProjectDir);
+    });
+
+    afterAll(async () => {
+      process.chdir(originalCwd);
+      await rm(tempProjectDir, { recursive: true, force: true });
+    });
+
+    it('writes .forceignore and logs update message when updateForceignore is true', async () => {
+      const logMock = vi.fn();
+
+      await decomposeMetadataTypes({
+        metadataTypes: ['labels'],
+        prepurge: true,
+        postpurge: false,
+        format: 'xml',
+        strategy: 'unique-id',
+        decomposeNestedPerms: false,
+        ignoreDirs: undefined,
+        updateForceignore: true,
+        log: logMock,
+      });
+
+      const output = logMock.mock.calls.flat().join('\n');
+      expect(output).toContain('All metadata files have been decomposed for the metadata type: labels');
+      expect(output).toContain('Updated .forceignore with decomposed file paths.');
+
+      const forceignoreContent = await readFile(join(tempProjectDir, '.forceignore'), 'utf-8');
+      expect(forceignoreContent).toContain('**/labels/*.xml');
+      expect(forceignoreContent).toContain('!**/labels/CustomLabels.labels-meta.xml');
     });
   });
 });

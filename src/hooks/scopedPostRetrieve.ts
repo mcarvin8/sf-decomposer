@@ -11,10 +11,7 @@ import { HOOK_CONFIG_JSON } from '../helpers/constants.js';
 
 type HookFunction = (this: Hook.Context, options: PostRetrieveHookOptions) => Promise<void>;
 
-function buildDecomposeOptions(
-  configFile: ConfigFile,
-  log: (msg: string) => void,
-): DecomposeOptions | undefined {
+function buildDecomposeOptions(configFile: ConfigFile, log: (msg: string) => void): DecomposeOptions | undefined {
   const metadataSuffixes: string = configFile.metadataSuffixes || '.';
   const ignorePackageDirs: string = configFile.ignorePackageDirectories || '';
   const manifest: string = configFile.manifest ?? '';
@@ -47,6 +44,7 @@ function buildDecomposeOptions(
     ignoreDirs,
     strategy: configFile.strategy || 'unique-id',
     decomposeNestedPerms: configFile.decomposeNestedPermissions || false,
+    updateForceignore: configFile.updateForceignore ?? false,
     manifest: manifest.trim() !== '' ? manifest.trim() : undefined,
     overrides: configFile.overrides,
     log,
