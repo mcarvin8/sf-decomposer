@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.28.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.27.0...v6.28.0) (2026-06-09)
+
+
+### Features
+
+* **decompose:** add --update-forceignore flag to auto-patch .forceignore ([#480](https://github.com/mcarvin8/sf-decomposer/issues/480)) ([975ee2a](https://github.com/mcarvin8/sf-decomposer/commit/975ee2abb26f028669305641509e0553663cc405))
+
 ## [6.27.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.26.0...v6.27.0) (2026-06-04)
 
 
