@@ -69,7 +69,7 @@ sf plugins install sf-decomposer@x.y.z
 
 **Required.** The Salesforce CLI must ignore decomposed files or `sf` commands will fail. Configure this before running any decompose or retrieve commands.
 
-**Option A — Automatic (recommended):** Pass `--update-forceignore` on your first `sf decomposer decompose` run. The plugin scans each processed metadata directory and appends the decomposed component paths to `.forceignore`, creating the file if it doesn't exist. Subsequent runs only add new entries; existing ones are never duplicated.
+**Option A — Automatic (recommended):** Pass `--update-forceignore` on your first `sf decomposer decompose` run. The plugin appends type-level wildcard patterns to `.forceignore` — one ignore pattern for decomposed pieces and one negation to re-allow the original metadata file — creating the file if it doesn't exist. Subsequent runs only add new entries; existing ones are never duplicated.
 
 ```bash
 sf decomposer decompose -m "flow" -m "permissionset" --postpurge --update-forceignore
@@ -667,7 +667,7 @@ The post-retrieve hook automatically picks up `overrides` from `.sfdecomposer.co
 
 The Salesforce CLI must **ignore** decomposed files and **allow** recomposed files. Use `--update-forceignore` on your first `sf decomposer decompose` run to populate this file automatically, or copy the [sample .forceignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.forceignore) and set patterns for the extensions you use (`.xml`, `.json`, `.yaml`, etc.).
 
-> **Note:** `--update-forceignore` adds per-component directory paths for most metadata types. For labels it adds a `labels/*.label-meta.xml` glob pattern. Strict-directory types (e.g. `bot`) are skipped — their component directories are already valid SF DX source.
+> **Note:** For each processed type, `--update-forceignore` adds a pattern like `**/flows/**/*.xml` (ignore all decomposed pieces) plus `!**/flows/*.flow-meta.xml` (re-allow the original file). Labels use a flat pattern (`**/labels/*.xml` + `!**/labels/CustomLabels.labels-meta.xml`) since they decompose directly into the type directory. Strict-directory types (e.g. `bot`) are skipped — their component directories are already valid SF DX source.
 
 #### .sfdecomposerignore
 
