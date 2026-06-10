@@ -14,10 +14,12 @@ import { ConfigFile, DecomposerOverride } from './types.js';
  */
 export async function resolveDefaultConfigPath(): Promise<string> {
   const { repoRoot } = await getRepoRoot();
-  /* istanbul ignore next -- getRepoRoot throws when no sfdx-project.json ancestor exists, so repoRoot is always defined here. Stryker disable next-line all -- unreachable because getRepoRoot() throws before returning a falsy repoRoot. */
+  // Stryker disable all
+  /* istanbul ignore next -- @preserve: getRepoRoot throws when no sfdx-project.json ancestor exists, so repoRoot is always defined here. */
   if (!repoRoot) {
     throw new Error(`Cannot locate ${HOOK_CONFIG_JSON}: repo root not found.`);
   }
+  // Stryker restore all
   const configPath = resolve(repoRoot, HOOK_CONFIG_JSON);
   try {
     await access(configPath);

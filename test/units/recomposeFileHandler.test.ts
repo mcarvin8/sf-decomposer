@@ -319,5 +319,29 @@ describe('recomposeFileHandler', () => {
       expect(args.filePath).toBe(decomposed);
       expect(args.fileExtension).toBe('profile-meta.xml');
     });
+
+    it('takes the non-strict path when strictDirectoryName=false and folderType is empty', async () => {
+      // The strict path (ConditionalExpression → true mutation) would call reassembleDirectories
+      // on the parent dir and pick up any subdirectory, including Unrelated. The non-strict path
+      // only reassembles the directory derived from the xml basename, and skips it when missing.
+      const parentDir = join(TMP_ROOT, 'manifest-nonstruct');
+      await mkdir(join(parentDir, 'Unrelated'), { recursive: true });
+      // join(parentDir, 'Foo') intentionally does NOT exist
+
+      const xmls = new Set([join(parentDir, 'Foo.object-meta.xml')]);
+      await recomposeFileHandler(makeAttrs({ metaSuffix: 'object' }), false, xmls);
+
+      expect(reassembleSpy).not.toHaveBeenCalled();
+    });
+
+    it('does NOT call renameBotVersionFile for non-bot strict-directory types in manifest dispatch', async () => {
+      const parentDir = join(TMP_ROOT, 'manifest-strict-non-bot', 'ProfileA');
+      await mkdir(join(parentDir, 'v1'), { recursive: true });
+
+      const xmls = new Set([join(parentDir, 'ProfileA.profile-meta.xml')]);
+      await recomposeFileHandler(makeAttrs({ metaSuffix: 'profile', strictDirectoryName: true }), false, xmls);
+
+      expect(renameBotVersionFileSpy).not.toHaveBeenCalled();
+    });
   });
 });
