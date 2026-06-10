@@ -564,6 +564,45 @@ describe('decomposer manifest scoping - labels, bot, wildcard, errors', () => {
     }
   });
 
+  it('resolves BotVersion manifest type to Bot via SDR parent-type lookup', async () => {
+    const botVersionManifest = `<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+  <types>
+    <members>Assessment_Bot</members>
+    <name>BotVersion</name>
+  </types>
+  <version>58.0</version>
+</Package>
+`;
+    const dir = await setupTempProject(botVersionManifest);
+    const log = vi.fn();
+    try {
+      await decomposeMetadataTypes({
+        metadataTypes: undefined,
+        prepurge: true,
+        postpurge: false,
+        format: 'xml',
+        strategy: 'unique-id',
+        decomposeNestedPerms: false,
+        ignoreDirs: undefined,
+        manifest: 'package.xml',
+        log,
+      });
+
+      const output = log.mock.calls.flat().join('\n');
+      // SDR resolves BotVersion → Bot parent; the bot suffix is processed, not botVersion.
+      expect(output).toContain('All metadata files have been decomposed for the metadata type: bot');
+      expect(output).not.toContain('botVersion');
+
+      const botDir = join(dir, 'package', 'bots', 'Assessment_Bot');
+      const botEntries = await readdir(botDir);
+      expect(botEntries.some((entry) => entry === 'Assessment_Bot' || entry === 'v1')).toBe(true);
+    } finally {
+      process.chdir(originalCwd);
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
   it('throws when neither manifest nor metadata-type is provided', async () => {
     const dir = await setupTempProject(WILDCARD_MANIFEST_XML);
     const log = vi.fn();

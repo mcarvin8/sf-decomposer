@@ -63,12 +63,6 @@ describe('getRegistryValuesBySuffix', () => {
     );
   });
 
-  it('rejects the `botVersion` suffix and directs the user to `bot`', async () => {
-    await expect(getRegistryValuesBySuffix('botVersion', 'decompose', undefined)).rejects.toThrow(
-      '`botVersion` suffix should not be used. Please use `bot` to decompose/recompose bot and bot version files.',
-    );
-  });
-
   it('rejects unknown suffixes and surfaces the offending suffix in the message', async () => {
     await expect(getRegistryValuesBySuffix('definitelyNotARealSuffix', 'decompose', undefined)).rejects.toThrow(
       'Metadata type not found for the given suffix: definitelyNotARealSuffix.',

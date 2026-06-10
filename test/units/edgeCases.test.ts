@@ -183,6 +183,66 @@ describe('Edge case coverage tests', () => {
     });
   });
 
+  describe('botVersion redirect coverage', () => {
+    let tempProjectDir: string;
+    let forceAppDir: string;
+    let logMock: ReturnType<typeof vi.fn>;
+    const originalDirectory2: string = resolve('fixtures/package-dir-2');
+    const originalCwd = process.cwd();
+
+    const configFile = {
+      packageDirectories: [{ path: 'force-app', default: true }],
+      namespace: '',
+      sfdcLoginUrl: 'https://login.salesforce.com',
+      sourceApiVersion: '58.0',
+    };
+
+    beforeAll(async () => {
+      tempProjectDir = await mkdtemp(join(tmpdir(), 'botversion-redirect-'));
+      forceAppDir = join(tempProjectDir, 'force-app');
+      logMock = vi.fn();
+
+      await cp(originalDirectory2, forceAppDir, { recursive: true, force: true });
+      await writeFile(join(tempProjectDir, SFDX_CONFIG_FILE), JSON.stringify(configFile, null, 2));
+      process.chdir(tempProjectDir);
+    });
+
+    afterAll(async () => {
+      process.chdir(originalCwd);
+      await rm(tempProjectDir, { recursive: true, force: true });
+    });
+
+    it('deduplicates when both botVersion and bot are passed (covers ternary false branch)', async () => {
+      const result = await decomposeMetadataTypes({
+        metadataTypes: ['botVersion', 'bot'],
+        prepurge: true,
+        postpurge: false,
+        format: 'xml',
+        strategy: 'unique-id',
+        decomposeNestedPerms: false,
+        ignoreDirs: undefined,
+        log: logMock,
+      });
+      expect(logMock).toHaveBeenCalledWith(
+        'Warning: `botVersion` suffix is not supported; automatically using `bot` instead.',
+      );
+      expect(result.metadata).toEqual(['bot']);
+    });
+
+    it('logs a warning and redirects botVersion to bot on recompose (covers ternary false branch)', async () => {
+      const result = await recomposeMetadataTypes({
+        metadataTypes: ['botVersion', 'bot'],
+        postpurge: false,
+        ignoreDirs: undefined,
+        log: logMock,
+      });
+      expect(logMock).toHaveBeenCalledWith(
+        'Warning: `botVersion` suffix is not supported; automatically using `bot` instead.',
+      );
+      expect(result.metadata).toContain('bot');
+    });
+  });
+
   describe('updateForceignore branch coverage', () => {
     let tempProjectDir: string;
     let forceAppDir: string;
