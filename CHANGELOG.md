@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.30.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.29.0...v6.30.0) (2026-06-10)
+
+
+### Features
+
+* **decompose:** auto-redirect botVersion suffix to bot ([#484](https://github.com/mcarvin8/sf-decomposer/issues/484)) ([09f8488](https://github.com/mcarvin8/sf-decomposer/commit/09f848832fbdedac5fa4d965a3bcada4d4e952be))
+
 ## [6.29.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.28.0...v6.29.0) (2026-06-09)
 
 
