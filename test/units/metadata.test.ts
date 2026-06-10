@@ -47,21 +47,21 @@ describe('decomposer unit tests - unique id strategy', () => {
     await rm(tempProjectDir, { recursive: true, force: true });
   });
 
-  it('throws a validation error when botVersion is used', async () => {
-    await expect(
-      decomposeMetadataTypes({
-        metadataTypes: ['botVersion'],
-        prepurge: true,
-        postpurge: true,
-        format: 'xml',
-        strategy: 'unique-id',
-        decomposeNestedPerms: false,
-        ignoreDirs: undefined,
-        log: logMock,
-      }),
-    ).rejects.toThrow(
-      '`botVersion` suffix should not be used. Please use `bot` to decompose/recompose bot and bot version files.',
+  it('logs a warning and redirects botVersion to bot', async () => {
+    const result = await decomposeMetadataTypes({
+      metadataTypes: ['botVersion'],
+      prepurge: true,
+      postpurge: true,
+      format: 'xml',
+      strategy: 'unique-id',
+      decomposeNestedPerms: false,
+      ignoreDirs: undefined,
+      log: logMock,
+    });
+    expect(logMock).toHaveBeenCalledWith(
+      'Warning: `botVersion` suffix is not supported; automatically using `bot` instead.',
     );
+    expect(result.metadata).toContain('bot');
   });
   it('throws a validation error when custom object is used', async () => {
     await expect(

@@ -49,6 +49,11 @@ export async function decomposeMetadataTypes(options: DecomposeOptions): Promise
     effectiveTypes = metadataTypes;
   }
 
+  if (effectiveTypes.some((t) => t === 'botVersion')) {
+    log('Warning: `botVersion` suffix is not supported; automatically using `bot` instead.');
+    effectiveTypes = [...new Set(effectiveTypes.map((t) => (t === 'botVersion' ? 'bot' : t)))];
+  }
+
   if (effectiveTypes.length === 0) {
     log('No metadata types to decompose after applying the manifest filter.');
     return { metadata: [] };

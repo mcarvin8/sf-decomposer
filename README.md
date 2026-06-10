@@ -415,7 +415,7 @@ For a comprehensive breakdown of supported, leaf-only, and unsupported metadata 
 
 | Situation                                                                                      | Message                                                                                                                           |
 | ---------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `botVersion` used directly                                                                     | `botVersion suffix should not be used. Please use bot to decompose/recompose bot and bot version files.`                          |
+| `botVersion` used directly                                                                     | Automatically redirected to `bot` with a warning. No error is thrown.                                                             |
 | Custom Objects                                                                                 | `Custom Objects are not supported by this plugin.`                                                                                |
 | Unsupported SDR strategies (e.g. matchingContentFile, digitalExperience, mixedContent, bundle) | `Metadata types with [matchingContentFile, digitalExperience, mixedContent, bundle] strategies are not supported by this plugin.` |
 | Child types (e.g. custom fields) or invalid suffix                                             | `Metadata type not found for the given suffix: field.`                                                                            |
