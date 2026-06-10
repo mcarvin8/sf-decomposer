@@ -4,7 +4,7 @@ import { mkdtemp, rm, writeFile, readFile, readdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { cp } from 'node:fs/promises';
-import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi, type Mock } from 'vitest';
 
 import { decomposeMetadataTypes } from '../../src/core/decomposeMetadataTypes.js';
 import { recomposeMetadataTypes } from '../../src/core/recomposeMetadataTypes.js';
@@ -186,7 +186,7 @@ describe('Edge case coverage tests', () => {
   describe('botVersion redirect coverage', () => {
     let tempProjectDir: string;
     let forceAppDir: string;
-    let logMock: ReturnType<typeof vi.fn>;
+    let logMock: Mock;
     const originalDirectory2: string = resolve('fixtures/package-dir-2');
     const originalCwd = process.cwd();
 
