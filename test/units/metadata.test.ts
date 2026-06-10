@@ -63,6 +63,22 @@ describe('decomposer unit tests - unique id strategy', () => {
     );
     expect(result.metadata).toContain('bot');
   });
+  it('does NOT log a botVersion warning when no botVersion suffix is present', async () => {
+    const log = vi.fn();
+    await decomposeMetadataTypes({
+      metadataTypes: ['labels'],
+      prepurge: false,
+      postpurge: false,
+      format: 'xml',
+      strategy: 'unique-id',
+      decomposeNestedPerms: false,
+      ignoreDirs: undefined,
+      log,
+    });
+    expect(log).not.toHaveBeenCalledWith(
+      'Warning: `botVersion` suffix is not supported; automatically using `bot` instead.',
+    );
+  });
   it('throws a validation error when custom object is used', async () => {
     await expect(
       decomposeMetadataTypes({

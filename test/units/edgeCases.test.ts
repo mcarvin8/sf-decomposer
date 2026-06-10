@@ -241,6 +241,19 @@ describe('Edge case coverage tests', () => {
       );
       expect(result.metadata).toContain('bot');
     });
+
+    it('does NOT log a botVersion warning when no botVersion suffix is present on recompose', async () => {
+      const log = vi.fn();
+      await recomposeMetadataTypes({
+        metadataTypes: ['bot'],
+        postpurge: false,
+        ignoreDirs: undefined,
+        log,
+      });
+      expect(log).not.toHaveBeenCalledWith(
+        'Warning: `botVersion` suffix is not supported; automatically using `bot` instead.',
+      );
+    });
   });
 
   describe('updateForceignore branch coverage', () => {
