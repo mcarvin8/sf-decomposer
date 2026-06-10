@@ -216,8 +216,8 @@ function applyHardStrategyRules(metaSuffix: string, strategy: string): string {
 
 function stripMetaSuffix(fileName: string, metaSuffix: string): string {
   const metaEnding = `.${metaSuffix}-meta.xml`;
-  /* istanbul ignore next -- @preserve: parseManifest always builds xml paths from `${member}.${suffix}-meta.xml`. Stryker disable next-line all */
-  return fileName.endsWith(metaEnding) ? fileName.slice(0, -metaEnding.length) : fileName;
+  /* istanbul ignore next -- @preserve: parseManifest always builds xml paths from `${member}.${suffix}-meta.xml`. */
+  return fileName.endsWith(metaEnding) ? fileName.slice(0, -metaEnding.length) : fileName; // Stryker disable-line all
 }
 
 async function subDirectoryHandler(

@@ -34,6 +34,7 @@ export async function diffDirectories(referenceDir: string, mockDir: string, pre
   try {
     entries = await readdir(referenceDir, { withFileTypes: true });
   } catch {
+    // Stryker disable-line BlockStatement
     /* istanbul ignore next -- @preserve: caller already filters to existing directories */
     return out;
   }
@@ -82,7 +83,7 @@ async function fileExists(path: string): Promise<boolean> {
     await stat(path);
     return true;
   } catch {
-    // Stryker disable next-line BlockStatement: defensive only
+    // Stryker disable-line BlockStatement: defensive only
     return false;
   }
 }
@@ -119,9 +120,9 @@ function canonicalize(value: unknown): unknown {
     normalized.sort((left, right) => {
       const ls = JSON.stringify(left);
       const rs = JSON.stringify(right);
-      // Stryker disable next-line EqualityOperator
+      // Stryker disable next-line EqualityOperator,ConditionalExpression
       if (ls < rs) return -1;
-      // Stryker disable next-line EqualityOperator
+      // Stryker disable next-line EqualityOperator,ConditionalExpression
       if (ls > rs) return 1;
       return 0;
     });

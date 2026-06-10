@@ -74,8 +74,9 @@ async function recomposeFromManifest(
     );
     await Promise.all(tasks);
 
-    /* istanbul ignore else -- @preserve: bot is the only strict-directory type that needs post-processing in tests. Stryker disable next-line ConditionalExpression */
+    /* istanbul ignore else -- @preserve: bot is the only strict-directory type that needs post-processing in tests. */
     if (metaSuffix === 'bot') {
+      // Stryker disable-line ConditionalExpression
       // renameBotVersionFile expects the parent metadata directory (e.g. .../bots),
       // not the individual bot directory. Walk up one level and dedupe.
       const botContainerDirs = new Set(Array.from(parentDirs).map((parentDir) => dirname(parentDir)));
@@ -110,7 +111,7 @@ async function directoryExists(path: string): Promise<boolean> {
     const stats = await stat(path);
     return stats.isDirectory();
   } catch {
-    // Stryker disable next-line BlockStatement
+    // Stryker disable-line BlockStatement
     return false;
   }
 }
