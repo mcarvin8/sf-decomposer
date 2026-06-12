@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 // Run Stryker only against `src/**/*.ts` files that changed vs the merge-base
-// with the base branch. Cross-platform replacement for the bash pipeline used
-// by scolladon/sfdx-git-delta. Skip mutation testing when nothing changed.
+// with the base branch.
 
 import { spawnSync } from 'node:child_process';
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 
 const baseBranch = process.env.MUTATION_BASE_BRANCH ?? 'origin/main';
+const reportJsonPath = 'reports/mutation/mutation-testing-report.json';
+const commentPath = 'reports/mutation/comment.md';
 
 function git(...args) {
   const result = spawnSync('git', args, { encoding: 'utf-8' });
@@ -27,6 +29,96 @@ function listChangedSourceFiles() {
     .filter((line) => line.endsWith('.ts'));
 }
 
+function statusIcon(status) {
+  return { Killed: '✅', Survived: '⚠️', Timeout: '⏱️', Ignored: '🚫', NoCoverage: '❌' }[status] ?? '❓';
+}
+
+function generateComment(changedFiles) {
+  if (!existsSync(reportJsonPath)) return null;
+
+  const report = JSON.parse(readFileSync(reportJsonPath, 'utf-8'));
+
+  let killed = 0,
+    survived = 0,
+    timeout = 0,
+    ignored = 0,
+    noCoverage = 0;
+  const survivedMutants = [];
+
+  for (const [filePath, fileData] of Object.entries(report.files ?? {})) {
+    for (const mutant of fileData.mutants ?? []) {
+      if (mutant.status === 'Killed') killed++;
+      else if (mutant.status === 'Survived') {
+        survived++;
+        survivedMutants.push({ filePath, mutant });
+      } else if (mutant.status === 'Timeout') timeout++;
+      else if (mutant.status === 'Ignored') ignored++;
+      else if (mutant.status === 'NoCoverage') noCoverage++;
+    }
+  }
+
+  const tested = killed + survived + timeout;
+  const score = tested > 0 ? ((killed / tested) * 100).toFixed(2) : '100.00';
+  const scoreEmoji = parseFloat(score) >= 80 ? '🟢' : parseFloat(score) >= 60 ? '🟡' : '🔴';
+
+  const filesSummary = Object.entries(report.files ?? {})
+    .map(([filePath, fileData]) => {
+      const m = fileData.mutants ?? [];
+      const fKilled = m.filter((x) => x.status === 'Killed').length;
+      const fSurvived = m.filter((x) => x.status === 'Survived').length;
+      const fTimeout = m.filter((x) => x.status === 'Timeout').length;
+      const fIgnored = m.filter((x) => x.status === 'Ignored').length;
+      const fTested = fKilled + fSurvived + fTimeout;
+      const fScore = fTested > 0 ? ((fKilled / fTested) * 100).toFixed(2) : '100.00';
+      return `| \`${filePath}\` | ${fScore}% | ${fKilled} | ${fSurvived} | ${fTimeout} | ${fIgnored} |`;
+    })
+    .join('\n');
+
+  const survivedSection =
+    survivedMutants.length === 0
+      ? '_No mutants survived._'
+      : survivedMutants
+          .map(({ filePath, mutant }) => {
+            const { line, column } = mutant.location.start;
+            return [
+              `**\`${filePath}:${line}:${column}\`** — ${mutant.mutatorName}`,
+              '```diff',
+              `- ${mutant.original ?? '(original)'}`,
+              `+ ${mutant.replacement}`,
+              '```',
+            ].join('\n');
+          })
+          .join('\n\n');
+
+  const testedFilesNote =
+    changedFiles.length > 0
+      ? `> Tested ${changedFiles.length} changed file(s): ${changedFiles.map((f) => `\`${f}\``).join(', ')}`
+      : '';
+
+  return [
+    '## 🧬 Mutation Testing Results',
+    '',
+    testedFilesNote,
+    '',
+    `${scoreEmoji} **Score: ${score}%** &nbsp;|&nbsp; ✅ Killed: ${killed} &nbsp;|&nbsp; ⚠️ Survived: ${survived} &nbsp;|&nbsp; ⏱️ Timeout: ${timeout} &nbsp;|&nbsp; 🚫 Ignored: ${ignored}`,
+    '',
+    '<details>',
+    '<summary>Per-file breakdown</summary>',
+    '',
+    '| File | Score | Killed | Survived | Timeout | Ignored |',
+    '|------|-------|--------|----------|---------|---------|',
+    filesSummary,
+    '',
+    '</details>',
+    '',
+    `### ${survived > 0 ? '⚠️' : '✅'} Survived Mutants`,
+    '',
+    survivedSection,
+  ]
+    .join('\n')
+    .trim();
+}
+
 function main() {
   let files;
   try {
@@ -41,6 +133,12 @@ function main() {
 
   if (files.length === 0) {
     console.log('[incremental-mutation] No source files changed; skipping mutation testing.');
+    mkdirSync('reports/mutation', { recursive: true });
+    writeFileSync(
+      commentPath,
+      '## 🧬 Mutation Testing Results\n\n_No source files changed — mutation testing skipped._',
+      'utf-8',
+    );
     return;
   }
 
@@ -49,6 +147,14 @@ function main() {
 
   const args = ['stryker', 'run', '--mutate', files.join(',')];
   const stryker = spawnSync('npx', args, { stdio: 'inherit', shell: true });
+
+  const comment = generateComment(files);
+  if (comment) {
+    mkdirSync('reports/mutation', { recursive: true });
+    writeFileSync(commentPath, comment, 'utf-8');
+    console.log(`[incremental-mutation] Comment written to ${commentPath}`);
+  }
+
   process.exit(stryker.status ?? 1);
 }
 
