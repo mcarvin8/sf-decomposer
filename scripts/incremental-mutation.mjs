@@ -29,6 +29,22 @@ function listChangedSourceFiles() {
     .filter((line) => line.endsWith('.ts'));
 }
 
+function extractOriginal(filePath, location) {
+  if (!existsSync(filePath)) return null;
+  const lines = readFileSync(filePath, 'utf-8').split('\n');
+  const { start, end } = location;
+  // Stryker locations are 1-indexed for both line and column
+  if (start.line === end.line) {
+    return lines[start.line - 1]?.slice(start.column - 1, end.column - 1) ?? null;
+  }
+  const parts = [lines[start.line - 1]?.slice(start.column - 1) ?? ''];
+  for (let i = start.line; i < end.line - 1; i++) {
+    parts.push(lines[i] ?? '');
+  }
+  parts.push(lines[end.line - 1]?.slice(0, end.column - 1) ?? '');
+  return parts.join('\n');
+}
+
 function statusIcon(status) {
   return { Killed: '✅', Survived: '⚠️', Timeout: '⏱️', Ignored: '🚫', NoCoverage: '❌' }[status] ?? '❓';
 }
@@ -83,7 +99,7 @@ function generateComment(changedFiles) {
             return [
               `**\`${filePath}:${line}:${column}\`** — ${mutant.mutatorName}`,
               '```diff',
-              `- ${mutant.original ?? '(original)'}`,
+              `- ${extractOriginal(filePath, mutant.location) ?? '(original)'}`,
               `+ ${mutant.replacement}`,
               '```',
             ].join('\n');
