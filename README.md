@@ -748,4 +748,4 @@ Please open an [issue](https://github.com/mcarvin8/sf-decomposer/issues) to repo
 
 ## License
 
-[MIT](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/LICENSE.md)
+[MIT](LICENSE.md)
