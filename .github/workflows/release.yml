@@ -24,7 +24,7 @@ jobs:
           release-type: node
 
   unit-tests:
-    name: Unit Tests (ubuntu-latest, node 20)
+    name: Unit Tests (ubuntu-latest, node LTS)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -33,7 +33,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v6.3.0
         with:
-          node-version: '20'
+          node-version: 'lts/*'
           cache: npm
           registry-url: 'https://registry.npmjs.org'
 
@@ -74,7 +74,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v6.3.0
         with:
-          node-version: 24
+          node-version: 'lts/*'
           cache: npm
           registry-url: https://registry.npmjs.org
 
