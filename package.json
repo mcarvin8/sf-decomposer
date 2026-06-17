@@ -1,6 +1,6 @@
 {
   "name": "sf-decomposer",
-  "description": "Split large Salesforce metadata files into version-control-friendly pieces and rebuild deployment-ready files.",
+  "description": "Decompose Salesforce metadata into granular, VCS-friendly files; recompose for deployment.",
   "version": "6.32.0",
   "dependencies": {
     "@oclif/core": "4.11.4",
@@ -42,24 +42,24 @@
     "/HANDBOOK.md"
   ],
   "keywords": [
-    "force",
     "salesforce",
     "salesforcedx",
     "sf",
     "sf-plugin",
-    "sfdx",
     "sfdx-plugin",
     "git",
+    "version-control",
+    "vcs",
     "decomposition",
     "deployment",
     "xml",
     "yaml",
     "json",
-    "json5",
     "decompose",
     "reassemble",
-    "recompose",
     "disassemble",
+    "split",
+    "merge",
     "metadata"
   ],
   "license": "MIT",
@@ -69,7 +69,7 @@
     "topicSeparator": " ",
     "topics": {
       "decomposer": {
-        "description": "description for decomposer"
+        "description": "Decompose and recompose Salesforce metadata files"
       }
     },
     "devPlugins": [
