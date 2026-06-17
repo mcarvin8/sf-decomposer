@@ -12,7 +12,6 @@
   "devDependencies": {
     "@commitlint/cli": "20.4.2",
     "@commitlint/config-conventional": "20.4.2",
-    "@oclif/plugin-command-snapshot": "5.3.10",
     "@salesforce/cli-plugins-testkit": "5.3.39",
     "@salesforce/dev-config": "4.3.3",
     "@salesforce/prettier-config": "0.0.4",
@@ -83,7 +82,6 @@
     "flexibleTaxonomy": true
   },
   "scripts": {
-    "command-docs": "oclif readme",
     "build": "wireit",
     "clean:lib": "shx rm -rf lib && shx rm -rf coverage && shx rm -rf .nyc_output && shx rm -f oclif.manifest.json oclif.lock",
     "compile": "wireit",
@@ -129,12 +127,10 @@
       "clean": "if-file-deleted"
     },
     "format": {
-      "command": "prettier --write \"+(src|test|schemas)/**/*.+(ts|js|json)|command-snapshot.json\"",
+      "command": "prettier --write \"+(src|test)/**/*.+(ts|js|json)\"",
       "files": [
         "src/**/*.ts",
         "test/**/*.ts",
-        "schemas/**/*.json",
-        "command-snapshot.json",
         ".prettier*"
       ],
       "output": []
@@ -195,35 +191,6 @@
         "**/tsconfig.json",
         "!*.nut.ts",
         "vitest.config.ts"
-      ],
-      "output": []
-    },
-    "test:command-reference": {
-      "command": "\"./bin/dev\" commandreference:generate --erroronwarnings",
-      "files": [
-        "src/**/*.ts",
-        "messages/**",
-        "package.json"
-      ],
-      "output": [
-        "tmp/root"
-      ]
-    },
-    "test:deprecation-policy": {
-      "command": "\"./bin/dev\" snapshot:compare",
-      "files": [
-        "src/**/*.ts"
-      ],
-      "output": [],
-      "dependencies": [
-        "compile"
-      ]
-    },
-    "test:json-schema": {
-      "command": "\"./bin/dev\" schema:compare",
-      "files": [
-        "src/**/*.ts",
-        "schemas"
       ],
       "output": []
     }
