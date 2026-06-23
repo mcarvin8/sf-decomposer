@@ -22,7 +22,7 @@ export async function compareDirectories(referenceDir: string, mockDir: string):
           const refContent = await readFile(refEntryPath, 'utf-8');
           const mockContent = await readFile(mockPath, 'utf-8');
           strictEqual(refContent, mockContent, `File content is different for ${entry.name}`);
-        })()
+        })(),
       );
     }
   }

@@ -5,7 +5,7 @@ import { join, dirname } from 'node:path';
 import { SFDX_PROJECT_FILE_NAME } from '../../helpers/constants.js';
 
 async function findRepoRoot(
-  dir: string
+  dir: string,
 ): Promise<{ repoRoot: string | undefined; dxConfigFilePath: string | undefined }> {
   const filePath = join(dir, SFDX_PROJECT_FILE_NAME);
   try {

@@ -34,7 +34,7 @@ export async function moveAndRenameLabels(metadataPath: string): Promise<void> {
         const newFileName = file.replace('.labels-meta', '.label-meta');
         const newFilePath = join(destinationDirectory, newFileName);
         await rename(oldFilePath, newFilePath);
-      })
+      }),
     );
 
   await Promise.all(tasks);

@@ -9,10 +9,7 @@ import { ConfigFile, RecomposeOptions } from '../helpers/types.js';
 import { getRepoRoot } from '../service/core/getRepoRoot.js';
 import { HOOK_CONFIG_JSON } from '../helpers/constants.js';
 
-function buildRecomposeOptions(
-  configFile: ConfigFile,
-  log: (msg: string) => void,
-): RecomposeOptions | undefined {
+function buildRecomposeOptions(configFile: ConfigFile, log: (msg: string) => void): RecomposeOptions | undefined {
   const metadataSuffixes: string = configFile.metadataSuffixes || '.';
   const ignorePackageDirs: string = configFile.ignorePackageDirectories || '';
   const manifest: string = configFile.manifest ?? '';

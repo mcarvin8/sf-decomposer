@@ -23,7 +23,7 @@ export async function renameWorkflows(directory: string): Promise<void> {
           break;
         }
       }
-    })
+    }),
   );
 
   await Promise.all(tasks);
