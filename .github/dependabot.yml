@@ -1,3 +1,4 @@
+---
 version: 2
 updates:
   - package-ecosystem: 'npm'
@@ -18,6 +19,8 @@ updates:
     versioning-strategy: increase
     commit-message:
       prefix: 'feat(rust)'
+    labels:
+      - "manual-review-only"
     allow:
       - dependency-name: 'config-disassembler'
 
