@@ -94,9 +94,9 @@
     "prepare": "husky && patch-package",
     "test": "wireit",
     "test:compile": "wireit",
-    "test:nuts": "oclif manifest && vitest run --config ./vitest.nut.config.ts",
+    "test:nuts": "wireit",
     "test:only": "wireit",
-    "test:perf": "vitest run --config ./vitest.perf.config.ts",
+    "test:perf": "wireit",
     "test:perf:gen": "node --import ts-node/esm scripts/gen-perf-fixtures.ts",
     "test:mutation": "stryker run",
     "test:mutation:incremental": "node scripts/incremental-mutation.mjs",
@@ -180,6 +180,31 @@
         "test:compile",
         "test:only",
         "lint"
+      ]
+    },
+    "test:nuts": {
+      "command": "vitest run --config ./vitest.nut.config.ts && shx rm -f oclif.manifest.json oclif.lock *.tsbuildinfo",
+      "files": [
+        "test/**/*.nut.ts",
+        "**/tsconfig.json",
+        "vitest.nut.config.ts"
+      ],
+      "output": [],
+      "dependencies": [
+        "build",
+        "prepack"
+      ]
+    },
+    "test:perf": {
+      "command": "vitest run --config ./vitest.perf.config.ts",
+      "files": [
+        "test/perf/**/*.perf.ts",
+        "**/tsconfig.json",
+        "vitest.perf.config.ts"
+      ],
+      "output": [],
+      "dependencies": [
+        "build"
       ]
     },
     "test:only": {
