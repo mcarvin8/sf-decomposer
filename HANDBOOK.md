@@ -264,13 +264,14 @@ layouts/
 
 These follow the same pattern; pick the rules that match your repo's data. None of these are decomposed natively by Salesforce.
 
-| Metadata type                              | Suggested override                                                                                 |
-| ------------------------------------------ | -------------------------------------------------------------------------------------------------- |
-| `flow`                                     | `multiLevel: ["actionCalls:actionCalls:name", "decisions:decisions:name", "rules:rules:name"]`     |
-| `globalValueSet`                           | `multiLevel: ["customValue:customValue:fullName"]` — handy when value sets have hundreds of picks. |
-| `marketingappextension`                    | `multiLevel: ["activityDefinitions:activityDefinitions:apiName"]`                                  |
-| `cmsDeliveryChannel` (and other CMS types) | `strategy: grouped-by-tag` plus `splitTags` for any wide repeatable tag.                           |
-| `dashboard`                                | `multiLevel: ["components:components:title"]` — one file per dashboard widget.                     |
+| Metadata type                              | Suggested override                                                                                                                                                                                                                                        |
+| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `flow`                                     | `multiLevel: ["actionCalls:actionCalls:name", "decisions:decisions:name", "rules:rules:name"]`                                                                                                                                                            |
+| `globalValueSet`                           | `multiLevel: ["customValue:customValue:fullName"]` — handy when value sets have hundreds of picks.                                                                                                                                                        |
+| `field` (CustomField)                      | `multiLevel: "valueSet:valueSetDefinition:fullName"` — splits each picklist value into its own file. Only effective on fields that define picklist values inline; fields referencing a global value set or non-picklist fields are leaf-only and skipped. |
+| `marketingappextension`                    | `multiLevel: ["activityDefinitions:activityDefinitions:apiName"]`                                                                                                                                                                                         |
+| `cmsDeliveryChannel` (and other CMS types) | `strategy: grouped-by-tag` plus `splitTags` for any wide repeatable tag.                                                                                                                                                                                  |
+| `dashboard`                                | `multiLevel: ["components:components:title"]` — one file per dashboard widget.                                                                                                                                                                            |
 
 If a metadata type has a single deeply-nested repeatable block, a one-rule `multiLevel` is enough. Reach for the array form only when you have **two or more** distinct nested sections you want addressable on disk.
 
