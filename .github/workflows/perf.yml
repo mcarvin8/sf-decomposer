@@ -122,9 +122,6 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Build
-        run: npm run compile
-
       - name: Print runner facts
         run: |
           echo "## Runner facts" >> "$GITHUB_STEP_SUMMARY"
