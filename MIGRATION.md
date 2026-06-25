@@ -102,7 +102,15 @@ sf plugins install sf-decomposer@x.y.z
 
 ### 3. Configure .forceignore
 
-**Required before running any sf command.** Copy the [sample .forceignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.forceignore) and add ignore patterns for the extensions and types you will be decomposing. Without this, `sf project retrieve start` and `sf project deploy start` will treat the decomposed files as source and fail.
+**Required.** The Salesforce CLI must ignore decomposed files created by sf-decomposer or `sf` commands will fail. Configure this before running any decompose or retrieve commands after completing the migration effort.
+
+**Option A — Automatic (recommended):** Pass `--update-forceignore` on your first `sf decomposer decompose` run. The plugin appends type-level wildcard patterns to `.forceignore` — one ignore pattern for decomposed pieces and one negation to re-allow the original metadata file — creating the file if it doesn't exist. Subsequent runs only add new entries; existing ones are never duplicated.
+
+```bash
+sf decomposer decompose -m "flow" -m "permissionset" --postpurge --update-forceignore
+```
+
+**Option B — Manual:** Copy the [sample .forceignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.forceignore) into your project root and adjust the extension patterns for your chosen format (`.xml`, `.json`, `.yaml`, etc.).
 
 Remove any native-decomposition-era ignore patterns from your existing `.forceignore` — they will conflict.
 
