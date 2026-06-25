@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.33.1](https://github.com/mcarvin8/sf-decomposer/compare/v6.33.0...v6.33.1) (2026-06-25)
+
+
+### Bug Fixes
+
+* resolve child metadata types by suffix rather than xmlName ([#497](https://github.com/mcarvin8/sf-decomposer/issues/497)) ([f7f8d63](https://github.com/mcarvin8/sf-decomposer/commit/f7f8d6333a7e8e12989d40664dbc5d6e78b815fb))
+
 ## [6.33.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.32.0...v6.33.0) (2026-06-25)
 
 
