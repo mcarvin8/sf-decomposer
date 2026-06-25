@@ -85,12 +85,6 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Compile
-        run: npm run compile
-
-      - name: Oclif manifest
-        run: npx oclif manifest
-
       - name: NUTs
         run: npm run test:nuts
         env:
