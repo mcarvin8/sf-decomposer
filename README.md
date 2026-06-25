@@ -382,7 +382,7 @@ permissionsets/
 
 ### Supported Metadata
 
-All parent and child metadata types from this plugin's version of **@salesforce/source-deploy-retrieve** (SDR) are supported, except where noted below. Child types (e.g. `field`, `listView`, `validationRule`) resolve via their parent in the SDR registry and behave like any other type — most are leaf-only and will be silently skipped if their files contain no nested repeatable elements.
+All parent and child metadata types from this plugin's version of **@salesforce/source-deploy-retrieve** (SDR) are supported, except where noted below. Child types (e.g. `field`, `listView`, `validationRule`) resolve via their parent in the SDR registry and behave like any other type — most are leaf-only and will be skipped non-fatally if their files contain no nested repeatable elements (the Rust disassembler logs a skip at `RUST_LOG=error`, but the CLI does not fail).
 
 Use the metadata **suffix** for `-m` / `--metadata-type`, as in [SDR's metadataRegistry.json](https://github.com/forcedotcom/source-deploy-retrieve/blob/main/src/registry/metadataRegistry.json), or infer from the file name: `*.{suffix}-meta.xml`.
 
