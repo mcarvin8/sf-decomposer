@@ -308,6 +308,28 @@ If you see a hash-named shard and want to know whether it came from a collision 
   └── quoteManual.label-meta.xml
   ```
 
+- **Bot (`bot`)** — built-in `multiLevel` default applies two rules automatically: `botDialogs` (outer, keyed by `developerName`) and `botSteps` (inner, keyed by `type`). No config needed to get the canonical layout; override only to change it. See the [admin handbook](https://github.com/mcarvin8/sf-decomposer/blob/main/HANDBOOK.md) for the full layout, step-shape notes, and single-rule variant.
+
+  ```
+  bots/
+  └── Sample_Chat_Bot/
+      ├── Sample_Chat_Bot.bot-meta.xml                 ← bot header (untouched)
+      ├── v1/
+      │   ├── nlpProviders/
+      │   │   └── EinsteinAi.nlpProviders-meta.xml
+      │   ├── botDialogs/                              ← outer rule: one directory per dialog
+      │   │   ├── Welcome/
+      │   │   │   ├── Welcome.xml                      ← dialog leaf properties
+      │   │   │   └── botSteps/                        ← inner rule: one entry per step
+      │   │   │       ├── 853b6432/                    ← step with nested content → subdir
+      │   │   │       │   └── ...
+      │   │   │       └── 9d031e75.botSteps-meta.xml   ← step with no nested content → leaf file
+      │   │   └── ...
+      │   ├── .multi_level.json                        ← required for recompose; do not hand-edit
+      │   └── v1.botVersion-meta.xml
+      └── ...
+  ```
+
 - **Loyalty Program Setup (`loyaltyProgramSetup`)** — always forced to `unique-id` with a built-in `multiLevel` default that splits `<programProcesses>` into per-process folders containing per-`<parameters>` / per-`<rules>` files. Recompose always removes the decomposed tree (with or without `--postpurge`); rely on version control to inspect it after a deploy.
 
   ```
