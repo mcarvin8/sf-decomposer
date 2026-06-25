@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.33.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.32.0...v6.33.0) (2026-06-25)
+
+
+### Features
+
+* add RecordType decomposition support ([#495](https://github.com/mcarvin8/sf-decomposer/issues/495)) ([c7691ee](https://github.com/mcarvin8/sf-decomposer/commit/c7691ee597a3a4803eb3eb22e60f5470ac664823))
+
 ## [6.32.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.31.0...v6.32.0) (2026-06-16)
 
 
