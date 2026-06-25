@@ -25,35 +25,34 @@ export async function getPackageDirectories(
     if (!normalizedIgnoreDirs.includes(basename(directory))) {
       return searchRecursively(directory, metaDirectory);
     }
-    return undefined;
+    return [];
   });
 
   const results = await Promise.all(searchPromises);
-  const metadataPaths = results.filter((filePath) => filePath !== undefined).map((filePath) => resolve(filePath));
+  const metadataPaths = results.flat().map((filePath) => resolve(filePath));
 
   return { metadataPaths, ignorePath };
 }
 
-async function searchRecursively(dxDirectory: string, subDirectoryName: string): Promise<string | undefined> {
+async function searchRecursively(dxDirectory: string, subDirectoryName: string): Promise<string[]> {
   try {
     const files = await readdir(dxDirectory, { withFileTypes: true });
+    const dirs = files.filter((file) => file.isDirectory());
 
-    // First check if the directory we're looking for is at this level
-    const directMatch = files.find((file) => file.isDirectory() && file.name === subDirectoryName);
-    if (directMatch) {
-      return join(dxDirectory, directMatch.name);
-    }
+    const directMatches = dirs
+      .filter((file) => file.name === subDirectoryName)
+      .map((file) => join(dxDirectory, file.name));
 
-    // If not found, search recursively in subdirectories in parallel
-    const searchPromises = files
-      .filter((file) => file.isDirectory())
-      .map((file) => searchRecursively(join(dxDirectory, file.name), subDirectoryName));
+    const deeperResults = await Promise.all(
+      dirs
+        .filter((file) => file.name !== subDirectoryName)
+        .map((file) => searchRecursively(join(dxDirectory, file.name), subDirectoryName)),
+    );
 
-    const results = await Promise.all(searchPromises);
-    return results.find((result) => result !== undefined);
+    return [...directMatches, ...deeperResults.flat()];
   } catch (error) {
     // Handle permission errors or other filesystem errors gracefully
     /* istanbul ignore next -- @preserve: Filesystem permission errors are platform-specific */
-    return undefined;
+    return [];
   }
 }

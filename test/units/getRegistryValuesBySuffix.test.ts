@@ -171,6 +171,21 @@ describe('getRegistryValuesBySuffix', () => {
     expect(metaAttributes.uniqueIdElements).toBe(DEFAULT_UNIQUE_ID_ELEMENTS);
   });
 
+  it('resolves child types (recordType) via parent type lookup when getTypeBySuffix returns undefined', async () => {
+    // recordType is a child of customobject in the SDR registry and has no top-level suffix
+    // entry, so getTypeBySuffix('recordType') returns undefined. The fallback must find it
+    // via getParentType and return the correct directoryName ('recordTypes').
+    const dir = join(project.forceAppDir, 'objects', 'Account', 'recordTypes');
+    await mkdir(dir, { recursive: true });
+
+    const { metaAttributes } = await getRegistryValuesBySuffix('recordType', 'decompose', undefined);
+
+    expect(metaAttributes.metaSuffix).toBe('recordType');
+    expect(metaAttributes.metadataPaths.some((p) => p === resolve(dir))).toBe(true);
+    // Child type has no uniqueId override in uniqueIdElements — falls back to defaults + picklist
+    expect(metaAttributes.uniqueIdElements).toContain('picklist');
+  });
+
   it('threads ignoreDirs through to getPackageDirectories so filtered packages drop out', async () => {
     // Two package dirs; ignore the alt one. (Note: this test rewrites the sfdx-project.json
     // for this run only — the per-test temp project is torn down in afterEach.)

@@ -29,7 +29,15 @@ export async function getRegistryValuesBySuffix(
   }
 
   const registryAccess = getRegistryAccessInstance();
-  const metadataTypeEntry: MetadataType | undefined = registryAccess.getTypeBySuffix(metaSuffix);
+  let metadataTypeEntry: MetadataType | undefined = registryAccess.getTypeBySuffix(metaSuffix);
+
+  if (metadataTypeEntry === undefined) {
+    // Child types (e.g. recordType, customField) are not in the top-level suffix index.
+    // Look them up via their parent and extract from children.types.
+    const parentType = registryAccess.getParentType(metaSuffix.toLowerCase());
+    metadataTypeEntry = parentType?.children?.types[metaSuffix.toLowerCase()];
+  }
+
   if (metadataTypeEntry === undefined) throw Error(`Metadata type not found for the given suffix: ${metaSuffix}.`);
 
   if (
