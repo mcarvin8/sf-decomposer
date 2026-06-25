@@ -192,6 +192,12 @@ export default [
         'actionName+pageOrSobjectType+formFactor',
       ],
     },
+    recordType: {
+      // `<picklistValues>` items are keyed by `<picklist>` (the API name of the
+      // picklist field, e.g. `IASubtheme__c`). Each picklist appears at most
+      // once per record type, so the field is unique within the parent.
+      uniqueIdElements: ['picklist'],
+    },
     mutingpermissionset: {
       uniqueIdElements: [
         'application',

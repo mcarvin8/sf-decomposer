@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RecordType xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>IA_event</fullName>
+    <active>true</active>
+    <description>Denne posttypen brukes til å registrere møter med arbeidsgivere ang IA-samarbeid</description>
+    <label>IA event</label>
+    <picklistValues>
+        <picklist>IASubtheme__c</picklist>
+        <values>
+            <fullName>Endring og omstilling</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>HelseIArbeid</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Livsfaseorientert personalpolitikk</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Oppfølging av arbeidsmiljøundersøkelser</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Oppfølgingssamtaler</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Psykisk helse</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Sykefravær - enkeltsaker</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Sykefraværsrutiner</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Tilretteleggings- og medvirkningsplikt</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Utvikle arbeidsmiljøet</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Utvikle partssamarbeidet</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>IASubthemes__c</picklist>
+        <values>
+            <fullName>Endring og omstilling</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>HelseIArbeid</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Livsfaseorientert personalpolitikk</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Oppfølging av arbeidsmiljøundersøkelser</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Oppfølgingssamtaler</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Psykisk helse</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Sykefravær - enkeltsaker</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Sykefraværsrutiner</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Tilretteleggings- og medvirkningsplikt</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Utvikle arbeidsmiljøet</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Utvikle partssamarbeidet</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>IATheme__c</picklist>
+        <values>
+            <fullName>Arbeidsmiljø</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>IA-Samarbeid</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Partssamarbeid</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Sykefraværsarbeid</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Subject</picklist>
+        <values>
+            <fullName>Call</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Email</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Meeting</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Other</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Send Letter%2FQuote</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>TAG_ActivityType__c</picklist>
+        <values>
+            <fullName>Forebygge sykefravær og redusere frafall</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>TAG_service__c</picklist>
+        <values>
+            <fullName>Arbeidsmiljø</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>IA-Samarbeid</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Partssamarbeid</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Sykefraværsarbeid</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Type</picklist>
+        <values>
+            <fullName>Meeting</fullName>
+            <default>true</default>
+        </values>
+    </picklistValues>
+</RecordType>

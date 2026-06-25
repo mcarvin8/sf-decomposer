@@ -77,9 +77,10 @@ describe('getPackageDirectories', () => {
     expect(metadataPaths).toEqual([resolve(deep)]);
   });
 
-  it('returns the first hit per package directory rather than all matches', async () => {
-    // Both a shallow and deep `permissionsets` exist in force-app. The function uses
-    // `find` so only one is returned per package dir.
+  it('returns all matching directories per package dir (supports nested types like recordTypes)', async () => {
+    // Both a shallow and deep `permissionsets` exist in force-app. All matches are returned
+    // so that metadata types with multiple sibling directories (e.g. recordTypes nested under
+    // objects/<ObjectName>/) are fully processed.
     const shallow = join(project.forceAppDir, 'permissionsets');
     const deep = join(project.forceAppDir, 'main', 'default', 'permissionsets');
     await mkdir(shallow, { recursive: true });
@@ -87,9 +88,8 @@ describe('getPackageDirectories', () => {
 
     const { metadataPaths } = await getPackageDirectories('permissionsets', undefined);
 
-    // Exactly one path per package directory.
-    expect(metadataPaths).toHaveLength(1);
-    expect(metadataPaths[0]).toBe(resolve(shallow));
+    expect(metadataPaths).toHaveLength(2);
+    expect(new Set(metadataPaths)).toEqual(new Set([resolve(shallow), resolve(deep)]));
   });
 
   it('returns an empty list when no package directory contains the target', async () => {
