@@ -93,7 +93,6 @@
     "prepack": "wireit",
     "prepare": "husky && patch-package",
     "test": "wireit",
-    "test:compile": "wireit",
     "test:nuts": "wireit",
     "test:only": "wireit",
     "test:perf": "wireit",
