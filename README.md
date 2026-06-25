@@ -392,7 +392,7 @@ loyaltyProgramSetups/
 
 ### Supported Metadata
 
-All parent metadata types from this plugin's version of **@salesforce/source-deploy-retrieve** (SDR) are supported, except where noted below.
+All parent and child metadata types from this plugin's version of **@salesforce/source-deploy-retrieve** (SDR) are supported, except where noted below. Child types (e.g. `field`, `listView`, `validationRule`) resolve via their parent in the SDR registry and behave like any other type — most are leaf-only and will be silently skipped if their files contain no nested repeatable elements.
 
 Use the metadata **suffix** for `-m` / `--metadata-type`, as in [SDR's metadataRegistry.json](https://github.com/forcedotcom/source-deploy-retrieve/blob/main/src/registry/metadataRegistry.json), or infer from the file name: `*.{suffix}-meta.xml`.
 
@@ -418,7 +418,7 @@ For a comprehensive breakdown of supported, leaf-only, and unsupported metadata 
 | `botVersion` used directly                                                                     | Automatically redirected to `bot` with a warning. No error is thrown.                                                             |
 | Custom Objects                                                                                 | `Custom Objects are not supported by this plugin.`                                                                                |
 | Unsupported SDR strategies (e.g. matchingContentFile, digitalExperience, mixedContent, bundle) | `Metadata types with [matchingContentFile, digitalExperience, mixedContent, bundle] strategies are not supported by this plugin.` |
-| Child types (e.g. custom fields) or invalid suffix                                             | `Metadata type not found for the given suffix: field.`                                                                            |
+| Invalid or unknown suffix                                                                      | `Metadata type not found for the given suffix: [suffix].`                                                                         |
 
 ---
 
