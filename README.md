@@ -258,12 +258,11 @@ Files whose **only** delta is sibling or attribute ordering are reported as info
 
 ### Decompose Strategies
 
-> **Tip:** A single decompose run can mix strategies and formats across metadata types — and even across components within the same type — through the `overrides` array (see [Per-Type & Per-Component Overrides](#per-type--per-component-overrides)). Recompose is deterministic from the on-disk sidecar, so any combination round-trips. When switching strategies for an existing component, pass `--prepurge` (or set `prePurge: true`) so leftover files from the previous strategy are removed before the new ones are written.
+Two primary strategies control how nested XML elements are split on disk. Both round-trip deterministically and can be mixed across types — or even across components of the same type — via the `overrides` array (see [Per-Type & Per-Component Overrides](#per-type--per-component-overrides)). When switching strategies for an existing component, pass `--prepurge` (or `prePurge: true`) to remove leftover files from the prior strategy before writing new ones.
 
-- **unique-id** (default): Each nested element goes to its own file, named by unique-id fields or content hash. Leaf elements stay in a file named like the original XML.
-- **grouped-by-tag**: All elements with the same tag (e.g. `<fieldPermissions>`) go into one file named after the tag (e.g. `fieldPermissions.xml`). Leaf elements are still grouped in the original-named file.
+#### unique-id (default)
 
-**Permission set – unique-id**
+Each nested element gets its own file, named by one or more unique-id fields (or a content hash when no UID is found). Leaf elements stay in a file named like the original XML.
 
 ```
 permissionsets/
@@ -289,7 +288,54 @@ permissionsets/
         └── APIEnabled.userPermissions-meta.xml
 ```
 
-**Permission set – grouped-by-tag**
+**Filename safety.** Two safety nets apply automatically. Neither requires configuration:
+
+- **Path-segment sanitization (silent).** Characters illegal or reserved on at least one supported filesystem — path separators (`/`, `\`), Windows-reserved chars (`:`, `*`, `?`, `"`, `<`, `>`, `|`), and ASCII control bytes — are replaced with `_`; trailing `.` and spaces are stripped. Sanitized filenames are byte-stable across platforms.
+- **Sibling-collision fallback (emits `WARN`).** When two or more siblings of the same parent tag would resolve to the same filename (the configured unique-id elements are too narrow, or sanitization folded two distinct values together), every sibling in the colliding group is written to its own per-element SHA-256 shard instead. No row is silently overwritten.
+
+If you see a hash-named shard and want to know whether it came from a collision (vs. a missing UID), set `RUST_LOG=warn` and rerun — see [Rust crate logging](#xml-disassemble-output-rust-crate).
+
+**Extending with multiLevel.** When a metadata type has deeply-nested repeatable blocks (a block inside a block), add a `multiLevel` override to decompose those inner arrays into their own subdirectories. `bot` and `loyaltyProgramSetup` ship with built-in `multiLevel` defaults applied automatically. See the [admin handbook](https://github.com/mcarvin8/sf-decomposer/blob/main/HANDBOOK.md) for ready-to-paste recipes for Bots, Flexipages, Layouts, Flows, and more.
+
+**Type-specific notes (unique-id):**
+
+- **Custom Labels (`labels`)** — always forced to `unique-id` (grouped-by-tag would be a no-op since every element shares the same tag). Each label becomes its own file:
+
+  ```
+  labels/
+  ├── CustomLabels.labels-meta.xml                    ← original file (safe to delete after decompose)
+  ├── quoteAuto.label-meta.xml                        ← one file per <labels> entry, named by fullName
+  └── quoteManual.label-meta.xml
+  ```
+
+- **Loyalty Program Setup (`loyaltyProgramSetup`)** — always forced to `unique-id` with a built-in `multiLevel` default that splits `<programProcesses>` into per-process folders containing per-`<parameters>` / per-`<rules>` files. Recompose always removes the decomposed tree (with or without `--postpurge`); rely on version control to inspect it after a deploy.
+
+  ```
+  loyaltyProgramSetups/
+  └── Cloud_Kicks_Inner_Circle/
+      ├── Cloud_Kicks_Inner_Circle.loyaltyProgramSetup-meta.xml   ← leaf properties (e.g. label)
+      ├── .key_order.json
+      ├── .multi_level.json                                       ← required for recompose; do not hand-edit
+      └── programProcesses/                                       ← one folder per process, named by processName
+          ├── Manual Points Adjustments/
+          │   ├── Manual Points Adjustments.xml                   ← process leaf properties
+          │   ├── .key_order.json
+          │   ├── parameters/                                     ← one file per parameter, named by parameterName
+          │   │   ├── EA_PerAdjustmentRewardTracking.parameters-meta.xml
+          │   │   ├── EventType.parameters-meta.xml
+          │   │   └── ...
+          │   └── rules/                                          ← one file per rule, named by ruleName
+          │       ├── Bulk Voucher Upload.rules-meta.xml
+          │       ├── Finalize.rules-meta.xml
+          │       └── Set Up Step.rules-meta.xml
+          ├── Member Enrollment Process/
+          │   └── ...                                             ← same shape per process
+          └── ...
+  ```
+
+#### grouped-by-tag
+
+All elements with the same tag (e.g. `<fieldPermissions>`) go into one file named after the tag (e.g. `fieldPermissions.xml`). Leaf elements are still grouped in the original-named file. Best for types with many small repeatable tags where one-file-per-element diffs would be noisy.
 
 ```
 permissionsets/
@@ -306,34 +352,9 @@ permissionsets/
     └── userPermissions.xml
 ```
 
-#### Filename safety (unique-id)
+**Extending with splitTags.** A `splitTags` override lets specific tags within a `grouped-by-tag` run break out into per-element files (split mode) or sub-grouped files (group mode), while all other tags stay grouped. See [splitTags grammar](#splittags-grammar).
 
-Two safety nets apply automatically to every shard filename emitted by the **unique-id** strategy. Neither requires configuration:
-
-- **Path-segment sanitization (silent).** Characters illegal or reserved on at least one supported filesystem — path separators (`/`, `\`), Windows-reserved chars (`:`, `*`, `?`, `"`, `<`, `>`, `|`), and ASCII control bytes — are replaced with `_`; trailing `.` and spaces are stripped. Sanitized filenames are byte-stable across platforms.
-- **Sibling-collision fallback (emits `WARN`).** When two or more siblings of the same parent tag would resolve to the same filename (the configured unique-id elements are too narrow, or sanitization folded two distinct values together), every sibling in the colliding group is written to its own per-element SHA-256 shard instead. No row is silently overwritten.
-
-If you see a hash-named shard and want to know whether it came from a collision (vs. a missing UID), set `RUST_LOG=warn` and rerun — see [Rust crate logging](#xml-disassemble-output-rust-crate).
-
-#### Custom Labels Decomposition
-
-Custom labels are always decomposed with `unique-id` (grouped-by-tag would be a no-op since every element shares the same tag). Each label is written to its own file:
-
-```
-labels/
-├── CustomLabels.labels-meta.xml                    ← original file (safe to delete after decompose)
-├── quoteAuto.label-meta.xml                        ← one file per <labels> entry, named by fullName
-└── quoteManual.label-meta.xml
-```
-
-#### Additional Permission Set Decomposition
-
-With **grouped-by-tag**, use `--decompose-nested-permissions` (`-p`) to further decompose permission sets and muting permission sets:
-
-- Write each `<objectPermissions>` to its own file under `objectPermissions/`.
-- Group `<fieldPermissions>` by object under `fieldPermissions/`.
-
-Similar to Salesforce's `decomposePermissionSetBeta2`, with more control and format options. Muting permission sets extend the permission set metadata type and support the same decomposition.
+**Extending with decomposeNestedPermissions.** For `permissionset` and `mutingpermissionset`, add `--decompose-nested-permissions` (`-p`) to further decompose `<objectPermissions>` into per-object files and group `<fieldPermissions>` by object — similar to Salesforce's `decomposePermissionSetBeta2` but with more format and strategy options.
 
 ```bash
 sf decomposer decompose -m "permissionset" -s "grouped-by-tag" -p
@@ -356,37 +377,6 @@ permissionsets/
     └── objectPermissions/                          ← one file per object
         └── Job_Request__c.objectPermissions-meta.xml
 ```
-
-#### Loyalty Program Setup Decomposition
-
-`loyaltyProgramSetup` is always decomposed with `unique-id`, with a built-in `multiLevel` default that splits `<programProcesses>` into per-process folders containing per-`<parameters>` / per-`<rules>` files.
-
-> Recompose for `loyaltyProgramSetup` always removes the decomposed tree, with or without `--postpurge`. Rely on version control if you need to inspect it after a deploy.
-
-```
-loyaltyProgramSetups/
-└── Cloud_Kicks_Inner_Circle/
-    ├── Cloud_Kicks_Inner_Circle.loyaltyProgramSetup-meta.xml   ← leaf properties (e.g. label)
-    ├── .key_order.json
-    ├── .multi_level.json                                       ← required for recompose; do not hand-edit
-    └── programProcesses/                                       ← one folder per process, named by processName
-        ├── Manual Points Adjustments/
-        │   ├── Manual Points Adjustments.xml                   ← process leaf properties
-        │   ├── .key_order.json
-        │   ├── parameters/                                     ← one file per parameter, named by parameterName
-        │   │   ├── EA_PerAdjustmentRewardTracking.parameters-meta.xml
-        │   │   ├── EventType.parameters-meta.xml
-        │   │   └── ...
-        │   └── rules/                                          ← one file per rule, named by ruleName
-        │       ├── Bulk Voucher Upload.rules-meta.xml
-        │       ├── Finalize.rules-meta.xml
-        │       └── Set Up Step.rules-meta.xml
-        ├── Member Enrollment Process/
-        │   └── ...                                             ← same shape per process
-        └── ...
-```
-
-> **Tip:** This three-level layout (`programProcesses` → `parameters`/`rules`) is the multi-level decomposition pattern. The same pattern powers Bots, Flexipages, and Layouts via opt-in `multiLevel` overrides — see the [admin handbook](https://github.com/mcarvin8/sf-decomposer/blob/main/HANDBOOK.md) for those recipes.
 
 ---
 
