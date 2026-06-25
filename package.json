@@ -85,7 +85,7 @@
   },
   "scripts": {
     "build": "wireit",
-    "clean:lib": "shx rm -rf lib && shx rm -rf coverage && shx rm -rf .nyc_output && shx rm -f oclif.manifest.json oclif.lock",
+    "clean:lib": "shx rm -rf lib coverage .nyc_output",
     "compile": "wireit",
     "format": "wireit",
     "lint": "wireit",
