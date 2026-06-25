@@ -9,12 +9,29 @@ import { getPackageDirectories } from './getPackageDirectories.js';
 
 // Singleton instance for RegistryAccess to avoid repeated instantiation
 let registryAccessInstance: RegistryAccess | null = null;
+// Lazy-built reverse map: suffix → child MetadataType (for child types whose suffix differs from xmlName)
+let childSuffixMap: Map<string, MetadataType> | null = null;
 
 function getRegistryAccessInstance(): RegistryAccess {
   if (!registryAccessInstance) {
     registryAccessInstance = new RegistryAccess();
   }
   return registryAccessInstance;
+}
+
+function getChildSuffixMap(registryAccess: RegistryAccess): Map<string, MetadataType> {
+  if (!childSuffixMap) {
+    childSuffixMap = new Map();
+    const reg = (registryAccess as unknown as { registry: { childTypes: Record<string, string> } }).registry;
+    for (const childXmlNameLower of Object.keys(reg.childTypes)) {
+      const parentType = registryAccess.getParentType(childXmlNameLower);
+      const childEntry = parentType?.children?.types[childXmlNameLower];
+      if (childEntry?.suffix) {
+        childSuffixMap.set(childEntry.suffix, childEntry);
+      }
+    }
+  }
+  return childSuffixMap;
 }
 
 export async function getRegistryValuesBySuffix(
@@ -32,10 +49,10 @@ export async function getRegistryValuesBySuffix(
   let metadataTypeEntry: MetadataType | undefined = registryAccess.getTypeBySuffix(metaSuffix);
 
   if (metadataTypeEntry === undefined) {
-    // Child types (e.g. recordType, customField) are not in the top-level suffix index.
-    // Look them up via their parent and extract from children.types.
-    const parentType = registryAccess.getParentType(metaSuffix.toLowerCase());
-    metadataTypeEntry = parentType?.children?.types[metaSuffix.toLowerCase()];
+    // Child types are not in the top-level suffix index. children.types is keyed by lowercased
+    // xmlName, not suffix — so 'recordType' works (suffix === xmlName lowercased) but 'field'
+    // (xmlName: CustomField) does not. Fall back to the pre-built suffix map.
+    metadataTypeEntry = getChildSuffixMap(registryAccess).get(metaSuffix);
   }
 
   if (metadataTypeEntry === undefined) throw Error(`Metadata type not found for the given suffix: ${metaSuffix}.`);
