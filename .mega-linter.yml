@@ -53,6 +53,7 @@ ADDITIONAL_EXCLUDED_DIRECTORIES:
   - node_modules
   - lib
   - megalinter-reports
+  - fixtures
 
 BASH_SHELLCHECK_FILTER_REGEX_EXCLUDE: (husky)
 MARKDOWN_MARKDOWNLINT_FILTER_REGEX_EXCLUDE: messages/
