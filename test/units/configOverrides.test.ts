@@ -3,21 +3,21 @@
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
+  getOverrideForComponent,
+  getOverrideForType,
+  hasComponentOverridesForType,
   loadOverridesFromConfig,
+  parseComponentKey,
+  resolveDecomposeOptionsForComponent,
+  resolveDecomposeOptionsForType,
+  resolveDefaultConfigPath,
+  validateMultiLevelSpec,
   validateOverrides,
   validateSplitTagsSpec,
-  validateMultiLevelSpec,
   validateUniqueIdElementsSpec,
-  getOverrideForType,
-  getOverrideForComponent,
-  hasComponentOverridesForType,
-  parseComponentKey,
-  resolveDecomposeOptionsForType,
-  resolveDecomposeOptionsForComponent,
-  resolveDefaultConfigPath,
 } from '../../src/helpers/configOverrides.js';
 import { HOOK_CONFIG_JSON, SFDX_PROJECT_FILE_NAME } from '../../src/helpers/constants.js';
 import { DecomposerOverride } from '../../src/helpers/types.js';

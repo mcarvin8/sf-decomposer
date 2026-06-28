@@ -1,1 +1,1 @@
-npm run lint && npx pretty-quick --staged
+npx @biomejs/biome check --write --staged

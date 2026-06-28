@@ -3,10 +3,9 @@
 import { mkdir, mkdtemp, readFile, realpath, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
-
-import { SFDX_CONFIG_FILE } from '../utils/constants.js';
+import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 import type { DecomposeOptions, RecomposeOptions } from '../../src/helpers/types.js';
+import { SFDX_CONFIG_FILE } from '../utils/constants.js';
 
 // ---- Mocks ---------------------------------------------------------------
 //

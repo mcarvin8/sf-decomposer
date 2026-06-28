@@ -1,7 +1,7 @@
 /* eslint-disable no-await-in-loop */
 'use strict';
 
-import { readdir, stat, rm } from 'node:fs/promises';
+import { readdir, rm, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { CUSTOM_LABELS_FILE } from '../../helpers/constants.js';

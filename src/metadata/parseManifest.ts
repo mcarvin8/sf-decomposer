@@ -1,12 +1,11 @@
 'use strict';
 
-import { resolve, basename, join } from 'node:path';
-import { readFile, readdir, stat } from 'node:fs/promises';
-import { ManifestResolver, RegistryAccess, MetadataType } from '@salesforce/source-deploy-retrieve';
-
-import { getRepoRoot } from '../service/core/getRepoRoot.js';
-import { SfdxProject } from '../helpers/types.js';
+import { readdir, readFile, stat } from 'node:fs/promises';
+import { basename, join, resolve } from 'node:path';
+import { ManifestResolver, MetadataType, RegistryAccess } from '@salesforce/source-deploy-retrieve';
 import { SFDX_PROJECT_FILE_NAME } from '../helpers/constants.js';
+import { SfdxProject } from '../helpers/types.js';
+import { getRepoRoot } from '../service/core/getRepoRoot.js';
 
 export type ManifestFilter = {
   // Maps metadata suffix to the set of absolute parent metadata xml file paths

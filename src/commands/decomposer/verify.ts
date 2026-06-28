@@ -1,11 +1,10 @@
 'use strict';
 
-import { SfCommand, Flags } from '@salesforce/sf-plugins-core';
 import { Messages } from '@salesforce/core';
-
-import { DECOMPOSED_FILE_TYPES, DECOMPOSED_STRATEGIES } from '../../helpers/constants.js';
+import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
 import { verifyMetadataTypes } from '../../core/verifyMetadataTypes.js';
 import { loadOverridesFromConfig, resolveDefaultConfigPath } from '../../helpers/configOverrides.js';
+import { DECOMPOSED_FILE_TYPES, DECOMPOSED_STRATEGIES } from '../../helpers/constants.js';
 import { VerifyResult } from '../../helpers/types.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);

@@ -1,9 +1,8 @@
 'use strict';
 
-import { describe, it, expect } from 'vitest';
-
-import uniqueIdElements from '../../src/metadata/uniqueIdElements.js';
+import { describe, expect, it } from 'vitest';
 import { getUniqueIdElements } from '../../src/metadata/getUniqueIdElements.js';
+import uniqueIdElements from '../../src/metadata/uniqueIdElements.js';
 
 describe('uniqueIdElements registry', () => {
   it('returns the documented list for `entitlementProcess` (covers <milestones>/<milestoneName>)', () => {

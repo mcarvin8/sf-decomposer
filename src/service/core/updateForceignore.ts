@@ -1,7 +1,7 @@
 'use strict';
 
-import { join } from 'node:path';
 import { readFile, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
 
 export type ProcessedMeta = {
   directoryName: string;

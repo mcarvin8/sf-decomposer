@@ -5,9 +5,9 @@ import { resolve } from 'node:path';
 import { Hook } from '@oclif/core';
 
 import { decomposeMetadataTypes } from '../core/decomposeMetadataTypes.js';
+import { HOOK_CONFIG_JSON } from '../helpers/constants.js';
 import { ConfigFile, DecomposeOptions, PostRetrieveHookOptions } from '../helpers/types.js';
 import { getRepoRoot } from '../service/core/getRepoRoot.js';
-import { HOOK_CONFIG_JSON } from '../helpers/constants.js';
 
 type HookFunction = (this: Hook.Context, options: PostRetrieveHookOptions) => Promise<void>;
 

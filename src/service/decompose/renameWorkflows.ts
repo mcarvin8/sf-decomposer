@@ -1,10 +1,10 @@
 /* eslint-disable no-await-in-loop */
 'use strict';
 
-import { join } from 'node:path';
 import { readdir, rename } from 'node:fs/promises';
+import { join } from 'node:path';
 
-import { WORKFLOW_SUFFIX_MAPPING, CONCURRENCY_LIMITS } from '../../helpers/constants.js';
+import { CONCURRENCY_LIMITS, WORKFLOW_SUFFIX_MAPPING } from '../../helpers/constants.js';
 import { pLimit } from '../../helpers/pLimit.js';
 
 export async function renameWorkflows(directory: string): Promise<void> {

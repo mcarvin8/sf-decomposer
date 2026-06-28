@@ -1,11 +1,10 @@
 'use strict';
 
-import { resolve, join, basename } from 'node:path';
-import { readFile, readdir } from 'node:fs/promises';
-
-import { getRepoRoot } from '../service/core/getRepoRoot.js';
-import { SfdxProject } from '../helpers/types.js';
+import { readdir, readFile } from 'node:fs/promises';
+import { basename, join, resolve } from 'node:path';
 import { IGNORE_FILE, SFDX_PROJECT_FILE_NAME } from '../helpers/constants.js';
+import { SfdxProject } from '../helpers/types.js';
+import { getRepoRoot } from '../service/core/getRepoRoot.js';
 
 export async function getPackageDirectories(
   metaDirectory: string,

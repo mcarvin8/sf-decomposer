@@ -1,15 +1,14 @@
 'use strict';
 
-import { dirname, basename } from 'node:path';
-
-import { getRegistryValuesBySuffix } from '../metadata/getRegistryValuesBySuffix.js';
-import { parseManifest, ManifestFilter } from '../metadata/parseManifest.js';
-import { decomposeFileHandler } from '../service/decompose/decomposeFileHandler.js';
+import { basename, dirname } from 'node:path';
+import { resolveDecomposeOptionsForType } from '../helpers/configOverrides.js';
 import { CONCURRENCY_LIMITS } from '../helpers/constants.js';
 import { pLimit } from '../helpers/pLimit.js';
-import { DecomposerResult, DecomposeOptions } from '../helpers/types.js';
-import { resolveDecomposeOptionsForType } from '../helpers/configOverrides.js';
+import { DecomposeOptions, DecomposerResult } from '../helpers/types.js';
+import { getRegistryValuesBySuffix } from '../metadata/getRegistryValuesBySuffix.js';
+import { ManifestFilter, parseManifest } from '../metadata/parseManifest.js';
 import { ProcessedMeta, updateForceignoreFile } from '../service/core/updateForceignore.js';
+import { decomposeFileHandler } from '../service/decompose/decomposeFileHandler.js';
 
 export async function decomposeMetadataTypes(options: DecomposeOptions): Promise<DecomposerResult> {
   const {

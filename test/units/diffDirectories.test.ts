@@ -3,9 +3,9 @@
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { diffDirectories, xmlEquivalent, canonicalJson } from '../../src/service/verify/diffDirectories.js';
+import { canonicalJson, diffDirectories, xmlEquivalent } from '../../src/service/verify/diffDirectories.js';
 
 describe('diffDirectories', () => {
   let refDir: string;

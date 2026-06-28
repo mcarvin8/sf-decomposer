@@ -1,7 +1,7 @@
 'use strict';
 
 import { readdir, stat } from 'node:fs/promises';
-import { join, dirname, basename } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 import { ReassembleXMLFileHandler } from 'config-disassembler';
 
 import { CONCURRENCY_LIMITS } from '../../helpers/constants.js';

@@ -1,6 +1,6 @@
 'use strict';
 
-import { readdir, stat, rename, copyFile, unlink, mkdir } from 'node:fs/promises';
+import { copyFile, mkdir, readdir, rename, stat, unlink } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { CONCURRENCY_LIMITS } from '../../helpers/constants.js';
 import { pLimit } from '../../helpers/pLimit.js';
