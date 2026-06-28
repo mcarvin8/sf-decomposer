@@ -14,7 +14,7 @@ mutate the source archive; everything happens in a per-type workspace under
 ## Indicators each script reports
 
 | Indicator                            | What it catches                                                                                                                            |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+|--------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------|
 | `origFiles != rebuiltFiles`          | A whole metadata file was lost on round-trip (severe).                                                                                     |
 | `contentSetDiff > 0`                 | Per-file `<name>` multiset differs between original and rebuilt — a uniqueIdElements collision dropped child elements.                     |
 | `parentOnlyDirs > 0`                 | A dotted-fullName type produced parent-only output dirs — the merge bug fixed by config-disassembler 0.4.4.                                |

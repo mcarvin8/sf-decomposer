@@ -1,0 +1,79 @@
+---
+# Configuration file for MegaLinter
+# See all available variables at https://megalinter.io/latest/config-file/ and in linters documentation
+
+APPLY_FIXES: all
+
+DEFAULT_BRANCH: main
+
+DISABLE:
+  - CSS
+  - EDITORCONFIG
+  - HTML
+  - JAVASCRIPT
+
+DISABLE_LINTERS:
+  - BASH_EXEC
+  - COPYPASTE_JSCPD
+  - JSON_JSONLINT
+  - JSON_NPM_PACKAGE_JSON_LINT
+  - JSON_PRETTIER
+  - MARKDOWN_MARKDOWN_LINK_CHECK
+  - REPOSITORY_GIT_DIFF
+  - REPOSITORY_SECRETLINT
+  - REPOSITORY_SEMGREP
+  - REPOSITORY_SYFT
+  - REPOSITORY_TRIVY_SBOM
+  - SPELL_CODESPELL
+  - SPELL_CSPELL
+  - SPELL_MISSPELL
+  - SPELL_PROSELINT
+  - TYPESCRIPT_ES
+  - TYPESCRIPT_PRETTIER
+  - TYPESCRIPT_STANDARD
+  - YAML_PRETTIER
+  - YAML_YAMLLINT
+  - XML_XMLLINT
+
+DISABLE_ERRORS_LINTERS:
+  - ACTION_ACTIONLINT
+  - ACTION_ZIZMOR
+  - JSON_V8R
+  - REPOSITORY_CHECKOV
+  - REPOSITORY_GRYPE
+  - REPOSITORY_OSV_SCANNER
+  - REPOSITORY_TRIVY
+  - SPELL_LYCHEE
+
+ACTION_ZIZMOR_UNSECURED_ENV_VARIABLES:
+  - GITHUB_TOKEN
+
+ADDITIONAL_EXCLUDED_DIRECTORIES:
+  - .wireit
+  - node_modules
+  - lib
+  - megalinter-reports
+
+BASH_SHELLCHECK_FILTER_REGEX_EXCLUDE: (husky)
+MARKDOWN_MARKDOWNLINT_FILTER_REGEX_EXCLUDE: messages/
+# Empty-document fixtures intentionally exercise the empty-from
+# code paths in MetadataDiff and the streaming reader. xmllint flags
+# them as malformed which is correct — that's the point of the fixture.
+XML_XMLLINT_FILTER_REGEX_EXCLUDE: fixtures
+
+TYPESCRIPT_DEFAULT_STYLE: prettier
+
+FLAVOR_SUGGESTIONS: false
+GITHUB_STATUS_REPORTER: false
+SHOW_ELAPSED_TIME: true
+FILEIO_REPORTER: false
+REPORTERS_MARKDOWN_SUMMARY_TYPE: table-sections
+
+# LLM Advisor (requires GOOGLE_API_KEY secret)
+# LLM_ADVISOR_LEVEL: ERROR
+# LLM_PROVIDER: google
+# LLM_MODEL_NAME: gemini-2.5-flash
+# LLM_MAX_TOKENS: "10000"
+# LLM_TEMPERATURE: "0.1"
+
+# DISABLE_ERRORS: true # Uncomment if you want MegaLinter to detect errors but not block CI to pass
