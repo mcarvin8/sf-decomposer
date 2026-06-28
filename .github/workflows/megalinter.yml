@@ -1,9 +1,6 @@
 name: MegaLinter
 
 on:
-  push:
-    branches-ignore:
-      - main
   pull_request:
     branches:
       - main
@@ -27,7 +24,6 @@ jobs:
       contents: write
       issues: write
       pull-requests: write
-      workflows: write
 
     steps:
       - name: Checkout
@@ -103,3 +99,4 @@ jobs:
           commit_message: '[MegaLinter] Apply linters fixes'
           commit_user_name: megalinter-bot
           commit_user_email: 129584137+megalinter-bot@users.noreply.github.com
+          file_pattern: '. :!.github/workflows/**'
