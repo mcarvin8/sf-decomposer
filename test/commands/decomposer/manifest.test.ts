@@ -1,15 +1,14 @@
 'use strict';
 
-import { mkdtemp, rm, writeFile, readdir, stat } from 'node:fs/promises';
+import { cp, mkdtemp, readdir, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { cp } from 'node:fs/promises';
-import { describe, it, expect, beforeAll, afterAll, vi, type Mock } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, type Mock, vi } from 'vitest';
 
 import { decomposeMetadataTypes } from '../../../src/core/decomposeMetadataTypes.js';
 import { recomposeMetadataTypes } from '../../../src/core/recomposeMetadataTypes.js';
-import { SFDX_CONFIG_FILE } from '../../utils/constants.js';
 import { compareDirectories } from '../../utils/compareDirectories.js';
+import { SFDX_CONFIG_FILE } from '../../utils/constants.js';
 
 const MANIFEST_XML = `<?xml version="1.0" encoding="UTF-8"?>
 <Package xmlns="http://soap.sforce.com/2006/04/metadata">

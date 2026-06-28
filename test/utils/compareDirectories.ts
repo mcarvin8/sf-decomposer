@@ -1,8 +1,8 @@
 'use strict';
 
 import { strictEqual } from 'node:assert';
-import { join } from 'node:path';
 import { readdir, readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 
 export async function compareDirectories(referenceDir: string, mockDir: string): Promise<void> {
   const entriesinRef = await readdir(referenceDir, { withFileTypes: true });

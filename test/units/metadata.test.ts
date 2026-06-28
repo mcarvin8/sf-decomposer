@@ -1,10 +1,9 @@
 'use strict';
 
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { cp } from 'node:fs/promises';
-import { describe, it, expect, beforeAll, afterAll, vi, type Mock } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, type Mock, vi } from 'vitest';
 
 import { decomposeMetadataTypes } from '../../src/core/decomposeMetadataTypes.js';
 import { SFDX_CONFIG_FILE } from '../utils/constants.js';

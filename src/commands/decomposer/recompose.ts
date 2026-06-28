@@ -1,7 +1,7 @@
 'use strict';
 
-import { SfCommand, Flags } from '@salesforce/sf-plugins-core';
 import { Messages } from '@salesforce/core';
+import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
 
 import { recomposeMetadataTypes } from '../../core/recomposeMetadataTypes.js';
 import { DecomposerResult } from '../../helpers/types.js';

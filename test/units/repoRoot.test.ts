@@ -1,5 +1,5 @@
 import { access } from 'node:fs/promises';
-import { describe, it, expect, vi, type Mock } from 'vitest';
+import { describe, expect, it, type Mock, vi } from 'vitest';
 import { getRepoRoot } from '../../src/service/core/getRepoRoot.js';
 
 vi.mock('node:fs/promises');

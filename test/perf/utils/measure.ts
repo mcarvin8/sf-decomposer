@@ -1,6 +1,6 @@
 'use strict';
 
-import { mkdir, writeFile, readdir, stat } from 'node:fs/promises';
+import { mkdir, readdir, stat, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 

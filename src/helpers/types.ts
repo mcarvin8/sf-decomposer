@@ -78,12 +78,6 @@ export type PostRetrieveHookOptions = {
   config: Config;
 };
 
-export type FieldPermission = {
-  editable?: boolean;
-  field: string;
-  readable?: boolean;
-};
-
 export type DecomposeOptions = {
   metadataTypes?: string[];
   prepurge: boolean;

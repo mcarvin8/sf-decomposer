@@ -1,13 +1,12 @@
 'use strict';
 
-import { mkdtemp, rm, readFile, writeFile, cp, stat, mkdir } from 'node:fs/promises';
+import { cp, mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve } from 'node:path';
-
-import { getRepoRoot } from '../service/core/getRepoRoot.js';
-import { diffDirectories } from '../service/verify/diffDirectories.js';
 import { SFDX_PROJECT_FILE_NAME } from '../helpers/constants.js';
 import { SfdxProject, VerifyDrift, VerifyOptions, VerifyResult } from '../helpers/types.js';
+import { getRepoRoot } from '../service/core/getRepoRoot.js';
+import { diffDirectories } from '../service/verify/diffDirectories.js';
 import { decomposeMetadataTypes } from './decomposeMetadataTypes.js';
 import { recomposeMetadataTypes } from './recomposeMetadataTypes.js';
 

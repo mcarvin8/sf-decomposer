@@ -3,12 +3,11 @@
 import { cp, mkdtemp, readdir, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest';
-
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { generate, type Profile } from '../../scripts/gen-perf-fixtures.js';
 import { decomposeMetadataTypes } from '../../src/core/decomposeMetadataTypes.js';
 import { recomposeMetadataTypes } from '../../src/core/recomposeMetadataTypes.js';
-import { generate, type Profile } from '../../scripts/gen-perf-fixtures.js';
-import { dirBytes, formatBytes, formatMs, measure, writeReport, type MeasureResult } from './utils/measure.js';
+import { dirBytes, formatBytes, formatMs, type MeasureResult, measure, writeReport } from './utils/measure.js';
 
 // Performance tests are intentionally heavy and DO NOT run as part of `npm test`.
 // They:

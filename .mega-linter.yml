@@ -64,8 +64,6 @@ MARKDOWN_MARKDOWNLINT_FILTER_REGEX_EXCLUDE: messages/
 # them as malformed which is correct — that's the point of the fixture.
 XML_XMLLINT_FILTER_REGEX_EXCLUDE: fixtures
 
-TYPESCRIPT_DEFAULT_STYLE: prettier
-
 FLAVOR_SUGGESTIONS: false
 GITHUB_STATUS_REPORTER: false
 SHOW_ELAPSED_TIME: true

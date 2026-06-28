@@ -1,6 +1,6 @@
-import { mkdir, writeFile, rm } from 'node:fs/promises';
+import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { describe, it, expect, beforeEach, afterEach, vi, type Mock } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 
 import { ResolvedDecomposeTypeOptions } from '../../src/helpers/configOverrides.js';
 import { DecomposerOverride } from '../../src/helpers/types.js';

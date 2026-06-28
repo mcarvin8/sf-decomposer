@@ -1,10 +1,9 @@
 'use strict';
 
-import { mkdtemp, rm, readdir, writeFile, readFile, copyFile } from 'node:fs/promises';
+import { copyFile, cp, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { cp } from 'node:fs/promises';
-import { describe, it, expect, beforeAll, beforeEach, afterAll, afterEach, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { decomposeMetadataTypes } from '../../../src/core/decomposeMetadataTypes.js';
 import { recomposeMetadataTypes } from '../../../src/core/recomposeMetadataTypes.js';

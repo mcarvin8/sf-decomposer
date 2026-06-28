@@ -4,9 +4,8 @@ import { mkdir, mkdtemp, realpath, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-
-import { getRegistryValuesBySuffix } from '../../src/metadata/getRegistryValuesBySuffix.js';
 import { DEFAULT_UNIQUE_ID_ELEMENTS } from '../../src/helpers/constants.js';
+import { getRegistryValuesBySuffix } from '../../src/metadata/getRegistryValuesBySuffix.js';
 import { SFDX_CONFIG_FILE } from '../utils/constants.js';
 
 // `getRegistryValuesBySuffix` is the gatekeeper for every decompose/recompose flow:

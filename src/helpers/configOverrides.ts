@@ -23,10 +23,11 @@ export async function resolveDefaultConfigPath(): Promise<string> {
   const configPath = resolve(repoRoot, HOOK_CONFIG_JSON);
   try {
     await access(configPath);
-  } catch {
+  } catch (err) {
     throw new Error(
       `--config was provided but ${HOOK_CONFIG_JSON} was not found at ${configPath}. ` +
         'Create the file in the repo root or omit --config.',
+      { cause: err },
     );
   }
   return configPath;
@@ -80,7 +81,7 @@ export async function loadOverridesFromConfig(configPath: string): Promise<Decom
   } catch (err) {
     /* istanbul ignore next -- @preserve: JSON.parse always throws SyntaxError instances. */
     const message = err instanceof Error ? err.message : String(err);
-    throw new Error(`Failed to parse ${configPath}: ${message}`);
+    throw new Error(`Failed to parse ${configPath}: ${message}`, { cause: err });
   }
 
   const overrides = parsed.overrides;

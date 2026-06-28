@@ -1,19 +1,18 @@
 'use strict';
 
-import { resolve, relative, join, dirname, basename } from 'node:path';
 import { readdir, stat } from 'node:fs/promises';
+import { basename, dirname, join, relative, resolve } from 'node:path';
 import { DisassembleXMLFileHandler } from 'config-disassembler';
-
-import { CUSTOM_LABELS_FILE, CONCURRENCY_LIMITS } from '../../helpers/constants.js';
-import { DecomposerOverride } from '../../helpers/types.js';
-import { pLimit } from '../../helpers/pLimit.js';
 import {
-  ResolvedDecomposeTypeOptions,
   hasComponentOverridesForType,
+  ResolvedDecomposeTypeOptions,
   resolveDecomposeOptionsForComponent,
 } from '../../helpers/configOverrides.js';
+import { CONCURRENCY_LIMITS, CUSTOM_LABELS_FILE } from '../../helpers/constants.js';
+import { pLimit } from '../../helpers/pLimit.js';
+import { DecomposerOverride } from '../../helpers/types.js';
 import { getMultiLevelDefault } from '../../metadata/getMultiLevelDefault.js';
-import { prePurgeLabels, moveAndRenameLabels } from './customLabels.js';
+import { moveAndRenameLabels, prePurgeLabels } from './customLabels.js';
 import { renameWorkflows } from './renameWorkflows.js';
 
 export async function decomposeFileHandler(

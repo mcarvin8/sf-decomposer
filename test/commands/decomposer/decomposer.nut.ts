@@ -1,12 +1,10 @@
 'use strict';
 
 import { cp, rm, writeFile } from 'node:fs/promises';
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-
 import { execCmd, TestSession } from '@salesforce/cli-plugins-testkit';
-
-import { METADATA_UNDER_TEST, SFDX_CONFIG_FILE, FORMATS } from '../../utils/constants.js';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { compareDirectories } from '../../utils/compareDirectories.js';
+import { FORMATS, METADATA_UNDER_TEST, SFDX_CONFIG_FILE } from '../../utils/constants.js';
 
 describe('non-unit tests', () => {
   let session: TestSession;

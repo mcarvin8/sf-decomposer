@@ -10,25 +10,19 @@
     "config-disassembler": "2.5.0"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.5.1",
     "@commitlint/cli": "20.4.2",
     "@commitlint/config-conventional": "20.4.2",
     "@salesforce/cli-plugins-testkit": "5.3.39",
     "@salesforce/dev-config": "4.3.3",
-    "@salesforce/prettier-config": "0.0.4",
     "@stryker-mutator/core": "9.6.1",
     "@stryker-mutator/vitest-runner": "9.6.1",
     "@types/node": "20.19.39",
-    "@eslint/js": "10.0.1",
-    "@typescript-eslint/eslint-plugin": "8.59.3",
-    "@typescript-eslint/parser": "8.59.3",
     "@vitest/coverage-v8": "4.1.5",
-    "eslint": "10.4.1",
-    "eslint-plugin-sf-plugin": "1.20.26",
     "husky": "9.1.7",
+    "knip": "6.23.0",
     "oclif": "4.22.73",
     "patch-package": "8.0.1",
-    "prettier": "3.8.4",
-    "pretty-quick": "4.2.2",
     "shx": "0.4.0",
     "ts-node": "10.9.2",
     "typescript": "5.8.3",
@@ -92,6 +86,7 @@
     "compile": "wireit",
     "format": "wireit",
     "lint": "wireit",
+    "lint:dependencies": "wireit",
     "postpack": "shx rm -f oclif.manifest.json oclif.lock",
     "prepack": "wireit",
     "prepare": "husky && patch-package",
@@ -131,24 +126,37 @@
       "clean": "if-file-deleted"
     },
     "format": {
-      "command": "prettier --write \"+(src|test)/**/*.+(ts|js|json)\"",
+      "command": "biome format --write src test",
       "files": [
         "src/**/*.ts",
         "test/**/*.ts",
-        ".prettier*"
+        "biome.json"
       ],
       "output": []
     },
     "lint": {
-      "command": "eslint src test --color --cache --cache-location .eslintcache",
+      "command": "biome check src test",
       "files": [
         "src/**/*.ts",
         "test/**/*.ts",
         "messages/**",
-        "eslint.config.mjs",
+        "biome.json",
         "**/tsconfig.json"
       ],
       "output": []
+    },
+    "lint:dependencies": {
+      "command": "knip",
+      "files": [
+        "src/**/*.ts",
+        "test/**/*.ts",
+        "knip.config.ts",
+        "package.json"
+      ],
+      "output": [],
+      "dependencies": [
+        "lint"
+      ]
     },
     "prepack": {
       "command": "oclif manifest && oclif readme",

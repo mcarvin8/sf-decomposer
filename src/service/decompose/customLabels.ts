@@ -1,10 +1,10 @@
 /* eslint-disable no-await-in-loop */
 'use strict';
 
+import { readdir, rename, rm, stat } from 'node:fs/promises';
 import { join } from 'node:path';
-import { readdir, stat, rm, rename } from 'node:fs/promises';
 
-import { CUSTOM_LABELS_FILE, CONCURRENCY_LIMITS } from '../../helpers/constants.js';
+import { CONCURRENCY_LIMITS, CUSTOM_LABELS_FILE } from '../../helpers/constants.js';
 import { pLimit } from '../../helpers/pLimit.js';
 import { moveFiles } from '../core/moveFiles.js';
 

@@ -1,13 +1,11 @@
 'use strict';
 
-import { mkdtemp, rm, writeFile, readFile, copyFile } from 'node:fs/promises';
+import { copyFile, cp, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { cp } from 'node:fs/promises';
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-
-import * as diffModule from '../../../src/service/verify/diffDirectories.js';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { verifyMetadataTypes } from '../../../src/core/verifyMetadataTypes.js';
+import * as diffModule from '../../../src/service/verify/diffDirectories.js';
 import { SFDX_CONFIG_FILE } from '../../utils/constants.js';
 
 describe('decomposer verify', () => {

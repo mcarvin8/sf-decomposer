@@ -3,9 +3,9 @@
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { updateForceignoreFile, type ProcessedMeta } from '../../src/service/core/updateForceignore.js';
+import { type ProcessedMeta, updateForceignoreFile } from '../../src/service/core/updateForceignore.js';
 
 describe('updateForceignoreFile', () => {
   let repoRoot: string;
