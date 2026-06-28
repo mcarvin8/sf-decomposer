@@ -1,18 +1,25 @@
-APPLY_FIXES: none
-VALIDATE_ALL_CODEBASE: false
+---
+# Configuration file for MegaLinter
+# See all available variables at https://megalinter.io/latest/config-file/ and in linters documentation
 
-# cspell:disable
-FILTER_REGEX_EXCLUDE: (\.git|node_modules|lib|coverage|fixtures|\.eslintcache)
-
-ENABLE_LINTERS:
-  - JAVASCRIPT_ES
-  - TYPESCRIPT_ES
-  - MARKDOWN_MARKDOWNLINT
-  - SPELL_CSPELL
-
-# Reuse existing ESLint config
-JAVASCRIPT_ES_CONFIG_FILE: .eslintrc.cjs
-TYPESCRIPT_ES_CONFIG_FILE: .eslintrc.cjs
-
+APPLY_FIXES: all # all, none, or list of linter keys
+# ENABLE: # If you use ENABLE variable, all other languages/formats/tooling-formats will be disabled by default
+# ENABLE_LINTERS: # If you use ENABLE_LINTERS variable, all other linters will be disabled by default
+# DISABLE:
+# - COPYPASTE # Uncomment to disable checks of excessive copy-pastes
+# - SPELL # Uncomment to disable checks of spelling mistakes
+DISABLE_LINTERS:
+  - ACTION_ZIZMOR
+  - JSON_V8R
+  - MARKDOWN_MARKDOWN_LINK_CHECK
+  - SPELL_MISSPELL
+  - TYPESCRIPT_PRETTIER
+  - TYPESCRIPT_STANDARD
+MARKDOWN_MARKDOWNLINT_FILTER_REGEX_EXCLUDE: 'messages/'
+# Empty-document fixtures intentionally exercise the empty-from
+# code paths in MetadataDiff and the streaming reader. xmllint flags
+# them as malformed which is correct — that's the point of the fixture.
+XML_XMLLINT_FILTER_REGEX_EXCLUDE: 'fixtures'
 SHOW_ELAPSED_TIME: true
 FILEIO_REPORTER: false
+# DISABLE_ERRORS: true # Uncomment if you want MegaLinter to detect errors but not block CI to pass
