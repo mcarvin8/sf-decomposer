@@ -1,1 +1,3 @@
+STAGED=$(git diff --cached --name-only)
 npx @biomejs/biome check --write --staged
+[ -n "$STAGED" ] && echo "$STAGED" | xargs git add
