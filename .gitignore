@@ -64,3 +64,8 @@ stdout*.txt
 
 .sf/
 .sfdx/
+
+# megalinter output
+megalinter-reports/
+.megalinter_github_conf/
+mega-linter.log
