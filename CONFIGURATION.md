@@ -162,7 +162,7 @@ Within one scope, the `(file_pattern, root_to_strip)` pair must be unique across
 <element>[+<element>...][,<element>[+<element>...]...]
 ```
 
-**Error behaviour:**
+**Error behavior:**
 
 - An empty string or an entry with empty comma slots is rejected at **config-load time** — the command fails immediately before any decomposition starts.
 - Element names that pass format validation but do not exist in the XML are silently ignored by the disassembler crate; it falls back to SHA-256 hash filenames for the affected elements (the same behaviour as today when no registry entry matches). The plugin does not throw an error and continues decomposing all remaining files.
