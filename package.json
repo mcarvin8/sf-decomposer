@@ -20,6 +20,7 @@
     "@types/node": "20.19.39",
     "@vitest/coverage-v8": "4.1.5",
     "husky": "9.1.7",
+    "knip": "^6.23.0",
     "oclif": "4.22.73",
     "patch-package": "8.0.1",
     "shx": "0.4.0",
@@ -85,6 +86,7 @@
     "compile": "wireit",
     "format": "wireit",
     "lint": "wireit",
+    "lint:dependencies": "wireit",
     "postpack": "shx rm -f oclif.manifest.json oclif.lock",
     "prepack": "wireit",
     "prepare": "husky && patch-package",
@@ -142,6 +144,19 @@
         "**/tsconfig.json"
       ],
       "output": []
+    },
+    "lint:dependencies": {
+      "command": "knip",
+      "files": [
+        "src/**/*.ts",
+        "test/**/*.ts",
+        "knip.config.ts",
+        "package.json"
+      ],
+      "output": [],
+      "dependencies": [
+        "lint"
+      ]
     },
     "prepack": {
       "command": "oclif manifest && oclif readme",
