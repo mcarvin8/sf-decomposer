@@ -58,7 +58,7 @@ export const prerun: Hook<'prerun'> = async function (options) {
   try {
     const jsonString: string = await readFile(configPath, 'utf-8');
     configFile = JSON.parse(jsonString) as ConfigFile;
-  } catch (error) {
+  } catch (_error) {
     return;
   }
 
