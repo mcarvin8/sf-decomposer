@@ -50,7 +50,7 @@ async function searchRecursively(dxDirectory: string, subDirectoryName: string):
     );
 
     return [...directMatches, ...deeperResults.flat()];
-  } catch (error) {
+  } catch (_error) {
     // Handle permission errors or other filesystem errors gracefully
     /* istanbul ignore next -- @preserve: Filesystem permission errors are platform-specific */
     return [];
