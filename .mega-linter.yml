@@ -54,6 +54,8 @@ ADDITIONAL_EXCLUDED_DIRECTORIES:
   - lib
   - megalinter-reports
   - fixtures
+  - examples
+  - patches
 
 BASH_SHELLCHECK_FILTER_REGEX_EXCLUDE: (husky)
 MARKDOWN_MARKDOWNLINT_FILTER_REGEX_EXCLUDE: messages/
