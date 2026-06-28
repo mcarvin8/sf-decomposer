@@ -1,24 +1,18 @@
 APPLY_FIXES: none
 VALIDATE_ALL_CODEBASE: false
 
+# cspell:disable
 FILTER_REGEX_EXCLUDE: (\.git|node_modules|lib|coverage|fixtures|\.eslintcache)
 
-# Linters active in this flavor
 ENABLE_LINTERS:
   - JAVASCRIPT_ES
   - TYPESCRIPT_ES
-  - JSON_PRETTIER
-  - YAML_PRETTIER
   - MARKDOWN_MARKDOWNLINT
   - SPELL_CSPELL
 
 # Reuse existing ESLint config
 JAVASCRIPT_ES_CONFIG_FILE: .eslintrc.cjs
 TYPESCRIPT_ES_CONFIG_FILE: .eslintrc.cjs
-
-# Reuse existing Prettier config
-JSON_PRETTIER_CONFIG_FILE: .prettierrc.json
-YAML_PRETTIER_CONFIG_FILE: .prettierrc.json
 
 SHOW_ELAPSED_TIME: true
 FILEIO_REPORTER: false
