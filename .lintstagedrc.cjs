@@ -1,3 +1,3 @@
 module.exports = {
-  '**/*.{js,json,md}?(x)': () => 'npm run reformat',
+  '**/*.{ts,js}': ['npx @biomejs/biome check --error-on-warnings --write'],
 };
