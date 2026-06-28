@@ -10,7 +10,7 @@
     "config-disassembler": "2.5.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.5.1",
+    "@biomejs/biome": "2.5.1",
     "@commitlint/cli": "20.4.2",
     "@commitlint/config-conventional": "20.4.2",
     "@salesforce/cli-plugins-testkit": "5.3.39",
