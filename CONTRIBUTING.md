@@ -47,8 +47,9 @@ Then use `sf decomposer` in a Salesforce DX project to test your changes.
 
 ### Lint and format
 
-- **Lint:** `npm run lint` (runs ESLint on `src` and `test`)
-- **Format:** `npm run format` (Prettier on source and test files)
+- **Lint:** `npm run lint` (runs Biome check on `src` and `test`)
+- **Format:** `npm run format` (runs Biome formatter on source and test files)
+- **Dependency lint:** `npm run lint:dependencies` (runs Knip to detect unused exports and dependencies)
 
 Fix lint/format issues before submitting a PR.
 
@@ -71,7 +72,7 @@ Example: `feat(decompose): add support for custom metadata type X`
 
 ### Unit tests
 
-Run unit tests (with coverage). New code should satisfy the existing Jest coverage requirements.
+Run unit tests (with coverage). New code should maintain 100% coverage (enforced by Vitest + V8).
 
 ```bash
 npm run test:only
