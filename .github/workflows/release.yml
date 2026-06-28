@@ -94,7 +94,7 @@ jobs:
     # Runs after a successful publish so every released version has a
     # comparable timing artifact attached to its run. Does not gate the
     # release - it's an observability run, not a quality gate.
-    needs: smoke-test
+    needs: [smoke-test, release]
     if: needs.release.outputs.published == 'true'
     uses: ./.github/workflows/perf.yml
     with:
