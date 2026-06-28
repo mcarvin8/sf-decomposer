@@ -23,7 +23,7 @@ If you want the underlying option grammar instead of recipes, see the [main READ
 Three knobs cover almost every case:
 
 | Symptom of the source XML                                                                     | Reach for                                                                                          |
-| --------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+|-----------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------|
 | One repeating section at the top level (e.g. `<labels>` of a custom-labels file).             | `strategy: unique-id` (default).                                                                   |
 | Lots of small repeatable tags, you want one file per tag-name, not per-instance.              | `strategy: grouped-by-tag`.                                                                        |
 | `grouped-by-tag`, but a few specific tags (e.g. `objectPermissions`) need finer-grained diff. | Add `splitTags`.                                                                                   |
@@ -36,7 +36,7 @@ Hard rules the plugin always enforces (so you don't have to):
 Built-in `multiLevel` defaults — applied automatically when `strategy` is `unique-id` and you do not supply your own `multiLevel` for that type. You can replace any of them by setting an explicit `multiLevel` on the override.
 
 | Metadata type         | Built-in `multiLevel`                                               |
-| --------------------- | ------------------------------------------------------------------- |
+|-----------------------|---------------------------------------------------------------------|
 | `bot`                 | `["botDialogs:botDialogs:developerName", "botSteps:botSteps:type"]` |
 | `loyaltyProgramSetup` | `"programProcesses:programProcesses:parameterName,ruleName"`        |
 
@@ -265,7 +265,7 @@ layouts/
 These follow the same pattern; pick the rules that match your repo's data. None of these are decomposed natively by Salesforce.
 
 | Metadata type                              | Suggested override                                                                                                                                                                                                                                        |
-| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|--------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `flow`                                     | `multiLevel: ["actionCalls:actionCalls:name", "decisions:decisions:name", "rules:rules:name"]`                                                                                                                                                            |
 | `globalValueSet`                           | `multiLevel: ["customValue:customValue:fullName"]` — handy when value sets have hundreds of picks.                                                                                                                                                        |
 | `field` (CustomField)                      | `multiLevel: "valueSet:valueSetDefinition:fullName"` — splits each picklist value into its own file. Only effective on fields that define picklist values inline; fields referencing a global value set or non-picklist fields are leaf-only and skipped. |

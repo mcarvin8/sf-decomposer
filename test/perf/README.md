@@ -40,7 +40,7 @@ Override the list with `PERF_TYPES=permissionset,profile` to time a subset.
 Profiles:
 
 | Profile  | Fixture total | Notes                                                      |
-| -------- | ------------- | ---------------------------------------------------------- |
+|----------|---------------|------------------------------------------------------------|
 | `small`  | ~1 MB         | sanity check; finishes in seconds                          |
 | `medium` | ~10 MB        | local dev iteration                                        |
 | `large`  | ~30 MB        | default; calibrated to mimic a 10+ year-old enterprise org |
