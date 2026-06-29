@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.33.2](https://github.com/mcarvin8/sf-decomposer/compare/v6.33.1...v6.33.2) (2026-06-29)
+
+
+### Bug Fixes
+
+* **deps:** bump all deps, drop Node 20 support ([#505](https://github.com/mcarvin8/sf-decomposer/issues/505)) ([7425c87](https://github.com/mcarvin8/sf-decomposer/commit/7425c87c24721ab8e41938ed6fb85792ef56dff4))
+
 ## [6.33.1](https://github.com/mcarvin8/sf-decomposer/compare/v6.33.0...v6.33.1) (2026-06-25)
 
 
