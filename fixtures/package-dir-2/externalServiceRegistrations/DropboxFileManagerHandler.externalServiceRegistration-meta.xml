@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ExternalServiceRegistration xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Collection of requested @AuraEnabled Apex method APIs</description>
+    <label>DropboxFileManagerHandler</label>
+    <namedCredential>DropboxContent</namedCredential>
+    <registrationProvider>DropboxFileManagerHandler</registrationProvider>
+    <registrationProviderType>AuraEnabled</registrationProviderType>
+    <schemaType>OpenApi3</schemaType>
+    <schema>openapi: 3.0.1
+info:
+  title: "@AuraEnabled Apex method APIs"
+  version: 1.0.0
+paths:
+  /DropboxFileManagerHandler/uploadFile:
+    post:
+      operationId: uploadFile
+      responses:
+        "200":
+          description: Status Code 200
+</schema>
+    <schemaUploadFileExtension>yaml</schemaUploadFileExtension>
+    <schemaUploadFileName>dropboxfilemanagerhandler_openapi</schemaUploadFileName>
+    <status>Complete</status>
+    <systemVersion>3</systemVersion>
+    <operations>
+        <name>uploadFile</name>
+        <active>true</active>
+    </operations>
+</ExternalServiceRegistration>

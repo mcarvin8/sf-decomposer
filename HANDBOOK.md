@@ -12,6 +12,7 @@ If you want the underlying option grammar instead of recipes, see the [main READ
 
 - [Choosing a strategy](#choosing-a-strategy)
 - [Common pitfalls](#common-pitfalls)
+- [ExternalServiceRegistration (ESR / OpenAPI schema)](#externalserviceregistration-esr--openapi-schema)
 - [Bots (Agentforce and Einstein)](#bots-agentforce-and-einstein)
 - [Flexipages (Lightning App / Record / Home pages)](#flexipages-lightning-app--record--home-pages)
 - [Layouts (page layouts)](#layouts-page-layouts)
@@ -31,7 +32,8 @@ Three knobs cover almost every case:
 
 Hard rules the plugin always enforces (so you don't have to):
 
-- `labels` and `loyaltyProgramSetup` are always treated as `unique-id` regardless of any override.
+- `labels`, `loyaltyProgramSetup`, and `externalServiceRegistration` are always treated as `unique-id` regardless of any override.
+- `externalServiceRegistration` always applies sidecar extraction for the `<schema>` element (written to `<componentName>.yaml`). No config needed.
 
 Built-in `multiLevel` defaults — applied automatically when `strategy` is `unique-id` and you do not supply your own `multiLevel` for that type. You can replace any of them by setting an explicit `multiLevel` on the override.
 
@@ -63,6 +65,48 @@ There are two distinct causes; run the decompose under `RUST_LOG=warn` to tell t
 
 - **No `WARN` line.** Your `unique_id_elements` (or the rule's third part) didn't resolve to a non-empty value on those items. Check the source XML for the elements you listed — names are case-sensitive and live at the immediate child level of each repeating item. The plugin only walks one level deep when picking a UID.
 - **A `WARN` line of the form `uniqueIdElements collision: <parentTag> id "X" matched N sibling elements`.** The configured key is too narrow — multiple siblings legitimately share the same value, so the collision detector falls back to per-element SHA-256 hashes for that group rather than overwrite. Add a tiebreaker to `unique_id_elements` (e.g. a compound like `name+recordType`) and re-decompose with `prePurge: true`.
+
+## ExternalServiceRegistration (ESR / OpenAPI schema)
+
+**Why this is hard.** An `ExternalServiceRegistration` embeds its full OpenAPI (or other) schema document as raw text inside a `<schema>` XML element. This block can be hundreds of lines of YAML or JSON. Storing it inline in the `.externalServiceRegistration-meta.xml` file produces large, noisy diffs whenever the schema changes.
+
+**What the plugin does automatically.** No config is needed. The plugin applies these rules to every ESR component:
+
+- **Forced `unique-id` strategy** — grouped-by-tag is a no-op for singleton-per-component types and is silently upgraded.
+- **Sidecar extraction** — the `<schema>` element's text content is extracted to `<componentName>.yaml` alongside the decomposed XML shards, and a `.sidecars.json` manifest is written to record the extraction.
+- **Auto-detect on recompose** — recompose reads `.sidecars.json` and reinserts the schema content into `<schema>` before writing the final XML. No recompose flag is needed.
+
+**On-disk layout** for `DropboxFileManagerHandler.externalServiceRegistration-meta.xml`:
+
+```
+externalServiceRegistrations/
+└── DropboxFileManagerHandler/
+    ├── DropboxFileManagerHandler.yaml        ← extracted <schema> content
+    ├── .sidecars.json                        ← sidecar manifest; do not hand-edit
+    └── DropboxFileManagerHandler/            ← unique-id decomposed XML shards
+        ├── description.externalServiceRegistration-meta.xml
+        ├── label.externalServiceRegistration-meta.xml
+        ├── schema.externalServiceRegistration-meta.xml  ← placeholder (empty text)
+        ├── status.externalServiceRegistration-meta.xml
+        ├── operations/
+        │   └── uploadFile.operations-meta.xml
+        └── ...
+```
+
+**Override example.** Only needed if you want a different extension for the schema file (e.g. `json`):
+
+```json
+{
+  "overrides": [
+    {
+      "metadataTypes": ["externalServiceRegistration"],
+      "sidecarElements": "schema:json"
+    }
+  ]
+}
+```
+
+> **Conflict with Salesforce native decomposition.** Salesforce CLI also decomposes `ExternalServiceRegistration` natively. Never use both on the same type in the same project. See [METADATA_SUPPORT.md](./METADATA_SUPPORT.md) for guidance.
 
 ## Bots (Agentforce and Einstein)
 
