@@ -44,7 +44,7 @@ Complete these steps once per project. After setup, see [Daily Workflow](#daily-
 ### 1. Requirements
 
 - [Salesforce CLI](https://developer.salesforce.com/tools/sfdxcli) (`sf`) installed
-- Node.js 20.x or later
+- Node.js 22.x or later
 - A Salesforce DX project with `sfdx-project.json` and package directories
 
 **Supported Platforms**

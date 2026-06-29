@@ -36,7 +36,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        node-version: ['20', '22', '24']
+        node-version: ['22', '24', '25']
     steps:
       - name: Configure git longpaths if on Windows
         if: ${{ runner.os == 'Windows' }}
@@ -64,7 +64,7 @@ jobs:
           SF_DISABLE_TELEMETRY: true
 
       - name: Upload coverage
-        if: runner.os == 'Linux' && matrix.node-version == '20'
+        if: runner.os == 'Linux' && matrix.node-version == '22'
         uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -79,7 +79,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        node-version: ['20', '22', '24']
+        node-version: ['22', '24', '25']
     steps:
       - name: Configure git longpaths if on Windows
         if: ${{ runner.os == 'Windows' }}
