@@ -84,6 +84,7 @@
   "scripts": {
     "build": "wireit",
     "clean": "wireit",
+    "clean:build": "wireit",
     "clean:package-manager": "wireit",
     "compile": "wireit",
     "format": "wireit",
