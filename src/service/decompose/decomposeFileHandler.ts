@@ -189,6 +189,12 @@ function disassembleHandler(
     }
   }
 
+  // Resolve sidecarElements: explicit override wins; ESR defaults to schema:yaml.
+  let sidecarElements = options.sidecarElements;
+  if (sidecarElements === undefined && metaSuffix === 'externalServiceRegistration') {
+    sidecarElements = 'schema:yaml';
+  }
+
   handler.disassemble({
     filePath,
     uniqueIdElements,
@@ -199,6 +205,7 @@ function disassembleHandler(
     strategy: effectiveStrategy,
     multiLevel,
     splitTags,
+    sidecarElements,
   });
 }
 
@@ -209,7 +216,8 @@ function disassembleHandler(
  */
 function applyHardStrategyRules(metaSuffix: string, strategy: string): string {
   if (strategy !== 'grouped-by-tag') return strategy;
-  if (metaSuffix === 'labels' || metaSuffix === 'loyaltyProgramSetup') return 'unique-id';
+  if (metaSuffix === 'labels' || metaSuffix === 'loyaltyProgramSetup' || metaSuffix === 'externalServiceRegistration')
+    return 'unique-id';
   return strategy;
 }
 

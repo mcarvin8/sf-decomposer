@@ -58,6 +58,12 @@ export type ResolvedDecomposeTypeOptions = {
    * prepended by `getRegistryValuesBySuffix` regardless.
    */
   uniqueIdElements?: string;
+  /**
+   * Resolved custom `sidecarElements` spec, when explicitly set in an override. Comma-separated
+   * `element:extension` pairs. When absent, built-in per-type defaults apply (e.g.
+   * `externalServiceRegistration` defaults to `"schema:yaml"`).
+   */
+  sidecarElements?: string;
 };
 
 const SPLIT_TAGS_MODES = new Set<string>(['split', 'group']);
@@ -179,6 +185,10 @@ function validateOverrideValues(override: DecomposerOverride, i: number): void {
 
   if (override.uniqueIdElements !== undefined) {
     validateUniqueIdElementsSpec(override.uniqueIdElements, i);
+  }
+
+  if (override.sidecarElements !== undefined) {
+    validateSidecarElementsSpec(override.sidecarElements, i);
   }
 }
 
@@ -335,6 +345,44 @@ export function validateUniqueIdElementsSpec(spec: string, i: number): void {
   }
 }
 
+/**
+ * Validate the `sidecarElements` spec at config-load time. Must be a non-empty
+ * comma-separated list of `element:extension` pairs, each with exactly two colon-separated
+ * parts. Element names must be unique within the spec. Deeper validation (whether the
+ * named element exists in the XML) is left to the runtime crate.
+ */
+export function validateSidecarElementsSpec(spec: string, i: number): void {
+  if (typeof spec !== 'string' || spec.trim() === '') {
+    throw new Error(`Override at index ${i} has an empty "sidecarElements" string.`);
+  }
+
+  const pairs = spec.split(',').map((pair) => pair.trim());
+  const seenElements = new Set<string>();
+
+  for (const pair of pairs) {
+    if (pair === '') {
+      throw new Error(`Override at index ${i} "sidecarElements" contains an empty pair.`);
+    }
+    const parts = pair.split(':').map((part) => part.trim());
+    if (parts.length !== 2) {
+      throw new Error(
+        `Override at index ${i} "sidecarElements" pair "${pair}" must have exactly 2 colon-separated parts ` +
+          '("<element>:<extension>").',
+      );
+    }
+    const [element, extension] = parts;
+    if (!element || !extension) {
+      throw new Error(`Override at index ${i} "sidecarElements" pair "${pair}" has empty parts.`);
+    }
+    if (seenElements.has(element)) {
+      throw new Error(
+        `Override at index ${i} "sidecarElements" contains duplicate element "${element}". Each element may appear at most once.`,
+      );
+    }
+    seenElements.add(element);
+  }
+}
+
 function validateMetadataTypeEntries(metadataTypes: string[], i: number, seenTypes: Set<string>): void {
   for (const metadataType of metadataTypes) {
     if (typeof metadataType !== 'string' || metadataType.trim() === '') {
@@ -443,6 +491,7 @@ export function resolveDecomposeOptionsForType(
     splitTags: override.splitTags ?? base.splitTags,
     multiLevel: override.multiLevel ?? base.multiLevel,
     uniqueIdElements: override.uniqueIdElements ?? base.uniqueIdElements,
+    sidecarElements: override.sidecarElements ?? base.sidecarElements,
   };
 }
 
@@ -473,5 +522,6 @@ export function resolveDecomposeOptionsForComponent(
     splitTags: componentOverride.splitTags ?? typeResolved.splitTags,
     multiLevel: componentOverride.multiLevel ?? typeResolved.multiLevel,
     uniqueIdElements: componentOverride.uniqueIdElements ?? typeResolved.uniqueIdElements,
+    sidecarElements: componentOverride.sidecarElements ?? typeResolved.sidecarElements,
   };
 }

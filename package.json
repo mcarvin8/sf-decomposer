@@ -7,7 +7,7 @@
     "@salesforce/core": "8.31.4",
     "@salesforce/sf-plugins-core": "12.2.25",
     "@salesforce/source-deploy-retrieve": "12.36.3",
-    "config-disassembler": "2.5.0"
+    "config-disassembler": "^2.6.0"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.1",

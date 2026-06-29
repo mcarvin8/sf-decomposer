@@ -360,6 +360,19 @@ describe('decomposeFileHandler', () => {
       expect(lastCall(disassembleSpy).strategy).toBe('unique-id');
     });
 
+    it('forces externalServiceRegistration to unique-id even when grouped-by-tag is requested', async () => {
+      const pkgDir = join(TMP_ROOT, 'esr-hard');
+      await mkdir(pkgDir, { recursive: true });
+
+      await decomposeFileHandler(
+        makeAttrs({ metadataPaths: [pkgDir], metaSuffix: 'externalServiceRegistration' }),
+        makeTypeOptions({ strategy: 'grouped-by-tag' }),
+        '.gitignore',
+      );
+
+      expect(lastCall(disassembleSpy).strategy).toBe('unique-id');
+    });
+
     it('leaves a non-special metadata type on grouped-by-tag', async () => {
       const pkgDir = join(TMP_ROOT, 'plain-gbt');
       await mkdir(pkgDir, { recursive: true });
@@ -371,6 +384,62 @@ describe('decomposeFileHandler', () => {
       );
 
       expect(lastCall(disassembleSpy).strategy).toBe('grouped-by-tag');
+    });
+  });
+
+  // -- sidecarElements resolution ------------------------------------------
+
+  describe('sidecarElements resolution', () => {
+    it('passes schema:yaml by default for externalServiceRegistration', async () => {
+      const pkgDir = join(TMP_ROOT, 'esr-default');
+      await mkdir(pkgDir, { recursive: true });
+
+      await decomposeFileHandler(
+        makeAttrs({ metadataPaths: [pkgDir], metaSuffix: 'externalServiceRegistration' }),
+        makeTypeOptions(),
+        '.gitignore',
+      );
+
+      expect(lastCall(disassembleSpy).sidecarElements).toBe('schema:yaml');
+    });
+
+    it('uses an explicit sidecarElements override instead of the ESR default', async () => {
+      const pkgDir = join(TMP_ROOT, 'esr-override');
+      await mkdir(pkgDir, { recursive: true });
+
+      await decomposeFileHandler(
+        makeAttrs({ metadataPaths: [pkgDir], metaSuffix: 'externalServiceRegistration' }),
+        makeTypeOptions({ sidecarElements: 'schema:json' }),
+        '.gitignore',
+      );
+
+      expect(lastCall(disassembleSpy).sidecarElements).toBe('schema:json');
+    });
+
+    it('passes undefined sidecarElements for non-ESR metadata types', async () => {
+      const pkgDir = join(TMP_ROOT, 'flow-no-sidecar');
+      await mkdir(pkgDir, { recursive: true });
+
+      await decomposeFileHandler(
+        makeAttrs({ metadataPaths: [pkgDir], metaSuffix: 'flow' }),
+        makeTypeOptions(),
+        '.gitignore',
+      );
+
+      expect(lastCall(disassembleSpy).sidecarElements).toBeUndefined();
+    });
+
+    it('passes an explicit sidecarElements for any non-ESR type when set via override', async () => {
+      const pkgDir = join(TMP_ROOT, 'flow-custom-sidecar');
+      await mkdir(pkgDir, { recursive: true });
+
+      await decomposeFileHandler(
+        makeAttrs({ metadataPaths: [pkgDir], metaSuffix: 'flow' }),
+        makeTypeOptions({ sidecarElements: 'body:yaml' }),
+        '.gitignore',
+      );
+
+      expect(lastCall(disassembleSpy).sidecarElements).toBe('body:yaml');
     });
   });
 
