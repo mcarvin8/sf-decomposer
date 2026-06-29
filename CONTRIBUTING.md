@@ -80,10 +80,9 @@ npm run test:only
 
 ### Non-unit (NUT) tests
 
-After rebuilding, run the non-unit tests:
+Run the non-unit tests to verify CLI commands:
 
 ```bash
-npm run build
 npm run test:nuts
 ```
 
