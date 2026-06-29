@@ -102,8 +102,7 @@
     "test:mutation:incremental": "node scripts/incremental-mutation.mjs",
     "audit": "node --loader ts-node/esm --no-warnings=ExperimentalWarning scripts/audit/audit.ts",
     "audit:sweep": "node --loader ts-node/esm --no-warnings=ExperimentalWarning scripts/audit/sweep.ts",
-    "audit:roundtrip": "node --loader ts-node/esm --no-warnings=ExperimentalWarning scripts/audit/roundtrip.ts",
-    "version": "oclif readme"
+    "audit:roundtrip": "node --loader ts-node/esm --no-warnings=ExperimentalWarning scripts/audit/roundtrip.ts"
   },
   "publishConfig": {
     "access": "public"
