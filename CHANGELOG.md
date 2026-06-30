@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.35.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.34.0...v6.35.0) (2026-06-30)
+
+
+### Features
+
+* add --update-gitattributes flag to decompose command ([#509](https://github.com/mcarvin8/sf-decomposer/issues/509)) ([21899f3](https://github.com/mcarvin8/sf-decomposer/commit/21899f377b06eea6cd312b8d43a83d6072df3a17))
+
 ## [6.34.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.33.2...v6.34.0) (2026-06-30)
 
 
