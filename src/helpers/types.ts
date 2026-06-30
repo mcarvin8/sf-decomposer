@@ -62,6 +62,7 @@ export type ConfigFile = {
   strategy: string;
   decomposeNestedPermissions: boolean;
   updateForceignore?: boolean;
+  updateGitattributes?: boolean;
   manifest?: string;
   overrides?: DecomposerOverride[];
 };
@@ -97,6 +98,7 @@ export type DecomposeOptions = {
   manifest?: string;
   overrides?: DecomposerOverride[];
   updateForceignore?: boolean;
+  updateGitattributes?: boolean;
   log: (msg: string) => void;
   repoRoot?: string;
 };

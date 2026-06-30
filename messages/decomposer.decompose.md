@@ -56,6 +56,10 @@ Load per-type and per-component overrides from .sfdecomposer.config.json in the 
 
 Automatically add decomposed file paths to .forceignore after successful decomposition.
 
+# flags.update-gitattributes.summary
+
+Automatically add root metadata file patterns to .gitattributes after successful decomposition, suppressing noisy diffs on recomposed files while keeping them tracked for tools like sfdx-git-delta.
+
 # error.missingMetadataOrManifest
 
 Either --metadata-type (-m) or --manifest (-x) must be provided.
