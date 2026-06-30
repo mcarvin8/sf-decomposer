@@ -27,6 +27,7 @@ A Salesforce CLI plugin that **decomposes** large metadata XML files into smalle
   - [Manifest-scoped Runs](#manifest-scoped-runs)
   - [Per-Type & Per-Component Overrides](CONFIGURATION.md)
   - [Ignore Files](#ignore-files)
+  - [Using with sfdx-git-delta](#using-with-sfdx-git-delta)
   - [Troubleshooting](#troubleshooting)
   - [Built With](#built-with)
 - [Migrating from Salesforce Native Decomposition](#migrating-from-salesforce-native-decomposition)
@@ -503,6 +504,47 @@ Optional. In the project root, list paths/patterns to skip when **decomposing** 
 #### .gitignore
 
 Optional. Ignore recomposed metadata so it isn't committed. See the [sample .gitignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.gitignore).
+
+---
+
+### Using with sfdx-git-delta
+
+[sfdx-git-delta](https://github.com/scolladon/sfdx-git-delta) (sgd) detects changed metadata by comparing git refs. It finds changes by looking for root-level metadata files — e.g. `flows/MyFlow.flow-meta.xml` — matching patterns from the Salesforce metadata registry.
+
+sf-decomposer is compatible with sgd as long as those root files are present in git at the point sgd runs.
+
+#### Recommended: do not use `--postpurge` (or `postPurge: true`) when also using sgd
+
+Without `--postpurge`, the original root metadata file stays in the repo alongside the decomposed pieces. When you recompose before committing (or via pre-commit hook), the root file is updated in git and sgd detects the change normally. No extra sgd configuration is needed.
+
+#### If you use `--postpurge`
+
+`--postpurge` removes the root metadata file after decomposing. Only the decomposed pieces remain in git. sgd cannot detect changes to these nested files — they do not match the registry's file patterns.
+
+**For CI pipelines**, explicitly recompose into a temporary commit before running sgd, then continue without pushing the commit (CI runners are ephemeral):
+
+```bash
+sf decomposer recompose -m "flow" -m "permissionset"
+git add -A && git commit -m "ci: recompose for sgd" --no-verify
+
+sf sgd source delta --from "$PREV_DEPLOYMENT_SHA" --to HEAD --output ./delta
+sf project deploy start --source-dir ./delta
+# temporary commit is discarded when the runner tears down
+```
+
+#### Incompatibility: `--postpurge` + sgd + prerun hook
+
+The sf-decomposer prerun hook recomposes automatically when `sf project deploy start` fires — but that happens **after** sgd has already produced its delta. sgd runs on the committed (decomposed-only) state and cannot identify the changed components.
+
+If you use the prerun hook, do not combine it with `--postpurge` and sgd. The compatible combinations are:
+
+| Setup | Works? |
+|---|---|
+| No `--postpurge` + sgd + hook | ✅ Root files in git; hook recompose at deploy is harmless |
+| No `--postpurge` + sgd, no hook | ✅ Recompose manually before commit |
+| `--postpurge` + hook, no sgd | ✅ Full deploy; hook recomposes at deploy time |
+| `--postpurge` + sgd + CI recompose commit, no hook | ✅ Explicit recompose step before sgd |
+| `--postpurge` + sgd + hook | ❌ sgd runs before hook; delta is wrong |
 
 ---
 
