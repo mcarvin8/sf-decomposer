@@ -77,6 +77,11 @@ export default class DecomposerDecompose extends SfCommand<DecomposerResult> {
       required: false,
       default: false,
     }),
+    'update-gitattributes': Flags.boolean({
+      summary: messages.getMessage('flags.update-gitattributes.summary'),
+      required: false,
+      default: false,
+    }),
   };
 
   public async run(): Promise<DecomposerResult> {
@@ -99,6 +104,7 @@ export default class DecomposerDecompose extends SfCommand<DecomposerResult> {
       manifest: flags['manifest'],
       overrides,
       updateForceignore: flags['update-forceignore'],
+      updateGitattributes: flags['update-gitattributes'],
       log: this.log.bind(this),
     });
   }

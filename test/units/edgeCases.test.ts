@@ -305,5 +305,28 @@ describe('Edge case coverage tests', () => {
       expect(forceignoreContent).toContain('**/labels/*.xml');
       expect(forceignoreContent).toContain('!**/labels/CustomLabels.labels-meta.xml');
     });
+
+    it('writes .gitattributes and logs update message when updateGitattributes is true', async () => {
+      const logMock = vi.fn();
+
+      await decomposeMetadataTypes({
+        metadataTypes: ['labels'],
+        prepurge: true,
+        postpurge: false,
+        format: 'xml',
+        strategy: 'unique-id',
+        decomposeNestedPerms: false,
+        ignoreDirs: undefined,
+        updateGitattributes: true,
+        log: logMock,
+      });
+
+      const output = logMock.mock.calls.flat().join('\n');
+      expect(output).toContain('All metadata files have been decomposed for the metadata type: labels');
+      expect(output).toContain('Updated .gitattributes with root metadata file patterns.');
+
+      const gitattributesContent = await readFile(join(tempProjectDir, '.gitattributes'), 'utf-8');
+      expect(gitattributesContent).toContain('**/labels/CustomLabels.labels-meta.xml -diff linguist-generated=true');
+    });
   });
 });

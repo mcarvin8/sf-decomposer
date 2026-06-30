@@ -98,6 +98,7 @@ Add `.sfdecomposer.config.json` to your project root. Copy and customize one of 
 | `strategy`                   | No          | `unique-id` \| `grouped-by-tag` (default: unique-id).                                                                                              |
 | `decomposeNestedPermissions` | No          | With `grouped-by-tag`, set `true` to further decompose permission set and muting permission set object/field permissions.                          |
 | `updateForceignore`          | No          | Set `true` to automatically add decomposed file paths to `.forceignore` after each hook-triggered decomposition (default: false).                  |
+| `updateGitattributes`        | No          | Set `true` to automatically add root metadata file patterns to `.gitattributes` after each hook-triggered decomposition (default: false).          |
 | `overrides`                  | No          | Array of per-type and/or per-component overrides. See [CONFIGURATION.md](CONFIGURATION.md).                                                        |
 
 ---
@@ -160,6 +161,7 @@ FLAGS
   -p, --decompose-nested-permissions      With grouped-by-tag, further decompose permission set and muting permission set object/field permissions
   -c, --config                            Load per-type and per-component overrides from .sfdecomposer.config.json in the repo root. Only the "overrides" array is consumed. [default: false]
   --update-forceignore                    Automatically add decomposed file paths to .forceignore after successful decomposition [default: false]
+  --update-gitattributes                  Automatically add root metadata file patterns to .gitattributes after successful decomposition [default: false]
 
 GLOBAL FLAGS
   --json  Output as JSON.
@@ -517,10 +519,15 @@ sf-decomposer is compatible with sgd as long as those root files are present in 
 
 Without `--postpurge`, the original root metadata file stays in the repo alongside the decomposed pieces. When you recompose before committing (or via pre-commit hook), the root file is updated in git and sgd detects the change normally. No extra sgd configuration is needed.
 
-**Suppressing diff noise on root files.** Keeping root files in git means `git diff` and GitHub PR views show both the root file and the decomposed pieces. To eliminate that noise, add the root file patterns to `.gitattributes`:
+**Suppressing diff noise on root files.** Keeping root files in git means `git diff` and GitHub PR views show both the root file and the decomposed pieces. Pass `--update-gitattributes` on your first `sf decomposer decompose` run to suppress that noise automatically:
+
+```bash
+sf decomposer decompose -m "flow" -m "permissionset" --update-gitattributes
+```
+
+This appends patterns like the following to `.gitattributes`, creating the file if it doesn't exist:
 
 ```gitattributes
-# suppress diff on recomposed root files; decomposed pieces still show normal diffs
 **/flows/*.flow-meta.xml -diff linguist-generated=true
 **/permissionsets/*.permissionset-meta.xml -diff linguist-generated=true
 ```
@@ -528,7 +535,7 @@ Without `--postpurge`, the original root metadata file stays in the repo alongsi
 - `-diff` — `git diff` / `git show` skip textual content for these files
 - `linguist-generated=true` — GitHub collapses the file in PR diff views (still expandable)
 
-The patterns follow the same shape as `--update-forceignore`: `**/<directoryName>/*.<suffix>-meta.xml`. Git still tracks the files (sgd works); they are invisible noise during code review.
+Git still tracks the root files (sgd works); they become invisible noise during code review. You can also set `updateGitattributes: true` in `.sfdecomposer.config.json` to apply this automatically after every hook-triggered decomposition.
 
 #### If you use `--postpurge`
 
@@ -551,13 +558,13 @@ The sf-decomposer prerun hook recomposes automatically when `sf project deploy s
 
 If you use the prerun hook, do not combine it with `--postpurge` and sgd. The compatible combinations are:
 
-| Setup | Works? |
-|---|---|
-| No `--postpurge` + sgd + hook | ✅ Root files in git; hook recompose at deploy is harmless |
-| No `--postpurge` + sgd, no hook | ✅ Recompose manually before commit |
-| `--postpurge` + hook, no sgd | ✅ Full deploy; hook recomposes at deploy time |
-| `--postpurge` + sgd + CI recompose commit, no hook | ✅ Explicit recompose step before sgd |
-| `--postpurge` + sgd + hook | ❌ sgd runs before hook; delta is wrong |
+| Setup                                              | Works?                                                    |
+|----------------------------------------------------|-----------------------------------------------------------|
+| No `--postpurge` + sgd + hook                      | ✅ Root files in git; hook recompose at deploy is harmless |
+| No `--postpurge` + sgd, no hook                    | ✅ Recompose manually before commit                        |
+| `--postpurge` + hook, no sgd                       | ✅ Full deploy; hook recomposes at deploy time             |
+| `--postpurge` + sgd + CI recompose commit, no hook | ✅ Explicit recompose step before sgd                      |
+| `--postpurge` + sgd + hook                         | ❌ sgd runs before hook; delta is wrong                    |
 
 ---
 

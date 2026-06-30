@@ -8,6 +8,7 @@ import { DecomposeOptions, DecomposerResult } from '../helpers/types.js';
 import { getRegistryValuesBySuffix } from '../metadata/getRegistryValuesBySuffix.js';
 import { ManifestFilter, parseManifest } from '../metadata/parseManifest.js';
 import { ProcessedMeta, updateForceignoreFile } from '../service/core/updateForceignore.js';
+import { updateGitattributesFile } from '../service/core/updateGitattributes.js';
 import { decomposeFileHandler } from '../service/decompose/decomposeFileHandler.js';
 
 export async function decomposeMetadataTypes(options: DecomposeOptions): Promise<DecomposerResult> {
@@ -22,6 +23,7 @@ export async function decomposeMetadataTypes(options: DecomposeOptions): Promise
     manifest,
     overrides,
     updateForceignore,
+    updateGitattributes,
     log,
     repoRoot,
   } = options;
@@ -101,7 +103,7 @@ export async function decomposeMetadataTypes(options: DecomposeOptions): Promise
       await decomposeFileHandler(metaAttributes, typeResolved, ignorePath, overrides, manifestXmlPaths);
 
       processed.push(metadataType);
-      if (updateForceignore) {
+      if (updateForceignore || updateGitattributes) {
         processedMeta.push({
           directoryName: basename(metaAttributes.metadataPaths[0]),
           metaSuffix: metaAttributes.metaSuffix,
@@ -118,6 +120,11 @@ export async function decomposeMetadataTypes(options: DecomposeOptions): Promise
   if (updateForceignore && processedMeta.length > 0 && effectiveRepoRoot) {
     await updateForceignoreFile(processedMeta, effectiveRepoRoot);
     log('Updated .forceignore with decomposed file paths.');
+  }
+
+  if (updateGitattributes && processedMeta.length > 0 && effectiveRepoRoot) {
+    await updateGitattributesFile(processedMeta, effectiveRepoRoot);
+    log('Updated .gitattributes with root metadata file patterns.');
   }
 
   return { metadata: processed };

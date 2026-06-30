@@ -45,6 +45,7 @@ function buildDecomposeOptions(configFile: ConfigFile, log: (msg: string) => voi
     strategy: configFile.strategy || 'unique-id',
     decomposeNestedPerms: configFile.decomposeNestedPermissions || false,
     updateForceignore: configFile.updateForceignore ?? false,
+    updateGitattributes: configFile.updateGitattributes ?? false,
     manifest: manifest.trim() !== '' ? manifest.trim() : undefined,
     overrides: configFile.overrides,
     log,
