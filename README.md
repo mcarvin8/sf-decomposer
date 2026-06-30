@@ -515,9 +515,16 @@ Optional. Ignore recomposed metadata so it isn't committed. See the [sample .git
 
 sf-decomposer is compatible with sgd as long as those root files are present in git at the point sgd runs.
 
-#### Recommended: do not use `--postpurge` (or `postPurge: true`) when also using sgd
+#### Recommended: keep root files in git and recompose before commit
 
-Without `--postpurge`, the original root metadata file stays in the repo alongside the decomposed pieces. When you recompose before committing (or via pre-commit hook), the root file is updated in git and sgd detects the change normally. No extra sgd configuration is needed.
+For `sfdx-git-delta` to detect a change, the root metadata file must be updated in git. Keeping root files in the repository is not enough by itself: if you edit decomposed files but commit without recomposing, the root file will remain unchanged, and sgd may not detect the metadata change.
+
+Use one of these workflows:
+
+- Configure a pre-commit hook that runs `sf decomposer recompose` before `git commit`
+- Manually run `sf decomposer recompose` before committing
+
+Without `--postpurge`, the original root metadata file stays in the repo alongside the decomposed pieces. After recomposition, the root file is updated and sgd detects the change normally. No extra sgd configuration is needed.
 
 **Suppressing diff noise on root files.** Keeping root files in git means `git diff` and GitHub PR views show both the root file and the decomposed pieces. Pass `--update-gitattributes` on your first `sf decomposer decompose` run to suppress that noise automatically:
 
@@ -533,9 +540,9 @@ This appends patterns like the following to `.gitattributes`, creating the file 
 ```
 
 - `-diff` — `git diff` / `git show` skip textual content for these files
-- `linguist-generated=true` — GitHub collapses the file in PR diff views (still expandable)
+- `linguist-generated=true` — GitHub collapses the file in PR diff views; the file is still expandable
 
-Git still tracks the root files (sgd works); they become invisible noise during code review. You can also set `updateGitattributes: true` in `.sfdecomposer.config.json` to apply this automatically after every hook-triggered decomposition.
+Git still tracks the root files, so sgd works. The root files become invisible noise during code review. You can also set `updateGitattributes: true` in `.sfdecomposer.config.json` to apply this automatically after every hook-triggered decomposition.
 
 #### If you use `--postpurge`
 
