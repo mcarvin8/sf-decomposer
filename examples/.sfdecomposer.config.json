@@ -4,5 +4,7 @@
   "prePurge": true,
   "postPurge": true,
   "decomposedFormat": "xml",
-  "updateForceignore": false
+  "updateForceignore": false,
+  "skipPrerunHook": false,
+  "skipPostRetrieveHook": false
 }

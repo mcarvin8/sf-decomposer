@@ -70,6 +70,10 @@ export const scopedPostRetrieve: HookFunction = async function (options) {
     return;
   }
 
+  if (configFile.skipPostRetrieveHook) {
+    return;
+  }
+
   const decomposeOptions = buildDecomposeOptions(configFile, (msg: string) => {
     this.log(msg);
   });

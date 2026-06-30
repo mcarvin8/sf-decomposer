@@ -69,8 +69,57 @@ export type ResolvedDecomposeTypeOptions = {
 const SPLIT_TAGS_MODES = new Set<string>(['split', 'group']);
 
 /**
+ * Load and parse the full `.sfdecomposer.config.json` file. Validates the `overrides` array
+ * when present. Throws when the file cannot be read or parsed.
+ */
+export async function loadConfigFile(configPath: string): Promise<ConfigFile> {
+  let raw: string;
+  try {
+    // Stryker disable next-line StringLiteral: JSON.parse(Buffer) defaults to UTF-8 decoding
+    raw = await readFile(configPath, 'utf-8');
+  } catch (err) {
+    /* istanbul ignore next -- @preserve */
+    const message = err instanceof Error ? err.message : String(err);
+    throw new Error(`Cannot read ${configPath}: ${message}`, { cause: err });
+  }
+
+  let parsed: ConfigFile;
+  try {
+    parsed = JSON.parse(raw) as ConfigFile;
+  } catch (err) {
+    /* istanbul ignore next -- @preserve: JSON.parse always throws SyntaxError instances. */
+    const message = err instanceof Error ? err.message : String(err);
+    throw new Error(`Failed to parse ${configPath}: ${message}`, { cause: err });
+  }
+
+  if (parsed.overrides !== undefined) {
+    if (!Array.isArray(parsed.overrides)) {
+      throw new Error(`"overrides" in ${configPath} must be an array.`);
+    }
+    validateOverrides(parsed.overrides);
+  }
+
+  return parsed;
+}
+
+/**
+ * Split a comma-separated config string (e.g. `metadataSuffixes`, `ignorePackageDirectories`)
+ * into a trimmed string array. Returns `undefined` when the value is absent, empty, or the
+ * sentinel `"."` (which the hooks interpret as "all types, no filter").
+ */
+export function parseConfigSuffixes(value: string | undefined): string[] | undefined {
+  if (!value || value.trim() === '' || value.trim() === '.') return undefined;
+  const parts = value
+    .split(',')
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+  return parts.length > 0 ? parts : undefined;
+}
+
+/**
  * Load and validate the `overrides` array from a `.sfdecomposer.config.json` file.
- * Returns an empty array if the file is missing, unreadable, or contains no overrides.
+ * Returns an empty array when the file is missing or unreadable. Throws on invalid JSON
+ * or a malformed `overrides` array (same contract as before `loadConfigFile` was added).
  */
 export async function loadOverridesFromConfig(configPath: string): Promise<DecomposerOverride[]> {
   let raw: string;

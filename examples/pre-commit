@@ -1,0 +1,21 @@
+#!/bin/sh
+# pre-commit hook: recompose decomposed metadata before committing.
+#
+# Ensures root XML files are up to date so sfdx-git-delta can detect changes
+# and deployments have valid metadata.
+#
+# Setup:
+#   1. Copy to .husky/pre-commit (or .git/hooks/pre-commit + chmod +x)
+#   2. Ensure .sfdecomposer.config.json exists in repo root with metadataSuffixes
+#      (or manifest) set.
+#   3. Set skipPrerunHook: true in the config if you want to skip the automatic
+#      recompose that fires before sf project deploy (avoids double recompose).
+#
+# If using husky, your .husky/pre-commit can delegate to this script:
+#   sh examples/pre-commit
+
+sf decomposer recompose --config
+
+# Stage the recomposed root XML files so they are included in this commit.
+# This re-stages only files that are already tracked and were modified by recompose.
+git diff --name-only | grep -- '-meta\.xml$' | xargs -r git add

@@ -9,8 +9,10 @@ import {
   getOverrideForComponent,
   getOverrideForType,
   hasComponentOverridesForType,
+  loadConfigFile,
   loadOverridesFromConfig,
   parseComponentKey,
+  parseConfigSuffixes,
   resolveDecomposeOptionsForComponent,
   resolveDecomposeOptionsForType,
   resolveDefaultConfigPath,
@@ -918,6 +920,107 @@ describe('configOverrides helper', () => {
         }),
       );
       await expect(loadOverridesFromConfig(configPath)).rejects.toThrow(/appears in more than one override/);
+    });
+  });
+
+  describe('loadConfigFile', () => {
+    let tempDir: string;
+
+    beforeEach(async () => {
+      tempDir = await mkdtemp(join(tmpdir(), 'load-config-file-test-'));
+    });
+
+    afterEach(async () => {
+      await rm(tempDir, { recursive: true, force: true });
+    });
+
+    it('throws when the file does not exist', async () => {
+      const missingPath = join(tempDir, 'does-not-exist.json');
+      await expect(loadConfigFile(missingPath)).rejects.toThrow(/Cannot read/);
+    });
+
+    it('throws on invalid JSON', async () => {
+      const configPath = join(tempDir, '.sfdecomposer.config.json');
+      await writeFile(configPath, '{ not valid json');
+      await expect(loadConfigFile(configPath)).rejects.toThrow(/Failed to parse/);
+    });
+
+    it('returns the parsed config when there are no overrides', async () => {
+      const configPath = join(tempDir, '.sfdecomposer.config.json');
+      await writeFile(configPath, JSON.stringify({ metadataSuffixes: 'flow', decomposedFormat: 'yaml' }));
+      const config = await loadConfigFile(configPath);
+      expect(config.metadataSuffixes).toBe('flow');
+      expect(config.decomposedFormat).toBe('yaml');
+      expect(config.overrides).toBeUndefined();
+    });
+
+    it('returns the parsed config with a valid overrides array', async () => {
+      const configPath = join(tempDir, '.sfdecomposer.config.json');
+      await writeFile(
+        configPath,
+        JSON.stringify({
+          metadataSuffixes: 'flow',
+          overrides: [{ metadataTypes: ['flow'], decomposedFormat: 'yaml' }],
+        }),
+      );
+      const config = await loadConfigFile(configPath);
+      expect(config.overrides).toHaveLength(1);
+      expect(config.overrides![0].metadataTypes).toEqual(['flow']);
+    });
+
+    it('throws when overrides is not an array', async () => {
+      const configPath = join(tempDir, '.sfdecomposer.config.json');
+      await writeFile(configPath, JSON.stringify({ overrides: { metadataTypes: ['flow'] } }));
+      await expect(loadConfigFile(configPath)).rejects.toThrow(/must be an array/);
+    });
+
+    it('propagates validation errors from validateOverrides', async () => {
+      const configPath = join(tempDir, '.sfdecomposer.config.json');
+      await writeFile(
+        configPath,
+        JSON.stringify({
+          overrides: [{ metadataTypes: ['flow'] }, { metadataTypes: ['flow'], decomposedFormat: 'yaml' }],
+        }),
+      );
+      await expect(loadConfigFile(configPath)).rejects.toThrow(/appears in more than one override/);
+    });
+  });
+
+  describe('parseConfigSuffixes', () => {
+    it('returns undefined for undefined input', () => {
+      expect(parseConfigSuffixes(undefined)).toBeUndefined();
+    });
+
+    it('returns undefined for an empty string', () => {
+      expect(parseConfigSuffixes('')).toBeUndefined();
+    });
+
+    it('returns undefined for a whitespace-only string', () => {
+      expect(parseConfigSuffixes('   ')).toBeUndefined();
+    });
+
+    it('returns undefined for the "." sentinel', () => {
+      expect(parseConfigSuffixes('.')).toBeUndefined();
+    });
+
+    it('returns undefined for "." surrounded by whitespace', () => {
+      expect(parseConfigSuffixes('  .  ')).toBeUndefined();
+    });
+
+    it('returns a single-element array for a single suffix', () => {
+      expect(parseConfigSuffixes('flow')).toEqual(['flow']);
+    });
+
+    it('splits a comma-separated list into a trimmed array', () => {
+      expect(parseConfigSuffixes('flow, permissionset , labels')).toEqual(['flow', 'permissionset', 'labels']);
+    });
+
+    it('filters out empty slots between commas', () => {
+      expect(parseConfigSuffixes('flow,,permissionset')).toEqual(['flow', 'permissionset']);
+    });
+
+    it('returns undefined when all entries are empty after filtering', () => {
+      expect(parseConfigSuffixes(',  ,  ,')).toBeUndefined();
     });
   });
 
