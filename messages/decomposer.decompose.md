@@ -50,7 +50,7 @@ Additionally decompose object and field permissions on a permission set when str
 
 # flags.config.summary
 
-Load per-type and per-component overrides from .sfdecomposer.config.json in the repo root. When set, the file's "overrides" array is applied (format, strategy, decomposeNestedPermissions, uniqueIdElements, prePurge, postPurge per type or per individual component). Other top-level config fields are ignored when invoking the CLI directly.
+Load all settings from .sfdecomposer.config.json in the repo root. When set, all top-level fields (metadataSuffixes, manifest, prePurge, postPurge, decomposedFormat, strategy, ignorePackageDirectories, decomposeNestedPermissions, updateForceignore, updateGitattributes) and the "overrides" array are applied. Explicit CLI flags take precedence over config values. Makes --metadata-type and --manifest optional when either is defined in the config.
 
 # flags.update-forceignore.summary
 
@@ -62,4 +62,4 @@ Automatically add root metadata file patterns to .gitattributes after successful
 
 # error.missingMetadataOrManifest
 
-Either --metadata-type (-m) or --manifest (-x) must be provided.
+Either --metadata-type (-m) or --manifest (-x) must be provided, or use --config (-c) with a config file that specifies metadataSuffixes or manifest.

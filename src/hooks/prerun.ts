@@ -62,6 +62,10 @@ export const prerun: Hook<'prerun'> = async function (options) {
     return;
   }
 
+  if (configFile.skipPrerunHook) {
+    return;
+  }
+
   const recomposeOptions = buildRecomposeOptions(configFile, (msg: string) => {
     this.log(msg);
   });

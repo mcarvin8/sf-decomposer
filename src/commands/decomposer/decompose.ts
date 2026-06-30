@@ -3,7 +3,7 @@
 import { Messages } from '@salesforce/core';
 import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
 import { decomposeMetadataTypes } from '../../core/decomposeMetadataTypes.js';
-import { loadOverridesFromConfig, resolveDefaultConfigPath } from '../../helpers/configOverrides.js';
+import { loadConfigFile, parseConfigSuffixes, resolveDefaultConfigPath } from '../../helpers/configOverrides.js';
 import { DECOMPOSED_FILE_TYPES, DECOMPOSED_STRATEGIES } from '../../helpers/constants.js';
 import { DecomposerResult } from '../../helpers/types.js';
 
@@ -41,10 +41,10 @@ export default class DecomposerDecompose extends SfCommand<DecomposerResult> {
     format: Flags.string({
       summary: messages.getMessage('flags.format.summary'),
       char: 'f',
-      required: true,
+      required: false,
       multiple: false,
-      default: 'xml',
       options: DECOMPOSED_FILE_TYPES,
+      defaultHelp: async () => 'xml',
     }),
     'ignore-package-directory': Flags.directory({
       summary: messages.getMessage('flags.ignore-package-directory.summary'),
@@ -55,10 +55,10 @@ export default class DecomposerDecompose extends SfCommand<DecomposerResult> {
     strategy: Flags.string({
       summary: messages.getMessage('flags.strategy.summary'),
       char: 's',
-      required: true,
+      required: false,
       multiple: false,
-      default: 'unique-id',
       options: DECOMPOSED_STRATEGIES,
+      defaultHelp: async () => 'unique-id',
     }),
     'decompose-nested-permissions': Flags.boolean({
       summary: messages.getMessage('flags.decompose-nested-permissions.summary'),
@@ -87,24 +87,49 @@ export default class DecomposerDecompose extends SfCommand<DecomposerResult> {
   public async run(): Promise<DecomposerResult> {
     const { flags } = await this.parse(DecomposerDecompose);
 
-    if (!flags['metadata-type'] && !flags['manifest']) {
+    let metadataTypes = flags['metadata-type'];
+    let manifest = flags['manifest'];
+    let ignoreDirs = flags['ignore-package-directory'];
+    let format = flags['format'] ?? 'xml';
+    let strategy = flags['strategy'] ?? 'unique-id';
+    let prepurge = flags['prepurge'];
+    let postpurge = flags['postpurge'];
+    let decomposeNestedPerms = flags['decompose-nested-permissions'];
+    let updateForceignore = flags['update-forceignore'];
+    let updateGitattributes = flags['update-gitattributes'];
+    let overrides;
+
+    if (flags['config']) {
+      const config = await loadConfigFile(await resolveDefaultConfigPath());
+      metadataTypes ??= parseConfigSuffixes(config.metadataSuffixes);
+      manifest ??= config.manifest;
+      ignoreDirs ??= parseConfigSuffixes(config.ignorePackageDirectories);
+      format = flags['format'] ?? config.decomposedFormat ?? 'xml';
+      strategy = flags['strategy'] ?? config.strategy ?? 'unique-id';
+      prepurge = flags['prepurge'] || (config.prePurge ?? false);
+      postpurge = flags['postpurge'] || (config.postPurge ?? false);
+      decomposeNestedPerms = flags['decompose-nested-permissions'] || (config.decomposeNestedPermissions ?? false);
+      updateForceignore = flags['update-forceignore'] || (config.updateForceignore ?? false);
+      updateGitattributes = flags['update-gitattributes'] || (config.updateGitattributes ?? false);
+      overrides = config.overrides;
+    }
+
+    if (!metadataTypes?.length && !manifest) {
       throw messages.createError('error.missingMetadataOrManifest');
     }
 
-    const overrides = flags['config'] ? await loadOverridesFromConfig(await resolveDefaultConfigPath()) : undefined;
-
     return decomposeMetadataTypes({
-      metadataTypes: flags['metadata-type'],
-      prepurge: flags['prepurge'],
-      postpurge: flags['postpurge'],
-      format: flags['format'],
-      ignoreDirs: flags['ignore-package-directory'],
-      strategy: flags['strategy'],
-      decomposeNestedPerms: flags['decompose-nested-permissions'],
-      manifest: flags['manifest'],
+      metadataTypes,
+      prepurge,
+      postpurge,
+      format,
+      ignoreDirs,
+      strategy,
+      decomposeNestedPerms,
+      manifest,
       overrides,
-      updateForceignore: flags['update-forceignore'],
-      updateGitattributes: flags['update-gitattributes'],
+      updateForceignore,
+      updateGitattributes,
       log: this.log.bind(this),
     });
   }

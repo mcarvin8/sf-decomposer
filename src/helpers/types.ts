@@ -65,6 +65,8 @@ export type ConfigFile = {
   updateGitattributes?: boolean;
   manifest?: string;
   overrides?: DecomposerOverride[];
+  skipPrerunHook?: boolean;
+  skipPostRetrieveHook?: boolean;
 };
 
 export type SfdxProject = {

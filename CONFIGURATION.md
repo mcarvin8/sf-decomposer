@@ -228,16 +228,28 @@ Recompose reads `.sidecars.json` automatically — no `sidecarElements` flag is 
 
 ### Opting in from the CLI
 
-CLI users can opt into overrides on `decompose` with the boolean `--config` (`-c`) flag. When set, the plugin reads `.sfdecomposer.config.json` from the repo root (the nearest ancestor directory that contains `sfdx-project.json`):
+All three commands (`decompose`, `recompose`, `verify`) accept a boolean `--config` (`-c`) flag. When set, the plugin reads `.sfdecomposer.config.json` from the repo root (the nearest ancestor directory that contains `sfdx-project.json`) and applies **all** top-level fields, not just `overrides`.
 
 ```bash
-sf decomposer decompose -m "flow" -m "permissionset" -c
+# Use config for everything — no other flags needed if metadataSuffixes is set in config
+sf decomposer decompose --config
+sf decomposer recompose --config
+sf decomposer verify --config
+
+# CLI flags take precedence over config values when both are supplied
+sf decomposer decompose -m "flow" --config        # overrides config's metadataSuffixes for type
+sf decomposer decompose -f "yaml" --config        # overrides config's decomposedFormat
 ```
 
-When `--config` is set, **only** the `overrides` array is consumed from the file. Top-level fields like `decomposedFormat`, `strategy`, `metadataSuffixes`, etc. are ignored — the CLI flags remain the source of truth for run-wide values. This keeps direct CLI behavior predictable and lets you reuse the same config file as the post-retrieve hook without any surprises.
+When `--config` is set:
+
+- **`metadataSuffixes`** is used as the metadata types to process when `--metadata-type` is not passed. This makes `-m` optional.
+- **`manifest`** is used as the manifest path when `--manifest` is not passed. This makes `-x` optional.
+- **`decomposedFormat`**, **`strategy`**, **`prePurge`**, **`postPurge`**, **`ignorePackageDirectories`**, **`decomposeNestedPermissions`**, **`updateForceignore`**, **`updateGitattributes`** are all applied. CLI flags take precedence over each config value.
+- The **`overrides`** array is applied as before.
 
 If `--config` is set but `.sfdecomposer.config.json` is missing from the repo root, the command fails with a clear error.
 
-`recompose` does not accept `--config` because it does not need the override information — format is auto-detected from the decomposed files on disk and recompose does not depend on strategy.
+If the config provides neither `metadataSuffixes` nor `manifest` (and no CLI flags supply them either), the command fails with a "missing metadata or manifest" error.
 
-The post-retrieve hook automatically picks up `overrides` from `.sfdecomposer.config.json` — no extra setup required. Existing config files without an `overrides` field continue to behave exactly as before.
+The post-retrieve hook automatically picks up all config fields from `.sfdecomposer.config.json` — no extra setup required. Existing config files without an `overrides` field continue to behave exactly as before.

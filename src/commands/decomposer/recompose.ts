@@ -4,6 +4,7 @@ import { Messages } from '@salesforce/core';
 import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
 
 import { recomposeMetadataTypes } from '../../core/recomposeMetadataTypes.js';
+import { loadConfigFile, parseConfigSuffixes, resolveDefaultConfigPath } from '../../helpers/configOverrides.js';
 import { DecomposerResult } from '../../helpers/types.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
@@ -38,20 +39,39 @@ export default class DecomposerRecompose extends SfCommand<DecomposerResult> {
       required: false,
       multiple: true,
     }),
+    config: Flags.boolean({
+      summary: messages.getMessage('flags.config.summary'),
+      char: 'c',
+      required: false,
+      default: false,
+    }),
   };
 
   public async run(): Promise<DecomposerResult> {
     const { flags } = await this.parse(DecomposerRecompose);
 
-    if (!flags['metadata-type'] && !flags['manifest']) {
+    let metadataTypes = flags['metadata-type'];
+    let manifest = flags['manifest'];
+    let ignoreDirs = flags['ignore-package-directory'];
+    let postpurge = flags['postpurge'];
+
+    if (flags['config']) {
+      const config = await loadConfigFile(await resolveDefaultConfigPath());
+      metadataTypes ??= parseConfigSuffixes(config.metadataSuffixes);
+      manifest ??= config.manifest;
+      ignoreDirs ??= parseConfigSuffixes(config.ignorePackageDirectories);
+      postpurge = flags['postpurge'] || (config.postPurge ?? false);
+    }
+
+    if (!metadataTypes?.length && !manifest) {
       throw messages.createError('error.missingMetadataOrManifest');
     }
 
     return recomposeMetadataTypes({
-      metadataTypes: flags['metadata-type'],
-      postpurge: flags['postpurge'],
-      ignoreDirs: flags['ignore-package-directory'],
-      manifest: flags['manifest'],
+      metadataTypes,
+      postpurge,
+      ignoreDirs,
+      manifest,
       log: this.log.bind(this),
     });
   }

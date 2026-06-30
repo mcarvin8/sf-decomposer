@@ -99,6 +99,8 @@ Add `.sfdecomposer.config.json` to your project root. Copy and customize one of 
 | `decomposeNestedPermissions` | No          | With `grouped-by-tag`, set `true` to further decompose permission set and muting permission set object/field permissions.                          |
 | `updateForceignore`          | No          | Set `true` to automatically add decomposed file paths to `.forceignore` after each hook-triggered decomposition (default: false).                  |
 | `updateGitattributes`        | No          | Set `true` to automatically add root metadata file patterns to `.gitattributes` after each hook-triggered decomposition (default: false).          |
+| `skipPrerunHook`             | No          | Set `true` to skip the automatic recompose that fires before `sf project deploy start/validate` (default: false). Useful when you recompose manually in a pre-commit hook and don't want a second recompose at deploy time. |
+| `skipPostRetrieveHook`       | No          | Set `true` to skip the automatic decompose that fires after `sf project retrieve start` (default: false).                                          |
 | `overrides`                  | No          | Array of per-type and/or per-component overrides. See [CONFIGURATION.md](CONFIGURATION.md).                                                        |
 
 ---
@@ -159,7 +161,7 @@ FLAGS
   --prepurge                              Remove existing decomposed files before decomposing [default: false]
   --postpurge                             Remove original metadata files after decomposing [default: false]
   -p, --decompose-nested-permissions      With grouped-by-tag, further decompose permission set and muting permission set object/field permissions
-  -c, --config                            Load per-type and per-component overrides from .sfdecomposer.config.json in the repo root. Only the "overrides" array is consumed. [default: false]
+  -c, --config                            Load all settings from .sfdecomposer.config.json in the repo root. Supplies metadataSuffixes, manifest, and all run-wide options; CLI flags take precedence. Makes -m and -x optional when the config defines them. [default: false]
   --update-forceignore                    Automatically add decomposed file paths to .forceignore after successful decomposition [default: false]
   --update-gitattributes                  Automatically add root metadata file patterns to .gitattributes after successful decomposition [default: false]
 
@@ -167,7 +169,7 @@ GLOBAL FLAGS
   --json  Output as JSON.
 ```
 
-> At least one of `--metadata-type` or `--manifest` is required. When both are supplied, the run is scoped to their intersection.
+> At least one of `--metadata-type`, `--manifest`, or `--config` (with `metadataSuffixes` or `manifest` in the config) is required.
 
 **Examples**
 
@@ -186,6 +188,9 @@ sf decomposer decompose -x "manifest/package.xml" --prepurge
 
 # Restrict a manifest run to a single metadata type
 sf decomposer decompose -x "manifest/package.xml" -m "permissionset"
+
+# Use config file for all options (no CLI flags needed)
+sf decomposer decompose --config
 ```
 
 #### sf decomposer recompose
@@ -194,19 +199,20 @@ Recomposes decomposed files into deployment-compatible metadata.
 
 ```
 USAGE
-  $ sf decomposer recompose [-m <value>] [-x <value>] [-i <value>] [--postpurge --json]
+  $ sf decomposer recompose [-m <value>] [-x <value>] [-i <value>] [-c --postpurge --json]
 
 FLAGS
-  -m, --metadata-type=<value>             Metadata suffix to process (e.g. flow, labels). Repeatable. Optional when --manifest is provided.
+  -m, --metadata-type=<value>             Metadata suffix to process (e.g. flow, labels). Repeatable. Optional when --manifest or --config is provided.
   -x, --manifest=<value>                  Path to a package.xml manifest. When provided, only the components listed in the manifest are recomposed.
   -i, --ignore-package-directory=<value>  Package directory to skip. Repeatable.
   --postpurge                             Remove decomposed files after recomposing [default: false]
+  -c, --config                            Load all settings from .sfdecomposer.config.json in the repo root. Supplies metadataSuffixes, manifest, and postPurge; CLI flags take precedence. Makes -m and -x optional when the config defines them. [default: false]
 
 GLOBAL FLAGS
   --json  Output as JSON.
 ```
 
-> At least one of `--metadata-type` or `--manifest` is required. When both are supplied, the run is scoped to their intersection.
+> At least one of `--metadata-type`, `--manifest`, or `--config` (with `metadataSuffixes` or `manifest` in the config) is required.
 
 **Examples**
 
@@ -217,6 +223,9 @@ sf decomposer recompose -m "flow" -i "force-app"
 # Recompose only the components listed in a deploy manifest before deploying
 sf decomposer recompose -x "manifest/package.xml"
 sf project deploy start -x "manifest/package.xml"
+
+# Use config file for all options (no CLI flags needed)
+sf decomposer recompose --config
 ```
 
 #### sf decomposer verify
@@ -234,13 +243,13 @@ FLAGS
   -i, --ignore-package-directory=<value>  Package directory to skip. Repeatable.
   -s, --strategy=<value>                  unique-id | grouped-by-tag [default: unique-id]
   -p, --decompose-nested-permissions      With grouped-by-tag, further decompose permission set and muting permission set object/field permissions.
-  -c, --config                            Load per-type and per-component overrides from .sfdecomposer.config.json in the repo root. [default: false]
+  -c, --config                            Load all settings from .sfdecomposer.config.json in the repo root. Supplies metadataSuffixes, manifest, and all run-wide options; CLI flags take precedence. Makes -m and -x optional when the config defines them. [default: false]
 
 GLOBAL FLAGS
   --json  Output as JSON.
 ```
 
-> At least one of `--metadata-type` or `--manifest` is required. When both are supplied, the run is scoped to their intersection.
+> At least one of `--metadata-type`, `--manifest`, or `--config` (with `metadataSuffixes` or `manifest` in the config) is required.
 
 **Examples**
 
@@ -521,8 +530,8 @@ For `sfdx-git-delta` to detect a change, the root metadata file must be updated 
 
 Use one of these workflows:
 
-- Configure a pre-commit hook that runs `sf decomposer recompose` before `git commit`
-- Manually run `sf decomposer recompose` before committing
+- Configure a pre-commit hook that runs `sf decomposer recompose --config` before `git commit` (see `examples/pre-commit`)
+- Manually run `sf decomposer recompose --config` (or with explicit `-m` flags) before committing
 
 Without `--postpurge`, the original root metadata file stays in the repo alongside the decomposed pieces. After recomposition, the root file is updated and sgd detects the change normally. No extra sgd configuration is needed.
 
@@ -567,11 +576,12 @@ If you use the prerun hook, do not combine it with `--postpurge` and sgd. The co
 
 | Setup                                              | Works?                                                    |
 |----------------------------------------------------|-----------------------------------------------------------|
-| No `--postpurge` + sgd + hook                      | ✅ Root files in git; hook recompose at deploy is harmless |
-| No `--postpurge` + sgd, no hook                    | ✅ Recompose manually before commit                        |
-| `--postpurge` + hook, no sgd                       | ✅ Full deploy; hook recomposes at deploy time             |
-| `--postpurge` + sgd + CI recompose commit, no hook | ✅ Explicit recompose step before sgd                      |
-| `--postpurge` + sgd + hook                         | ❌ sgd runs before hook; delta is wrong                    |
+| No `--postpurge` + sgd + hook                                         | ✅ Root files in git; hook recompose at deploy is harmless (redundant but safe) |
+| No `--postpurge` + sgd + pre-commit hook + `skipPrerunHook: true`     | ✅ Recomposed before commit; deploy hook skipped intentionally                  |
+| No `--postpurge` + sgd, no hook                                       | ✅ Recompose manually before commit                                             |
+| `--postpurge` + hook, no sgd                                          | ✅ Full deploy; hook recomposes at deploy time                                  |
+| `--postpurge` + sgd + CI recompose commit, no hook                    | ✅ Explicit recompose step before sgd                                           |
+| `--postpurge` + sgd + hook                                            | ❌ sgd runs before hook; delta is wrong                                         |
 
 ---
 
