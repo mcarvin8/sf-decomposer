@@ -1,4 +1,5 @@
-import { mkdir, readdir, rename, rm, stat, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readdir, rename, rm, stat, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 
@@ -15,17 +16,21 @@ vi.mock('node:fs/promises', async () => {
 const renameMock = rename as unknown as Mock;
 
 describe('moveFiles', () => {
-  const srcDir = 'test/tmp/source';
-  const destDir = 'test/tmp/dest';
+  let tempDir: string;
+  let srcDir: string;
+  let destDir: string;
 
   beforeEach(async () => {
+    tempDir = await mkdtemp(join(tmpdir(), 'move-files-test-'));
+    srcDir = join(tempDir, 'source');
+    destDir = join(tempDir, 'dest');
     await mkdir(srcDir, { recursive: true });
     await mkdir(destDir, { recursive: true });
     await writeFile(join(srcDir, 'testfile.txt'), 'dummy content');
   });
 
   afterEach(async () => {
-    await rm('test/tmp', { recursive: true, force: true });
+    await rm(tempDir, { recursive: true, force: true });
     renameMock.mockClear();
   });
 
