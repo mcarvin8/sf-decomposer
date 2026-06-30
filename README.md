@@ -528,12 +528,40 @@ sf-decomposer is compatible with sgd as long as those root files are present in 
 
 For `sfdx-git-delta` to detect a change, the root metadata file must be updated in git. Keeping root files in the repository is not enough by itself: if you edit decomposed files but commit without recomposing, the root file will remain unchanged, and sgd may not detect the metadata change.
 
-Use one of these workflows:
-
-- Configure a pre-commit hook that runs `sf decomposer recompose --config` before `git commit` (see `examples/pre-commit`)
-- Manually run `sf decomposer recompose --config` (or with explicit `-m` flags) before committing
-
 Without `--postpurge`, the original root metadata file stays in the repo alongside the decomposed pieces. After recomposition, the root file is updated and sgd detects the change normally. No extra sgd configuration is needed.
+
+#### Recommended sgd config and pre-commit setup
+
+Add the following to `.sfdecomposer.config.json`:
+
+```json
+{
+  "metadataSuffixes": "flow,permissionset",
+  "postPurge": false,
+  "decomposedFormat": "xml",
+  "skipPrerunHook": true
+}
+```
+
+- **`postPurge: false`** — keeps root files in git so sgd can detect changes.
+- **`skipPrerunHook: true`** — disables the automatic recompose that fires before `sf project deploy start`. Since root files are already recomposed at commit time (by the pre-commit hook below), the prerun hook would just repeat that work redundantly. Skipping it also avoids a full-workspace recompose when sgd has already scoped the deploy to a subset of components.
+
+Install the bundled pre-commit hook (copy and make executable):
+
+```bash
+cp examples/pre-commit .husky/pre-commit
+# or for a plain git hook:
+cp examples/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+```
+
+The hook runs `sf decomposer recompose --config`, then stages the updated root files so they are included in the commit. sgd then sees the updated root files when it compares refs in CI.
+
+> **Note:** With `skipPrerunHook: true`, any `sf project deploy start` that runs without going through the pre-commit hook first (e.g., an emergency manual deploy) will not auto-recompose. In that case, run `sf decomposer recompose --config` manually before deploying.
+
+Use one of these workflows depending on your setup:
+
+- **Pre-commit hook (recommended):** Install `examples/pre-commit` as described above. The hook recomposes automatically before every commit.
+- **Manual:** Run `sf decomposer recompose --config` before each `git commit`.
 
 **Suppressing diff noise on root files.** Keeping root files in git means `git diff` and GitHub PR views show both the root file and the decomposed pieces. Pass `--update-gitattributes` on your first `sf decomposer decompose` run to suppress that noise automatically:
 
