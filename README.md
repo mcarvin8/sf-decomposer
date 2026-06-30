@@ -355,6 +355,18 @@ If you see a hash-named shard and want to know whether it came from a collision 
           └── ...
   ```
 
+- **External Service Registration (`externalServiceRegistration`)** — the `<schema>` field (an embedded OpenAPI/JSON blob) is always extracted to a sidecar YAML file regardless of `--format`. The `<operations>` array is decomposed via `unique-id`, each entry named by its `<name>` element. Leaf properties remain in the main XML file.
+
+  ```
+  externalServiceRegistrations/
+  ├── DropboxFileManagerHandler.externalServiceRegistration-meta.xml   ← original file (safe to delete after decompose)
+  └── DropboxFileManagerHandler/
+      ├── DropboxFileManagerHandler.externalServiceRegistration-meta.xml  ← leaf properties (<schema> and <operations> stripped)
+      ├── DropboxFileManagerHandler.yaml                                   ← sidecar: <schema> content as YAML (always YAML)
+      └── operations/                                                      ← one file per <operations> entry, named by <name>
+          └── uploadFile.operations-meta.xml
+  ```
+
 #### grouped-by-tag
 
 All elements with the same tag (e.g. `<fieldPermissions>`) go into one file named after the tag (e.g. `fieldPermissions.xml`). Leaf elements are still grouped in the original-named file. Best for types with many small repeatable tags where one-file-per-element diffs would be noisy.
@@ -420,6 +432,7 @@ Use the metadata **suffix** for `-m` / `--metadata-type`, as in [SDR's metadataR
 | Bot                         | `bot`                      | Built-in `multiLevel` default splits `botDialogs` (by `developerName`) and `botSteps` (by `type`) automatically. No config required; override only to change the layout. See [Decompose Strategies](#decompose-strategies) and the [admin handbook](https://github.com/mcarvin8/sf-decomposer/blob/main/HANDBOOK.md). |
 | Marketing App Extension     | `marketingappextension`    |                                                                                                                                                                                                                                                                                                                       |
 | Loyalty Program Setup       | `loyaltyProgramSetup`      | Always forced to `unique-id`; `grouped-by-tag` is overridden. Built-in `multiLevel` splits `<programProcesses>` into per-process folders automatically. Recompose always removes the decomposed tree. See [Decompose Strategies](#decompose-strategies).                                                              |
+| External Service Registration | `externalServiceRegistration` | The `<schema>` field is always extracted to a sidecar YAML file (format forced to YAML regardless of `--format`). The `<operations>` array follows normal `unique-id` decomposition, named by `<name>`. See [Decompose Strategies](#decompose-strategies). |
 
 For a comprehensive breakdown of supported, leaf-only, and unsupported metadata types — including multi-level decomposition patterns, Salesforce native decomposition conflicts, and adapter strategy limitations — see [**METADATA_SUPPORT.md**](./METADATA_SUPPORT.md).
 

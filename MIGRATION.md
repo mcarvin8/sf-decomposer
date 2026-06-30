@@ -40,6 +40,31 @@ Currently overlapping types (check [Salesforce docs](https://developer.salesforc
 | `decomposeSharingRulesBeta`                | SharingRules                | `sharingRules`                |
 | `decomposeExternalServiceRegistrationBeta` | ExternalServiceRegistration | `externalServiceRegistration` |
 
+### ExternalServiceRegistration: structural differences
+
+Both Salesforce native and sf-decomposer extract the `<schema>` field to a `.yaml` sidecar and always convert its content to YAML format (regardless of whether the org stores it as JSON or YAML). That is where the similarity ends.
+
+**Salesforce native (`decomposeExternalServiceRegistrationBeta`)** produces a flat two-file layout:
+
+```
+externalServiceRegistrations/
+├── BankService.yaml                                     ← schema content as YAML
+└── BankService.externalServiceRegistration-meta.xml     ← all other fields; no <schema>
+```
+
+**sf-decomposer** produces a subdirectory layout and additionally decomposes `<operations>`:
+
+```
+externalServiceRegistrations/
+└── BankService/
+    ├── BankService.externalServiceRegistration-meta.xml ← leaf fields only; no <schema>, no <operations>
+    ├── BankService.yaml                                 ← schema content as YAML (sidecar)
+    └── operations/                                      ← one file per <operations> entry, named by <name>
+        └── uploadFile.operations-meta.xml
+```
+
+The two layouts use different file paths and are **not interchangeable** — do not mix them in the same project. Follow the migration steps below to convert from native decomposition to sf-decomposer.
+
 ---
 
 ## Before you start
