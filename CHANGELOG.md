@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.36.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.35.0...v6.36.0) (2026-06-30)
+
+
+### Features
+
+* full config read for CLI commands and hook skip flags ([#511](https://github.com/mcarvin8/sf-decomposer/issues/511)) ([945ace0](https://github.com/mcarvin8/sf-decomposer/commit/945ace0e0a8228ad10dead6f0e9e5be212de975b))
+
 ## [6.35.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.34.0...v6.35.0) (2026-06-30)
 
 
