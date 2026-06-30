@@ -1,11 +1,15 @@
 'use strict';
 
+import { access } from 'node:fs/promises';
+import { resolve } from 'node:path';
+
 import { Messages } from '@salesforce/core';
 import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
 import { verifyMetadataTypes } from '../../core/verifyMetadataTypes.js';
 import { loadConfigFile, parseConfigSuffixes, resolveDefaultConfigPath } from '../../helpers/configOverrides.js';
 import { DECOMPOSED_FILE_TYPES, DECOMPOSED_STRATEGIES } from '../../helpers/constants.js';
 import { VerifyResult } from '../../helpers/types.js';
+import { getRepoRoot } from '../../service/core/getRepoRoot.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('sf-decomposer', 'decomposer.verify');
@@ -78,12 +82,33 @@ export default class DecomposerVerify extends SfCommand<VerifyResult> {
     if (flags['config']) {
       const config = await loadConfigFile(await resolveDefaultConfigPath());
       metadataTypes ??= parseConfigSuffixes(config.metadataSuffixes);
+      const configManifest = !flags['manifest'] ? config.manifest : undefined;
       manifest ??= config.manifest;
       ignoreDirs ??= parseConfigSuffixes(config.ignorePackageDirectories);
       format = flags['format'] ?? config.decomposedFormat ?? 'xml';
       strategy = flags['strategy'] ?? config.strategy ?? 'unique-id';
       decomposeNestedPerms = flags['decompose-nested-permissions'] || (config.decomposeNestedPermissions ?? false);
       overrides = config.overrides;
+
+      if (configManifest) {
+        const { repoRoot } = await getRepoRoot();
+        try {
+          await access(resolve(repoRoot ?? process.cwd(), configManifest));
+        } catch (err) {
+          if (metadataTypes?.length) {
+            this.warn(
+              `Config manifest "${configManifest}" not found on disk. Falling back to metadataSuffixes from config.`,
+            );
+            manifest = undefined;
+          } else {
+            throw new Error(
+              `Config manifest "${configManifest}" not found on disk and no metadataSuffixes are defined in the config. ` +
+                'Ensure the manifest exists before running this command, or add metadataSuffixes to the config as a fallback.',
+              { cause: err },
+            );
+          }
+        }
+      }
     }
 
     if (!metadataTypes?.length && !manifest) {
