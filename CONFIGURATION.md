@@ -32,18 +32,19 @@ By default, a single decompose run uses one format and one strategy across every
 
 ### What can be overridden
 
-| Field                        | Notes                                                                                                                                                                                                                                                                             |
-|------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `metadataTypes`              | Optional (required if `components` is omitted). Array of metadata suffixes (same vocabulary as `--metadata-type` / `metadataSuffixes`). Each suffix may appear in at most one override.                                                                                           |
-| `components`                 | Optional (required if `metadataTypes` is omitted). Array of `<metadataSuffix>:<fullName>` keys (e.g. `permissionset:HR_Admin`, `report:MyFolder/MyReport`). Each component may appear in at most one override.                                                                    |
-| `decomposedFormat`           | `xml` \| `json` \| `json5` \| `yaml`.                                                                                                                                                                                                                                             |
-| `strategy`                   | `unique-id` \| `grouped-by-tag`. Hard rules still win — `labels` and `loyaltyProgramSetup` are always treated as `unique-id`.                                                                                                                                                     |
-| `decomposeNestedPermissions` | Only applies to `permissionset` / `mutingpermissionset` with `grouped-by-tag`. Sets a known-good `splitTags` default; ignored if `splitTags` is also set in the same scope.                                                                                                       |
-| `splitTags`                  | Custom `splitTags` spec for `grouped-by-tag` strategy. See [splitTags grammar](#splittags-grammar). Ignored when the resolved strategy is not `grouped-by-tag`.                                                                                                                   |
-| `multiLevel`                 | One or more `multiLevel` specs for nested-array decomposition. Pass a string, a `string[]`, or a `;`-separated string. See [multiLevel grammar](#multilevel-grammar). When set, replaces the hardcoded `loyaltyProgramSetup` default for the targeted scope.                      |
-| `uniqueIdElements`           | Comma-separated list of XML element names (or compound `+`-joined keys) used to derive stable filenames for `unique-id` decomposition. When set, replaces the built-in per-type registry entry for the targeted scope. See [uniqueIdElements grammar](#uniqueidelements-grammar). |
-| `prePurge`                   | Per-scope prePurge (decompose). Component-scope `prePurge` only purges the named component's decomposed directory.                                                                                                                                                                |
-| `postPurge`                  | Per-scope postPurge (decompose: remove originals after decomposing).                                                                                                                                                                                                              |
+| Field                        | Notes                                                                                                                                                                                                                                                                                                                                                                                              |
+|------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `metadataTypes`              | Optional (required if `components` is omitted). Array of metadata suffixes (same vocabulary as `--metadata-type` / `metadataSuffixes`). Each suffix may appear in at most one override.                                                                                                                                                                                                            |
+| `components`                 | Optional (required if `metadataTypes` is omitted). Array of `<metadataSuffix>:<fullName>` keys (e.g. `permissionset:HR_Admin`, `report:MyFolder/MyReport`). Each component may appear in at most one override.                                                                                                                                                                                     |
+| `decomposedFormat`           | `xml` \| `json` \| `json5` \| `yaml`.                                                                                                                                                                                                                                                                                                                                                              |
+| `strategy`                   | `unique-id` \| `grouped-by-tag`. Hard rules still win — `labels`, `loyaltyProgramSetup`, and `externalServiceRegistration` are always treated as `unique-id`.                                                                                                                                                                                                                                      |
+| `decomposeNestedPermissions` | Only applies to `permissionset` / `mutingpermissionset` with `grouped-by-tag`. Sets a known-good `splitTags` default; ignored if `splitTags` is also set in the same scope.                                                                                                                                                                                                                        |
+| `splitTags`                  | Custom `splitTags` spec for `grouped-by-tag` strategy. See [splitTags grammar](#splittags-grammar). Ignored when the resolved strategy is not `grouped-by-tag`.                                                                                                                                                                                                                                    |
+| `multiLevel`                 | One or more `multiLevel` specs for nested-array decomposition. Pass a string, a `string[]`, or a `;`-separated string. See [multiLevel grammar](#multilevel-grammar). When set, replaces the hardcoded `loyaltyProgramSetup` default for the targeted scope.                                                                                                                                       |
+| `uniqueIdElements`           | Comma-separated list of XML element names (or compound `+`-joined keys) used to derive stable filenames for `unique-id` decomposition. When set, replaces the built-in per-type registry entry for the targeted scope. See [uniqueIdElements grammar](#uniqueidelements-grammar).                                                                                                                  |
+| `sidecarElements`            | Comma-separated `element:extension` pairs. Text content of each named XML element is extracted to a typed companion file during decomposition and reinjected automatically during recompose. `externalServiceRegistration` defaults to `"schema:yaml"` — set this to override or disable (not yet supported; omit to accept the default). See [sidecarElements grammar](#sidecarelements-grammar). |
+| `prePurge`                   | Per-scope prePurge (decompose). Component-scope `prePurge` only purges the named component's decomposed directory.                                                                                                                                                                                                                                                                                 |
+| `postPurge`                  | Per-scope postPurge (decompose: remove originals after decomposing).                                                                                                                                                                                                                                                                                                                               |
 
 Run-scope options (`metadataSuffixes`, `manifest`, `ignorePackageDirectories`) are **not** valid inside an override; the plugin will throw if they are present.
 
@@ -65,7 +66,7 @@ For each component, each option is resolved independently in this order (highest
 1. The component-scope override value (matching `<suffix>:<fullName>` in `components`), if set.
 2. The type-scope override value (matching `<suffix>` in `metadataTypes`), if set.
 3. The run-wide value (CLI flag, hook config top-level field, or built-in default).
-4. Hard plugin rules (e.g. `labels` and `loyaltyProgramSetup` forced to `unique-id`) override all of the above.
+4. Hard plugin rules (e.g. `labels`, `loyaltyProgramSetup`, and `externalServiceRegistration` forced to `unique-id`) override all of the above.
 
 ### splitTags grammar
 
@@ -187,6 +188,43 @@ Within one scope, the `(file_pattern, root_to_strip)` pair must be unique across
 ```
 
 > **Tip:** If you resolve a collision by adding a compound key and it works, consider opening an issue or PR to add it to the built-in registry so other orgs benefit automatically.
+
+### sidecarElements grammar
+
+`sidecarElements` extracts the text content of specific XML elements into typed companion files alongside the decomposed XML shards — and reinserts them automatically on recompose. The primary use case is metadata types whose XML embeds large text blobs (e.g. YAML or JSON schema documents) that diff poorly inside XML.
+
+**Built-in default:** `externalServiceRegistration` always applies `"schema:yaml"` unless the override explicitly sets a different value. No config change is required to activate sidecar extraction for ESR.
+
+**Spec:** Comma-separated `element:extension` pairs. Each pair names the XML element whose text content should be extracted and the file extension of the companion file. Each element name may appear at most once in the spec.
+
+```
+<element>:<extension>[,<element>:<extension>...]
+```
+
+**What happens on decompose:**
+
+1. Each named element's text content is written to `<componentBasename>.<extension>` alongside the decomposed XML shards.
+2. The element tag is replaced with an empty placeholder in the decomposed XML.
+3. A `.sidecars.json` manifest is written inside the disassembled directory so recompose can auto-detect which elements were extracted.
+
+**What happens on recompose:**
+
+Recompose reads `.sidecars.json` automatically — no `sidecarElements` flag is needed. The companion file content is reinjected into the correct element before the XML is written.
+
+**Format conversion:** If the declared extension is `yaml` and the companion file contains valid YAML, it is transparently round-tripped (YAML → JSON internally → YAML on write). JSON extensions are treated analogously. The content is always reinjected verbatim if no conversion applies.
+
+**Examples:**
+
+```json
+"overrides": [
+  {
+    "metadataTypes": ["externalServiceRegistration"],
+    "sidecarElements": "schema:yaml"
+  }
+]
+```
+
+> **Note:** `externalServiceRegistration` applies `"schema:yaml"` by default. An explicit override is only needed if you want a different extension (e.g. `"schema:json"`) or if a future metadata type requires similar treatment.
 
 ### Opting in from the CLI
 

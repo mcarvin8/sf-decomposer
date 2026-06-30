@@ -16,6 +16,7 @@ import {
   resolveDefaultConfigPath,
   validateMultiLevelSpec,
   validateOverrides,
+  validateSidecarElementsSpec,
   validateSplitTagsSpec,
   validateUniqueIdElementsSpec,
 } from '../../src/helpers/configOverrides.js';
@@ -238,6 +239,32 @@ describe('configOverrides helper', () => {
       const overrides: DecomposerOverride[] = [{ metadataTypes: ['flow'], uniqueIdElements: 'developerName,,apiName' }];
       expect(() => validateOverrides(overrides)).toThrow(/"uniqueIdElements" contains an empty entry/);
     });
+
+    it('accepts a well-formed sidecarElements spec (single pair)', () => {
+      const overrides: DecomposerOverride[] = [
+        { metadataTypes: ['externalServiceRegistration'], sidecarElements: 'schema:yaml' },
+      ];
+      expect(() => validateOverrides(overrides)).not.toThrow();
+    });
+
+    it('accepts a well-formed sidecarElements spec (multiple pairs)', () => {
+      const overrides: DecomposerOverride[] = [
+        { metadataTypes: ['externalServiceRegistration'], sidecarElements: 'schema:yaml,wsdl:xml' },
+      ];
+      expect(() => validateOverrides(overrides)).not.toThrow();
+    });
+
+    it('rejects a malformed sidecarElements spec (missing extension)', () => {
+      const overrides: DecomposerOverride[] = [
+        { metadataTypes: ['externalServiceRegistration'], sidecarElements: 'schema' },
+      ];
+      expect(() => validateOverrides(overrides)).toThrow(/exactly 2 colon-separated parts/);
+    });
+
+    it('rejects an empty sidecarElements string', () => {
+      const overrides: DecomposerOverride[] = [{ metadataTypes: ['externalServiceRegistration'], sidecarElements: '' }];
+      expect(() => validateOverrides(overrides)).toThrow(/empty "sidecarElements" string/);
+    });
   });
 
   describe('validateSplitTagsSpec', () => {
@@ -459,6 +486,52 @@ describe('configOverrides helper', () => {
     });
   });
 
+  describe('validateSidecarElementsSpec', () => {
+    it('accepts a single element:extension pair', () => {
+      expect(() => validateSidecarElementsSpec('schema:yaml', 0)).not.toThrow();
+    });
+
+    it('accepts multiple comma-separated pairs', () => {
+      expect(() => validateSidecarElementsSpec('schema:yaml,wsdl:xml', 0)).not.toThrow();
+    });
+
+    it('rejects an empty spec', () => {
+      expect(() => validateSidecarElementsSpec('', 0)).toThrow(/empty "sidecarElements" string/);
+    });
+
+    it('rejects a whitespace-only spec', () => {
+      expect(() => validateSidecarElementsSpec('   ', 0)).toThrow(/empty "sidecarElements" string/);
+    });
+
+    it('rejects a pair with too few parts (no colon)', () => {
+      expect(() => validateSidecarElementsSpec('schema', 0)).toThrow(/exactly 2 colon-separated parts/);
+    });
+
+    it('rejects a pair with too many parts (3 colons)', () => {
+      expect(() => validateSidecarElementsSpec('schema:yaml:extra', 0)).toThrow(/exactly 2 colon-separated parts/);
+    });
+
+    it('rejects a pair with an empty element', () => {
+      expect(() => validateSidecarElementsSpec(':yaml', 0)).toThrow(/empty parts/);
+    });
+
+    it('rejects a pair with an empty extension', () => {
+      expect(() => validateSidecarElementsSpec('schema:', 0)).toThrow(/empty parts/);
+    });
+
+    it('rejects an empty pair between commas', () => {
+      expect(() => validateSidecarElementsSpec('schema:yaml,,wsdl:xml', 0)).toThrow(/contains an empty pair/);
+    });
+
+    it('rejects duplicate element names', () => {
+      expect(() => validateSidecarElementsSpec('schema:yaml,schema:json', 0)).toThrow(/duplicate element "schema"/);
+    });
+
+    it('tolerates surrounding whitespace in pairs', () => {
+      expect(() => validateSidecarElementsSpec(' schema : yaml , wsdl : xml ', 0)).not.toThrow();
+    });
+  });
+
   describe('getOverrideForType', () => {
     const overrides: DecomposerOverride[] = [
       { metadataTypes: ['flow'], decomposedFormat: 'yaml' },
@@ -641,6 +714,20 @@ describe('configOverrides helper', () => {
       const overrides: DecomposerOverride[] = [{ metadataTypes: ['flow'], decomposedFormat: 'yaml' }];
       expect(resolveDecomposeOptionsForType('flow', base, overrides).uniqueIdElements).toBeUndefined();
     });
+
+    it('threads a type-scope sidecarElements through resolution', () => {
+      const overrides: DecomposerOverride[] = [
+        { metadataTypes: ['externalServiceRegistration'], sidecarElements: 'schema:json' },
+      ];
+      expect(resolveDecomposeOptionsForType('externalServiceRegistration', base, overrides).sidecarElements).toBe(
+        'schema:json',
+      );
+    });
+
+    it('returns undefined sidecarElements when no override sets one', () => {
+      const overrides: DecomposerOverride[] = [{ metadataTypes: ['flow'], decomposedFormat: 'yaml' }];
+      expect(resolveDecomposeOptionsForType('flow', base, overrides).sidecarElements).toBeUndefined();
+    });
   });
 
   describe('resolveDecomposeOptionsForComponent', () => {
@@ -746,6 +833,28 @@ describe('configOverrides helper', () => {
       expect(
         resolveDecomposeOptionsForComponent('loyaltyProgramSetup', 'Other', typeResolved, overrides).multiLevel,
       ).toBe('programProcesses:programProcesses:parameterName,ruleName');
+    });
+
+    it('lets a component override replace a type-scoped sidecarElements', () => {
+      const typeResolved = { ...base, sidecarElements: 'schema:yaml' };
+      const overrides: DecomposerOverride[] = [
+        { components: ['externalServiceRegistration:BankService'], sidecarElements: 'schema:json' },
+      ];
+      expect(
+        resolveDecomposeOptionsForComponent('externalServiceRegistration', 'BankService', typeResolved, overrides)
+          .sidecarElements,
+      ).toBe('schema:json');
+    });
+
+    it('inherits a type-scoped sidecarElements when the component override does not set one', () => {
+      const typeResolved = { ...base, sidecarElements: 'schema:yaml' };
+      const overrides: DecomposerOverride[] = [
+        { components: ['externalServiceRegistration:Other'], decomposedFormat: 'yaml' },
+      ];
+      expect(
+        resolveDecomposeOptionsForComponent('externalServiceRegistration', 'Other', typeResolved, overrides)
+          .sidecarElements,
+      ).toBe('schema:yaml');
     });
   });
 

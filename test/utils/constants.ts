@@ -12,6 +12,7 @@ export const METADATA_UNDER_TEST = [
   'loyaltyProgramSetup',
   'mutingpermissionset',
   'recordType',
+  'externalServiceRegistration',
 ];
 // labels shouldn't be in the tags test
 export const METADATA_UNDER_TEST_FOR_TAGS = ['workflow', 'bot', 'profile', 'permissionset', 'flow', 'app'];

@@ -43,6 +43,14 @@ export type DecomposerOverride = {
   uniqueIdElements?: string;
   prePurge?: boolean;
   postPurge?: boolean;
+  /**
+   * Comma-separated `element:extension` pairs identifying XML elements whose text content
+   * should be extracted to typed companion files during disassembly and injected back during
+   * reassembly. Example: `"schema:yaml"`. When set on a metadata type, overrides the built-in
+   * default (e.g. `externalServiceRegistration` defaults to `"schema:yaml"`). Reassembly always
+   * auto-detects sidecars from `.sidecars.json` — no reassembly flag is needed.
+   */
+  sidecarElements?: string;
 };
 
 export type ConfigFile = {
