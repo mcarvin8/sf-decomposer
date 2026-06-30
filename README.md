@@ -87,21 +87,21 @@ Add `.sfdecomposer.config.json` to your project root. Copy and customize one of 
 - [Basic sample](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.sfdecomposer.config.json) — one format and strategy for all types
 - [Sample with overrides](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.sfdecomposer.config.overrides.json) — vary format/strategy per metadata type or component
 
-| Option                       | Required    | Description                                                                                                                                        |
-|------------------------------|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
-| `metadataSuffixes`           | Conditional | Comma-separated metadata suffixes to decompose/recompose. Required unless `manifest` is set; when both are set, run is scoped to the intersection. |
-| `manifest`                   | Conditional | Path (relative to project root) to a `package.xml` manifest. When set, only listed components are decomposed/recomposed.                           |
-| `ignorePackageDirectories`   | No          | Comma-separated package directories to skip.                                                                                                       |
-| `prePurge`                   | No          | Remove existing decomposed files before decomposing (default: false).                                                                              |
-| `postPurge`                  | No          | After decompose: remove originals; after recompose: remove decomposed files (default: false).                                                      |
-| `decomposedFormat`           | No          | `xml`, `json`, `json5`, or `yaml` (default: xml).                                                                                                  |
-| `strategy`                   | No          | `unique-id` \| `grouped-by-tag` (default: unique-id).                                                                                              |
-| `decomposeNestedPermissions` | No          | With `grouped-by-tag`, set `true` to further decompose permission set and muting permission set object/field permissions.                          |
-| `updateForceignore`          | No          | Set `true` to automatically add decomposed file paths to `.forceignore` after each hook-triggered decomposition (default: false).                  |
-| `updateGitattributes`        | No          | Set `true` to automatically add root metadata file patterns to `.gitattributes` after each hook-triggered decomposition (default: false).          |
+| Option                       | Required    | Description                                                                                                                                                                                                                 |
+|------------------------------|-------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `metadataSuffixes`           | Conditional | Comma-separated metadata suffixes to decompose/recompose. Required unless `manifest` is set; when both are set, run is scoped to the intersection.                                                                          |
+| `manifest`                   | Conditional | Path (relative to project root) to a `package.xml` manifest. When set, only listed components are decomposed/recomposed.                                                                                                    |
+| `ignorePackageDirectories`   | No          | Comma-separated package directories to skip.                                                                                                                                                                                |
+| `prePurge`                   | No          | Remove existing decomposed files before decomposing (default: false).                                                                                                                                                       |
+| `postPurge`                  | No          | After decompose: remove originals; after recompose: remove decomposed files (default: false).                                                                                                                               |
+| `decomposedFormat`           | No          | `xml`, `json`, `json5`, or `yaml` (default: xml).                                                                                                                                                                           |
+| `strategy`                   | No          | `unique-id` \| `grouped-by-tag` (default: unique-id).                                                                                                                                                                       |
+| `decomposeNestedPermissions` | No          | With `grouped-by-tag`, set `true` to further decompose permission set and muting permission set object/field permissions.                                                                                                   |
+| `updateForceignore`          | No          | Set `true` to automatically add decomposed file paths to `.forceignore` after each hook-triggered decomposition (default: false).                                                                                           |
+| `updateGitattributes`        | No          | Set `true` to automatically add root metadata file patterns to `.gitattributes` after each hook-triggered decomposition (default: false).                                                                                   |
 | `skipPrerunHook`             | No          | Set `true` to skip the automatic recompose that fires before `sf project deploy start/validate` (default: false). Useful when you recompose manually in a pre-commit hook and don't want a second recompose at deploy time. |
-| `skipPostRetrieveHook`       | No          | Set `true` to skip the automatic decompose that fires after `sf project retrieve start` (default: false).                                          |
-| `overrides`                  | No          | Array of per-type and/or per-component overrides. See [CONFIGURATION.md](CONFIGURATION.md).                                                        |
+| `skipPostRetrieveHook`       | No          | Set `true` to skip the automatic decompose that fires after `sf project retrieve start` (default: false).                                                                                                                   |
+| `overrides`                  | No          | Array of per-type and/or per-component overrides. See [CONFIGURATION.md](CONFIGURATION.md).                                                                                                                                 |
 
 ---
 
@@ -574,14 +574,14 @@ The sf-decomposer prerun hook recomposes automatically when `sf project deploy s
 
 If you use the prerun hook, do not combine it with `--postpurge` and sgd. The compatible combinations are:
 
-| Setup                                              | Works?                                                    |
-|----------------------------------------------------|-----------------------------------------------------------|
-| No `--postpurge` + sgd + hook                                         | ✅ Root files in git; hook recompose at deploy is harmless (redundant but safe) |
-| No `--postpurge` + sgd + pre-commit hook + `skipPrerunHook: true`     | ✅ Recomposed before commit; deploy hook skipped intentionally                  |
-| No `--postpurge` + sgd, no hook                                       | ✅ Recompose manually before commit                                             |
-| `--postpurge` + hook, no sgd                                          | ✅ Full deploy; hook recomposes at deploy time                                  |
-| `--postpurge` + sgd + CI recompose commit, no hook                    | ✅ Explicit recompose step before sgd                                           |
-| `--postpurge` + sgd + hook                                            | ❌ sgd runs before hook; delta is wrong                                         |
+| Setup                                                             | Works?                                                                         |
+|-------------------------------------------------------------------|--------------------------------------------------------------------------------|
+| No `--postpurge` + sgd + hook                                     | ✅ Root files in git; hook recompose at deploy is harmless (redundant but safe) |
+| No `--postpurge` + sgd + pre-commit hook + `skipPrerunHook: true` | ✅ Recomposed before commit; deploy hook skipped intentionally                  |
+| No `--postpurge` + sgd, no hook                                   | ✅ Recompose manually before commit                                             |
+| `--postpurge` + hook, no sgd                                      | ✅ Full deploy; hook recomposes at deploy time                                  |
+| `--postpurge` + sgd + CI recompose commit, no hook                | ✅ Explicit recompose step before sgd                                           |
+| `--postpurge` + sgd + hook                                        | ❌ sgd runs before hook; delta is wrong                                         |
 
 ---
 
