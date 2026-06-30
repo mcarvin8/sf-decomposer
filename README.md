@@ -517,6 +517,19 @@ sf-decomposer is compatible with sgd as long as those root files are present in 
 
 Without `--postpurge`, the original root metadata file stays in the repo alongside the decomposed pieces. When you recompose before committing (or via pre-commit hook), the root file is updated in git and sgd detects the change normally. No extra sgd configuration is needed.
 
+**Suppressing diff noise on root files.** Keeping root files in git means `git diff` and GitHub PR views show both the root file and the decomposed pieces. To eliminate that noise, add the root file patterns to `.gitattributes`:
+
+```gitattributes
+# suppress diff on recomposed root files; decomposed pieces still show normal diffs
+**/flows/*.flow-meta.xml -diff linguist-generated=true
+**/permissionsets/*.permissionset-meta.xml -diff linguist-generated=true
+```
+
+- `-diff` — `git diff` / `git show` skip textual content for these files
+- `linguist-generated=true` — GitHub collapses the file in PR diff views (still expandable)
+
+The patterns follow the same shape as `--update-forceignore`: `**/<directoryName>/*.<suffix>-meta.xml`. Git still tracks the files (sgd works); they are invisible noise during code review.
+
 #### If you use `--postpurge`
 
 `--postpurge` removes the root metadata file after decomposing. Only the decomposed pieces remain in git. sgd cannot detect changes to these nested files — they do not match the registry's file patterns.
