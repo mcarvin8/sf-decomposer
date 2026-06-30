@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.34.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.33.2...v6.34.0) (2026-06-30)
+
+
+### Features
+
+* add sidecar elements support for XML decompose/recompose ([#507](https://github.com/mcarvin8/sf-decomposer/issues/507)) ([76fb5a8](https://github.com/mcarvin8/sf-decomposer/commit/76fb5a8ca1293ed1d32213682342af6c52d4599c))
+
 ## [6.33.2](https://github.com/mcarvin8/sf-decomposer/compare/v6.33.1...v6.33.2) (2026-06-29)
 
 
