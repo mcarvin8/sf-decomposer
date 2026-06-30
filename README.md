@@ -558,13 +558,13 @@ The sf-decomposer prerun hook recomposes automatically when `sf project deploy s
 
 If you use the prerun hook, do not combine it with `--postpurge` and sgd. The compatible combinations are:
 
-| Setup | Works? |
-|---|---|
-| No `--postpurge` + sgd + hook | ✅ Root files in git; hook recompose at deploy is harmless |
-| No `--postpurge` + sgd, no hook | ✅ Recompose manually before commit |
-| `--postpurge` + hook, no sgd | ✅ Full deploy; hook recomposes at deploy time |
-| `--postpurge` + sgd + CI recompose commit, no hook | ✅ Explicit recompose step before sgd |
-| `--postpurge` + sgd + hook | ❌ sgd runs before hook; delta is wrong |
+| Setup                                              | Works?                                                    |
+|----------------------------------------------------|-----------------------------------------------------------|
+| No `--postpurge` + sgd + hook                      | ✅ Root files in git; hook recompose at deploy is harmless |
+| No `--postpurge` + sgd, no hook                    | ✅ Recompose manually before commit                        |
+| `--postpurge` + hook, no sgd                       | ✅ Full deploy; hook recomposes at deploy time             |
+| `--postpurge` + sgd + CI recompose commit, no hook | ✅ Explicit recompose step before sgd                      |
+| `--postpurge` + sgd + hook                         | ❌ sgd runs before hook; delta is wrong                    |
 
 ---
 
