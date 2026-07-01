@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.37.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.36.0...v6.37.0) (2026-07-01)
+
+
+### Features
+
+* **metadata:** support IdpConfiguration, UiWidgetBundle ([54c422a](https://github.com/mcarvin8/sf-decomposer/commit/54c422acb219390bd2941021abf04f1f244201da))
+
 ## [6.36.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.35.0...v6.36.0) (2026-06-30)
 
 
