@@ -15,8 +15,12 @@ export async function getPackageDirectories(
     ? { repoRoot: repoRootOverride, dxConfigFilePath: join(repoRootOverride, SFDX_PROJECT_FILE_NAME) }
     : ((await getRepoRoot()) as { repoRoot: string; dxConfigFilePath: string });
   const ignorePath = resolve(repoRoot, IGNORE_FILE);
+  // Stryker disable next-line StringLiteral: JSON.parse(Buffer) defaults to UTF-8 decoding
   const sfdxProjectRaw: string = await readFile(dxConfigFilePath, 'utf-8');
   const sfdxProject: SfdxProject = JSON.parse(sfdxProjectRaw) as SfdxProject;
+  // Stryker disable next-line ArrayDeclaration: an empty default is only distinguishable from a
+  // non-empty one by a real directory named after the mutant's placeholder text, which isn't a
+  // meaningful test.
   const normalizedIgnoreDirs = (ignoreDirs ?? []).map((dir) => basename(dir));
   const packageDirectories = sfdxProject.packageDirectories.map((directory) => resolve(repoRoot, directory.path));
 

@@ -171,4 +171,27 @@ describe('getPackageDirectories', () => {
     expect(metadataPaths).toHaveLength(2);
     expect(new Set(metadataPaths)).toEqual(new Set([resolve(a), resolve(b)]));
   });
+
+  it('ignores a plain file that happens to share the target directory name', async () => {
+    // Kills the mutant that drops the `file.isDirectory()` filter before matching by name:
+    // without it, a file named "permissionsets" would be treated as a directory match.
+    await writeFile(join(project.forceAppDir, 'permissionsets'), 'not a directory');
+
+    const { metadataPaths } = await getPackageDirectories('permissionsets', undefined);
+
+    expect(metadataPaths).toEqual([]);
+  });
+
+  it('does not recurse into an already-matched directory, so a same-named directory nested inside it is not double-counted', async () => {
+    // Kills the mutants that drop or neuter the `file.name !== subDirectoryName` exclusion
+    // before recursing deeper. Without it, the outer match's own contents get searched too,
+    // and the nested "permissionsets" inside it would be counted as a second match.
+    const outer = join(project.forceAppDir, 'permissionsets');
+    const nested = join(outer, 'permissionsets');
+    await mkdir(nested, { recursive: true });
+
+    const { metadataPaths } = await getPackageDirectories('permissionsets', undefined);
+
+    expect(metadataPaths).toEqual([resolve(outer)]);
+  });
 });
