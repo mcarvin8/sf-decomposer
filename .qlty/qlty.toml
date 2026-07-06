@@ -1,0 +1,13 @@
+config_version = "0"
+
+# Build/tooling scripts and sample configs — skip all quality checks entirely.
+exclude_patterns = [
+  "scripts/**",
+  "examples/**",
+]
+
+# Test fixtures — real metadata samples whose exact formatting/indentation is
+# part of the test contract. Skip only the formatter; other checks still run.
+[[exclude]]
+plugins = ["biome"]
+file_patterns = ["fixtures/**"]
