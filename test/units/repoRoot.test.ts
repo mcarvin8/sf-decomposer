@@ -22,4 +22,19 @@ describe('getRepoRoot recursion', () => {
     // Assert recursion happened
     expect(accessMock).toHaveBeenCalledTimes(4); // /a/b/c, /a/b, /a, /
   });
+
+  it('chains the final access() error as the cause on the not-found error', async () => {
+    const fakePath = '/a/b/c';
+    process.cwd = vi.fn(() => fakePath) as typeof process.cwd;
+    accessMock.mockImplementation((filePath: string) => {
+      throw new Error(`File not found at ${filePath}`);
+    });
+
+    try {
+      await getRepoRoot();
+      throw new Error('expected getRepoRoot to throw, but it returned normally');
+    } catch (err) {
+      expect((err as Error).cause).toBeInstanceOf(Error);
+    }
+  });
 });
