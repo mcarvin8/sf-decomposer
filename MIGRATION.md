@@ -65,6 +65,106 @@ externalServiceRegistrations/
 
 The two layouts use different file paths and are **not interchangeable** — do not mix them in the same project. Follow the migration steps below to convert from native decomposition to sf-decomposer.
 
+### Workflow: structural differences
+
+Both Salesforce native and sf-decomposer split a `Workflow` file into one subdirectory per nested category, with the object name as the parent folder. That is where the similarity ends.
+
+**Salesforce native (`decomposeWorkflowBeta`)** extracts 7 categories; `<flowActions>` stays inline in the base file:
+
+```
+workflows/
+└── Case/
+    ├── Case.workflow-meta.xml            ← base fields; <flowActions> stays inline here
+    ├── workflowAlerts/
+    │   └── My_Alert.workflowAlert-meta.xml
+    ├── workflowFieldUpdates/
+    ├── workflowKnowledgePublishes/
+    ├── workflowOutboundMessages/
+    ├── workflowRules/
+    ├── workflowSends/
+    └── workflowTasks/
+```
+
+**sf-decomposer** extracts 8 categories — the same 7 plus `flowActions` — using the raw XML tag name for the directory, then renames the leaf files to match Salesforce's per-element suffix convention:
+
+```
+workflows/
+└── Case/
+    ├── Case.workflow-meta.xml            ← base fields only; nothing nested left inline
+    ├── alerts/
+    │   └── My_Alert.workflowAlert-meta.xml
+    ├── fieldUpdates/
+    ├── flowActions/                      ← not extracted by native decomposition
+    │   └── My_Flow_Action.workflowFlowAction-meta.xml
+    ├── knowledgePublishes/
+    ├── outboundMessages/
+    ├── rules/
+    ├── send/
+    └── tasks/
+```
+
+Leaf filenames end up matching Salesforce's naming convention, but the directory names (`rules/` vs. `workflowRules/`) and the extra `flowActions/` category mean the two layouts are **not interchangeable** — migrating adds files native decomposition never created for the same source.
+
+### PermissionSet: structural differences
+
+**Salesforce native (`decomposePermissionSetBeta2`)** defines 14 child types in the SDR registry. 10 get one file per entry; the other 4 (`fieldPermissions`, `objectPermissions`, `recordTypeVisibilities`, `tabSettings`) are consolidated into a single `objectSettings` file per object:
+
+```
+permissionsets/
+└── HR_Admin/
+    ├── HR_Admin.permissionset-meta.xml                        ← label, description, license, ...
+    ├── HR_Admin.applicationVisibilities-meta.xml              ← every applicationVisibilities entry
+    ├── HR_Admin.classAccesses-meta.xml
+    ├── HR_Admin.customMetadataTypeAccesses-meta.xml
+    ├── HR_Admin.customPermissions-meta.xml
+    ├── HR_Admin.customSettingAccesses-meta.xml
+    ├── HR_Admin.externalCredentialPrincipalAccesses-meta.xml
+    ├── HR_Admin.externalDataSourceAccesses-meta.xml
+    ├── HR_Admin.flowAccesses-meta.xml
+    ├── HR_Admin.pageAccesses-meta.xml
+    ├── HR_Admin.userPermissions-meta.xml
+    └── Job_Request__c.objectSettings-meta.xml                 ← that object's field/object/recordType/tab perms, combined into one file
+```
+
+**sf-decomposer** default (`unique-id`, no flags) is far more granular — one file *per entry*, in per-category subdirectories:
+
+```
+permissionsets/
+└── HR_Admin/
+    ├── HR_Admin.permissionset-meta.xml
+    ├── applicationVisibilities/
+    │   └── JobApps__Recruiting.applicationVisibilities-meta.xml
+    ├── fieldPermissions/
+    │   ├── Job_Request__c.SalaryPay__c.fieldPermissions-meta.xml
+    │   └── Job_Request__c.Salary__c.fieldPermissions-meta.xml
+    ├── objectPermissions/
+    │   └── Job_Request__c.objectPermissions-meta.xml
+    └── ...
+```
+
+`strategy: grouped-by-tag` with `--decompose-nested-permissions` (`-p`) gets close to native's per-object granularity — `objectPermissions` and `fieldPermissions` both become one file per object, everything else stays grouped:
+
+```bash
+sf decomposer decompose -m "permissionset" -s "grouped-by-tag" -p
+```
+
+```
+permissionsets/
+└── HR_Admin/
+    ├── HR_Admin.permissionset-meta.xml
+    ├── applicationVisibilities.xml
+    ├── classAccesses.xml
+    ├── pageAccesses.xml
+    ├── recordTypeVisibilities.xml                ← still grouped, not per-object
+    ├── tabSettings.xml                            ← still grouped, not per-object
+    ├── fieldPermissions/
+    │   └── Job_Request__c.fieldPermissions-meta.xml
+    └── objectPermissions/
+        └── Job_Request__c.objectPermissions-meta.xml
+```
+
+Closest available match, but not byte-for-byte native: native merges all four object-scoped categories into one `objectSettings` file per object; sf-decomposer keeps `objectPermissions`/`fieldPermissions` as two separate per-object files and leaves `recordTypeVisibilities`/`tabSettings` grouped globally. Either way, the paths differ from native's — **not interchangeable**.
+
 ---
 
 ## Before you start
