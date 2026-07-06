@@ -109,7 +109,8 @@ async function directoryExists(path: string): Promise<boolean> {
     const stats = await stat(path);
     return stats.isDirectory();
   } catch {
-    // Stryker disable-line BlockStatement
+    // The only caller negates this with `!`, so an empty catch (implicit `undefined`) would be
+    // behaviorally identical to `return false` here -- this is an intentionally equivalent mutant.
     return false;
   }
 }

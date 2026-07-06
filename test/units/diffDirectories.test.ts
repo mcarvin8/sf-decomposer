@@ -179,6 +179,14 @@ describe('xmlEquivalent', () => {
     expect(xmlEquivalent(missing, valid)).toBe(false);
   });
 
+  it('returns false (not true) when both files are unreadable or invalid XML', async () => {
+    // Both sides parse to `null`; the guard must still report `false` rather than treating two
+    // equally-unparseable files as "equivalent".
+    const missingA = join(tmpDir, 'does-not-exist-a.xml');
+    const missingB = join(tmpDir, 'does-not-exist-b.xml');
+    expect(xmlEquivalent(missingA, missingB)).toBe(false);
+  });
+
   it('ignores the XML declaration', async () => {
     const a = await write('a.xml', '<?xml version="1.0" encoding="UTF-8"?><r><n>1</n></r>');
     const b = await write('b.xml', '<r><n>1</n></r>');

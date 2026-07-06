@@ -33,8 +33,8 @@ export async function diffDirectories(referenceDir: string, mockDir: string, pre
   let entries;
   try {
     entries = await readdir(referenceDir, { withFileTypes: true });
+    // Stryker disable next-line BlockStatement
   } catch {
-    // Stryker disable-line BlockStatement
     /* istanbul ignore next -- @preserve: caller already filters to existing directories */
     return out;
   }
@@ -83,7 +83,8 @@ async function fileExists(path: string): Promise<boolean> {
     await stat(path);
     return true;
   } catch {
-    // Stryker disable-line BlockStatement: defensive only
+    // The only caller negates this with `!`, so an empty catch (implicit `undefined`) would be
+    // behaviorally identical to `return false` here -- this is an intentionally equivalent mutant.
     return false;
   }
 }
@@ -100,6 +101,10 @@ function isXmlFile(fileName: string): boolean {
 export function xmlEquivalent(refPath: string, mockPath: string): boolean {
   const parsedA = parseXml(refPath) as unknown;
   const parsedB = parseXml(mockPath) as unknown;
+  // Stryker disable next-line ConditionalExpression,LogicalOperator: canonicalJson(null) can never
+  // collide with the canonical JSON of a real parsed XML value, so weakening this guard (e.g. `||`
+  // to `&&`, or dropping one operand) is unobservable except when BOTH sides are null -- which the
+  // "both invalid" test below still pins to `false`.
   if (parsedA === null || parsedB === null) return false;
   return canonicalJson(parsedA) === canonicalJson(parsedB);
 }
