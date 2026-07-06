@@ -458,6 +458,29 @@ describe('verifyMetadataTypes', () => {
     expect(await pathExists(tempDirSeenByMock as string)).toBe(false);
   });
 
+  it('does not throw when the temp project was already removed before the final cleanup', async () => {
+    // Simulates a decompose implementation that removes its own repoRoot; the final `rm` in the
+    // `finally` block must still succeed because it passes `force: true` (kills the mutant that
+    // flips `force: true` to `force: false`, which would make this throw ENOENT).
+    decomposeSpy.mockImplementationOnce(async (opts: { repoRoot?: string }) => {
+      if (opts.repoRoot) {
+        await rm(opts.repoRoot, { recursive: true, force: true });
+      }
+      return { metadata: [] };
+    });
+
+    await expect(
+      verifyMetadataTypes({
+        metadataTypes: ['permissionset'],
+        format: 'xml',
+        ignoreDirs: undefined,
+        strategy: 'unique-id',
+        decomposeNestedPerms: false,
+        log: logMock,
+      }),
+    ).resolves.toBeDefined();
+  });
+
   it('cleans up the temp project on the happy path too', async () => {
     let seen: string | undefined;
     decomposeSpy.mockImplementation(async (opts: { repoRoot?: string }) => {

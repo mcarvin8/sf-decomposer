@@ -28,6 +28,7 @@ export async function verifyMetadataTypes(options: VerifyOptions): Promise<Verif
     dxConfigFilePath: string;
   };
 
+  // Stryker disable next-line StringLiteral: JSON.parse(Buffer) defaults to UTF-8 decoding
   const sfdxProjectRaw = await readFile(dxConfigFilePath, 'utf-8');
   const sfdxProject = JSON.parse(sfdxProjectRaw) as SfdxProject;
   const packageDirRelPaths = sfdxProject.packageDirectories.map((p) => p.path);
@@ -145,7 +146,7 @@ export async function verifyMetadataTypes(options: VerifyOptions): Promise<Verif
 
     return { metadata: decomposed.metadata, drift, reordered };
   } finally {
-    await rm(tempProjectDir, { recursive: true, force: true }); // Stryker disable-line BooleanLiteral
+    await rm(tempProjectDir, { recursive: true, force: true });
   }
 }
 
