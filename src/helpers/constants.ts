@@ -17,6 +17,10 @@ export const WORKFLOW_SUFFIX_MAPPING: { [key: string]: string } = {
 };
 export const HOOK_CONFIG_JSON = '.sfdecomposer.config.json';
 
+// SDR adapter strategies this plugin cannot decompose (see getRegistryValuesBySuffix.ts).
+// Also referenced by scripts/update-metadata-support.ts to classify new registry types.
+export const UNSUPPORTED_ADAPTERS: string[] = ['matchingContentFile', 'digitalExperience', 'mixedContent', 'bundle'];
+
 // Concurrency limits to prevent file system overload
 // These conservative limits prevent EMFILE and EBUSY errors
 export const CONCURRENCY_LIMITS = {

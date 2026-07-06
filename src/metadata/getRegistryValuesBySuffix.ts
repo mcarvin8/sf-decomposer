@@ -2,7 +2,7 @@
 
 import { MetadataType, RegistryAccess } from '@salesforce/source-deploy-retrieve';
 
-import { DEFAULT_UNIQUE_ID_ELEMENTS } from '../helpers/constants.js';
+import { DEFAULT_UNIQUE_ID_ELEMENTS, UNSUPPORTED_ADAPTERS } from '../helpers/constants.js';
 import { MetaAttributes } from '../helpers/types.js';
 import { getPackageDirectories } from './getPackageDirectories.js';
 import { getUniqueIdElements } from './getUniqueIdElements.js';
@@ -58,12 +58,7 @@ export async function getRegistryValuesBySuffix(
 
   if (metadataTypeEntry === undefined) throw Error(`Metadata type not found for the given suffix: ${metaSuffix}.`);
 
-  if (
-    metadataTypeEntry.strategies?.adapter &&
-    ['matchingContentFile', 'digitalExperience', 'mixedContent', 'bundle'].includes(
-      metadataTypeEntry.strategies.adapter,
-    )
-  ) {
+  if (metadataTypeEntry.strategies?.adapter && UNSUPPORTED_ADAPTERS.includes(metadataTypeEntry.strategies.adapter)) {
     throw Error(
       `Metadata types with ${metadataTypeEntry.strategies.adapter} strategies are not supported by this plugin.`,
     );

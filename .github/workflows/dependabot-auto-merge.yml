@@ -130,7 +130,27 @@ jobs:
           echo "$TITLE" > /tmp/pr-title.txt
           echo "Resolved title: $TITLE"
 
-          rm -rf /tmp/sdr-old "/tmp/${TARBALL}"
+          # /tmp/sdr-old is left in place for the METADATA_SUPPORT.md sync step below;
+          # it's removed in the "Clean up temp files" step at the end of the job.
+
+      - name: Sync METADATA_SUPPORT.md with new registry types
+        if: steps.registry-check.outputs.registry_changed == 'true'
+        run: |
+          REGISTRY_PATH="lib/src/registry/metadataRegistry.json"
+          npm run --silent docs:metadata-support -- \
+            --old "/tmp/sdr-old/package/${REGISTRY_PATH}" \
+            --new "node_modules/@salesforce/source-deploy-retrieve/${REGISTRY_PATH}" \
+            | tee /tmp/metadata-support-update.log
+
+          if grep -q '^Added [1-9]' /tmp/metadata-support-update.log; then
+            {
+              echo ""
+              echo "### METADATA_SUPPORT.md"
+              echo ""
+              echo "Draft rows were added automatically for the new types above. \`⚠️\` rows are"
+              echo "unverified guesses (see script output in the job log) — verify before trusting them."
+            } >> /tmp/pr-body.md
+          fi
 
       - name: Close PR if not a registry change
         if: steps.registry-check.outputs.registry_changed == 'false'
@@ -142,6 +162,14 @@ jobs:
         run: |
           gh pr close "$PR_URL" --comment "Closing: @salesforce/source-deploy-retrieve update from ${OLD_VERSION} to ${NEW_VERSION} does not include metadata registry changes."
 
+      - name: Commit METADATA_SUPPORT.md update
+        if: steps.registry-check.outputs.registry_changed == 'true'
+        uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          branch: ${{ github.event.pull_request.head.ref }}
+          commit_message: 'docs(metadata): sync METADATA_SUPPORT.md for SDR ${{ steps.metadata.outputs.new-version }}'
+          file_pattern: METADATA_SUPPORT.md
+
       - name: Enable auto-merge for Dependabot PRs
         if: steps.registry-check.outputs.registry_changed == 'true'
         env:
@@ -152,3 +180,7 @@ jobs:
           gh pr edit "$PR_URL" --title "$TITLE"
           gh pr review --approve "$PR_URL"
           gh pr merge --auto --squash --subject "$TITLE" --body-file /tmp/pr-body.md "$PR_URL"
+
+      - name: Clean up temp files
+        if: always() && steps.registry-check.outputs.registry_changed == 'true'
+        run: rm -rf /tmp/sdr-old /tmp/salesforce-source-deploy-retrieve-*.tgz

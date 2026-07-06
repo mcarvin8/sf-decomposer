@@ -90,6 +90,7 @@
     "clean:build": "wireit",
     "clean:package-manager": "wireit",
     "compile": "wireit",
+    "docs:metadata-support": "node --import ts-node/esm scripts/update-metadata-support.ts",
     "format": "wireit",
     "lint": "wireit",
     "lint:dependencies": "wireit",
