@@ -906,6 +906,17 @@ describe('configOverrides helper', () => {
       await expect(loadOverridesFromConfig(configPath)).rejects.toThrow(/Failed to parse/);
     });
 
+    it('chains the original JSON.parse error as the cause on invalid JSON', async () => {
+      const configPath = join(tempDir, '.sfdecomposer.config.json');
+      await writeFile(configPath, '{ not valid json');
+      try {
+        await loadOverridesFromConfig(configPath);
+        throw new Error('expected loadOverridesFromConfig to throw, but it returned normally');
+      } catch (err) {
+        expect((err as Error).cause).toBeInstanceOf(Error);
+      }
+    });
+
     it('throws when overrides is not an array', async () => {
       const configPath = join(tempDir, '.sfdecomposer.config.json');
       await writeFile(configPath, JSON.stringify({ overrides: { metadataTypes: ['flow'] } }));
@@ -940,10 +951,31 @@ describe('configOverrides helper', () => {
       await expect(loadConfigFile(missingPath)).rejects.toThrow(/Cannot read/);
     });
 
+    it('chains the original fs error as the cause when the file does not exist', async () => {
+      const missingPath = join(tempDir, 'does-not-exist.json');
+      try {
+        await loadConfigFile(missingPath);
+        throw new Error('expected loadConfigFile to throw, but it returned normally');
+      } catch (err) {
+        expect((err as Error).cause).toBeInstanceOf(Error);
+      }
+    });
+
     it('throws on invalid JSON', async () => {
       const configPath = join(tempDir, '.sfdecomposer.config.json');
       await writeFile(configPath, '{ not valid json');
       await expect(loadConfigFile(configPath)).rejects.toThrow(/Failed to parse/);
+    });
+
+    it('chains the original JSON.parse error as the cause on invalid JSON', async () => {
+      const configPath = join(tempDir, '.sfdecomposer.config.json');
+      await writeFile(configPath, '{ not valid json');
+      try {
+        await loadConfigFile(configPath);
+        throw new Error('expected loadConfigFile to throw, but it returned normally');
+      } catch (err) {
+        expect((err as Error).cause).toBeInstanceOf(Error);
+      }
     });
 
     it('returns the parsed config when there are no overrides', async () => {
@@ -1064,6 +1096,15 @@ describe('configOverrides helper', () => {
       // existing test only checks the leading "was not found" segment.
       await expect(resolveDefaultConfigPath()).rejects.toThrow(/Create the file in the repo root or omit --config\./);
     });
+
+    it('chains the original access() error as the cause when the config file is missing', async () => {
+      try {
+        await resolveDefaultConfigPath();
+        throw new Error('expected resolveDefaultConfigPath to throw, but it returned normally');
+      } catch (err) {
+        expect((err as Error).cause).toBeInstanceOf(Error);
+      }
+    });
   });
 
   describe('validateConfigManifest', () => {
@@ -1132,6 +1173,25 @@ describe('configOverrides helper', () => {
         }),
       ).rejects.toThrow(/Config manifest "missing-manifest\.xml" not found on disk and no metadataSuffixes/);
       expect(warn).not.toHaveBeenCalled();
+    });
+
+    it('throws the exact remediation message and chains the original access() error as cause', async () => {
+      const warn = vi.fn();
+      try {
+        await validateConfigManifest({
+          configManifest: 'missing-manifest.xml',
+          metadataTypes: undefined,
+          manifest: undefined,
+          warn,
+        });
+        throw new Error('expected validateConfigManifest to throw, but it returned normally');
+      } catch (err) {
+        expect((err as Error).message).toBe(
+          'Config manifest "missing-manifest.xml" not found on disk and no metadataSuffixes are defined in the config. ' +
+            'Ensure the manifest exists before running this command, or add metadataSuffixes to the config as a fallback.',
+        );
+        expect((err as Error).cause).toBeInstanceOf(Error);
+      }
     });
   });
 
@@ -1504,6 +1564,70 @@ describe('configOverrides helper', () => {
         const message = captureMessage(() => validateSplitTagsSpec('Decision:foo:label', 0));
         expect(message).toBe(
           'Override at index 0 "splitTags" rule "Decision:foo:label" has invalid mode "foo". Allowed values: split, group.',
+        );
+      });
+
+      it('rejects a non-string splitTags spec via the same "empty" wording as an empty string', () => {
+        // Kills the ConditionalExpression mutant that replaces `typeof spec !== 'string'` with
+        // `false`: without this half of the guard, a non-string spec reaches `spec.trim()` and
+        // throws a native TypeError instead of the intended message.
+        const message = captureMessage(() => validateSplitTagsSpec(123 as unknown as string, 0));
+        expect(message).toBe('Override at index 0 has an empty "splitTags" string.');
+      });
+
+      it('rejects a non-string multiLevel spec via the same "empty" wording as an empty string', () => {
+        // Same guard, in normalizeMultiLevelRules' single-string branch.
+        const message = captureMessage(() => validateMultiLevelSpec(123 as unknown as string, 0));
+        expect(message).toBe('Override at index 0 has an empty "multiLevel" string.');
+      });
+
+      it('rejects a non-string uniqueIdElements spec via the same "empty" wording as an empty string', () => {
+        const message = captureMessage(() => validateUniqueIdElementsSpec(123 as unknown as string, 0));
+        expect(message).toBe('Override at index 0 has an empty "uniqueIdElements" string.');
+      });
+
+      it('rejects a non-string sidecarElements spec via the same "empty" wording as an empty string', () => {
+        const message = captureMessage(() => validateSidecarElementsSpec(123 as unknown as string, 0));
+        expect(message).toBe('Override at index 0 has an empty "sidecarElements" string.');
+      });
+
+      it('trims whitespace from each array-form multiLevel rule before validating', () => {
+        // Kills the MethodExpression mutant that replaces `rule.trim()` with `rule` in
+        // normalizeMultiLevelRules' array branch. The parts themselves parse the same either
+        // way (validateSingleMultiLevelRule trims per-part), but the raw `rule` variable is
+        // embedded verbatim in this error message, so an untrimmed rule leaks stray whitespace
+        // into the quoted text.
+        const message = captureMessage(() => validateMultiLevelSpec([' bad-rule '], 0));
+        expect(message).toBe(
+          'Override at index 0 "multiLevel" rule "bad-rule" must have exactly 3 colon-separated parts ' +
+            '("<file_pattern>:<root_to_strip>:<unique_id_elements>").',
+        );
+      });
+
+      it('treats a whitespace-only uniqueIdElements entry as empty', () => {
+        // Kills the MethodExpression mutant that replaces `e.trim()` with `e`: without trimming,
+        // a whitespace-only entry between commas is not strictly `''` and slips through unnoticed.
+        const message = captureMessage(() => validateUniqueIdElementsSpec('developerName, ,apiName', 0));
+        expect(message).toBe('Override at index 0 "uniqueIdElements" contains an empty entry.');
+      });
+
+      it('trims whitespace from each sidecarElements pair before validating', () => {
+        // Kills the MethodExpression mutant that replaces `pair.trim()` with `pair`. The raw
+        // `pair` variable is embedded verbatim in this error message.
+        const message = captureMessage(() => validateSidecarElementsSpec(' bad ', 0));
+        expect(message).toBe(
+          'Override at index 0 "sidecarElements" pair "bad" must have exactly 2 colon-separated parts ' +
+            '("<element>:<extension>").',
+        );
+      });
+
+      it('trims whitespace around each sidecarElements colon-separated part so equivalent elements collide', () => {
+        // Kills the MethodExpression mutant that replaces `part.trim()` with `part`: without
+        // trimming, "schema" and "schema " (with a stray space from the split) would not
+        // compare equal and the duplicate would go undetected.
+        const message = captureMessage(() => validateSidecarElementsSpec('schema:yaml,schema :json', 0));
+        expect(message).toBe(
+          'Override at index 0 "sidecarElements" contains duplicate element "schema". Each element may appear at most once.',
         );
       });
     });

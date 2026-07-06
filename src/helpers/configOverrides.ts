@@ -120,6 +120,7 @@ export async function validateConfigManifest(params: {
 
   const { repoRoot } = await getRepoRoot();
   try {
+    // Stryker disable next-line LogicalOperator
     /* istanbul ignore next -- @preserve: getRepoRoot throws when no sfdx-project.json ancestor exists, so repoRoot is always defined here. */
     await access(resolve(repoRoot ?? process.cwd(), configManifest));
     return manifest;
@@ -142,7 +143,9 @@ export async function validateConfigManifest(params: {
  * sentinel `"."` (which the hooks interpret as "all types, no filter").
  */
 export function parseConfigSuffixes(value: string | undefined): string[] | undefined {
-  if (!value || value.trim() === '' || value.trim() === '.') return undefined;
+  // A whitespace-only value has no non-empty comma-separated parts either, so the fallback
+  // below already returns undefined for it; no separate `value.trim() === ''` check is needed.
+  if (!value || value.trim() === '.') return undefined;
   const parts = value
     .split(',')
     .map((s) => s.trim())
@@ -311,7 +314,9 @@ export function validateSplitTagsSpec(spec: string, i: number): void {
       );
     }
 
-    if (!tag || !mode || !field || (parts.length === 4 && !parts[1])) {
+    // For a 3-part rule, parts[1] is `mode`, already covered by the `!mode` check above, so no
+    // `parts.length === 4` gate is needed to scope this path-emptiness check to 4-part rules.
+    if (!tag || !mode || !field || !parts[1]) {
       throw new Error(`Override at index ${i} "splitTags" rule "${rule}" has empty parts.`);
     }
     if (!SPLIT_TAGS_MODES.has(mode)) {
