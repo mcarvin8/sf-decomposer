@@ -3,7 +3,7 @@
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   getOverrideForComponent,
@@ -16,6 +16,7 @@ import {
   resolveDecomposeOptionsForComponent,
   resolveDecomposeOptionsForType,
   resolveDefaultConfigPath,
+  validateConfigManifest,
   validateMultiLevelSpec,
   validateOverrides,
   validateSidecarElementsSpec,
@@ -1062,6 +1063,75 @@ describe('configOverrides helper', () => {
       // Pins the back half of the error message that nudges the user toward the fix; the
       // existing test only checks the leading "was not found" segment.
       await expect(resolveDefaultConfigPath()).rejects.toThrow(/Create the file in the repo root or omit --config\./);
+    });
+  });
+
+  describe('validateConfigManifest', () => {
+    let tempProjectDir: string;
+    const originalCwd = process.cwd();
+
+    beforeEach(async () => {
+      tempProjectDir = await mkdtemp(join(tmpdir(), 'validate-config-manifest-test-'));
+      await writeFile(join(tempProjectDir, SFDX_PROJECT_FILE_NAME), JSON.stringify({ packageDirectories: [] }));
+      process.chdir(tempProjectDir);
+    });
+
+    afterEach(async () => {
+      process.chdir(originalCwd);
+      await rm(tempProjectDir, { recursive: true, force: true });
+    });
+
+    it('returns the passed-in manifest unchanged when no configManifest is set', async () => {
+      const warn = vi.fn();
+      const result = await validateConfigManifest({
+        configManifest: undefined,
+        metadataTypes: undefined,
+        manifest: 'manifest/package.xml',
+        warn,
+      });
+      expect(result).toBe('manifest/package.xml');
+      expect(warn).not.toHaveBeenCalled();
+    });
+
+    it('returns the passed-in manifest unchanged when the configManifest exists on disk', async () => {
+      const manifestPath = join(tempProjectDir, 'manifest.xml');
+      await writeFile(manifestPath, '<Package/>');
+      const warn = vi.fn();
+      const result = await validateConfigManifest({
+        configManifest: 'manifest.xml',
+        metadataTypes: undefined,
+        manifest: 'cli-manifest.xml',
+        warn,
+      });
+      expect(result).toBe('cli-manifest.xml');
+      expect(warn).not.toHaveBeenCalled();
+    });
+
+    it('warns and falls back to undefined when configManifest is missing but metadataTypes are defined', async () => {
+      const warn = vi.fn();
+      const result = await validateConfigManifest({
+        configManifest: 'missing-manifest.xml',
+        metadataTypes: ['flow'],
+        manifest: undefined,
+        warn,
+      });
+      expect(result).toBeUndefined();
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringMatching(/Config manifest "missing-manifest\.xml" not found on disk\. Falling back/),
+      );
+    });
+
+    it('throws when configManifest is missing and no metadataTypes fallback is available', async () => {
+      const warn = vi.fn();
+      await expect(
+        validateConfigManifest({
+          configManifest: 'missing-manifest.xml',
+          metadataTypes: undefined,
+          manifest: undefined,
+          warn,
+        }),
+      ).rejects.toThrow(/Config manifest "missing-manifest\.xml" not found on disk and no metadataSuffixes/);
+      expect(warn).not.toHaveBeenCalled();
     });
   });
 

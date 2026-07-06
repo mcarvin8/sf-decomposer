@@ -22,8 +22,8 @@ export default defineConfig({
         'src/metadata/uniqueIdElements.ts',
       ],
       thresholds: {
-        branches: 90,
-        functions: 90,
+        branches: 95,
+        functions: 95,
         lines: 95,
         statements: 95,
       },

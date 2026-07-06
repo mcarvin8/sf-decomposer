@@ -120,6 +120,7 @@ export async function validateConfigManifest(params: {
 
   const { repoRoot } = await getRepoRoot();
   try {
+    /* istanbul ignore next -- @preserve: getRepoRoot throws when no sfdx-project.json ancestor exists, so repoRoot is always defined here. */
     await access(resolve(repoRoot ?? process.cwd(), configManifest));
     return manifest;
   } catch (err) {
