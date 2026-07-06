@@ -30,7 +30,7 @@
   },
   "timeoutMS": 600000,
   "timeoutFactor": 2,
-  "concurrency": 4,
+  "concurrency": 1,
   "tempDirName": ".stryker-tmp",
   "cleanTempDir": true,
   "incremental": false,
