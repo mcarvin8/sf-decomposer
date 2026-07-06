@@ -494,6 +494,21 @@ describe('decomposeFileHandler', () => {
       }
     });
 
+    it('does not call prePurgeLabels via the manifest dispatch path when prepurge=false', async () => {
+      const labelXmls = new Set(['force-app/labels/CustomLabels.labels-meta.xml']);
+
+      await decomposeFileHandler(
+        makeAttrs({ metaSuffix: 'labels' }),
+        makeTypeOptions({ prepurge: false }),
+        '.gitignore',
+        undefined,
+        labelXmls,
+      );
+
+      expect(prePurgeLabelsSpy).not.toHaveBeenCalled();
+      expect(moveAndRenameLabelsSpy).toHaveBeenCalledTimes(1);
+    });
+
     it('dedupes by parent directory for strict-directory types and uses the parent basename as the fullName', async () => {
       const xmlPaths = new Set([
         'force-app/bots/BotA/BotA.bot-meta.xml',
@@ -585,6 +600,31 @@ describe('decomposeFileHandler', () => {
         'force-app/objects/Account.object-meta.xml',
         'force-app/objects/Opportunity.object-meta.xml',
       ]);
+    });
+
+    it('strips the meta-suffix ending to derive the fullName used for per-component override matching', async () => {
+      // Kills the stripMetaSuffix mutants: only the xml path whose basename correctly reduces
+      // to "Account" (not "Account.object-meta.xml", not "", not a startsWith-based strip) may
+      // pick up the "object:Account" component override.
+      const overrides: DecomposerOverride[] = [{ components: ['object:Account'], decomposedFormat: 'json' }];
+      const xmlPaths = new Set([
+        'force-app/objects/Account.object-meta.xml',
+        'force-app/objects/Opportunity.object-meta.xml',
+      ]);
+
+      await decomposeFileHandler(
+        makeAttrs({ metaSuffix: 'object' }),
+        makeTypeOptions({ format: 'xml' }),
+        '.gitignore',
+        overrides,
+        xmlPaths,
+      );
+
+      const calls = disassembleSpy.mock.calls as unknown as { filePath: string; format: string }[][];
+      const accountCall = calls.map((c) => c[0]).find((c) => c.filePath.includes('Account'));
+      const opportunityCall = calls.map((c) => c[0]).find((c) => c.filePath.includes('Opportunity'));
+      expect(accountCall?.format).toBe('json');
+      expect(opportunityCall?.format).toBe('xml');
     });
   });
 });
