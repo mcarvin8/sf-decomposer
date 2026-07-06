@@ -1,15 +1,16 @@
 'use strict';
 
-import { access } from 'node:fs/promises';
-import { resolve } from 'node:path';
-
 import { Messages } from '@salesforce/core';
 import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
 
 import { recomposeMetadataTypes } from '../../core/recomposeMetadataTypes.js';
-import { loadConfigFile, parseConfigSuffixes, resolveDefaultConfigPath } from '../../helpers/configOverrides.js';
+import {
+  loadConfigFile,
+  parseConfigSuffixes,
+  resolveDefaultConfigPath,
+  validateConfigManifest,
+} from '../../helpers/configOverrides.js';
 import { DecomposerResult } from '../../helpers/types.js';
-import { getRepoRoot } from '../../service/core/getRepoRoot.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('sf-decomposer', 'decomposer.recompose');
@@ -67,25 +68,12 @@ export default class DecomposerRecompose extends SfCommand<DecomposerResult> {
       ignoreDirs ??= parseConfigSuffixes(config.ignorePackageDirectories);
       postpurge = flags['postpurge'] || (config.postPurge ?? false);
 
-      if (configManifest) {
-        const { repoRoot } = await getRepoRoot();
-        try {
-          await access(resolve(repoRoot ?? process.cwd(), configManifest));
-        } catch (err) {
-          if (metadataTypes?.length) {
-            this.warn(
-              `Config manifest "${configManifest}" not found on disk. Falling back to metadataSuffixes from config.`,
-            );
-            manifest = undefined;
-          } else {
-            throw new Error(
-              `Config manifest "${configManifest}" not found on disk and no metadataSuffixes are defined in the config. ` +
-                'Ensure the manifest exists before running this command, or add metadataSuffixes to the config as a fallback.',
-              { cause: err },
-            );
-          }
-        }
-      }
+      manifest = await validateConfigManifest({
+        configManifest,
+        metadataTypes,
+        manifest,
+        warn: this.warn.bind(this),
+      });
     }
 
     if (!metadataTypes?.length && !manifest) {

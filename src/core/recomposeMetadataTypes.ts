@@ -4,38 +4,19 @@ import { CONCURRENCY_LIMITS } from '../helpers/constants.js';
 import { pLimit } from '../helpers/pLimit.js';
 import { DecomposerResult, RecomposeOptions } from '../helpers/types.js';
 import { getRegistryValuesBySuffix } from '../metadata/getRegistryValuesBySuffix.js';
-import { ManifestFilter, parseManifest } from '../metadata/parseManifest.js';
+import { resolveEffectiveMetadataTypes } from '../metadata/parseManifest.js';
 import { recomposeFileHandler } from '../service/recompose/recomposeFileHandler.js';
 
 export async function recomposeMetadataTypes(options: RecomposeOptions): Promise<DecomposerResult> {
   const { metadataTypes, postpurge, ignoreDirs, manifest, log, repoRoot } = options;
 
-  let manifestFilter: ManifestFilter | undefined;
-  let effectiveTypes: string[];
-
-  if (manifest) {
-    manifestFilter = await parseManifest(manifest, ignoreDirs, repoRoot);
-    for (const { type, member } of manifestFilter.unresolvedComponents) {
-      log(`Warning: manifest component ${type}:${member} not found in local source; skipping.`);
-    }
-    // Stryker disable next-line ConditionalExpression, EqualityOperator
-    if (metadataTypes && metadataTypes.length > 0) {
-      const manifestTypes = new Set(manifestFilter.suffixes);
-      effectiveTypes = metadataTypes.filter((type) => manifestTypes.has(type));
-    } else {
-      effectiveTypes = manifestFilter.suffixes;
-    }
-  } else {
-    if (!metadataTypes || metadataTypes.length === 0) {
-      throw Error('Either --metadata-type or --manifest must be provided.');
-    }
-    effectiveTypes = metadataTypes;
-  }
-
-  if (effectiveTypes.some((t) => t === 'botVersion')) {
-    log('Warning: `botVersion` suffix is not supported; automatically using `bot` instead.');
-    effectiveTypes = [...new Set(effectiveTypes.map((t) => (t === 'botVersion' ? 'bot' : t)))];
-  }
+  const { manifestFilter, effectiveTypes } = await resolveEffectiveMetadataTypes(
+    metadataTypes,
+    manifest,
+    ignoreDirs,
+    repoRoot,
+    log,
+  );
 
   if (effectiveTypes.length === 0) {
     log('No metadata types to recompose after applying the manifest filter.');
