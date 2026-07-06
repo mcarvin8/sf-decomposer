@@ -142,6 +142,49 @@ export async function parseManifest(
   return { parentXmlsBySuffix, suffixes: orderedSuffixes, unresolvedComponents };
 }
 
+/**
+ * Resolve the effective list of metadata suffixes to process for a decompose/recompose run,
+ * combining the `--manifest` and `--metadata-type` inputs (manifest suffixes are filtered down
+ * to the requested types when both are given), then normalizing the deprecated `botVersion`
+ * suffix to `bot`. Shared by `decomposeMetadataTypes` and `recomposeMetadataTypes`.
+ */
+export async function resolveEffectiveMetadataTypes(
+  metadataTypes: string[] | undefined,
+  manifest: string | undefined,
+  ignoreDirs: string[] | undefined,
+  repoRoot: string | undefined,
+  log: (message: string) => void,
+): Promise<{ manifestFilter: ManifestFilter | undefined; effectiveTypes: string[] }> {
+  let manifestFilter: ManifestFilter | undefined;
+  let effectiveTypes: string[];
+
+  if (manifest) {
+    manifestFilter = await parseManifest(manifest, ignoreDirs, repoRoot);
+    for (const { type, member } of manifestFilter.unresolvedComponents) {
+      log(`Warning: manifest component ${type}:${member} not found in local source; skipping.`);
+    }
+    // Stryker disable next-line ConditionalExpression, EqualityOperator
+    if (metadataTypes && metadataTypes.length > 0) {
+      const manifestTypes = new Set(manifestFilter.suffixes);
+      effectiveTypes = metadataTypes.filter((type) => manifestTypes.has(type));
+    } else {
+      effectiveTypes = manifestFilter.suffixes;
+    }
+  } else {
+    if (!metadataTypes || metadataTypes.length === 0) {
+      throw Error('Either --metadata-type or --manifest must be provided.');
+    }
+    effectiveTypes = metadataTypes;
+  }
+
+  if (effectiveTypes.some((t) => t === 'botVersion')) {
+    log('Warning: `botVersion` suffix is not supported; automatically using `bot` instead.');
+    effectiveTypes = [...new Set(effectiveTypes.map((t) => (t === 'botVersion' ? 'bot' : t)))];
+  }
+
+  return { manifestFilter, effectiveTypes };
+}
+
 async function findTypeDirectories(packageDirs: string[], directoryName: string): Promise<string[]> {
   const results = await Promise.all(packageDirs.map((pkgDir) => searchRecursively(pkgDir, directoryName)));
   return results.flat();

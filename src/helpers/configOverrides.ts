@@ -103,6 +103,39 @@ export async function loadConfigFile(configPath: string): Promise<ConfigFile> {
 }
 
 /**
+ * Validate that a config-supplied manifest path (`config.manifest`, used only when `--manifest`
+ * was not passed on the CLI) exists on disk. Returns the manifest to use going forward:
+ * - unchanged, when no config manifest applies or it exists;
+ * - `undefined`, when it is missing but `metadataTypes` can serve as a fallback (after warning);
+ * - throws, when it is missing and there is no metadataSuffixes fallback either.
+ */
+export async function validateConfigManifest(params: {
+  configManifest: string | undefined;
+  metadataTypes: string[] | undefined;
+  manifest: string | undefined;
+  warn: (message: string) => void;
+}): Promise<string | undefined> {
+  const { configManifest, metadataTypes, manifest, warn } = params;
+  if (!configManifest) return manifest;
+
+  const { repoRoot } = await getRepoRoot();
+  try {
+    await access(resolve(repoRoot ?? process.cwd(), configManifest));
+    return manifest;
+  } catch (err) {
+    if (metadataTypes?.length) {
+      warn(`Config manifest "${configManifest}" not found on disk. Falling back to metadataSuffixes from config.`);
+      return undefined;
+    }
+    throw new Error(
+      `Config manifest "${configManifest}" not found on disk and no metadataSuffixes are defined in the config. ` +
+        'Ensure the manifest exists before running this command, or add metadataSuffixes to the config as a fallback.',
+      { cause: err },
+    );
+  }
+}
+
+/**
  * Split a comma-separated config string (e.g. `metadataSuffixes`, `ignorePackageDirectories`)
  * into a trimmed string array. Returns `undefined` when the value is absent, empty, or the
  * sentinel `"."` (which the hooks interpret as "all types, no filter").
