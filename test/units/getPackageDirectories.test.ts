@@ -145,6 +145,19 @@ describe('getPackageDirectories', () => {
     expect(metadataPaths.every((p) => typeof p === 'string')).toBe(true);
   });
 
+  it('uses repoRootOverride instead of discovering the repo root from cwd', async () => {
+    // Start outside the project entirely so cwd-based discovery could never find it, then
+    // confirm passing repoRootOverride still resolves against the right sfdx-project.json.
+    process.chdir(originalCwd);
+    const a = join(project.forceAppDir, 'permissionsets');
+    await mkdir(a, { recursive: true });
+
+    const { metadataPaths, ignorePath } = await getPackageDirectories('permissionsets', undefined, project.root);
+
+    expect(metadataPaths).toEqual([resolve(a)]);
+    expect(ignorePath).toBe(resolve(project.root, '.sfdecomposerignore'));
+  });
+
   it('descends through unrelated sibling directories during recursion', async () => {
     // The recursion must walk into every directory at every level until it finds the match.
     const buried = join(project.forceAppDir, 'a', 'b', 'c', 'workflows');

@@ -94,6 +94,20 @@ describe('parseManifest', () => {
     expect(new Set(paths)).toEqual(new Set([resolve(hrAdmin), resolve(employee)]));
   });
 
+  it('uses repoRootOverride instead of discovering the repo root from cwd', async () => {
+    // Start outside the project entirely so cwd-based discovery could never find it, then
+    // confirm passing repoRootOverride still resolves the manifest and package dirs correctly.
+    process.chdir(originalCwd);
+    const hrAdmin = join(project.forceAppDir, 'permissionsets', 'HR_Admin.permissionset-meta.xml');
+    await writeMetaFile(hrAdmin);
+
+    const manifest = await writeManifest(project.root, [{ name: 'PermissionSet', members: ['HR_Admin'] }]);
+    const result = await parseManifest(manifest, undefined, project.root);
+
+    expect(result.suffixes).toEqual(['permissionset']);
+    expect(new Set(result.parentXmlsBySuffix.get('permissionset'))).toEqual(new Set([resolve(hrAdmin)]));
+  });
+
   it('resolves strict-directory members under <member>/<member>.<suffix>-meta.xml', async () => {
     // Bot is strictDirectoryName: true.
     const myBot = join(project.forceAppDir, 'bots', 'MyBot', 'MyBot.bot-meta.xml');

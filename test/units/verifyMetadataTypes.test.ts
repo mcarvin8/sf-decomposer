@@ -276,6 +276,47 @@ describe('verifyMetadataTypes', () => {
     expect(result.drift).toEqual([{ path: 'permissionsets/HR_Admin.permissionset-meta.xml', reason: 'content drift' }]);
   });
 
+  it('picks the most specific (longest) package directory when one is nested inside another', async () => {
+    project = await makeProject(['force-app', join('force-app', 'nested')]);
+    process.chdir(project.root);
+    const filePath = join(project.root, 'force-app', 'nested', 'permissionsets', 'HR_Admin.permissionset-meta.xml');
+    listParentXmlFilesForTypeSpy.mockResolvedValue([{ filePath, fullName: 'HR_Admin' }]);
+    verifyXmlRoundtripSpy.mockResolvedValue({ status: 'drift', reason: 'content drift' });
+
+    const result = await verifyMetadataTypes({
+      metadataTypes: ['permissionset'],
+      format: 'xml',
+      ignoreDirs: undefined,
+      strategy: 'unique-id',
+      decomposeNestedPerms: false,
+      log: logMock,
+    });
+
+    expect(result.drift).toEqual([{ path: 'permissionsets/HR_Admin.permissionset-meta.xml', reason: 'content drift' }]);
+  });
+
+  it('falls back to the repo root when the file is outside every package directory', async () => {
+    // A manifest-resolved file could in principle live outside every declared package
+    // directory (e.g. an unconventional sfdx-project.json). relativeToPackageDir must not
+    // throw in that case -- it falls back to repoRoot so the path stays relative-ish.
+    const filePath = join(project.root, 'outside-any-package', 'HR_Admin.permissionset-meta.xml');
+    listParentXmlFilesForTypeSpy.mockResolvedValue([{ filePath, fullName: 'HR_Admin' }]);
+    verifyXmlRoundtripSpy.mockResolvedValue({ status: 'drift', reason: 'content drift' });
+
+    const result = await verifyMetadataTypes({
+      metadataTypes: ['permissionset'],
+      format: 'xml',
+      ignoreDirs: undefined,
+      strategy: 'unique-id',
+      decomposeNestedPerms: false,
+      log: logMock,
+    });
+
+    expect(result.drift).toEqual([
+      { path: 'outside-any-package/HR_Admin.permissionset-meta.xml', reason: 'content drift' },
+    ]);
+  });
+
   it('propagates the registry lookup error when no manifest is in play', async () => {
     getRegistryValuesBySuffixSpy.mockRejectedValue(new Error('Metadata type not found for the given suffix: bogus.'));
 

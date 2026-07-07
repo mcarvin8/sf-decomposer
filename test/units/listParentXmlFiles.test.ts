@@ -182,4 +182,17 @@ describe('listParentXmlFilesForType', () => {
     const found = await listParentXmlFilesForType(makeAttrs({ metadataPaths: [join(TMP_ROOT, 'does-not-exist')] }));
     expect(found).toEqual([]);
   });
+
+  it('strictDirectoryName/folderType: returns an empty array when a metadataPath does not exist', async () => {
+    const found = await listParentXmlFilesForType(
+      makeAttrs({ strictDirectoryName: true, metadataPaths: [join(TMP_ROOT, 'does-not-exist')] }),
+    );
+    expect(found).toEqual([]);
+  });
+
+  it('manifest mode, flat type: falls back to the bare basename when the path lacks the meta-suffix ending', async () => {
+    const filePath = join(TMP_ROOT, 'permissionsets', 'HR_Admin.xml');
+    const found = await listParentXmlFilesForType(makeAttrs({ metadataPaths: [] }), new Set([filePath]));
+    expect(found).toEqual([{ filePath, fullName: 'HR_Admin.xml' }]);
+  });
 });
