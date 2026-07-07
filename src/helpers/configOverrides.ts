@@ -520,6 +520,42 @@ export function parseComponentKey(key: string): { metadataType: string; fullName
   return { metadataType, fullName };
 }
 
+type OverrideIndex = {
+  byType: Map<string, DecomposerOverride>;
+  byComponent: Map<string, DecomposerOverride>;
+  typesWithComponentOverrides: Set<string>;
+};
+
+// Keyed by the overrides array's own identity: a decompose/verify run passes the same array
+// through repeatedly (once per file/component being resolved), so building the lookup indices
+// once per run instead of re-scanning the array on every call keeps override resolution O(1)
+// per file instead of O(files * overrides).
+const overrideIndexCache = new WeakMap<DecomposerOverride[], OverrideIndex>();
+
+function getOverrideIndex(overrides: DecomposerOverride[]): OverrideIndex {
+  const cached = overrideIndexCache.get(overrides);
+  if (cached) return cached;
+
+  const byType = new Map<string, DecomposerOverride>();
+  const byComponent = new Map<string, DecomposerOverride>();
+  const typesWithComponentOverrides = new Set<string>();
+
+  for (const override of overrides) {
+    for (const metadataType of override.metadataTypes ?? []) {
+      if (!byType.has(metadataType)) byType.set(metadataType, override);
+    }
+    for (const component of override.components ?? []) {
+      if (!byComponent.has(component)) byComponent.set(component, override);
+      const colonIdx = component.indexOf(':');
+      if (colonIdx > 0) typesWithComponentOverrides.add(component.slice(0, colonIdx));
+    }
+  }
+
+  const index: OverrideIndex = { byType, byComponent, typesWithComponentOverrides };
+  overrideIndexCache.set(overrides, index);
+  return index;
+}
+
 /**
  * Find the override (if any) that targets a specific metadata suffix.
  */
@@ -529,7 +565,7 @@ export function getOverrideForType(
 ): DecomposerOverride | undefined {
   // Stryker disable next-line ConditionalExpression
   if (!overrides || overrides.length === 0) return undefined;
-  return overrides.find((override) => override.metadataTypes?.includes(metadataType));
+  return getOverrideIndex(overrides).byType.get(metadataType);
 }
 
 /**
@@ -543,8 +579,7 @@ export function getOverrideForComponent(
 ): DecomposerOverride | undefined {
   // Stryker disable next-line ConditionalExpression
   if (!overrides || overrides.length === 0) return undefined;
-  const key = `${metadataType}:${fullName}`;
-  return overrides.find((override) => override.components?.includes(key));
+  return getOverrideIndex(overrides).byComponent.get(`${metadataType}:${fullName}`);
 }
 
 /**
@@ -554,8 +589,7 @@ export function getOverrideForComponent(
 export function hasComponentOverridesForType(metadataType: string, overrides?: DecomposerOverride[]): boolean {
   // Stryker disable next-line ConditionalExpression
   if (!overrides || overrides.length === 0) return false;
-  const prefix = `${metadataType}:`;
-  return overrides.some((override) => override.components?.some((component) => component.startsWith(prefix)));
+  return getOverrideIndex(overrides).typesWithComponentOverrides.has(metadataType);
 }
 
 /**

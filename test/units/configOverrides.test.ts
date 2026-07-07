@@ -565,6 +565,16 @@ describe('configOverrides helper', () => {
       const componentsOnly: DecomposerOverride[] = [{ components: ['flow:My_Flow'], decomposedFormat: 'yaml' }];
       expect(getOverrideForType('flow', componentsOnly)).toBeUndefined();
     });
+
+    it('resolves the earliest override when the same type appears in more than one (index build path)', () => {
+      // `validateOverrides` normally forbids this, but the lookup itself doesn't re-validate, so
+      // this exercises the index-building dedupe guard directly: first-seen override must win.
+      const duplicated: DecomposerOverride[] = [
+        { metadataTypes: ['flow'], decomposedFormat: 'yaml' },
+        { metadataTypes: ['flow'], decomposedFormat: 'json' },
+      ];
+      expect(getOverrideForType('flow', duplicated)).toBe(duplicated[0]);
+    });
   });
 
   describe('getOverrideForComponent', () => {
@@ -590,6 +600,16 @@ describe('configOverrides helper', () => {
     it('returns undefined for an unmatched component', () => {
       expect(getOverrideForComponent('permissionset', 'Unknown', overrides)).toBeUndefined();
       expect(getOverrideForComponent('flow', 'My_Flow', overrides)).toBeUndefined();
+    });
+
+    it('resolves the earliest override when the same component key appears in more than one (index build path)', () => {
+      // `validateOverrides` normally forbids this, but the lookup itself doesn't re-validate, so
+      // this exercises the index-building dedupe guard directly: first-seen override must win.
+      const duplicated: DecomposerOverride[] = [
+        { components: ['permissionset:HR_Admin'], strategy: 'grouped-by-tag' },
+        { components: ['permissionset:HR_Admin'], strategy: 'unique-id' },
+      ];
+      expect(getOverrideForComponent('permissionset', 'HR_Admin', duplicated)).toBe(duplicated[0]);
     });
   });
 
@@ -617,6 +637,14 @@ describe('configOverrides helper', () => {
       // `permission` is a prefix of `permissionset` but must not match.
       const sneaky: DecomposerOverride[] = [{ components: ['permissionset:HR_Admin'] }];
       expect(hasComponentOverridesForType('permission', sneaky)).toBe(false);
+    });
+
+    it('does not crash on a malformed component key with no colon (index build path)', () => {
+      // `validateOverrides` normally rejects a colon-less component key before this is ever
+      // reached, but the lookup itself doesn't re-validate, so this exercises the index's
+      // colon-index guard directly rather than relying on that upstream validation.
+      const malformed: DecomposerOverride[] = [{ components: ['no-colon-here'] }];
+      expect(hasComponentOverridesForType('permissionset', malformed)).toBe(false);
     });
   });
 
