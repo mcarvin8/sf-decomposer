@@ -138,11 +138,11 @@ Pass `-x manifest/package.xml` to both `decompose` and `recompose` (and `deploy`
 
 ### Commands
 
-| Command                   | Description                                                                         |
-|---------------------------|-------------------------------------------------------------------------------------|
-| `sf decomposer decompose` | Decompose metadata in package directories into smaller files.                       |
-| `sf decomposer recompose` | Recompose decomposed files back into deployment-ready metadata.                     |
-| `sf decomposer verify`    | Round-trip check: decompose + recompose in a temp directory and diff the originals. |
+| Command                   | Description                                                                       |
+|---------------------------|-----------------------------------------------------------------------------------|
+| `sf decomposer decompose` | Decompose metadata in package directories into smaller files.                     |
+| `sf decomposer recompose` | Recompose decomposed files back into deployment-ready metadata.                   |
+| `sf decomposer verify`    | Round-trip check: disassemble + reassemble each parent XML in isolation and diff. |
 
 #### sf decomposer decompose
 
@@ -230,7 +230,9 @@ sf decomposer recompose --config
 
 #### sf decomposer verify
 
-Non-destructive round-trip check: copies your package directories into a temp directory under your OS's `tmpdir()`, runs decompose then recompose there, and diffs the rebuilt parents against the originals using **structural XML equality** (sibling and attribute order are ignored). Exits non-zero on any drift; your working tree is never modified.
+Non-destructive round-trip check: disassembles and reassembles each parent metadata XML file in an isolated temp directory, then compares the reconstructed XML against the original using **structural XML equality** (sibling and attribute order are ignored). Exits non-zero on any drift; your working tree is never modified.
+
+> RECOMMENDATION: Set `RUST_LOG=off` in your environment variables to remove rust crate noise on the verify command.
 
 ```
 USAGE
@@ -643,6 +645,7 @@ The underlying Rust crate logs through [env_logger](https://docs.rs/env_logger).
 |------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `RUST_LOG=error` | Default. Parse errors and skipped files (leaf-only XML — primitives only, nothing to decompose).                                                                                              |
 | `RUST_LOG=warn`  | Adds [sibling-collision fallback](#filename-safety-unique-id) signals — one line per colliding group (parent tag, collided id, sibling count). **Recommended in CI** when shipping overrides. |
+| `RUST_LOG=off`   | Disables rust crate logging. **Recommended** for the `sf decomposer verify` command.                                                                                                          |
 
 Example `WARN` (CustomApplication where four `actionOverrides` siblings shared the action name `View`):
 

@@ -4,11 +4,11 @@ Round-trip verify that decompose followed by recompose preserves your metadata b
 
 # description
 
-Copies your package directories into a temp directory under your OS's `tmpdir()`, runs decompose
-then recompose there with the same flags and `.sfdecomposer.config.json` overrides you would use
-in production, then diffs every rebuilt parent XML against the original. Comparison is
-**structural** (sibling and attribute order are ignored, matching how Salesforce treats metadata).
-The command never modifies your working tree.
+For every parent metadata XML file belonging to the requested metadata types, disassembles and
+reassembles it in an isolated temp directory using the same flags and `.sfdecomposer.config.json`
+overrides you would use in production, then compares the reconstructed XML against the original.
+Comparison is **structural** (sibling and attribute order are ignored, matching how Salesforce
+treats metadata). The command never modifies your working tree.
 
 Files where the only delta is ordering are surfaced as informational notices ("reordered") and do
 not fail the run. Genuine semantic differences are reported as drift and exit non-zero, which

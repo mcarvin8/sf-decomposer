@@ -1,85 +1,83 @@
 'use strict';
 
-import { mkdir, mkdtemp, readFile, realpath, rm, stat, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, realpath, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
-import type { DecomposeOptions, RecomposeOptions } from '../../src/helpers/types.js';
 import { SFDX_CONFIG_FILE } from '../utils/constants.js';
 
 // ---- Mocks ---------------------------------------------------------------
 //
-// `verifyMetadataTypes` orchestrates a round-trip check by delegating the actual
-// decompose/recompose work to its sibling helpers. The orchestration logic --
-// temp project bootstrap, manifest mirroring, overrides scrubbing, `decomposed.metadata.length`
-// branching, `chdir` discipline, and diff aggregation -- is the only thing
-// worth covering here, so we mock the two heavy dependencies. The actual
-// Rust-backed disassembly is exercised by metadata.test.ts and the NUTs.
+// `verifyMetadataTypes` orchestrates a per-file round-trip check: resolve effective types, look
+// up each type's registry attributes, discover its parent XML files, resolve per-component
+// options, and call `verifyXmlRoundtrip` once per file. The orchestration logic (aggregation,
+// path-relativization, logging, manifest-skip/error-propagation, option resolution) is the only
+// thing worth covering here, so the heavy dependencies are mocked. The actual Rust-backed
+// disassembly is exercised for real by test/commands/decomposer/verify.test.ts.
 
-const { decomposeSpy, recomposeSpy } = vi.hoisted(() => ({
-  decomposeSpy: vi.fn(),
-  recomposeSpy: vi.fn(),
+const {
+  verifyXmlRoundtripSpy,
+  getRegistryValuesBySuffixSpy,
+  listParentXmlFilesForTypeSpy,
+  resolveEffectiveMetadataTypesSpy,
+} = vi.hoisted(() => ({
+  verifyXmlRoundtripSpy: vi.fn(),
+  getRegistryValuesBySuffixSpy: vi.fn(),
+  listParentXmlFilesForTypeSpy: vi.fn(),
+  resolveEffectiveMetadataTypesSpy: vi.fn(),
 }));
 
-vi.mock('../../src/core/decomposeMetadataTypes.js', () => ({
-  decomposeMetadataTypes: decomposeSpy,
+vi.mock('config-disassembler', () => ({
+  verifyXmlRoundtrip: verifyXmlRoundtripSpy,
 }));
 
-vi.mock('../../src/core/recomposeMetadataTypes.js', () => ({
-  recomposeMetadataTypes: recomposeSpy,
+vi.mock('../../src/metadata/getRegistryValuesBySuffix.js', () => ({
+  getRegistryValuesBySuffix: getRegistryValuesBySuffixSpy,
 }));
 
-// Typed accessors for the mock call args. The spies are intentionally `any`-typed by
-// vitest, so we lift them through these helpers to keep the test bodies type-safe.
-function lastDecomposeArgs(): DecomposeOptions {
-  return decomposeSpy.mock.calls[decomposeSpy.mock.calls.length - 1][0] as DecomposeOptions;
-}
-function lastRecomposeArgs(): RecomposeOptions {
-  return recomposeSpy.mock.calls[recomposeSpy.mock.calls.length - 1][0] as RecomposeOptions;
-}
+vi.mock('../../src/metadata/listParentXmlFiles.js', () => ({
+  listParentXmlFilesForType: listParentXmlFilesForTypeSpy,
+}));
+
+vi.mock('../../src/metadata/parseManifest.js', () => ({
+  resolveEffectiveMetadataTypes: resolveEffectiveMetadataTypesSpy,
+}));
 
 const { verifyMetadataTypes } = await import('../../src/core/verifyMetadataTypes.js');
 
 // ---- Test plumbing -------------------------------------------------------
 
-type Project = {
-  root: string;
-  forceAppDir: string;
-  permsetFile: string;
-};
+type Project = { root: string };
 
-const SFDX_PROJECT_BODY = JSON.stringify(
-  {
-    packageDirectories: [{ path: 'force-app', default: true }],
-    namespace: '',
-    sfdcLoginUrl: 'https://login.salesforce.com',
-    sourceApiVersion: '58.0',
-  },
-  null,
-  2,
-);
-
-async function makeProject(): Promise<Project> {
-  // mkdtemp on macOS returns a path under `/var/folders/...`, but `process.cwd()` resolves
-  // it through the `/var -> /private/var` symlink to `/private/var/folders/...`. The SUT
-  // builds its return values off the cwd-derived repo root, so we realpath here to make
-  // tests compare against the same root-form the function uses internally.
+async function makeProject(packageDirs: string[] = ['force-app']): Promise<Project> {
+  // realpath so the temp root compares equal to the cwd-derived repo root the SUT computes
+  // internally (mkdtemp on macOS returns a path resolved differently than process.cwd()).
   const root = await realpath(await mkdtemp(join(tmpdir(), 'verify-mt-')));
-  const forceAppDir = join(root, 'force-app');
-  await mkdir(join(forceAppDir, 'permissionsets'), { recursive: true });
-  const permsetFile = join(forceAppDir, 'permissionsets', 'HR_Admin.permissionset-meta.xml');
-  await writeFile(permsetFile, '<r><x>1</x></r>');
-  await writeFile(join(root, SFDX_CONFIG_FILE), SFDX_PROJECT_BODY);
-  return { root, forceAppDir, permsetFile };
+  for (const dir of packageDirs) {
+    await mkdir(join(root, dir), { recursive: true });
+  }
+  await writeFile(
+    join(root, SFDX_CONFIG_FILE),
+    JSON.stringify({ packageDirectories: packageDirs.map((path) => ({ path, default: true })) }, null, 2),
+  );
+  return { root };
 }
 
-async function pathExists(path: string): Promise<boolean> {
-  try {
-    await stat(path);
-    return true;
-  } catch {
-    return false;
-  }
+function defaultMetaAttributes(over: Partial<Record<string, unknown>> = {}): {
+  metaSuffix: string;
+  strictDirectoryName: boolean;
+  folderType: string;
+  metadataPaths: string[];
+  uniqueIdElements: string;
+} {
+  return {
+    metaSuffix: 'permissionset',
+    strictDirectoryName: false,
+    folderType: '',
+    metadataPaths: ['/fake/permissionsets'],
+    uniqueIdElements: 'fullName,name',
+    ...over,
+  };
 }
 
 describe('verifyMetadataTypes', () => {
@@ -92,9 +90,20 @@ describe('verifyMetadataTypes', () => {
     process.chdir(project.root);
     logMock = vi.fn();
 
-    // Default mocks: decompose claims success on permissionset; recompose is a no-op.
-    decomposeSpy.mockResolvedValue({ metadata: ['permissionset'] });
-    recomposeSpy.mockResolvedValue({ metadata: ['permissionset'] });
+    verifyXmlRoundtripSpy.mockReset().mockResolvedValue({ status: 'identical' });
+    getRegistryValuesBySuffixSpy.mockReset().mockResolvedValue({
+      metaAttributes: defaultMetaAttributes(),
+      ignorePath: '.sfdecomposerignore',
+    });
+    listParentXmlFilesForTypeSpy.mockReset().mockResolvedValue([
+      {
+        filePath: join(project.root, 'force-app', 'permissionsets', 'HR_Admin.permissionset-meta.xml'),
+        fullName: 'HR_Admin',
+      },
+    ]);
+    resolveEffectiveMetadataTypesSpy
+      .mockReset()
+      .mockResolvedValue({ manifestFilter: undefined, effectiveTypes: ['permissionset'] });
   });
 
   afterEach(async () => {
@@ -102,7 +111,7 @@ describe('verifyMetadataTypes', () => {
     await rm(project.root, { recursive: true, force: true });
   });
 
-  it('returns empty drift when the round trip leaves the package dirs byte-identical', async () => {
+  it('returns empty drift/reordered and logs success when every file round-trips identically', async () => {
     const result = await verifyMetadataTypes({
       metadataTypes: ['permissionset'],
       format: 'xml',
@@ -120,17 +129,8 @@ describe('verifyMetadataTypes', () => {
     );
   });
 
-  it('reports drift when the recompose mock leaves the parent XML with different content', async () => {
-    // Simulate a buggy decomposer that produces a slightly different parent XML on recompose.
-    recomposeSpy.mockImplementationOnce(async () => {
-      // Locate the copied parent XML inside the temp project (it lives under
-      // .../verify-***/force-app/permissionsets/HR_Admin.permissionset-meta.xml).
-      // We can't predict the temp dir name, so resolve via process.cwd(), which the function
-      // has chdir'd into for this phase.
-      const target = resolve(process.cwd(), 'force-app', 'permissionsets', 'HR_Admin.permissionset-meta.xml');
-      await writeFile(target, '<r><x>99</x></r>');
-      return { metadata: ['permissionset'] };
-    });
+  it('reports drift with the path relative to its package directory', async () => {
+    verifyXmlRoundtripSpy.mockResolvedValue({ status: 'drift', reason: 'content drift' });
 
     const result = await verifyMetadataTypes({
       metadataTypes: ['permissionset'],
@@ -142,22 +142,51 @@ describe('verifyMetadataTypes', () => {
     });
 
     expect(result.drift).toEqual([{ path: 'permissionsets/HR_Admin.permissionset-meta.xml', reason: 'content drift' }]);
+    const combined = logMock.mock.calls.flat().join('\n');
+    expect(combined).toContain('Round-trip drift detected in 1 file(s):');
+    expect(combined).toContain('- permissionsets/HR_Admin.permissionset-meta.xml: content drift');
+  });
+
+  it('defaults the drift reason to "content drift" when verifyXmlRoundtrip omits it', async () => {
+    verifyXmlRoundtripSpy.mockResolvedValue({ status: 'drift' });
+
+    const result = await verifyMetadataTypes({
+      metadataTypes: ['permissionset'],
+      format: 'xml',
+      ignoreDirs: undefined,
+      strategy: 'unique-id',
+      decomposeNestedPerms: false,
+      log: logMock,
+    });
+
+    expect(result.drift).toEqual([{ path: 'permissionsets/HR_Admin.permissionset-meta.xml', reason: 'content drift' }]);
+  });
+
+  it('does not treat "missing in round-trip output" as drift (leaf-only/unparseable files are untouched by the real pipeline)', async () => {
+    // A real decompose run silently skips files it can't disassemble at all (leaf-only XML, or
+    // XML the parser rejects) -- no directory is ever created, so recompose has nothing to
+    // touch and the file stays byte-identical throughout. Only "content drift" (reassembly
+    // actually produced different content) should count as real drift.
+    verifyXmlRoundtripSpy.mockResolvedValue({ status: 'drift', reason: 'missing in round-trip output' });
+
+    const result = await verifyMetadataTypes({
+      metadataTypes: ['permissionset'],
+      format: 'xml',
+      ignoreDirs: undefined,
+      strategy: 'unique-id',
+      decomposeNestedPerms: false,
+      log: logMock,
+    });
+
+    expect(result.drift).toEqual([]);
     expect(result.reordered).toEqual([]);
-    expect(logMock.mock.calls.flat().join('\n')).toContain('Round-trip drift detected in 1 file(s):');
     expect(logMock.mock.calls.flat().join('\n')).toContain(
-      '- permissionsets/HR_Admin.permissionset-meta.xml: content drift',
+      'Round-trip verified for 1 metadata type(s); no drift detected.',
     );
   });
 
-  it('reports reordered XML on a separate channel without flagging it as drift', async () => {
-    // The original is `<r><x>1</x><x>2</x></r>`; recompose-mock writes the same content but with
-    // siblings reordered. diffDirectories must surface this as reordered, not drift.
-    await writeFile(project.permsetFile, '<r><x>1</x><x>2</x></r>');
-    recomposeSpy.mockImplementationOnce(async () => {
-      const target = resolve(process.cwd(), 'force-app', 'permissionsets', 'HR_Admin.permissionset-meta.xml');
-      await writeFile(target, '<r><x>2</x><x>1</x></r>');
-      return { metadata: ['permissionset'] };
-    });
+  it('reports reordered files on a separate channel without counting them as drift', async () => {
+    verifyXmlRoundtripSpy.mockResolvedValue({ status: 'reordered' });
 
     const result = await verifyMetadataTypes({
       metadataTypes: ['permissionset'],
@@ -171,7 +200,7 @@ describe('verifyMetadataTypes', () => {
     expect(result.drift).toEqual([]);
     expect(result.reordered).toEqual(['permissionsets/HR_Admin.permissionset-meta.xml']);
     const combined = logMock.mock.calls.flat().join('\n');
-    // The reordered log fires only when reordered.length > 0 (kills the `>` mutation on line 136).
+    expect(combined).toContain('Round-trip verified for 1 metadata type(s); no drift detected.');
     expect(combined).toContain('Note: 1 file(s) round-tripped semantically');
     expect(combined).toContain('- permissionsets/HR_Admin.permissionset-meta.xml');
   });
@@ -187,379 +216,33 @@ describe('verifyMetadataTypes', () => {
     });
     const combined = logMock.mock.calls.flat().join('\n');
     expect(combined).not.toContain('Note:');
-    expect(combined).not.toContain('round-tripped semantically');
   });
 
-  it('passes prepurge=true and postpurge=false through to decomposeMetadataTypes', async () => {
-    await verifyMetadataTypes({
-      metadataTypes: ['permissionset'],
-      format: 'xml',
-      ignoreDirs: undefined,
-      strategy: 'unique-id',
-      decomposeNestedPerms: false,
-      log: logMock,
+  it('aggregates drift/reordered across multiple types and multiple files, preserving type order', async () => {
+    resolveEffectiveMetadataTypesSpy.mockResolvedValue({
+      manifestFilter: undefined,
+      effectiveTypes: ['permissionset', 'workflow'],
     });
-
-    expect(decomposeSpy).toHaveBeenCalledTimes(1);
-    const args = lastDecomposeArgs();
-    expect(args.prepurge).toBe(true);
-    // Verify must keep the parent XML in place so the recompose step can find it via the manifest.
-    expect(args.postpurge).toBe(false);
-    expect(args.metadataTypes).toEqual(['permissionset']);
-    expect(args.strategy).toBe('unique-id');
-    expect(args.format).toBe('xml');
-  });
-
-  it('passes postpurge=true through to recomposeMetadataTypes', async () => {
-    await verifyMetadataTypes({
-      metadataTypes: ['permissionset'],
-      format: 'xml',
-      ignoreDirs: undefined,
-      strategy: 'unique-id',
-      decomposeNestedPerms: false,
-      log: logMock,
-    });
-
-    expect(recomposeSpy).toHaveBeenCalledTimes(1);
-    const args = lastRecomposeArgs();
-    // Postpurge clears the decomposed children once recompose has rebuilt the parent.
-    expect(args.postpurge).toBe(true);
-    expect(args.metadataTypes).toEqual(['permissionset']);
-  });
-
-  it('skips the recompose call when decompose returns no metadata', async () => {
-    // Boundary case for `if (decomposed.metadata.length > 0)`.
-    decomposeSpy.mockResolvedValueOnce({ metadata: [] });
-
-    const result = await verifyMetadataTypes({
-      metadataTypes: ['workflow'],
-      format: 'xml',
-      ignoreDirs: undefined,
-      strategy: 'unique-id',
-      decomposeNestedPerms: false,
-      log: logMock,
-    });
-
-    expect(decomposeSpy).toHaveBeenCalledTimes(1);
-    expect(recomposeSpy).not.toHaveBeenCalled();
-    expect(result.metadata).toEqual([]);
-    // No-drift log uses decomposed.metadata.length, so it should say "0 metadata type(s)" here.
-    expect(logMock.mock.calls.flat().join('\n')).toContain('Round-trip verified for 0 metadata type(s)');
-  });
-
-  it('runs recompose exactly once when decompose returns one metadata type', async () => {
-    decomposeSpy.mockResolvedValueOnce({ metadata: ['permissionset'] });
-
-    await verifyMetadataTypes({
-      metadataTypes: ['permissionset'],
-      format: 'xml',
-      ignoreDirs: undefined,
-      strategy: 'unique-id',
-      decomposeNestedPerms: false,
-      log: logMock,
-    });
-
-    expect(recomposeSpy).toHaveBeenCalledTimes(1);
-  });
-
-  it('runs recompose when decompose returns multiple metadata types', async () => {
-    // Bump up the fixture so multiple types are present in the SFDX project.
-    await mkdir(join(project.forceAppDir, 'workflows'), { recursive: true });
-    await writeFile(join(project.forceAppDir, 'workflows', 'A.workflow-meta.xml'), '<Workflow/>');
-
-    decomposeSpy.mockResolvedValueOnce({ metadata: ['permissionset', 'workflow'] });
-
-    await verifyMetadataTypes({
-      metadataTypes: ['permissionset', 'workflow'],
-      format: 'xml',
-      ignoreDirs: undefined,
-      strategy: 'unique-id',
-      decomposeNestedPerms: false,
-      log: logMock,
-    });
-
-    expect(recomposeSpy).toHaveBeenCalledTimes(1);
-    expect(lastRecomposeArgs().metadataTypes).toEqual(['permissionset', 'workflow']);
-  });
-
-  it('strips user-supplied prePurge/postPurge from overrides before invoking decompose', async () => {
-    await verifyMetadataTypes({
-      metadataTypes: ['permissionset'],
-      format: 'xml',
-      ignoreDirs: undefined,
-      strategy: 'unique-id',
-      decomposeNestedPerms: false,
-      log: logMock,
-      overrides: [
-        {
-          metadataTypes: ['permissionset'],
-          prePurge: true,
-          postPurge: true,
-          strategy: 'grouped-by-tag',
-        },
-      ],
-    });
-
-    expect(decomposeSpy).toHaveBeenCalledTimes(1);
-    const args = lastDecomposeArgs();
-    expect(args.overrides).toHaveLength(1);
-    // The overrides array is typed as DecomposerOverride[] | undefined; the prior assertion
-    // narrows it to a non-empty array, so the first entry is safe to access.
-    const passedOverride = (args.overrides ?? [])[0];
-    // The override must survive otherwise (strategy/metadataTypes still present)...
-    expect(passedOverride.metadataTypes).toEqual(['permissionset']);
-    expect(passedOverride.strategy).toBe('grouped-by-tag');
-    // ...but prePurge and postPurge must have been removed.
-    expect(passedOverride).not.toHaveProperty('prePurge');
-    expect(passedOverride).not.toHaveProperty('postPurge');
-  });
-
-  it('does not introduce an overrides array when none was supplied', async () => {
-    await verifyMetadataTypes({
-      metadataTypes: ['permissionset'],
-      format: 'xml',
-      ignoreDirs: undefined,
-      strategy: 'unique-id',
-      decomposeNestedPerms: false,
-      log: logMock,
-    });
-    expect(lastDecomposeArgs().overrides).toBeUndefined();
-  });
-
-  it('copies the manifest into the temp project at the same repo-relative path and forwards the absolute temp path', async () => {
-    // Build a real manifest inside the project and pass it via the options.
-    const manifestRel = join('config', 'package.xml');
-    const manifestAbs = resolve(project.root, manifestRel);
-    await mkdir(resolve(project.root, 'config'), { recursive: true });
-    await writeFile(
-      manifestAbs,
-      '<?xml version="1.0" encoding="UTF-8"?><Package xmlns="http://soap.sforce.com/2006/04/metadata"><version>58.0</version></Package>',
-    );
-
-    // Capture the repoRoot and manifest path at the moment decompose is called -- this is
-    // when the temp project still exists on disk. We realpath both inside the mock to
-    // normalise away platform-specific path quirks (macOS `/var -> /private/var` and
-    // Windows 8.3 short names like `MATTHE~1.CAR`).
-    let repoRootDuringDecompose: string | undefined;
-    let manifestDuringDecompose: string | undefined;
-    let realManifestDuringDecompose: string | undefined;
-    let realRepoRootDuringDecompose: string | undefined;
-    decomposeSpy.mockImplementationOnce(async (opts: { manifest?: string; repoRoot?: string }) => {
-      repoRootDuringDecompose = opts.repoRoot;
-      if (repoRootDuringDecompose) {
-        realRepoRootDuringDecompose = await realpath(repoRootDuringDecompose);
+    getRegistryValuesBySuffixSpy.mockImplementation(async (metadataType: string) => ({
+      metaAttributes: defaultMetaAttributes({ metaSuffix: metadataType }),
+      ignorePath: '.sfdecomposerignore',
+    }));
+    listParentXmlFilesForTypeSpy.mockImplementation(async (metaAttributes: { metaSuffix: string }) => {
+      if (metaAttributes.metaSuffix === 'permissionset') {
+        return [
+          {
+            filePath: join(project.root, 'force-app', 'permissionsets', 'HR_Admin.permissionset-meta.xml'),
+            fullName: 'HR_Admin',
+          },
+        ];
       }
-      manifestDuringDecompose = opts.manifest;
-      if (manifestDuringDecompose) {
-        realManifestDuringDecompose = await realpath(manifestDuringDecompose);
-      }
-      return { metadata: ['permissionset'] };
+      return [{ filePath: join(project.root, 'force-app', 'workflows', 'Case.workflow-meta.xml'), fullName: 'Case' }];
+    });
+    verifyXmlRoundtripSpy.mockImplementation(async (opts: { filePath: string }) => {
+      if (opts.filePath.includes('HR_Admin')) return { status: 'drift', reason: 'content drift' };
+      return { status: 'reordered' };
     });
 
-    await verifyMetadataTypes({
-      metadataTypes: ['permissionset'],
-      format: 'xml',
-      ignoreDirs: undefined,
-      strategy: 'unique-id',
-      decomposeNestedPerms: false,
-      manifest: manifestRel,
-      log: logMock,
-    });
-
-    expect(repoRootDuringDecompose).toBeDefined();
-    expect(typeof manifestDuringDecompose).toBe('string');
-    // The forwarded manifest path must live under the temp project at the same relpath.
-    expect(realManifestDuringDecompose).toBe(resolve(realRepoRootDuringDecompose as string, manifestRel));
-  });
-
-  it('forwards the same temp manifest path to recompose', async () => {
-    const manifestRel = 'package.xml';
-    const manifestAbs = resolve(project.root, manifestRel);
-    await writeFile(
-      manifestAbs,
-      '<?xml version="1.0" encoding="UTF-8"?><Package xmlns="http://soap.sforce.com/2006/04/metadata"><version>58.0</version></Package>',
-    );
-
-    let manifestForDecompose: string | undefined;
-    let manifestForRecompose: string | undefined;
-    decomposeSpy.mockImplementationOnce(async (opts: { manifest?: string }) => {
-      manifestForDecompose = opts.manifest;
-      return { metadata: ['permissionset'] };
-    });
-    recomposeSpy.mockImplementationOnce(async (opts: { manifest?: string }) => {
-      manifestForRecompose = opts.manifest;
-      return { metadata: ['permissionset'] };
-    });
-
-    await verifyMetadataTypes({
-      metadataTypes: ['permissionset'],
-      format: 'xml',
-      ignoreDirs: undefined,
-      strategy: 'unique-id',
-      decomposeNestedPerms: false,
-      manifest: manifestRel,
-      log: logMock,
-    });
-
-    expect(manifestForRecompose).toBe(manifestForDecompose);
-    expect(manifestForRecompose).toBeDefined();
-  });
-
-  it('passes undefined manifest through to decompose/recompose when none was supplied', async () => {
-    await verifyMetadataTypes({
-      metadataTypes: ['permissionset'],
-      format: 'xml',
-      ignoreDirs: undefined,
-      strategy: 'unique-id',
-      decomposeNestedPerms: false,
-      log: logMock,
-    });
-    expect(lastDecomposeArgs().manifest).toBeUndefined();
-    expect(lastRecomposeArgs().manifest).toBeUndefined();
-  });
-
-  it('restores cwd to the original on the happy path', async () => {
-    const before = process.cwd();
-    await verifyMetadataTypes({
-      metadataTypes: ['permissionset'],
-      format: 'xml',
-      ignoreDirs: undefined,
-      strategy: 'unique-id',
-      decomposeNestedPerms: false,
-      log: logMock,
-    });
-    expect(process.cwd()).toBe(before);
-  });
-
-  it('restores cwd and cleans up the temp project even when decompose throws', async () => {
-    const before = process.cwd();
-    let tempDirSeenByMock: string | undefined;
-    // `mockImplementation` (not Once) wins over the default mockResolvedValue from beforeEach
-    // and avoids any queueing surprises with mockImplementationOnce + mockResolvedValue.
-    decomposeSpy.mockImplementation(async (opts: { repoRoot?: string }) => {
-      tempDirSeenByMock = opts.repoRoot;
-      throw new Error('boom from decompose');
-    });
-
-    await expect(
-      verifyMetadataTypes({
-        metadataTypes: ['permissionset'],
-        format: 'xml',
-        ignoreDirs: undefined,
-        strategy: 'unique-id',
-        decomposeNestedPerms: false,
-        log: logMock,
-      }),
-    ).rejects.toThrow('boom from decompose');
-
-    expect(process.cwd()).toBe(before);
-    expect(tempDirSeenByMock).toBeDefined();
-    // Temp project dir must have been removed by the finally block.
-    expect(await pathExists(tempDirSeenByMock as string)).toBe(false);
-  });
-
-  it('does not throw when the temp project was already removed before the final cleanup', async () => {
-    // Simulates a decompose implementation that removes its own repoRoot; the final `rm` in the
-    // `finally` block must still succeed because it passes `force: true` (kills the mutant that
-    // flips `force: true` to `force: false`, which would make this throw ENOENT).
-    decomposeSpy.mockImplementationOnce(async (opts: { repoRoot?: string }) => {
-      if (opts.repoRoot) {
-        await rm(opts.repoRoot, { recursive: true, force: true });
-      }
-      return { metadata: [] };
-    });
-
-    await expect(
-      verifyMetadataTypes({
-        metadataTypes: ['permissionset'],
-        format: 'xml',
-        ignoreDirs: undefined,
-        strategy: 'unique-id',
-        decomposeNestedPerms: false,
-        log: logMock,
-      }),
-    ).resolves.toBeDefined();
-  });
-
-  it('cleans up the temp project on the happy path too', async () => {
-    let seen: string | undefined;
-    decomposeSpy.mockImplementation(async (opts: { repoRoot?: string }) => {
-      seen = opts.repoRoot;
-      return { metadata: ['permissionset'] };
-    });
-    await verifyMetadataTypes({
-      metadataTypes: ['permissionset'],
-      format: 'xml',
-      ignoreDirs: undefined,
-      strategy: 'unique-id',
-      decomposeNestedPerms: false,
-      log: logMock,
-    });
-    expect(seen).toBeDefined();
-    expect(await pathExists(seen as string)).toBe(false);
-  });
-
-  it('mirrors sfdx-project.json verbatim into the temp project', async () => {
-    let copiedSfdxBody: string | undefined;
-    decomposeSpy.mockImplementation(async (opts: { repoRoot?: string }) => {
-      if (opts.repoRoot) {
-        copiedSfdxBody = await readFile(join(opts.repoRoot, SFDX_CONFIG_FILE), 'utf-8');
-      }
-      return { metadata: ['permissionset'] };
-    });
-    await verifyMetadataTypes({
-      metadataTypes: ['permissionset'],
-      format: 'xml',
-      ignoreDirs: undefined,
-      strategy: 'unique-id',
-      decomposeNestedPerms: false,
-      log: logMock,
-    });
-    expect(copiedSfdxBody).toBe(SFDX_PROJECT_BODY);
-  });
-
-  it('runs decomposition against a copy under the temp project, not the user repo', async () => {
-    let cwdSeen: string | undefined;
-    decomposeSpy.mockImplementation(async (opts: { repoRoot?: string }) => {
-      cwdSeen = opts.repoRoot;
-      return { metadata: ['permissionset'] };
-    });
-    await verifyMetadataTypes({
-      metadataTypes: ['permissionset'],
-      format: 'xml',
-      ignoreDirs: undefined,
-      strategy: 'unique-id',
-      decomposeNestedPerms: false,
-      log: logMock,
-    });
-    expect(cwdSeen).toBeDefined();
-    expect(cwdSeen).not.toBe(project.root);
-    expect((cwdSeen as string).includes('sf-decomposer-verify-')).toBe(true);
-  });
-
-  it('logs the per-file drift reason when drift is detected', async () => {
-    recomposeSpy.mockImplementationOnce(async () => {
-      const target = resolve(process.cwd(), 'force-app', 'permissionsets', 'HR_Admin.permissionset-meta.xml');
-      await writeFile(target, '<r><x>different</x></r>');
-      return { metadata: ['permissionset'] };
-    });
-    await verifyMetadataTypes({
-      metadataTypes: ['permissionset'],
-      format: 'xml',
-      ignoreDirs: undefined,
-      strategy: 'unique-id',
-      decomposeNestedPerms: false,
-      log: logMock,
-    });
-    const combined = logMock.mock.calls.flat().join('\n');
-    expect(combined).toContain('Round-trip drift detected');
-    // Drift logging must include both the path and reason, not just one of them.
-    expect(combined).toContain('permissionsets/HR_Admin.permissionset-meta.xml');
-    expect(combined).toContain('content drift');
-  });
-
-  it('returns the metadata array verbatim from the decompose result', async () => {
-    decomposeSpy.mockResolvedValueOnce({ metadata: ['permissionset', 'workflow'] });
     const result = await verifyMetadataTypes({
       metadataTypes: ['permissionset', 'workflow'],
       format: 'xml',
@@ -568,6 +251,147 @@ describe('verifyMetadataTypes', () => {
       decomposeNestedPerms: false,
       log: logMock,
     });
+
     expect(result.metadata).toEqual(['permissionset', 'workflow']);
+    expect(result.drift).toEqual([{ path: 'permissionsets/HR_Admin.permissionset-meta.xml', reason: 'content drift' }]);
+    expect(result.reordered).toEqual(['workflows/Case.workflow-meta.xml']);
+  });
+
+  it('computes the drift path relative to the correct package directory among several', async () => {
+    project = await makeProject(['force-app', 'unpackaged']);
+    process.chdir(project.root);
+    const filePath = join(project.root, 'unpackaged', 'permissionsets', 'HR_Admin.permissionset-meta.xml');
+    listParentXmlFilesForTypeSpy.mockResolvedValue([{ filePath, fullName: 'HR_Admin' }]);
+    verifyXmlRoundtripSpy.mockResolvedValue({ status: 'drift', reason: 'content drift' });
+
+    const result = await verifyMetadataTypes({
+      metadataTypes: ['permissionset'],
+      format: 'xml',
+      ignoreDirs: undefined,
+      strategy: 'unique-id',
+      decomposeNestedPerms: false,
+      log: logMock,
+    });
+
+    expect(result.drift).toEqual([{ path: 'permissionsets/HR_Admin.permissionset-meta.xml', reason: 'content drift' }]);
+  });
+
+  it('propagates the registry lookup error when no manifest is in play', async () => {
+    getRegistryValuesBySuffixSpy.mockRejectedValue(new Error('Metadata type not found for the given suffix: bogus.'));
+
+    await expect(
+      verifyMetadataTypes({
+        metadataTypes: ['bogus'],
+        format: 'xml',
+        ignoreDirs: undefined,
+        strategy: 'unique-id',
+        decomposeNestedPerms: false,
+        log: logMock,
+      }),
+    ).rejects.toThrow('Metadata type not found for the given suffix: bogus.');
+  });
+
+  it('skips a type and logs a warning when its registry lookup fails under a manifest', async () => {
+    resolveEffectiveMetadataTypesSpy.mockResolvedValue({
+      manifestFilter: { parentXmlsBySuffix: new Map(), suffixes: ['bogus'], unresolvedComponents: [] },
+      effectiveTypes: ['bogus'],
+    });
+    getRegistryValuesBySuffixSpy.mockRejectedValue(new Error('boom'));
+
+    const result = await verifyMetadataTypes({
+      metadataTypes: undefined,
+      format: 'xml',
+      ignoreDirs: undefined,
+      strategy: 'unique-id',
+      decomposeNestedPerms: false,
+      manifest: 'package.xml',
+      log: logMock,
+    });
+
+    expect(result.metadata).toEqual([]);
+    expect(listParentXmlFilesForTypeSpy).not.toHaveBeenCalled();
+    expect(logMock.mock.calls.flat().join('\n')).toContain('Skipping bogus: boom');
+  });
+
+  it('returns early with no types when the manifest filter yields zero effective types', async () => {
+    resolveEffectiveMetadataTypesSpy.mockResolvedValue({ manifestFilter: undefined, effectiveTypes: [] });
+
+    const result = await verifyMetadataTypes({
+      metadataTypes: undefined,
+      format: 'xml',
+      ignoreDirs: undefined,
+      strategy: 'unique-id',
+      decomposeNestedPerms: false,
+      manifest: 'package.xml',
+      log: logMock,
+    });
+
+    expect(result).toEqual({ metadata: [], drift: [], reordered: [] });
+    expect(getRegistryValuesBySuffixSpy).not.toHaveBeenCalled();
+    expect(logMock.mock.calls.flat().join('\n')).toContain(
+      'No metadata types to verify after applying the manifest filter.',
+    );
+  });
+
+  it('passes the type-level uniqueIdElements (not a component-level override) to verifyXmlRoundtrip', async () => {
+    getRegistryValuesBySuffixSpy.mockResolvedValue({
+      metaAttributes: defaultMetaAttributes({ uniqueIdElements: 'fullName,name,typeLevelField' }),
+      ignorePath: '.sfdecomposerignore',
+    });
+
+    await verifyMetadataTypes({
+      metadataTypes: ['permissionset'],
+      format: 'xml',
+      ignoreDirs: undefined,
+      strategy: 'unique-id',
+      decomposeNestedPerms: false,
+      log: logMock,
+      overrides: [{ components: ['permissionset:HR_Admin'], uniqueIdElements: 'componentLevelField' }],
+    });
+
+    expect(verifyXmlRoundtripSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ uniqueIdElements: 'fullName,name,typeLevelField' }),
+    );
+  });
+
+  it('passes fileExtension as `${metadataType}-meta.xml` and the ignorePath from the registry lookup', async () => {
+    await verifyMetadataTypes({
+      metadataTypes: ['permissionset'],
+      format: 'xml',
+      ignoreDirs: undefined,
+      strategy: 'unique-id',
+      decomposeNestedPerms: false,
+      log: logMock,
+    });
+
+    expect(verifyXmlRoundtripSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ fileExtension: 'permissionset-meta.xml', ignorePath: '.sfdecomposerignore' }),
+    );
+  });
+
+  it('resolves multiLevel via the built-in default for bot under unique-id strategy', async () => {
+    resolveEffectiveMetadataTypesSpy.mockResolvedValue({ manifestFilter: undefined, effectiveTypes: ['bot'] });
+    getRegistryValuesBySuffixSpy.mockResolvedValue({
+      metaAttributes: defaultMetaAttributes({ metaSuffix: 'bot', strictDirectoryName: true }),
+      ignorePath: '.sfdecomposerignore',
+    });
+    listParentXmlFilesForTypeSpy.mockResolvedValue([
+      { filePath: join(project.root, 'force-app', 'bots', 'MyBot', 'MyBot.bot-meta.xml'), fullName: 'MyBot' },
+    ]);
+
+    await verifyMetadataTypes({
+      metadataTypes: ['bot'],
+      format: 'xml',
+      ignoreDirs: undefined,
+      strategy: 'unique-id',
+      decomposeNestedPerms: false,
+      log: logMock,
+    });
+
+    expect(verifyXmlRoundtripSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        multiLevel: ['botDialogs:botDialogs:developerName', 'botSteps:botSteps:type'],
+      }),
+    );
   });
 });

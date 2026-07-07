@@ -1,163 +1,182 @@
 'use strict';
 
-import { cp, mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { dirname, join, relative, resolve } from 'node:path';
-import { SFDX_PROJECT_FILE_NAME } from '../helpers/constants.js';
+import { readFile } from 'node:fs/promises';
+import { join, relative, resolve, sep } from 'node:path';
+import { verifyXmlRoundtrip } from 'config-disassembler';
+
+import {
+  ResolvedDecomposeTypeOptions,
+  resolveDecomposeOptionsForComponent,
+  resolveDecomposeOptionsForType,
+} from '../helpers/configOverrides.js';
+import { CONCURRENCY_LIMITS, SFDX_PROJECT_FILE_NAME } from '../helpers/constants.js';
+import { pLimit } from '../helpers/pLimit.js';
 import { SfdxProject, VerifyDrift, VerifyOptions, VerifyResult } from '../helpers/types.js';
+import { getRegistryValuesBySuffix } from '../metadata/getRegistryValuesBySuffix.js';
+import { listParentXmlFilesForType } from '../metadata/listParentXmlFiles.js';
+import { resolveEffectiveMetadataTypes } from '../metadata/parseManifest.js';
 import { getRepoRoot } from '../service/core/getRepoRoot.js';
-import { diffDirectories } from '../service/verify/diffDirectories.js';
-import { decomposeMetadataTypes } from './decomposeMetadataTypes.js';
-import { recomposeMetadataTypes } from './recomposeMetadataTypes.js';
+import { resolveEffectiveDisassembleOptions } from '../service/decompose/resolveEffectiveDisassembleOptions.js';
+
+type TypeVerifyResult = {
+  metadataType: string;
+  processed: boolean;
+  drift: VerifyDrift[];
+  reordered: string[];
+};
 
 /**
- * Run a non-destructive round-trip check: copy the user's package directories into a scratch
- * directory under the OS temp folder, decompose + recompose them there, and diff the rebuilt
- * parents against the originals.
+ * Run a non-destructive round-trip check directly against the user's repo. For every parent
+ * metadata XML file belonging to the requested (or manifest-filtered) metadata types, disassemble
+ * + reassemble it inside an isolated temp directory (via `verifyXmlRoundtrip`, which never touches
+ * the real file) and compare the reconstructed XML against the original.
  *
- * The temp directory is always removed before this function returns, and the user's working tree
- * is never modified. The returned `drift` array is empty when every parent XML survived the round
- * trip byte-identically; otherwise each entry names the offending file (relative to its package
- * directory) and a short reason.
+ * Unlike a real decompose/recompose run, this never writes to the user's working tree at all --
+ * `verifyXmlRoundtrip` owns its own temp-directory isolation per file, so there is no scratch
+ * project to build or clean up here.
+ *
+ * The returned `drift` array is empty when every parent XML would survive the round trip
+ * semantically; otherwise each entry names the offending file (relative to its package directory)
+ * and a short reason. `reordered` is informational only -- sibling/attribute order is not
+ * preserved by design, and Salesforce treats metadata as order-agnostic.
  */
 export async function verifyMetadataTypes(options: VerifyOptions): Promise<VerifyResult> {
   const { metadataTypes, format, ignoreDirs, strategy, decomposeNestedPerms, manifest, overrides, log } = options;
 
-  const { repoRoot, dxConfigFilePath } = (await getRepoRoot()) as {
-    repoRoot: string;
-    dxConfigFilePath: string;
+  const { manifestFilter, effectiveTypes } = await resolveEffectiveMetadataTypes(
+    metadataTypes,
+    manifest,
+    ignoreDirs,
+    undefined,
+    log,
+  );
+
+  if (effectiveTypes.length === 0) {
+    log('No metadata types to verify after applying the manifest filter.');
+    return { metadata: [], drift: [], reordered: [] };
+  }
+
+  const { repoRoot } = (await getRepoRoot()) as { repoRoot: string };
+  // Stryker disable next-line StringLiteral: JSON.parse(Buffer) defaults to UTF-8 decoding
+  const sfdxProjectRaw = await readFile(join(repoRoot, SFDX_PROJECT_FILE_NAME), 'utf-8');
+  const sfdxProject = JSON.parse(sfdxProjectRaw) as SfdxProject;
+  const packageDirs = sfdxProject.packageDirectories.map((p) => resolve(repoRoot, p.path));
+
+  const baseOptions: ResolvedDecomposeTypeOptions = {
+    format,
+    strategy,
+    decomposeNestedPerms,
+    prepurge: false,
+    postpurge: false,
   };
 
-  // Stryker disable next-line StringLiteral: JSON.parse(Buffer) defaults to UTF-8 decoding
-  const sfdxProjectRaw = await readFile(dxConfigFilePath, 'utf-8');
-  const sfdxProject = JSON.parse(sfdxProjectRaw) as SfdxProject;
-  const packageDirRelPaths = sfdxProject.packageDirectories.map((p) => p.path);
+  const typeLimit = pLimit(CONCURRENCY_LIMITS.METADATA_TYPES);
+  const typeResults: TypeVerifyResult[] = await Promise.all(
+    effectiveTypes.map((metadataType) =>
+      typeLimit(async (): Promise<TypeVerifyResult> => {
+        const typeResolved = resolveDecomposeOptionsForType(metadataType, baseOptions, overrides);
 
-  const tempProjectDir = await mkdtemp(join(tmpdir(), 'sf-decomposer-verify-'));
-  const originalCwd = process.cwd();
-
-  try {
-    await Promise.all(
-      packageDirRelPaths.map(async (rel) => {
-        const src = resolve(repoRoot, rel);
-        const dst = resolve(tempProjectDir, rel);
-        // Stryker disable all
-        /* istanbul ignore next -- @preserve: declared package dirs typically exist; defensive only */
-        if (!(await pathExists(src))) {
-          /* istanbul ignore next -- @preserve: declared package dirs typically exist; defensive only */
-          return;
+        let metaAttributes;
+        let ignorePath: string;
+        try {
+          ({ metaAttributes, ignorePath } = await getRegistryValuesBySuffix(
+            metadataType,
+            'decompose',
+            ignoreDirs,
+            undefined,
+            typeResolved.uniqueIdElements,
+          ));
+        } catch (err) {
+          /* istanbul ignore if -- @preserve: preserves non-manifest behavior; unreachable via known CLI types */
+          if (!manifestFilter) throw err;
+          /* istanbul ignore next -- @preserve: getRegistryValuesBySuffix always throws Error instances */
+          const message = err instanceof Error ? err.message : String(err);
+          log(`Skipping ${metadataType}: ${message}`);
+          return { metadataType, processed: false, drift: [], reordered: [] };
         }
-        // Stryker restore all
-        await cp(src, dst, { recursive: true });
+
+        const manifestXmlPaths = manifestFilter?.parentXmlsBySuffix.get(metadataType);
+        const parentFiles = await listParentXmlFilesForType(metaAttributes, manifestXmlPaths);
+
+        const fileLimit = pLimit(CONCURRENCY_LIMITS.SUBDIRECTORIES);
+        const drift: VerifyDrift[] = [];
+        const reordered: string[] = [];
+        await Promise.all(
+          parentFiles.map((parent) =>
+            fileLimit(async () => {
+              const resolved = resolveDecomposeOptionsForComponent(
+                metadataType,
+                parent.fullName,
+                typeResolved,
+                overrides,
+              );
+              const effective = resolveEffectiveDisassembleOptions(metadataType, resolved);
+
+              const result = await verifyXmlRoundtrip({
+                filePath: parent.filePath,
+                uniqueIdElements: metaAttributes.uniqueIdElements,
+                strategy: effective.strategy,
+                ignorePath,
+                fileExtension: `${metadataType}-meta.xml`,
+                multiLevel: effective.multiLevel,
+                splitTags: effective.splitTags,
+                sidecarElements: effective.sidecarElements,
+              });
+
+              // `verifyXmlRoundtrip` reports "missing in round-trip output" whenever the file
+              // can't be disassembled at all (leaf-only XML, or XML the parser rejects outright)
+              // -- not just when reassembly loses data. A real decompose run silently skips such
+              // files entirely (no directory is ever created, so recompose has nothing to touch),
+              // leaving them byte-identical throughout. Treat that specific reason as a no-op,
+              // matching what the real pipeline actually does, rather than false-flagging every
+              // leaf-only metadata file as drift.
+              if (result.status === 'drift' && result.reason !== 'missing in round-trip output') {
+                const relPath = relativeToPackageDir(parent.filePath, packageDirs, repoRoot);
+                drift.push({ path: relPath, reason: result.reason ?? 'content drift' });
+              } else if (result.status === 'reordered') {
+                const relPath = relativeToPackageDir(parent.filePath, packageDirs, repoRoot);
+                reordered.push(relPath);
+              }
+            }),
+          ),
+        );
+
+        return { metadataType, processed: true, drift, reordered };
       }),
-    );
+    ),
+  );
 
-    await writeFile(join(tempProjectDir, SFDX_PROJECT_FILE_NAME), sfdxProjectRaw);
+  const metadata = typeResults.filter((r) => r.processed).map((r) => r.metadataType);
+  const drift = typeResults.flatMap((r) => r.drift);
+  const reordered = typeResults.flatMap((r) => r.reordered);
 
-    // Manifests are validated by oclif's `Flags.file({ exists: true })`, so when one is supplied
-    // it always points to a real file under the user's repo. Mirror it into the temp project at
-    // the same relative path so parseManifest finds it via the tempProjectDir repoRoot.
-    let tempManifest: string | undefined;
-    if (manifest) {
-      const absManifest = resolve(originalCwd, manifest);
-      const relManifest = relative(repoRoot, absManifest);
-      const tempManifestAbs = resolve(tempProjectDir, relManifest);
-      await mkdir(dirname(tempManifestAbs), { recursive: true });
-      await cp(absManifest, tempManifestAbs);
-      tempManifest = tempManifestAbs;
+  if (drift.length === 0) {
+    log(`Round-trip verified for ${metadata.length} metadata type(s); no drift detected.`);
+  } else {
+    log(`Round-trip drift detected in ${drift.length} file(s):`);
+    for (const entry of drift) {
+      log(`  - ${entry.path}: ${entry.reason}`);
     }
-
-    // Strip any user-supplied prePurge/postPurge from the overrides for verify only. Verify needs
-    // the parent XML to survive the decompose phase so that manifest-driven recompose can
-    // re-resolve it (parseManifest only returns parent XML paths that exist on disk). Letting the
-    // user's overrides drive post-purge here would silently break manifest filtering.
-    const verifyOverrides = overrides?.map((override) => {
-      const { prePurge, postPurge, ...rest } = override;
-      // Reference the stripped fields so the linter understands they are intentionally discarded.
-      void prePurge;
-      void postPurge;
-      return rest;
-    });
-
-    const decomposed = await decomposeMetadataTypes({
-      metadataTypes,
-      // Wipe any pre-existing decomposed children so we always start from a clean fixture, but
-      // keep the parent XML intact for the recompose phase (see comment above).
-      prepurge: true,
-      postpurge: false,
-      format,
-      ignoreDirs,
-      strategy,
-      decomposeNestedPerms,
-      manifest: tempManifest,
-      overrides: verifyOverrides,
-      log,
-      repoRoot: tempProjectDir,
-    });
-
-    if (decomposed.metadata.length > 0) {
-      await recomposeMetadataTypes({
-        metadataTypes: decomposed.metadata,
-        // Postpurge here removes the decomposed children we generated above, leaving the rebuilt
-        // parent XML as the only artifact to diff against the original.
-        postpurge: true,
-        ignoreDirs,
-        manifest: tempManifest,
-        log,
-        repoRoot: tempProjectDir,
-      });
-    }
-
-    const drift: VerifyDrift[] = [];
-    const reordered: string[] = [];
-    const diffTasks = packageDirRelPaths.map(async (rel) => {
-      const original = resolve(repoRoot, rel);
-      const reconstructed = resolve(tempProjectDir, rel);
-      // Stryker disable all
-      /* istanbul ignore if -- @preserve: we just `cp`'d into this directory, so it always exists */
-      if (!(await pathExists(reconstructed))) {
-        return { drift: [] as VerifyDrift[], reordered: [] as string[] };
-      }
-      // Stryker restore all
-      return diffDirectories(original, reconstructed);
-    });
-    for (const result of await Promise.all(diffTasks)) {
-      drift.push(...result.drift);
-      reordered.push(...result.reordered);
-    }
-
-    if (drift.length === 0) {
-      log(`Round-trip verified for ${decomposed.metadata.length} metadata type(s); no drift detected.`);
-    } else {
-      log(`Round-trip drift detected in ${drift.length} file(s):`);
-      for (const entry of drift) {
-        log(`  - ${entry.path}: ${entry.reason}`);
-      }
-    }
-
-    if (reordered.length > 0) {
-      // Informational only — semantic content matches, just sibling/attribute order changed.
-      // Salesforce treats metadata as order-agnostic, so this is safe to commit.
-      log(`Note: ${reordered.length} file(s) round-tripped semantically but with sibling/attribute reordering:`);
-      for (const path of reordered) {
-        log(`  - ${path}`);
-      }
-    }
-
-    return { metadata: decomposed.metadata, drift, reordered };
-  } finally {
-    await rm(tempProjectDir, { recursive: true, force: true });
   }
+
+  if (reordered.length > 0) {
+    // Informational only — semantic content matches, just sibling/attribute order changed.
+    // Salesforce treats metadata as order-agnostic, so this is safe to commit.
+    log(`Note: ${reordered.length} file(s) round-tripped semantically but with sibling/attribute reordering:`);
+    for (const path of reordered) {
+      log(`  - ${path}`);
+    }
+  }
+
+  return { metadata, drift, reordered };
 }
 
-async function pathExists(path: string): Promise<boolean> {
-  try {
-    await stat(path);
-    return true;
-  } catch {
-    // Stryker disable-line BlockStatement
-    /* istanbul ignore next -- @preserve: package directories declared in sfdx-project.json always
-       exist on disk in the supported flow; this catch is defensive for partially-broken projects. */
-    return false;
-  }
+/** Path of `filePath` relative to whichever package directory contains it, forward-slashed. */
+function relativeToPackageDir(filePath: string, packageDirs: string[], repoRoot: string): string {
+  const absoluteFile = resolve(filePath);
+  const containingDir = packageDirs
+    .filter((dir) => absoluteFile === dir || absoluteFile.startsWith(`${dir}${sep}`))
+    .sort((a, b) => b.length - a.length)[0];
+  const base = containingDir ?? repoRoot;
+  return relative(base, absoluteFile).split(sep).join('/');
 }

@@ -11,9 +11,9 @@ import {
 import { CONCURRENCY_LIMITS, CUSTOM_LABELS_FILE } from '../../helpers/constants.js';
 import { pLimit } from '../../helpers/pLimit.js';
 import { DecomposerOverride } from '../../helpers/types.js';
-import { getMultiLevelDefault } from '../../metadata/getMultiLevelDefault.js';
 import { moveAndRenameLabels, prePurgeLabels } from './customLabels.js';
 import { renameWorkflows } from './renameWorkflows.js';
+import { resolveEffectiveDisassembleOptions } from './resolveEffectiveDisassembleOptions.js';
 
 export async function decomposeFileHandler(
   metaAttributes: {
@@ -158,42 +158,7 @@ function disassembleHandler(
   metaSuffix: string,
 ): void {
   const handler: DisassembleXMLFileHandler = new DisassembleXMLFileHandler();
-  const effectiveStrategy = applyHardStrategyRules(metaSuffix, options.strategy);
-
-  // Resolve multiLevel with this precedence:
-  //   1. an explicit `multiLevel` set in the override (any metadata type);
-  //   2. the built-in default for this metadata suffix when running unique-id strategy
-  //      (see src/metadata/multiLevelDefaults.ts; covers `bot` and `loyaltyProgramSetup`).
-  // The override may be a single rule (string) or several rules (string[]); both shapes are
-  // forwarded verbatim — the crate decides how to split them. Empty arrays are rejected
-  // upstream by validateMultiLevelSpec, so we don't need to guard against them here.
-  let multiLevel: string | string[] | undefined = options.multiLevel;
-  if (multiLevel === undefined && effectiveStrategy === 'unique-id') {
-    multiLevel = getMultiLevelDefault(metaSuffix);
-  }
-
-  // Resolve splitTags with this precedence:
-  //   1. an explicit `splitTags` set in the override (any metadata type, gated to grouped-by-tag);
-  //   2. the hardcoded permission-set default when `decomposeNestedPermissions: true` is set on
-  //      a permissionset / mutingpermissionset under grouped-by-tag.
-  // splitTags is a no-op for non-grouped-by-tag strategies, so we never pass it otherwise.
-  let splitTags: string | undefined;
-  if (effectiveStrategy === 'grouped-by-tag') {
-    if (options.splitTags) {
-      splitTags = options.splitTags;
-    } else if (
-      options.decomposeNestedPerms &&
-      (metaSuffix === 'permissionset' || metaSuffix === 'mutingpermissionset')
-    ) {
-      splitTags = 'objectPermissions:split:object,fieldPermissions:group:field';
-    }
-  }
-
-  // Resolve sidecarElements: explicit override wins; ESR defaults to schema:yaml.
-  let sidecarElements = options.sidecarElements;
-  if (sidecarElements === undefined && metaSuffix === 'externalServiceRegistration') {
-    sidecarElements = 'schema:yaml';
-  }
+  const { strategy, multiLevel, splitTags, sidecarElements } = resolveEffectiveDisassembleOptions(metaSuffix, options);
 
   handler.disassemble({
     filePath,
@@ -202,23 +167,11 @@ function disassembleHandler(
     postPurge: options.postpurge,
     ignorePath,
     format: options.format,
-    strategy: effectiveStrategy,
+    strategy,
     multiLevel,
     splitTags,
     sidecarElements,
   });
-}
-
-/**
- * Hard plugin rules that always win over user-provided strategies. `labels` and
- * `loyaltyProgramSetup` are forced to `unique-id` regardless of run-, type-, or component-scope
- * configuration because their on-disk layout depends on it.
- */
-function applyHardStrategyRules(metaSuffix: string, strategy: string): string {
-  if (strategy !== 'grouped-by-tag') return strategy;
-  if (metaSuffix === 'labels' || metaSuffix === 'loyaltyProgramSetup' || metaSuffix === 'externalServiceRegistration')
-    return 'unique-id';
-  return strategy;
 }
 
 function stripMetaSuffix(fileName: string, metaSuffix: string): string {

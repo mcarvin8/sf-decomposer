@@ -5,7 +5,6 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { verifyMetadataTypes } from '../../../src/core/verifyMetadataTypes.js';
-import * as diffModule from '../../../src/service/verify/diffDirectories.js';
 import { SFDX_CONFIG_FILE } from '../../utils/constants.js';
 
 describe('decomposer verify', () => {
@@ -81,82 +80,10 @@ describe('decomposer verify', () => {
     expect(result.drift).toEqual([]);
   });
 
-  it('logs both drift entries and reordered notices when the diff reports each', async () => {
-    // Constructing genuine round-trip drift / reorder on this fixture is unreliable —
-    // config-disassembler is deterministic and this fixture round-trips clean — so we stub
-    // diffDirectories to exercise both reporting branches together.
-    const spy = vi.spyOn(diffModule, 'diffDirectories').mockResolvedValue({
-      drift: [
-        { path: 'permissionsets/HR_Admin.permissionset-meta.xml', reason: 'content drift' },
-        { path: 'workflows/Case.workflow-meta.xml', reason: 'missing in round-trip output' },
-      ],
-      reordered: ['profiles/SuperUser.profile-meta.xml'],
-    });
-
-    const logMock = vi.fn();
-    try {
-      const result = await verifyMetadataTypes({
-        metadataTypes: ['permissionset'],
-        format: 'xml',
-        strategy: 'unique-id',
-        decomposeNestedPerms: false,
-        ignoreDirs: undefined,
-        log: logMock,
-      });
-
-      expect(result.drift).toHaveLength(2);
-      expect(result.reordered).toEqual(['profiles/SuperUser.profile-meta.xml']);
-
-      expect(logMock).toHaveBeenCalledWith(expect.stringContaining('Round-trip drift detected in 2 file(s)'));
-      expect(logMock).toHaveBeenCalledWith(
-        expect.stringContaining('permissionsets/HR_Admin.permissionset-meta.xml: content drift'),
-      );
-      expect(logMock).toHaveBeenCalledWith(
-        expect.stringContaining('workflows/Case.workflow-meta.xml: missing in round-trip output'),
-      );
-
-      expect(logMock).toHaveBeenCalledWith(
-        expect.stringContaining('1 file(s) round-tripped semantically but with sibling/attribute reordering'),
-      );
-      expect(logMock).toHaveBeenCalledWith(expect.stringContaining('profiles/SuperUser.profile-meta.xml'));
-    } finally {
-      spy.mockRestore();
-    }
-  });
-
-  it('logs reorder notices on a clean round-trip (no drift) when only ordering changed', async () => {
-    // Stub a reorder-only result to confirm `verify` does NOT fail on reorder and does log it.
-    const spy = vi.spyOn(diffModule, 'diffDirectories').mockResolvedValue({
-      drift: [],
-      reordered: ['workflows/Case.workflow-meta.xml'],
-    });
-
-    const logMock = vi.fn();
-    try {
-      const result = await verifyMetadataTypes({
-        metadataTypes: ['workflow'],
-        format: 'xml',
-        strategy: 'unique-id',
-        decomposeNestedPerms: false,
-        ignoreDirs: undefined,
-        log: logMock,
-      });
-
-      expect(result.drift).toEqual([]);
-      expect(result.reordered).toEqual(['workflows/Case.workflow-meta.xml']);
-      expect(logMock).toHaveBeenCalledWith(expect.stringContaining('no drift detected'));
-      expect(logMock).toHaveBeenCalledWith(
-        expect.stringContaining('1 file(s) round-tripped semantically but with sibling/attribute reordering'),
-      );
-    } finally {
-      spy.mockRestore();
-    }
-  });
-
-  it('skips the recompose step when no metadata types survive the manifest filter', async () => {
+  it('skips verification entirely when no metadata types survive the manifest filter', async () => {
     // Build a manifest pointing at a member that does not exist on disk; parseManifest filters
-    // it out, decompose returns zero processed types, and the recompose call must be skipped
-    // (otherwise it would throw "Either --metadata-type or --manifest must be provided").
+    // it out and the effective-types list ends up empty, so verify short-circuits before doing
+    // any registry lookups or file discovery.
     await writeFile(
       join(tempProjectDir, 'package.xml'),
       [
@@ -268,8 +195,9 @@ describe('decomposer verify (component overrides)', () => {
   });
 
   it('ignores user-supplied prePurge / postPurge in overrides during verify', async () => {
-    // A user might have postPurge:true in their config to model the real workflow. Verify must
-    // ignore those so the parent XML stays put for the manifest-driven recompose phase below.
+    // A user might have postPurge:true in their config to model the real workflow. Verify never
+    // forwards prePurge/postPurge to anything — verifyXmlRoundtrip isolates each file's round
+    // trip in its own temp dir internally, so these fields are simply unused here.
     const logMock = vi.fn();
     const result = await verifyMetadataTypes({
       metadataTypes: ['permissionset'],
@@ -282,6 +210,57 @@ describe('decomposer verify (component overrides)', () => {
     });
 
     expect(result.drift).toEqual([]);
+  });
+});
+
+describe('decomposer verify (bot, including botVersion siblings)', () => {
+  let tempProjectDir: string;
+  let forceAppDir: string;
+  const fixtureDir: string = resolve('fixtures/package-dir-2');
+  const originalCwd = process.cwd();
+
+  const sfdxConfig = {
+    packageDirectories: [{ path: 'force-app', default: true }],
+    namespace: '',
+    sfdcLoginUrl: 'https://login.salesforce.com',
+    sourceApiVersion: '58.0',
+  };
+
+  beforeEach(async () => {
+    tempProjectDir = await mkdtemp(join(tmpdir(), 'verify-bot-test-'));
+    forceAppDir = join(tempProjectDir, 'force-app');
+    await cp(fixtureDir, forceAppDir, { recursive: true, force: true });
+    await writeFile(join(tempProjectDir, SFDX_CONFIG_FILE), JSON.stringify(sfdxConfig, null, 2));
+    process.chdir(tempProjectDir);
+  });
+
+  afterEach(async () => {
+    process.chdir(originalCwd);
+    await rm(tempProjectDir, { recursive: true, force: true });
+  });
+
+  it('verifies both the bot config and its botVersion sibling without drift, and leaves both untouched', async () => {
+    const botPath = join(forceAppDir, 'bots', 'Assessment_Bot', 'Assessment_Bot.bot-meta.xml');
+    const versionPath = join(forceAppDir, 'bots', 'Assessment_Bot', 'v1.botVersion-meta.xml');
+    const botBefore = await readFile(botPath, 'utf-8');
+    const versionBefore = await readFile(versionPath, 'utf-8');
+
+    const logMock = vi.fn();
+    const result = await verifyMetadataTypes({
+      metadataTypes: ['bot'],
+      format: 'xml',
+      strategy: 'unique-id',
+      decomposeNestedPerms: false,
+      ignoreDirs: undefined,
+      log: logMock,
+    });
+
+    expect(result.drift).toEqual([]);
+    expect(result.metadata).toEqual(['bot']);
+    expect(logMock).toHaveBeenCalledWith(expect.stringContaining('no drift detected'));
+
+    expect(await readFile(botPath, 'utf-8')).toBe(botBefore);
+    expect(await readFile(versionPath, 'utf-8')).toBe(versionBefore);
   });
 });
 
