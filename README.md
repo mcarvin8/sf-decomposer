@@ -138,11 +138,11 @@ Pass `-x manifest/package.xml` to both `decompose` and `recompose` (and `deploy`
 
 ### Commands
 
-| Command                   | Description                                                                         |
-|---------------------------|-------------------------------------------------------------------------------------|
-| `sf decomposer decompose` | Decompose metadata in package directories into smaller files.                       |
-| `sf decomposer recompose` | Recompose decomposed files back into deployment-ready metadata.                     |
-| `sf decomposer verify`    | Round-trip check: disassemble + reassemble each parent XML in isolation and diff.   |
+| Command                   | Description                                                                       |
+|---------------------------|-----------------------------------------------------------------------------------|
+| `sf decomposer decompose` | Decompose metadata in package directories into smaller files.                     |
+| `sf decomposer recompose` | Recompose decomposed files back into deployment-ready metadata.                   |
+| `sf decomposer verify`    | Round-trip check: disassemble + reassemble each parent XML in isolation and diff. |
 
 #### sf decomposer decompose
 
