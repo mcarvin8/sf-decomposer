@@ -232,6 +232,8 @@ sf decomposer recompose --config
 
 Non-destructive round-trip check: disassembles and reassembles each parent metadata XML file in an isolated temp directory, then compares the reconstructed XML against the original using **structural XML equality** (sibling and attribute order are ignored). Exits non-zero on any drift; your working tree is never modified.
 
+> RECOMMENDATION: Set `RUST_LOG=off` in your environment variables to remove rust crate noise on the verify command.
+
 ```
 USAGE
   $ sf decomposer verify [-m <value>] [-x <value>] [-f <value>] [-i <value>] [-s <value>] [-p -c --json]
@@ -643,6 +645,7 @@ The underlying Rust crate logs through [env_logger](https://docs.rs/env_logger).
 |------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `RUST_LOG=error` | Default. Parse errors and skipped files (leaf-only XML — primitives only, nothing to decompose).                                                                                              |
 | `RUST_LOG=warn`  | Adds [sibling-collision fallback](#filename-safety-unique-id) signals — one line per colliding group (parent tag, collided id, sibling count). **Recommended in CI** when shipping overrides. |
+| `RUST_LOG=off` | Disables rust crate logging. **Recommended** for the `sf decomposer verify` command. |
 
 Example `WARN` (CustomApplication where four `actionOverrides` siblings shared the action name `View`):
 
