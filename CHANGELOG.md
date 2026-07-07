@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.38.1](https://github.com/mcarvin8/sf-decomposer/compare/v6.38.0...v6.38.1) (2026-07-07)
+
+
+### Performance Improvements
+
+* index override lookups instead of linear-scanning per file ([#519](https://github.com/mcarvin8/sf-decomposer/issues/519)) ([5585ec9](https://github.com/mcarvin8/sf-decomposer/commit/5585ec971f39b643802e4bde740d92608246136b))
+
 ## [6.38.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.37.0...v6.38.0) (2026-07-07)
 
 
