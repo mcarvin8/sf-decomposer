@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.38.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.37.0...v6.38.0) (2026-07-07)
+
+
+### Features
+
+* **verify:** use config-disassembler's verifyXmlRoundtrip directly ([#517](https://github.com/mcarvin8/sf-decomposer/issues/517)) ([fb76c58](https://github.com/mcarvin8/sf-decomposer/commit/fb76c58d2f3986640dc5aeda41d8c63ddfc53a15))
+
 ## [6.37.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.36.0...v6.37.0) (2026-07-01)
 
 
