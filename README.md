@@ -142,7 +142,7 @@ Pass `-x manifest/package.xml` to both `decompose` and `recompose` (and `deploy`
 |---------------------------|-------------------------------------------------------------------------------------|
 | `sf decomposer decompose` | Decompose metadata in package directories into smaller files.                       |
 | `sf decomposer recompose` | Recompose decomposed files back into deployment-ready metadata.                     |
-| `sf decomposer verify`    | Round-trip check: decompose + recompose in a temp directory and diff the originals. |
+| `sf decomposer verify`    | Round-trip check: disassemble + reassemble each parent XML in isolation and diff.   |
 
 #### sf decomposer decompose
 
@@ -230,7 +230,7 @@ sf decomposer recompose --config
 
 #### sf decomposer verify
 
-Non-destructive round-trip check: copies your package directories into a temp directory under your OS's `tmpdir()`, runs decompose then recompose there, and diffs the rebuilt parents against the originals using **structural XML equality** (sibling and attribute order are ignored). Exits non-zero on any drift; your working tree is never modified.
+Non-destructive round-trip check: disassembles and reassembles each parent metadata XML file in an isolated temp directory, then compares the reconstructed XML against the original using **structural XML equality** (sibling and attribute order are ignored). Exits non-zero on any drift; your working tree is never modified.
 
 ```
 USAGE
