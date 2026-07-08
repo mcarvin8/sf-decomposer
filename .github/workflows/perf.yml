@@ -231,6 +231,15 @@ jobs:
       # NOTE: do not check `github.event_name == 'workflow_call'` here -
       # inside a reusable workflow `github.event_name` reflects the caller's
       # triggering event (e.g. 'push' from release.yml), never 'workflow_call'.
+      #
+      # `name:` below is suffixed with matrix.profile ("Decompose Runtime (large)",
+      # "Decompose Runtime (manyfiles)") rather than shared across profiles. Each publish
+      # call appends a fresh entry to its named series -- it does not merge into an
+      # existing entry for the same commit -- so two profiles sharing one name would
+      # alternate single-profile entries in that series, and PR runs would fight over the
+      # same sticky-comment slot (whichever matrix job finishes last would silently
+      # overwrite the other profile's comment). Separate names give each profile its own
+      # series and its own sticky comment, with no shared state to collide over.
       # ---------------------------------------------------------------------
       - name: Convert perf-results to benchmark-action JSON
         if: github.event_name == 'schedule' || inputs.publish == true
@@ -240,7 +249,7 @@ jobs:
         if: github.event_name == 'schedule' || inputs.publish == true
         uses: benchmark-action/github-action-benchmark@v1
         with:
-          name: Decompose Runtime
+          name: Decompose Runtime (${{ matrix.profile }})
           tool: customSmallerIsBetter
           output-file-path: ./perf-runtime.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -257,7 +266,7 @@ jobs:
         if: github.event_name == 'schedule' || inputs.publish == true
         uses: benchmark-action/github-action-benchmark@v1
         with:
-          name: Decompose Memory
+          name: Decompose Memory (${{ matrix.profile }})
           tool: customSmallerIsBetter
           output-file-path: ./perf-memory.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -301,7 +310,7 @@ jobs:
         if: github.event_name == 'pull_request'
         uses: benchmark-action/github-action-benchmark@v1
         with:
-          name: Decompose Runtime
+          name: Decompose Runtime (${{ matrix.profile }})
           tool: customSmallerIsBetter
           output-file-path: ./perf-runtime.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -317,7 +326,7 @@ jobs:
         if: github.event_name == 'pull_request'
         uses: benchmark-action/github-action-benchmark@v1
         with:
-          name: Decompose Memory
+          name: Decompose Memory (${{ matrix.profile }})
           tool: customSmallerIsBetter
           output-file-path: ./perf-memory.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
