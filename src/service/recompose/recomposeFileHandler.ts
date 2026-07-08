@@ -91,7 +91,7 @@ async function recomposeFromManifest(
       const decomposedDir = decomposedDirForXml(xmlPath, metaSuffix);
       // Skip files that were never decomposed (e.g. metadata consisting only of leaf elements).
       if (!(await directoryExists(decomposedDir))) return;
-      reassembleHandler(decomposedDir, `${metaSuffix}-meta.xml`, postpurge);
+      await reassembleHandler(decomposedDir, `${metaSuffix}-meta.xml`, postpurge);
     }),
   );
   await Promise.all(tasks);
@@ -115,9 +115,9 @@ async function directoryExists(path: string): Promise<boolean> {
   }
 }
 
-export function reassembleHandler(filePath: string, fileExtension: string, postPurge: boolean): void {
+export async function reassembleHandler(filePath: string, fileExtension: string, postPurge: boolean): Promise<void> {
   const handler: ReassembleXMLFileHandler = new ReassembleXMLFileHandler();
-  handler.reassemble({
+  await handler.reassemble({
     filePath,
     fileExtension,
     postPurge,
@@ -153,7 +153,7 @@ async function reassembleDirectories(
           // recursively call this function and set recurse to false
           await reassembleDirectories(subdirectory, metaSuffix, false, postpurge);
         } else {
-          reassembleHandler(subdirectory, `${metaSuffix}-meta.xml`, postpurge);
+          await reassembleHandler(subdirectory, `${metaSuffix}-meta.xml`, postpurge);
         }
       }),
     );
