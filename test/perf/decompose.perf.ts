@@ -45,22 +45,28 @@ function envString<T extends string>(name: string, fallback: T): T {
 
 const PROFILE = envString<Profile>('PERF_PROFILE', 'large');
 const FORMATS = envList('PERF_FORMATS', ['xml', 'json', 'json5', 'yaml']);
-const DEFAULT_METADATA_TYPES = [
-  'permissionset',
-  'mutingpermissionset',
-  'profile',
-  'flow',
-  'workflow',
-  'labels',
-  'bot',
-  'app',
-  'globalValueSet',
-  // entitlementProcess intentionally exercises path-segment sanitization: the
-  // generator plants `/` and `:` in milestoneName values so a regression of
-  // the config-disassembler 0.5.0 sanitization fix would shrink the
-  // recomposed file below the RETENTION_THRESHOLD guard below.
-  'entitlementProcess',
-];
+// `manyfiles` only generates permission sets (see scripts/gen-perf-fixtures.ts) --
+// many small files in one directory, to exercise config-disassembler's directory-mode
+// concurrent fan-out, rather than the single-huge-file shape the other profiles use.
+const DEFAULT_METADATA_TYPES =
+  PROFILE === 'manyfiles'
+    ? ['permissionset']
+    : [
+        'permissionset',
+        'mutingpermissionset',
+        'profile',
+        'flow',
+        'workflow',
+        'labels',
+        'bot',
+        'app',
+        'globalValueSet',
+        // entitlementProcess intentionally exercises path-segment sanitization: the
+        // generator plants `/` and `:` in milestoneName values so a regression of
+        // the config-disassembler 0.5.0 sanitization fix would shrink the
+        // recomposed file below the RETENTION_THRESHOLD guard below.
+        'entitlementProcess',
+      ];
 const METADATA_TYPES = envList('PERF_TYPES', DEFAULT_METADATA_TYPES);
 
 const FIXTURE_ROOT = resolve('perf-fixtures');
