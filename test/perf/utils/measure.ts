@@ -63,6 +63,45 @@ export async function measure<T>(label: string, fn: () => Promise<T>): Promise<{
   };
 }
 
+export type MedianSample = {
+  label: string;
+  repeats: number;
+  elapsedMedianMs: number;
+  elapsedMinMs: number;
+  elapsedMaxMs: number;
+  heapUsedMedianBytes: number;
+};
+
+/** Median of a non-empty array of numbers (average of the two middle values on an even count). */
+export function median(values: number[]): number {
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+}
+
+/**
+ * Reduce repeated `measure()` results for the same operation into one median-based summary.
+ *
+ * A single sample on a shared CI runner routinely swings 15-20% run to run for identical
+ * code, which makes a single elapsedMs/heapUsedDeltaBytes reading useless for telling a real
+ * regression apart from runner noise. The median of several independent repeats is far more
+ * stable than any one of them, since it takes an outlier sample (a GC pause, a noisy
+ * neighbor, a scheduler hiccup) landing on *most* of the repeats to move it -- one bad run
+ * among several good ones just gets outvoted instead of being the only data point.
+ */
+export function summarizeMedian(label: string, results: readonly MeasureResult[]): MedianSample {
+  const elapsed = results.map((r) => r.elapsedMs);
+  const heapUsed = results.map((r) => r.heapUsedDeltaBytes);
+  return {
+    label,
+    repeats: results.length,
+    elapsedMedianMs: median(elapsed),
+    elapsedMinMs: Math.min(...elapsed),
+    elapsedMaxMs: Math.max(...elapsed),
+    heapUsedMedianBytes: median(heapUsed),
+  };
+}
+
 /** Recursively sum byte sizes of all files under a directory. */
 export async function dirBytes(dir: string): Promise<{ files: number; bytes: number }> {
   // Walk the tree breadth-first and stat in parallel batches. The naive
@@ -104,7 +143,14 @@ export type PerfReport = {
   format: string;
   fixtureBytes: number;
   fixtureFiles: number;
+  // Single-shot samples from the correctness round-trip (see decompose.perf.ts's main
+  // test): useful for local debugging, but too noisy on a shared CI runner to trust as a
+  // trend signal on their own. Not read by scripts/perf-to-benchmark.mjs.
   samples: MeasureResult[];
+  // Median-of-N samples from a dedicated, correctness-agnostic timing loop (see
+  // decompose.perf.ts's "measures timing" test). This is what feeds the gh-pages
+  // dashboard / PR comparison comments.
+  medianSamples: MedianSample[];
 };
 
 const RESULTS_DIR = resolve(process.cwd(), 'perf-results');
