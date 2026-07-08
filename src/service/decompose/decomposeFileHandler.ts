@@ -58,7 +58,7 @@ export async function decomposeFileHandler(
         const absoluteLabelFilePath = resolve(metadataPath, CUSTOM_LABELS_FILE);
         const relativeLabelFilePath = relative(process.cwd(), absoluteLabelFilePath);
 
-        disassembleHandler(
+        await disassembleHandler(
           relativeLabelFilePath,
           uniqueIdElements,
           { ...typeResolved, prepurge: false },
@@ -69,7 +69,7 @@ export async function decomposeFileHandler(
       } else if (hasComponentOverridesForType(metaSuffix, overrides)) {
         await perFileHandler(metadataPath, uniqueIdElements, typeResolved, ignorePath, metaSuffix, overrides);
       } else {
-        disassembleHandler(metadataPath, uniqueIdElements, typeResolved, ignorePath, metaSuffix);
+        await disassembleHandler(metadataPath, uniqueIdElements, typeResolved, ignorePath, metaSuffix);
       }
       if (metaSuffix === 'workflow') {
         await renameWorkflows(metadataPath);
@@ -101,7 +101,7 @@ async function decomposeFromManifest(
         if (typeResolved.prepurge) await prePurgeLabels(labelDir);
         const absoluteLabelFilePath = resolve(labelDir, CUSTOM_LABELS_FILE);
         const relativeLabelFilePath = relative(process.cwd(), absoluteLabelFilePath);
-        disassembleHandler(
+        await disassembleHandler(
           relativeLabelFilePath,
           uniqueIdElements,
           { ...typeResolved, prepurge: false },
@@ -150,17 +150,17 @@ async function decomposeFromManifest(
   }
 }
 
-function disassembleHandler(
+async function disassembleHandler(
   filePath: string,
   uniqueIdElements: string,
   options: ResolvedDecomposeTypeOptions,
   ignorePath: string,
   metaSuffix: string,
-): void {
+): Promise<void> {
   const handler: DisassembleXMLFileHandler = new DisassembleXMLFileHandler();
   const { strategy, multiLevel, splitTags, sidecarElements } = resolveEffectiveDisassembleOptions(metaSuffix, options);
 
-  handler.disassemble({
+  await handler.disassemble({
     filePath,
     uniqueIdElements,
     prePurge: options.prepurge,
