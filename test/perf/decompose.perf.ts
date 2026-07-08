@@ -7,7 +7,16 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { generate, type Profile } from '../../scripts/gen-perf-fixtures.js';
 import { decomposeMetadataTypes } from '../../src/core/decomposeMetadataTypes.js';
 import { recomposeMetadataTypes } from '../../src/core/recomposeMetadataTypes.js';
-import { dirBytes, formatBytes, formatMs, type MeasureResult, measure, writeReport } from './utils/measure.js';
+import {
+  dirBytes,
+  formatBytes,
+  formatMs,
+  type MeasureResult,
+  type MedianSample,
+  measure,
+  summarizeMedian,
+  writeReport,
+} from './utils/measure.js';
 
 // Performance tests are intentionally heavy and DO NOT run as part of `npm test`.
 // They:
@@ -42,6 +51,12 @@ function envString<T extends string>(name: string, fallback: T): T {
   const raw = process.env[name];
   return !raw || raw.trim() === '' ? fallback : (raw as T);
 }
+function envNumber(name: string, fallback: number): number {
+  const raw = process.env[name];
+  if (!raw || raw.trim() === '') return fallback;
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
 
 const PROFILE = envString<Profile>('PERF_PROFILE', 'large');
 const FORMATS = envList('PERF_FORMATS', ['xml', 'json', 'json5', 'yaml']);
@@ -68,6 +83,12 @@ const DEFAULT_METADATA_TYPES =
         'entitlementProcess',
       ];
 const METADATA_TYPES = envList('PERF_TYPES', DEFAULT_METADATA_TYPES);
+// Number of independent repeats used to compute the median timing/memory sample that
+// actually gets published to the dashboard (see the "measures timing" test below and
+// scripts/perf-to-benchmark.mjs). A single sample on a shared CI runner routinely swings
+// 15-20% for identical code; the median of several repeats is far more resistant to any
+// one of them landing on a GC pause / noisy neighbor / scheduler hiccup.
+const PERF_REPEATS = envNumber('PERF_REPEATS', 5);
 
 const FIXTURE_ROOT = resolve('perf-fixtures');
 
@@ -219,6 +240,11 @@ describe(`perf: decompose/recompose round-trip (profile=${PROFILE})`, () => {
         }
 
         // ---- write report --------------------------------------------------
+        // medianSamples is intentionally empty here: this test measures a single pass1/pass2
+        // pair for correctness (round-trip fidelity, idempotence), not a trustworthy timing
+        // signal. The dedicated "measures timing" test below produces the median-of-N samples
+        // that actually get published (see scripts/perf-to-benchmark.mjs, which merges every
+        // report matching a (profile, format) pair rather than picking just one).
         const reportFile = await writeReport({
           timestamp: new Date().toISOString(),
           node: process.version,
@@ -229,9 +255,79 @@ describe(`perf: decompose/recompose round-trip (profile=${PROFILE})`, () => {
           fixtureBytes,
           fixtureFiles,
           samples,
+          medianSamples: [],
         });
 
         printSummary(format, fixtureBytes, samples, decomposedSnapshot, retention, reportFile);
+      });
+
+      it(`measures decompose/recompose timing over ${PERF_REPEATS} repeats in ${format.toUpperCase()}`, async () => {
+        // Independent of the correctness test above: this test's only job is producing a
+        // trustworthy timing/memory number, so it never checks round-trip fidelity and never
+        // reuses a workDir across iterations. Each repeat gets its own pristine fixture copy --
+        // decompose/recompose mutate the working tree (prepurge/postpurge), so reusing one
+        // directory across repeats would measure a different operation on repeat 2..N than on
+        // repeat 1 (an already-decomposed tree behaves differently than a pristine one).
+        const log = (): void => {};
+        const decomposeSamples: MeasureResult[] = [];
+        const recomposeSamples: MeasureResult[] = [];
+
+        for (let rep = 0; rep < PERF_REPEATS; rep++) {
+          const repDir = await mkdtemp(join(tmpdir(), `sf-decomposer-perf-median-${format}-`));
+          try {
+            await cp(FIXTURE_ROOT, repDir, { recursive: true, force: true });
+            process.chdir(repDir);
+
+            const { sample: decomposeSample } = await measure(`${format}.decompose`, async () => {
+              await decomposeMetadataTypes({
+                metadataTypes: METADATA_TYPES,
+                prepurge: true,
+                postpurge: true,
+                format,
+                strategy: 'unique-id',
+                decomposeNestedPerms: false,
+                log,
+              });
+            });
+            decomposeSamples.push(decomposeSample);
+
+            // Recompose immediately after this same rep's decompose, so its precondition
+            // (decomposed shards present, no parent -meta.xml) is naturally satisfied without
+            // a separate untimed setup step.
+            const { sample: recomposeSample } = await measure(`${format}.recompose`, async () => {
+              await recomposeMetadataTypes({
+                metadataTypes: METADATA_TYPES,
+                postpurge: true,
+                log,
+              });
+            });
+            recomposeSamples.push(recomposeSample);
+          } finally {
+            process.chdir(originalCwd);
+            // eslint-disable-next-line no-await-in-loop -- each repeat must clean up before the next one starts
+            await rm(repDir, { recursive: true, force: true });
+          }
+        }
+
+        const medianSamples: MedianSample[] = [
+          summarizeMedian(`${format}.decompose`, decomposeSamples),
+          summarizeMedian(`${format}.recompose`, recomposeSamples),
+        ];
+
+        const reportFile = await writeReport({
+          timestamp: new Date().toISOString(),
+          node: process.version,
+          platform: process.platform,
+          arch: process.arch,
+          profile: PROFILE,
+          format,
+          fixtureBytes,
+          fixtureFiles,
+          samples: [],
+          medianSamples,
+        });
+
+        printMedianSummary(format, medianSamples, reportFile);
       });
     });
   }
@@ -339,4 +435,19 @@ function printSummary(
 
 function formatPercent(ratio: number): string {
   return `${(ratio * 100).toFixed(2)}%`;
+}
+
+function printMedianSummary(format: string, medianSamples: MedianSample[], reportFile: string): void {
+  const lines = ['', `[perf] median timing (format=${format}, ${medianSamples[0]?.repeats ?? 0} repeats)`];
+  for (const s of medianSamples) {
+    lines.push(
+      `[perf]   ${s.label.padEnd(20)} median=${formatMs(s.elapsedMedianMs).padStart(10)}   ` +
+        `range=[${formatMs(s.elapsedMinMs)}, ${formatMs(s.elapsedMaxMs)}]   ` +
+        `heapΔ median=${formatBytes(s.heapUsedMedianBytes)}`,
+    );
+  }
+  lines.push(`[perf]   report=${reportFile}`);
+
+  // eslint-disable-next-line no-console
+  console.log(lines.join('\n'));
 }

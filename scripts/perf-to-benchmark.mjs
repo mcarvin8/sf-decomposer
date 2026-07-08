@@ -3,17 +3,21 @@
 // by benchmark-action/github-action-benchmark (customSmallerIsBetter mode).
 //
 // Inputs:  perf-results/*.json
-// Outputs: perf-runtime.json - sample.elapsedMs in ms, one entry per
+// Outputs: perf-runtime.json - sample.elapsedMedianMs in ms, one entry per
 //                              (profile, format, sample.label)
-//          perf-memory.json  - sample.heapUsedDeltaBytes in MB, same keys.
+//          perf-memory.json  - sample.heapUsedMedianBytes in MB, same keys.
 //                              JS heap only, sampled around a forced GC on both sides
 //                              (see test/perf/utils/measure.ts) -- not whole-process RSS,
 //                              which was mostly measuring GC/allocator timing noise rather
 //                              than the operation's actual memory cost.
 //
-// One metric per (profile, format, label) tuple; if multiple reports cover
-// the same tuple (e.g. a re-run within the same job) only the most recent
-// timestamp is kept so the dashboard timeline stays one datapoint per run.
+// Each perf run writes TWO reports per (profile, format): the correctness test's report
+// (round-trip fidelity / idempotence assertions; samples populated, medianSamples empty)
+// and the dedicated timing test's report (median-of-N repeats; medianSamples populated,
+// samples empty). Reports are merged by (profile, format) rather than "latest wins" so
+// both contribute -- in practice only medianSamples ends up non-empty per key, since
+// that's the only field this script publishes (samples is diagnostic-only; see
+// test/perf/utils/measure.ts's PerfReport doc comment).
 
 import { readdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -31,24 +35,27 @@ if (files.length === 0) {
   process.exit(0);
 }
 
-const latest = new Map();
+const merged = new Map();
 for (const f of files.sort()) {
   const r = JSON.parse(await readFile(join(dir, f), 'utf8'));
-  latest.set(`${r.profile}|${r.format}`, r);
+  const key = `${r.profile}|${r.format}`;
+  const existing = merged.get(key) ?? { profile: r.profile, medianSamples: [] };
+  existing.medianSamples.push(...(r.medianSamples ?? []));
+  merged.set(key, existing);
 }
 
 const runtime = [];
 const memory = [];
-for (const r of latest.values()) {
-  for (const s of r.samples) {
-    // sample.label already begins with the format (e.g. "xml.decompose.pass1");
+for (const r of merged.values()) {
+  for (const s of r.medianSamples) {
+    // sample.label already begins with the format (e.g. "xml.decompose");
     // prefix only the profile to avoid stuttering.
     const name = `${r.profile}.${s.label}`;
-    runtime.push({ name, unit: 'ms', value: Number(s.elapsedMs.toFixed(2)) });
+    runtime.push({ name, unit: 'ms', value: Number(s.elapsedMedianMs.toFixed(2)) });
     memory.push({
       name,
       unit: 'MB',
-      value: Number((s.heapUsedDeltaBytes / 1024 / 1024).toFixed(3)),
+      value: Number((s.heapUsedMedianBytes / 1024 / 1024).toFixed(3)),
     });
   }
 }
