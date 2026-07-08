@@ -19,5 +19,12 @@ export default defineConfig({
     hookTimeout: 1_800_000,
     clearMocks: true,
     reporters: ['verbose'],
+    // Forked (not worker-thread) so `--expose-gc` reliably attaches `global.gc` in the
+    // process that runs the tests. test/perf/utils/measure.ts calls it to force a clean
+    // heap snapshot before/after each measured block -- without it, memory deltas are
+    // contaminated by whatever garbage V8 happened not to have collected yet, which is
+    // most of why memory readings were noisy before this.
+    pool: 'forks',
+    execArgv: ['--expose-gc'],
   },
 });
