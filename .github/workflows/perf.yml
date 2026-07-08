@@ -31,6 +31,7 @@ on:
           - medium
           - large
           - xlarge
+          - manyfiles
       formats:
         description: 'Comma-separated formats to test (xml,json,json5,yaml)'
         type: string

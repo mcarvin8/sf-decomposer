@@ -19,7 +19,7 @@ import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-export type Profile = 'small' | 'medium' | 'large' | 'xlarge';
+export type Profile = 'small' | 'medium' | 'large' | 'xlarge' | 'manyfiles';
 
 export interface SizeSpec {
   permissionSet: {
@@ -57,7 +57,7 @@ export interface SizeSpec {
   entitlementProcess: { milestones: number };
 }
 
-const PROFILES: Record<Profile, SizeSpec> = {
+const PROFILES: Record<Exclude<Profile, 'manyfiles'>, SizeSpec> = {
   small: {
     permissionSet: {
       fieldPerms: 200,
@@ -175,6 +175,24 @@ const PROFILES: Record<Profile, SizeSpec> = {
   },
 };
 
+// `manyfiles` targets a different shape than the size-scaled profiles above:
+// instead of one enormous file per metadata type (which is what real orgs
+// almost never look like outside custom labels), it generates many small,
+// independent permission-set files in a single directory -- the shape that
+// actually exercises config-disassembler's directory-mode concurrent fan-out
+// (see config-disassembler#97/#99). Each file is modest on its own so
+// generation stays fast even at a few hundred files.
+const MANYFILES_FILE_COUNT = 300;
+const MANYFILES_PERMISSION_SET_SPEC: SizeSpec['permissionSet'] = {
+  fieldPerms: 150,
+  objectPerms: 30,
+  appVis: 10,
+  classAccesses: 30,
+  pageAccesses: 15,
+  tabSettings: 15,
+  recordTypeVis: 15,
+};
+
 // ---------------------------------------------------------------------------
 // XML helpers
 // ---------------------------------------------------------------------------
@@ -182,7 +200,7 @@ const PROFILES: Record<Profile, SizeSpec> = {
 const XML_HEADER = '<?xml version="1.0" encoding="UTF-8"?>\n';
 const NS = ' xmlns="http://soap.sforce.com/2006/04/metadata"';
 
-function escape(s: string): string {
+function escapeXml(s: string): string {
   return s
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -566,7 +584,7 @@ function genCustomLabels(spec: SizeSpec['labels']): string {
     lines.push('        <language>en_US</language>');
     lines.push('        <protected>false</protected>');
     lines.push(`        <shortDescription>Sample Label ${i}</shortDescription>`);
-    lines.push(`        <value>${escape(`Synthetic label ${i} value used for performance testing only.`)}</value>`);
+    lines.push(`        <value>${escapeXml(`Synthetic label ${i} value used for performance testing only.`)}</value>`);
     lines.push('    </labels>');
   }
 
@@ -851,7 +869,6 @@ export interface GenerateResult {
 
 export async function generate(opts: GenerateOptions): Promise<GenerateResult> {
   const profile: Profile = opts.profile ?? 'large';
-  const spec = PROFILES[profile];
   const outDir = resolve(opts.outDir);
 
   if (opts.cleanFirst) {
@@ -863,6 +880,25 @@ export async function generate(opts: GenerateOptions): Promise<GenerateResult> {
   const base = 'force-app/main/default';
 
   await writeFile(join(outDir, 'sfdx-project.json'), JSON.stringify(SFDX_PROJECT_JSON, null, 2) + '\n', 'utf8');
+
+  if (profile === 'manyfiles') {
+    for (let i = 1; i <= MANYFILES_FILE_COUNT; i++) {
+      const content = genPermissionSet(MANYFILES_PERMISSION_SET_SPEC).replace(
+        '<label>Mega Permission Set</label>',
+        `<label>Sample Permission Set ${pad(i, 4)}</label>`,
+      );
+      await writeOut(
+        outDir,
+        `${base}/permissionsets/Sample_PermSet_${pad(i, 4)}.permissionset-meta.xml`,
+        content,
+        files,
+      );
+    }
+    const totalBytes = files.reduce((s, f) => s + f.bytes, 0);
+    return { outDir, profile, files, totalBytes };
+  }
+
+  const spec = PROFILES[profile];
 
   await writeOut(
     outDir,
@@ -907,6 +943,8 @@ export async function generate(opts: GenerateOptions): Promise<GenerateResult> {
 // CLI
 // ---------------------------------------------------------------------------
 
+const ALL_PROFILES: Profile[] = [...Object.keys(PROFILES), 'manyfiles'] as Profile[];
+
 function parseArgs(argv: string[]): { profile: Profile; outDir: string; clean: boolean } {
   let profile: Profile = 'large';
   let outDir = 'perf-fixtures';
@@ -915,8 +953,8 @@ function parseArgs(argv: string[]): { profile: Profile; outDir: string; clean: b
     const arg = argv[i];
     if (arg === '--profile' && argv[i + 1]) {
       const next = argv[++i] as Profile;
-      if (!(next in PROFILES))
-        throw new Error(`Unknown profile: ${next}. Use one of: ${Object.keys(PROFILES).join(', ')}.`);
+      if (!ALL_PROFILES.includes(next))
+        throw new Error(`Unknown profile: ${next}. Use one of: ${ALL_PROFILES.join(', ')}.`);
       profile = next;
     } else if (arg === '--out' && argv[i + 1]) {
       outDir = argv[++i] as string;
@@ -928,7 +966,7 @@ function parseArgs(argv: string[]): { profile: Profile; outDir: string; clean: b
           'gen-perf-fixtures.ts',
           '',
           'Options:',
-          '  --profile <small|medium|large|xlarge>   Default: large',
+          '  --profile <small|medium|large|xlarge|manyfiles>   Default: large',
           '  --out <dir>                             Default: perf-fixtures',
           '  --no-clean                              Do not wipe out dir first',
           '',
