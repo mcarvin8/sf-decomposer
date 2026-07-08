@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783530416955,
+  "lastUpdate": 1783530719157,
   "repoUrl": "https://github.com/mcarvin8/sf-decomposer",
   "entries": {
     "Decompose Runtime": [
@@ -4197,6 +4197,68 @@ window.BENCHMARK_DATA = {
           {
             "name": "large.yaml.recompose",
             "value": 3527.73,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Matt Carvin",
+            "username": "mcarvin8",
+            "email": "90224411+mcarvin8@users.noreply.github.com"
+          },
+          "committer": {
+            "name": "Matt Carvin",
+            "username": "mcarvin8",
+            "email": "90224411+mcarvin8@users.noreply.github.com"
+          },
+          "id": "83a862f718a8b1b4cef7851208ecff0af646849e",
+          "message": "chore(perf): run manyfiles alongside large on release publish\n\nperf.yml's schedule/pull_request triggers already run both profiles\nvia an in-job matrix (max-parallel:1 to avoid racing the gh-pages\npush). release.yml's perf-baseline job still only called perf.yml\nwith profile:large, so manyfiles never got a release-tagged data\npoint. Adds perf-baseline-manyfiles, chained after perf-baseline via\nneeds so the two gh-pages pushes stay strictly sequential -- release\npublishing isn't on anyone's feedback loop, so serial costs nothing\nreal here.\n\nCo-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-08T16:58:59Z",
+          "url": "https://github.com/mcarvin8/sf-decomposer/commit/83a862f718a8b1b4cef7851208ecff0af646849e"
+        },
+        "date": 1783530718277,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "manyfiles.xml.decompose",
+            "value": 3518.14,
+            "unit": "ms"
+          },
+          {
+            "name": "manyfiles.xml.recompose",
+            "value": 13440.6,
+            "unit": "ms"
+          },
+          {
+            "name": "manyfiles.json.decompose",
+            "value": 3473.34,
+            "unit": "ms"
+          },
+          {
+            "name": "manyfiles.json.recompose",
+            "value": 2549.82,
+            "unit": "ms"
+          },
+          {
+            "name": "manyfiles.json5.decompose",
+            "value": 3500.2,
+            "unit": "ms"
+          },
+          {
+            "name": "manyfiles.json5.recompose",
+            "value": 2681.29,
+            "unit": "ms"
+          },
+          {
+            "name": "manyfiles.yaml.decompose",
+            "value": 3889.66,
+            "unit": "ms"
+          },
+          {
+            "name": "manyfiles.yaml.recompose",
+            "value": 3200.21,
             "unit": "ms"
           }
         ]
