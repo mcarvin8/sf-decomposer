@@ -17,6 +17,15 @@
 #                          a workflow_run companion if/when external
 #                          contributions need this. Doc-only PRs are filtered
 #                          out so they don't pay the ~3-4 minute cost.
+#
+# Profile matrix: schedule/pull_request run BOTH `large` (single-huge-file shape) and
+# `manyfiles` (many-small-files-in-one-directory shape, the one that actually exercises
+# config-disassembler's directory-mode concurrent fan-out -- see config-disassembler#97/#99)
+# as parallel matrix jobs, so a regression in either shape is caught before merge instead of
+# waiting for the next weekly/release run. workflow_dispatch and workflow_call keep their
+# existing single-profile behavior (`inputs.profile`, default `large`) unchanged -- matrix
+# only kicks in when `inputs.profile` isn't set at all, which is exactly the case for
+# schedule/pull_request (neither trigger declares an `inputs:` block).
 name: Performance
 
 on:
@@ -90,7 +99,7 @@ concurrency:
 
 jobs:
   perf:
-    name: Perf (${{ inputs.profile || 'large' }})
+    name: Perf (${{ matrix.profile }})
     # Skip fork PRs: GITHUB_TOKEN is read-only on PRs from forks, so the
     # comment step would fail and the publish steps couldn't push anyway.
     # If/when external contributions need PR perf comments, split this into a
@@ -103,6 +112,22 @@ jobs:
     # noisy to be useful. Correctness is already covered by test.yml's matrix.
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      # Only pull_request is safe to fully parallelize: its publish steps use
+      # auto-push:false/save-data-file:false, so there's no gh-pages write to race. Every
+      # other trigger that reaches this matrix with 2+ profiles (schedule) pushes to the
+      # same gh-pages branch/file per profile; running those concurrently risks one
+      # matrix entry's push getting rejected (or racing) against the other's. Serialize
+      # (max-parallel: 1) for anything but pull_request -- workflow_dispatch/workflow_call
+      # are single-profile anyway, so this is a no-op there.
+      max-parallel: ${{ github.event_name == 'pull_request' && 2 || 1 }}
+      matrix:
+        # inputs.profile is only populated for workflow_dispatch/workflow_call (the only
+        # two triggers that declare an `inputs:` block); schedule/pull_request fall through
+        # to the two-profile matrix. See the trigger-comment block above for the full
+        # rationale.
+        profile: ${{ inputs.profile && fromJSON(format('["{0}"]', inputs.profile)) || fromJSON('["large","manyfiles"]') }}
     # contents:write    - benchmark-action publish steps push to gh-pages.
     # pull-requests:write - PR comparison step posts/updates the sticky comment.
     # Steps that don't need a given perm just don't use it; GitHub doesn't
@@ -137,7 +162,7 @@ jobs:
       - name: Run performance suite
         run: npm run test:perf
         env:
-          PERF_PROFILE: ${{ inputs.profile || 'large' }}
+          PERF_PROFILE: ${{ matrix.profile }}
           PERF_FORMATS: ${{ inputs.formats || 'xml,json,json5,yaml' }}
           PERF_TYPES: ${{ inputs.types }}
           SF_DISABLE_TELEMETRY: true
@@ -179,13 +204,13 @@ jobs:
             }
           ' >> "$GITHUB_STEP_SUMMARY"
         env:
-          PERF_PROFILE: ${{ inputs.profile || 'large' }}
+          PERF_PROFILE: ${{ matrix.profile }}
 
       - name: Upload perf artifacts
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: perf-results-${{ inputs.profile || 'large' }}-${{ github.run_id }}
+          name: perf-results-${{ matrix.profile }}-${{ github.run_id }}
           path: |
             perf-results/
           retention-days: 90
