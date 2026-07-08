@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783526686157,
+  "lastUpdate": 1783530419494,
   "repoUrl": "https://github.com/mcarvin8/sf-decomposer",
   "entries": {
     "Decompose Memory": [
@@ -4135,6 +4135,68 @@ window.BENCHMARK_DATA = {
           {
             "name": "manyfiles.yaml.recompose.pass2",
             "value": 0,
+            "unit": "MB"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Matt Carvin",
+            "username": "mcarvin8",
+            "email": "90224411+mcarvin8@users.noreply.github.com"
+          },
+          "committer": {
+            "name": "Matt Carvin",
+            "username": "mcarvin8",
+            "email": "90224411+mcarvin8@users.noreply.github.com"
+          },
+          "id": "83a862f718a8b1b4cef7851208ecff0af646849e",
+          "message": "chore(perf): run manyfiles alongside large on release publish\n\nperf.yml's schedule/pull_request triggers already run both profiles\nvia an in-job matrix (max-parallel:1 to avoid racing the gh-pages\npush). release.yml's perf-baseline job still only called perf.yml\nwith profile:large, so manyfiles never got a release-tagged data\npoint. Adds perf-baseline-manyfiles, chained after perf-baseline via\nneeds so the two gh-pages pushes stay strictly sequential -- release\npublishing isn't on anyone's feedback loop, so serial costs nothing\nreal here.\n\nCo-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-08T16:58:59Z",
+          "url": "https://github.com/mcarvin8/sf-decomposer/commit/83a862f718a8b1b4cef7851208ecff0af646849e"
+        },
+        "date": 1783530419454,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "large.xml.decompose",
+            "value": 0.008,
+            "unit": "MB"
+          },
+          {
+            "name": "large.xml.recompose",
+            "value": 0.043,
+            "unit": "MB"
+          },
+          {
+            "name": "large.json.decompose",
+            "value": -0.008,
+            "unit": "MB"
+          },
+          {
+            "name": "large.json.recompose",
+            "value": 0.032,
+            "unit": "MB"
+          },
+          {
+            "name": "large.json5.decompose",
+            "value": -0.011,
+            "unit": "MB"
+          },
+          {
+            "name": "large.json5.recompose",
+            "value": 0.037,
+            "unit": "MB"
+          },
+          {
+            "name": "large.yaml.decompose",
+            "value": -0.01,
+            "unit": "MB"
+          },
+          {
+            "name": "large.yaml.recompose",
+            "value": 0.038,
             "unit": "MB"
           }
         ]
