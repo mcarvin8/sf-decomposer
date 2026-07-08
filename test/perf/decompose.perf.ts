@@ -291,7 +291,7 @@ function printSummary(
   reportFile: string,
 ): void {
   const totalElapsed = samples.reduce((s, x) => s + x.elapsedMs, 0);
-  const peakRssDelta = samples.reduce((m, x) => Math.max(m, x.rssDeltaBytes), 0);
+  const peakHeapUsedDelta = samples.reduce((m, x) => Math.max(m, x.heapUsedDeltaBytes), 0);
   const lines = [
     '',
     `[perf] format=${format.padEnd(5)} input=${formatBytes(inputBytes)} ` +
@@ -300,10 +300,13 @@ function printSummary(
   for (const s of samples) {
     lines.push(
       `[perf]   ${s.label.padEnd(28)} ${formatMs(s.elapsedMs).padStart(10)}   ` +
-        `rssΔ ${formatBytes(s.rssDeltaBytes).padStart(10)}`,
+        `heapΔ ${formatBytes(s.heapUsedDeltaBytes).padStart(10)}   ` +
+        `(rssΔ ${formatBytes(s.rssDeltaBytes).padStart(10)})`,
     );
   }
-  lines.push(`[perf]   total=${formatMs(totalElapsed)}  peak rssΔ=${formatBytes(peakRssDelta)}  report=${reportFile}`);
+  lines.push(
+    `[perf]   total=${formatMs(totalElapsed)}  peak heapΔ=${formatBytes(peakHeapUsedDelta)}  report=${reportFile}`,
+  );
 
   // Per-file retention breakdown. Sorted ascending so any file that's eaten
   // bytes shows at the top - that's where you look first when investigating

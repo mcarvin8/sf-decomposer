@@ -5,7 +5,11 @@
 // Inputs:  perf-results/*.json
 // Outputs: perf-runtime.json - sample.elapsedMs in ms, one entry per
 //                              (profile, format, sample.label)
-//          perf-memory.json  - sample.rssDeltaBytes in MB, same keys
+//          perf-memory.json  - sample.heapUsedDeltaBytes in MB, same keys.
+//                              JS heap only, sampled around a forced GC on both sides
+//                              (see test/perf/utils/measure.ts) -- not whole-process RSS,
+//                              which was mostly measuring GC/allocator timing noise rather
+//                              than the operation's actual memory cost.
 //
 // One metric per (profile, format, label) tuple; if multiple reports cover
 // the same tuple (e.g. a re-run within the same job) only the most recent
@@ -44,7 +48,7 @@ for (const r of latest.values()) {
     memory.push({
       name,
       unit: 'MB',
-      value: Number((s.rssDeltaBytes / 1024 / 1024).toFixed(3)),
+      value: Number((s.heapUsedDeltaBytes / 1024 / 1024).toFixed(3)),
     });
   }
 }

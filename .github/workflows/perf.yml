@@ -163,7 +163,7 @@ jobs:
           fi
           echo "## Perf results (profile=${PERF_PROFILE:-large})" >> "$GITHUB_STEP_SUMMARY"
           echo '' >> "$GITHUB_STEP_SUMMARY"
-          echo '| Format | Sample | Elapsed (ms) | RSS Δ (MB) |' >> "$GITHUB_STEP_SUMMARY"
+          echo '| Format | Sample | Elapsed (ms) | Heap Δ (MB) |' >> "$GITHUB_STEP_SUMMARY"
           echo '|---|---|---:|---:|' >> "$GITHUB_STEP_SUMMARY"
           node -e '
             const fs = require("fs"), path = require("path");
@@ -173,8 +173,8 @@ jobs:
               const r = JSON.parse(fs.readFileSync(path.join(dir, f), "utf8"));
               for (const s of r.samples) {
                 const ms = s.elapsedMs.toFixed(1);
-                const rss = (s.rssDeltaBytes / 1024 / 1024).toFixed(2);
-                process.stdout.write(`| ${r.format} | ${s.label} | ${ms} | ${rss} |\n`);
+                const heap = (s.heapUsedDeltaBytes / 1024 / 1024).toFixed(2);
+                process.stdout.write(`| ${r.format} | ${s.label} | ${ms} | ${heap} |\n`);
               }
             }
           ' >> "$GITHUB_STEP_SUMMARY"

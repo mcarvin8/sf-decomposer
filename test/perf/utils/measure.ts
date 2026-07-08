@@ -7,30 +7,58 @@ import { performance } from 'node:perf_hooks';
 export type MeasureResult = {
   label: string;
   elapsedMs: number;
+  // Primary memory metric: JS heap only, sampled immediately after a forced GC on both
+  // sides of the measured block. RSS (below) is whole-process resident memory -- it
+  // includes native/Rust allocations across the napi boundary, tokio thread stacks, and
+  // page-cache noise, none of which is attributable to the measured operation, and
+  // without a forced GC it's mostly measuring V8's collection timing luck rather than
+  // actual memory cost. Untouched code paths were observed swinging 10-90x run to run
+  // under the old RSS-based metric; heapUsed does not have that problem.
+  heapUsedBeforeBytes: number;
+  heapUsedAfterBytes: number;
+  heapUsedDeltaBytes: number;
+  // Diagnostic only, not fed to the benchmark dashboard (see scripts/perf-to-benchmark.mjs).
+  // Kept for local investigation; expect it to be noisier than heapUsedDeltaBytes.
   rssBeforeBytes: number;
   rssAfterBytes: number;
   rssDeltaBytes: number;
-  heapUsedBeforeBytes: number;
-  heapUsedAfterBytes: number;
 };
 
-/** Run an async block, capturing wall time and process memory deltas. */
+/**
+ * Run an async block, capturing wall time and a memory delta for it.
+ *
+ * Requires `global.gc` (run with `--expose-gc`; wired via vitest.perf.config.ts's fork
+ * pool `execArgv`). Forcing a collection immediately before and after the block means
+ * `heapUsed` reflects what the block actually retained, not whatever V8 hadn't gotten
+ * around to collecting yet.
+ */
 export async function measure<T>(label: string, fn: () => Promise<T>): Promise<{ result: T; sample: MeasureResult }> {
+  if (typeof global.gc !== 'function') {
+    throw new Error(
+      'global.gc is not available. Run the perf suite with --expose-gc ' +
+        '(vitest.perf.config.ts already sets this via poolOptions.forks.execArgv; ' +
+        'if you see this, you are likely invoking vitest/node directly without that config).',
+    );
+  }
+
+  global.gc();
   const memBefore = process.memoryUsage();
   const start = performance.now();
   const result = await fn();
   const elapsedMs = performance.now() - start;
+  global.gc();
   const memAfter = process.memoryUsage();
   return {
     result,
     sample: {
       label,
       elapsedMs,
+      heapUsedBeforeBytes: memBefore.heapUsed,
+      heapUsedAfterBytes: memAfter.heapUsed,
+      heapUsedDeltaBytes: memAfter.heapUsed - memBefore.heapUsed,
       rssBeforeBytes: memBefore.rss,
       rssAfterBytes: memAfter.rss,
       rssDeltaBytes: memAfter.rss - memBefore.rss,
-      heapUsedBeforeBytes: memBefore.heapUsed,
-      heapUsedAfterBytes: memAfter.heapUsed,
     },
   };
 }
