@@ -101,3 +101,17 @@ jobs:
       profile: large
       publish: true
     secrets: inherit
+
+  perf-baseline-manyfiles:
+    # Chained after perf-baseline (not parallel): both jobs push to the same
+    # gh-pages branch/file via auto-push:true, and two concurrent workflow_call
+    # invocations racing that push is exactly the hazard perf.yml's
+    # max-parallel:1 guards against for its own in-job matrix. Sequential here
+    # costs nothing real - release publishing isn't on anyone's feedback loop.
+    needs: [smoke-test, release, perf-baseline]
+    if: needs.release.outputs.published == 'true'
+    uses: ./.github/workflows/perf.yml
+    with:
+      profile: manyfiles
+      publish: true
+    secrets: inherit
