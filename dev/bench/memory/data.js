@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783526583512,
+  "lastUpdate": 1783526686157,
   "repoUrl": "https://github.com/mcarvin8/sf-decomposer",
   "entries": {
     "Decompose Memory": [
@@ -4033,6 +4033,108 @@ window.BENCHMARK_DATA = {
           {
             "name": "large.yaml.recompose.pass2",
             "value": -0.477,
+            "unit": "MB"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Matt Carvin",
+            "username": "mcarvin8",
+            "email": "90224411+mcarvin8@users.noreply.github.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "28b9b40f7ea7d0d7d12339b3b93cab1364d03758",
+          "message": "test(perf): add manyfiles fixture profile to exercise directory concurrency (#525)\n\nEvery existing profile (small/medium/large/xlarge) generates one giant\nXML file per metadata type -- the shape real orgs almost never have\noutside custom labels, and the one shape that gets zero benefit from\nconfig-disassembler's directory-mode concurrent fan-out (#97/#99). The\nperf suite could not distinguish that fix helping from doing nothing.\n\nAdds a manyfiles profile: 300 small, independent permission-set files\nin one directory, which is the shape the fix actually targets. Wired\ninto decompose.perf.ts (defaults METADATA_TYPES to just permissionset\nfor this profile) and the workflow_dispatch dropdown so it can be run\nad-hoc / with publish=true to seed its own gh-pages baseline.\n\nBench names are namespaced by profile (${profile}.${label}, see\nscripts/perf-to-benchmark.mjs), so this starts an independent trend\nline alongside the existing large/xlarge/etc series -- nothing already\non gh-pages is touched or renamed.\n\nNot yet wired into the scheduled/PR/release automatic runs (those still\ndefault to profile=large); promoting it to run automatically is a\nfollow-up once there's baseline history to compare against.\n\nCo-authored-by: Claude Sonnet 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-08T16:02:02Z",
+          "url": "https://github.com/mcarvin8/sf-decomposer/commit/28b9b40f7ea7d0d7d12339b3b93cab1364d03758"
+        },
+        "date": 1783526686126,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "manyfiles.xml.decompose.pass1",
+            "value": 43.781,
+            "unit": "MB"
+          },
+          {
+            "name": "manyfiles.xml.recompose.pass1",
+            "value": -309.379,
+            "unit": "MB"
+          },
+          {
+            "name": "manyfiles.xml.decompose.pass2",
+            "value": 6.117,
+            "unit": "MB"
+          },
+          {
+            "name": "manyfiles.xml.recompose.pass2",
+            "value": -13,
+            "unit": "MB"
+          },
+          {
+            "name": "manyfiles.json.decompose.pass1",
+            "value": 0.875,
+            "unit": "MB"
+          },
+          {
+            "name": "manyfiles.json.recompose.pass1",
+            "value": 0.422,
+            "unit": "MB"
+          },
+          {
+            "name": "manyfiles.json.decompose.pass2",
+            "value": 2.125,
+            "unit": "MB"
+          },
+          {
+            "name": "manyfiles.json.recompose.pass2",
+            "value": 0,
+            "unit": "MB"
+          },
+          {
+            "name": "manyfiles.json5.decompose.pass1",
+            "value": -0.141,
+            "unit": "MB"
+          },
+          {
+            "name": "manyfiles.json5.recompose.pass1",
+            "value": -3.082,
+            "unit": "MB"
+          },
+          {
+            "name": "manyfiles.json5.decompose.pass2",
+            "value": 0.5,
+            "unit": "MB"
+          },
+          {
+            "name": "manyfiles.json5.recompose.pass2",
+            "value": 0,
+            "unit": "MB"
+          },
+          {
+            "name": "manyfiles.yaml.decompose.pass1",
+            "value": -354.805,
+            "unit": "MB"
+          },
+          {
+            "name": "manyfiles.yaml.recompose.pass1",
+            "value": -0.031,
+            "unit": "MB"
+          },
+          {
+            "name": "manyfiles.yaml.decompose.pass2",
+            "value": 0.375,
+            "unit": "MB"
+          },
+          {
+            "name": "manyfiles.yaml.recompose.pass2",
+            "value": 0,
             "unit": "MB"
           }
         ]
