@@ -197,21 +197,15 @@ becomes:
 
 Remove only the flags for types you are migrating to sf-decomposer. Leave flags for types you are keeping under native decomposition.
 
-Then run:
-
-```bash
-sf convert source behavior
-```
-
-This converts natively-decomposed fragments back to full parent XML files locally, with no org connection required. The CLI reads the updated `sfdx-project.json` and rewrites your local source in-place.
-
-If your local source is missing or stale (e.g., the decomposed files were never committed), retrieve from a scratch org or sandbox instead:
+`sf project convert source behavior` does **not** re-convert already-decomposed fragments back to full XML — it has no effect on existing local source. Instead, delete the native-decomposed fragments for the affected types and retrieve fresh from your org:
 
 ```bash
 sf project retrieve start -m "CustomLabels" -m "PermissionSet" -m "Workflow"
 ```
 
-Either way, verify no native-decomposed fragments remain before continuing:
+The CLI reads the updated `sfdx-project.json` and retrieves the metadata in full-XML form since the decomposition flags are gone.
+
+Verify no native-decomposed fragments remain before continuing:
 
 ```bash
 # Should return empty for each type you are migrating off
