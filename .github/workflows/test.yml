@@ -36,7 +36,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        node-version: ['22', '24', '25']
+        node-version: ['22', '24', '26']
     steps:
       - name: Configure git longpaths if on Windows
         if: ${{ runner.os == 'Windows' }}
@@ -79,7 +79,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        node-version: ['22', '24', '25']
+        node-version: ['22', '24', '26']
     steps:
       - name: Configure git longpaths if on Windows
         if: ${{ runner.os == 'Windows' }}
