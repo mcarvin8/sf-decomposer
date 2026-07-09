@@ -177,7 +177,7 @@ Closest available match, but not byte-for-byte native: native merges all four ob
 
 ## Migration steps
 
-### 1. Disable native decomposition and recompose to full XML
+### 1. Disable native decomposition and re-retrieve full XML files from org
 
 Remove the relevant flags from `sourceBehaviorOptions` in `sfdx-project.json`. For example:
 
