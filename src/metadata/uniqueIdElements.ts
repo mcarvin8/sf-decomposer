@@ -1,7 +1,22 @@
 export default [
   {
     profile: {
+      // `<profileActionOverrides>` (API v37-44, deprecated but still present in
+      // legacy orgs) has the same compound natural key problem as
+      // CustomApplication's `<profileActionOverrides>`/`<actionOverrides>`
+      // (see `app` below): a single field like `<actionName>` collides for
+      // every sibling sharing `actionName>view</actionName>`. Compound keys
+      // join resolved values with `__` for a stable, collision-free filename.
+      //
+      // Fallback chain, widest first:
+      //   1. actionName+pageOrSobjectType+formFactor+recordType
+      //   2. actionName+pageOrSobjectType+formFactor
+      // Items missing `pageOrSobjectType` or `formFactor` fall through to the
+      // SHA-256 outer-element hash, which is correct since we can't safely
+      // name them without those keys.
       uniqueIdElements: [
+        'actionName+pageOrSobjectType+formFactor+recordType',
+        'actionName+pageOrSobjectType+formFactor',
         'application',
         'apexClass',
         'externalDataSource',
@@ -17,6 +32,8 @@ export default [
         'weekdayStart',
         'friendlyname',
         'agentName',
+        'servicePresenceStatus',
+        'configName',
       ],
     },
     permissionset: {
