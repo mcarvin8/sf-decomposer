@@ -8,7 +8,7 @@ updates:
       day: 'wednesday'
     versioning-strategy: increase
     commit-message:
-      prefix: 'feat(deps)'
+      prefix: 'feat(rust)'
     allow:
       - dependency-name: '@salesforce/source-deploy-retrieve'
       - dependency-name: 'config-disassembler'
