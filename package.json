@@ -25,7 +25,7 @@
     "oclif": "4.23.24",
     "patch-package": "8.0.1",
     "shx": "0.4.0",
-    "ts-node": "10.9.2",
+    "tsx": "4.23.0",
     "typescript": "7.0.2",
     "vitest": "4.1.9",
     "wireit": "0.14.13"
@@ -82,15 +82,16 @@
     "flexibleTaxonomy": true
   },
   "scripts": {
-    "audit": "node --loader ts-node/esm --no-warnings=ExperimentalWarning scripts/audit/audit.ts",
-    "audit:roundtrip": "node --loader ts-node/esm --no-warnings=ExperimentalWarning scripts/audit/roundtrip.ts",
-    "audit:sweep": "node --loader ts-node/esm --no-warnings=ExperimentalWarning scripts/audit/sweep.ts",
+    "audit": "tsx scripts/audit/audit.ts",
+    "audit:roundtrip": "tsx scripts/audit/roundtrip.ts",
+    "audit:sweep": "tsx scripts/audit/sweep.ts",
+    "audit:xsd": "tsx scripts/audit/xsd-unique-id-candidates.ts",
     "build": "wireit",
     "clean": "wireit",
     "clean:build": "wireit",
     "clean:package-manager": "wireit",
     "compile": "wireit",
-    "docs:metadata-support": "node --import ts-node/esm scripts/update-metadata-support.ts",
+    "docs:metadata-support": "tsx scripts/update-metadata-support.ts",
     "format": "wireit",
     "lint": "wireit",
     "lint:dependencies": "wireit",
@@ -103,7 +104,7 @@
     "test:nuts": "wireit",
     "test:only": "wireit",
     "test:perf": "wireit",
-    "test:perf:gen": "node --import ts-node/esm scripts/gen-perf-fixtures.ts"
+    "test:perf:gen": "tsx scripts/gen-perf-fixtures.ts"
   },
   "publishConfig": {
     "access": "public"
