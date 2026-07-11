@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.38.4](https://github.com/mcarvin8/sf-decomposer/compare/v6.38.3...v6.38.4) (2026-07-11)
+
+
+### Bug Fixes
+
+* **metadata:** add missing Profile unique id elements ([#531](https://github.com/mcarvin8/sf-decomposer/issues/531)) ([b047e2c](https://github.com/mcarvin8/sf-decomposer/commit/b047e2cb38ad9a37e141312aa82383be062c91c7))
+
 ## [6.38.3](https://github.com/mcarvin8/sf-decomposer/compare/v6.38.2...v6.38.3) (2026-07-08)
 
 
