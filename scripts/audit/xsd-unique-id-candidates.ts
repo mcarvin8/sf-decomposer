@@ -89,8 +89,12 @@ interface Candidate {
 }
 
 const COMPLEX_TYPE_RE = /<xsd:complexType\s+name="([^"]+)"[^>]*>([\s\S]*?)<\/xsd:complexType>/g;
-const ELEMENT_RE =
-  /<xsd:element\s+name="([^"]+)"\s+type="(?:[^:"]+:)?([^"]+)"(?:[^/>]*?\bminOccurs="([^"]+)")?(?:[^/>]*?\bmaxOccurs="([^"]+)")?[^/>]*\/>/g;
+/** Matches a self-closing <xsd:element .../> tag; attributes are extracted separately since their order varies across schema sources. */
+const ELEMENT_TAG_RE = /<xsd:element\b([^>]*?)\/>/g;
+
+function getAttr(attrs: string, name: string): string | undefined {
+  return new RegExp(`\\b${name}="([^"]*)"`).exec(attrs)?.[1];
+}
 
 /** Primitive/enum-ish type names that can never be a "record" child. */
 const PRIMITIVE_TYPES = new Set([
@@ -111,12 +115,16 @@ function parseXsd(xsdText: string): Map<string, XsdComplexType> {
     const name = m[1] as string;
     const body = m[2] as string;
     const fields: XsdField[] = [];
-    for (const fm of body.matchAll(ELEMENT_RE)) {
+    for (const em of body.matchAll(ELEMENT_TAG_RE)) {
+      const attrs = em[1] as string;
+      const fieldName = getAttr(attrs, 'name');
+      const rawType = getAttr(attrs, 'type');
+      if (!fieldName || !rawType) continue;
       fields.push({
-        name: fm[1] as string,
-        type: fm[2] as string,
-        minOccurs: fm[3] ?? '1',
-        maxOccurs: fm[4] ?? '1',
+        name: fieldName,
+        type: rawType.includes(':') ? (rawType.split(':').pop() as string) : rawType,
+        minOccurs: getAttr(attrs, 'minOccurs') ?? '1',
+        maxOccurs: getAttr(attrs, 'maxOccurs') ?? '1',
       });
     }
     types.set(name, { name, fields });
