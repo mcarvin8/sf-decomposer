@@ -40,6 +40,10 @@ perf-results
 # benchmark-action/github-action-benchmark inputs (built from perf-results in CI)
 perf-runtime.json
 perf-memory.json
+# same-runner PR baseline comparison artifacts (see scripts/compare-perf-baseline.mjs)
+perf-runtime-base.json
+perf-memory-base.json
+perf-comparison.md
 
 # stryker mutation testing
 .stryker-tmp

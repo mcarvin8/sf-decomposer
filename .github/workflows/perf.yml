@@ -7,16 +7,18 @@
 #                          updates, runner-image refreshes, V8/Rust upstream.
 #   - workflow_call      : invoked by release.yml after a successful publish so
 #                          every version on npm has a perf artifact attached.
-#   - pull_request       : compares the PR head against the gh-pages baseline
-#                          and posts a sticky comment with the deltas. Runs the
-#                          same profile/formats as the baseline so bench names
-#                          line up; otherwise the action would render the PR's
-#                          metrics as brand-new charts instead of new points on
-#                          the existing series. Skipped for fork PRs because
+#   - pull_request       : benchmarks the PR base ref, then the PR head ref,
+#                          back to back on the same runner, and posts a sticky
+#                          comment with the deltas (scripts/compare-perf-baseline.mjs).
+#                          Same-runner/same-moment diffing avoids the 20-30%
+#                          run-to-run swings a gh-pages-history comparison
+#                          would inherit from running on different runners at
+#                          different times. Skipped for fork PRs because
 #                          GITHUB_TOKEN is read-only there - re-introduce via
 #                          a workflow_run companion if/when external
 #                          contributions need this. Doc-only PRs are filtered
-#                          out so they don't pay the ~3-4 minute cost.
+#                          out so they don't pay the ~6-8 minute cost (base +
+#                          head runs).
 #
 # Profile matrix: schedule/pull_request run BOTH `large` (single-huge-file shape) and
 # `manyfiles` (many-small-files-in-one-directory shape, the one that actually exercises
@@ -57,7 +59,8 @@ on:
     # Mondays 05:00 UTC - quiet hours on the GitHub-hosted runner pool.
     - cron: '0 5 * * 1'
   pull_request:
-    # Skip cosmetic/doc-only PRs so they don't burn ~3-4 minutes of CI per push.
+    # Skip cosmetic/doc-only PRs so they don't burn ~6-8 minutes of CI per push
+    # (base-ref + head-ref runs - see the trigger comment above).
     # Code that can plausibly affect runtime/memory lives outside these paths.
     paths-ignore:
       - '**/*.md'
@@ -90,7 +93,7 @@ permissions:
   contents: read
 
 # Cancel in-progress perf runs for the same PR/branch when a new commit lands.
-# Without this, force-pushing N times to a PR queues N x ~3-4 minute jobs. The
+# Without this, force-pushing N times to a PR queues N x ~6-8 minute jobs. The
 # release/schedule/dispatch flows run on main or detached refs, where each run
 # gets a unique group key, so this only collapses redundant PR runs.
 concurrency:
@@ -114,8 +117,8 @@ jobs:
     timeout-minutes: 60
     strategy:
       fail-fast: false
-      # Only pull_request is safe to fully parallelize: its publish steps use
-      # auto-push:false/save-data-file:false, so there's no gh-pages write to race. Every
+      # Only pull_request is safe to fully parallelize: its comparison is same-runner-only
+      # and never touches gh-pages, so there's no gh-pages write to race. Every
       # other trigger that reaches this matrix with 2+ profiles (schedule) pushes to the
       # same gh-pages branch/file per profile; running those concurrently risks one
       # matrix entry's push getting rejected (or racing) against the other's. Serialize
@@ -146,6 +149,67 @@ jobs:
           cache: npm
 
       - name: Install Dependencies
+        run: npm ci
+
+      # -----------------------------------------------------------------
+      # Same-runner baseline benchmark (PR only).
+      #
+      # Benchmarks the PR's base ref first, on this exact runner, then
+      # switches back to the PR head and reinstalls before the normal
+      # "Run performance suite" step below benchmarks the head. Both runs
+      # share the same machine/OS image/moment in time, so
+      # scripts/compare-perf-baseline.mjs (further down) can use a much
+      # tighter regression threshold than the gh-pages-history comparison
+      # the schedule/workflow_call paths use.
+      #
+      # perf-results/ is cleared after converting the base run so the head
+      # run's own perf-results/ doesn't get merged with the base run's
+      # reports by scripts/perf-to-benchmark.mjs (it merges every *.json in
+      # the directory by (profile, format) key).
+      # -----------------------------------------------------------------
+      - name: Save current ref
+        if: github.event_name == 'pull_request'
+        run: echo "CURRENT_REF=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Checkout PR base ref
+        if: github.event_name == 'pull_request'
+        # The default checkout above is a shallow, single-commit fetch of the
+        # PR merge ref, so the base sha usually isn't present locally yet -
+        # fetch it explicitly rather than unshallowing the whole repo just to
+        # reach one commit.
+        run: |
+          git fetch --no-tags --prune --depth=1 origin "${{ github.event.pull_request.base.sha }}"
+          git checkout --detach --force "${{ github.event.pull_request.base.sha }}"
+
+      - name: Install base-ref dependencies
+        if: github.event_name == 'pull_request'
+        run: npm ci
+
+      - name: Run baseline performance suite (base ref)
+        if: github.event_name == 'pull_request'
+        run: npm run test:perf
+        env:
+          PERF_PROFILE: ${{ matrix.profile }}
+          PERF_FORMATS: ${{ inputs.formats || 'xml,json,json5,yaml' }}
+          PERF_TYPES: ${{ inputs.types }}
+          SF_DISABLE_TELEMETRY: true
+          NODE_OPTIONS: '--max-old-space-size=4096'
+          RUST_LOG: warn
+
+      - name: Convert baseline perf-results to benchmark JSON
+        if: github.event_name == 'pull_request'
+        run: |
+          node scripts/perf-to-benchmark.mjs
+          cp perf-runtime.json perf-runtime-base.json
+          cp perf-memory.json perf-memory-base.json
+          rm -rf perf-results perf-runtime.json perf-memory.json
+
+      - name: Restore PR head ref
+        if: github.event_name == 'pull_request'
+        run: git checkout --force "$CURRENT_REF"
+
+      - name: Reinstall head-ref dependencies
+        if: github.event_name == 'pull_request'
         run: npm ci
 
       - name: Print runner facts
@@ -213,6 +277,9 @@ jobs:
           name: perf-results-${{ matrix.profile }}-${{ github.run_id }}
           path: |
             perf-results/
+            perf-comparison.md
+            perf-runtime-base.json
+            perf-memory-base.json
           retention-days: 90
           if-no-files-found: warn
 
@@ -281,60 +348,29 @@ jobs:
           benchmark-data-dir-path: dev/bench/memory
 
       # ---------------------------------------------------------------------
-      # PR comparison comment (Phase 2).
+      # PR comparison comment: same-runner baseline diff.
       #
-      # On pull_request events, generate the same benchmark JSON as the
-      # publish path, but instead of pushing to gh-pages we ask the action
-      # to read the existing baseline, render a sticky comment with the
-      # per-bench deltas, and discard the new data point. comment-always
-      # (vs comment-on-alert) is intentional: even green runs are useful
-      # signal on perf-sensitive PRs, and a single sticky comment beats
-      # scrolling for a status check.
+      # perf-results/ here only holds the head-ref run (the base-ref run was
+      # already converted and cleared out by "Convert baseline perf-results
+      # to benchmark JSON" above), so this conversion produces the head-ref's
+      # perf-runtime.json / perf-memory.json. scripts/compare-perf-baseline.mjs
+      # diffs those against perf-runtime-base.json / perf-memory-base.json
+      # (same runner, same job, benchmarked moments earlier) and posts/updates
+      # a sticky PR comment - see that script for the threshold rationale.
       #
-      # auto-push:false + save-data-file:false ensures the timeline on
-      # gh-pages stays a clean record of merged code; PR runs never appear
-      # there. fail-on-alert stays false to match the publish steps - perf
-      # regressions surface as a comment, not a required-check failure.
-      #
-      # If the bench names emitted by this run don't already exist on
-      # gh-pages (e.g. someone changed PERF_FORMATS / PERF_TYPES to something
-      # the baseline doesn't cover), the action posts the values without a
-      # delta. That's fine - it just means there's no apples-to-apples
-      # comparison yet, not that anything is broken.
+      # This never touches gh-pages (no auto-push/save-data-file here at
+      # all) and never fails the job: regressions surface as a comment and a
+      # ::warning:: annotation, matching the rest of this workflow's
+      # fail-on-alert: false stance.
       # ---------------------------------------------------------------------
       - name: Convert perf-results for PR comparison
         if: github.event_name == 'pull_request'
         run: node scripts/perf-to-benchmark.mjs
 
-      - name: Compare runtime against baseline (PR)
+      - name: Compare against same-runner baseline (PR)
         if: github.event_name == 'pull_request'
-        uses: benchmark-action/github-action-benchmark@v1
-        with:
-          name: Decompose Runtime (${{ matrix.profile }})
-          tool: customSmallerIsBetter
-          output-file-path: ./perf-runtime.json
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          auto-push: false
-          save-data-file: false
-          alert-threshold: '150%'
-          fail-on-alert: false
-          comment-always: true
-          summary-always: true
-          benchmark-data-dir-path: dev/bench/runtime
-
-      - name: Compare memory against baseline (PR)
-        if: github.event_name == 'pull_request'
-        uses: benchmark-action/github-action-benchmark@v1
-        with:
-          name: Decompose Memory (${{ matrix.profile }})
-          tool: customSmallerIsBetter
-          output-file-path: ./perf-memory.json
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          auto-push: false
-          save-data-file: false
-          skip-fetch-gh-pages: true
-          alert-threshold: '200%'
-          fail-on-alert: false
-          comment-always: true
-          summary-always: true
-          benchmark-data-dir-path: dev/bench/memory
+        run: node scripts/compare-perf-baseline.mjs
+        env:
+          PERF_PROFILE: ${{ matrix.profile }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}

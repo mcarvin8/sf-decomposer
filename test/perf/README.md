@@ -116,25 +116,39 @@ To enable on first run:
 
 ## Pull-request comparison comment
 
-PRs that touch non-doc files automatically run the same `large` profile and
-post a sticky comment showing per-bench deltas vs the latest gh-pages
-baseline. The comment updates in place on subsequent pushes (the action keys
-off the bench name + PR number).
+PRs that touch non-doc files run the `large` and `manyfiles` profiles as
+parallel matrix jobs. Each job benchmarks the PR's base ref and then its head
+ref, back to back, **on the same runner**, then posts a sticky comment (one
+per profile) showing the per-bench deltas between the two
+(`scripts/compare-perf-baseline.mjs`). The comment updates in place on
+subsequent pushes (keyed off an HTML marker containing the profile name).
+
+This is deliberately not a comparison against the gh-pages history: that
+history comes from a different run on a different runner, possibly days old,
+and swings 20-30% between otherwise-identical code (see the `alert-threshold`
+comments in `perf.yml`). Benchmarking base and head back to back on one
+runner removes most of that noise, so the PR comparison uses a tighter
+threshold (130% runtime / 150% memory) than the gh-pages-based publish steps
+(150%/200%).
 
 Behavior:
 
 - Runs only on PRs from branches in this repo. Fork PRs are skipped because
   `GITHUB_TOKEN` is read-only there and can't post comments.
 - Concurrency-limited: a new push cancels the in-progress perf run for the
-  same PR so we don't queue redundant ~3-4 minute jobs.
-- Does **not** push to `gh-pages` (`auto-push: false`, `save-data-file:
-false`). The PR's numbers are compared against the baseline and discarded;
-  the trend dashboard only contains merged-code data points.
-- Does **not** fail the check on regression (`fail-on-alert: false`). The
-  comment surfaces it; reviewers decide. Tune via `alert-threshold` in
-  `.github/workflows/perf.yml` if the noise floor changes.
+  same PR so we don't queue redundant jobs.
+- Never touches `gh-pages`: base and head results are both discarded after
+  the comment is posted, so the trend dashboard only ever contains data from
+  the schedule/release-triggered runs.
+- Does **not** fail the check on regression. The comment (and a
+  `::warning::` annotation) surfaces it; reviewers decide. Tune the
+  thresholds in `scripts/compare-perf-baseline.mjs` if the noise floor
+  changes.
 - Honors the same paths-ignore filter the workflow uses, so doc-only PRs
   skip the run entirely rather than posting a stale comment.
+- Costs roughly double a single-profile run (base + head, each profile run
+  serially within its matrix job) - budget ~6-8 minutes per profile instead
+  of ~3-4.
 
 [bench]: https://github.com/benchmark-action/github-action-benchmark
 
