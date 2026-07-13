@@ -56,6 +56,16 @@ export default [
       uniqueIdElements: ['milestoneName'],
     },
     flow: {
+      // `<conditions>` (decisions/rules, record filters, start-element criteria,
+      // wait events) has no `<name>`; `<leftValueReference>` is the variable/field
+      // being tested, the closest thing it has to a natural key.
+      //
+      // `<exitRules>` (segment-triggered flows, API 61+) has no `<name>` either;
+      // `<label>` is its closest natural key. `transformValues` (Transform
+      // element) also lacks a name - its `<transformValueName>` field exists in
+      // the schema but is documented as reserved for future use (not populated
+      // today), so it isn't a usable key and is intentionally left out; those
+      // shards fall back to the SHA-256 hash until Salesforce actually populates it.
       uniqueIdElements: [
         'apexClass',
         'object',
@@ -66,6 +76,8 @@ export default [
         'assignToReference',
         'choiceText',
         'promptText',
+        'leftValueReference',
+        'label',
       ],
     },
     genAiPlugin: {
