@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.38.5](https://github.com/mcarvin8/sf-decomposer/compare/v6.38.4...v6.38.5) (2026-07-13)
+
+
+### Bug Fixes
+
+* **metadata:** add configName unique id for genComputingSummaryDefAccess ([#536](https://github.com/mcarvin8/sf-decomposer/issues/536)) ([d5b8f6d](https://github.com/mcarvin8/sf-decomposer/commit/d5b8f6d6e0d426781358d01fdce0d284c5610a4e))
+
 ## [6.38.4](https://github.com/mcarvin8/sf-decomposer/compare/v6.38.3...v6.38.4) (2026-07-11)
 
 
