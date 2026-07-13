@@ -141,12 +141,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
-        with:
-          # Full history on pull_request so the base-ref checkout below (used
-          # for the same-runner baseline benchmark) can find the base sha.
-          # Every other trigger only ever benchmarks the checked-out ref, so
-          # a shallow clone is fine there.
-          fetch-depth: ${{ github.event_name == 'pull_request' && 0 || 1 }}
 
       - name: Setup Node
         uses: actions/setup-node@v6
@@ -179,7 +173,13 @@ jobs:
 
       - name: Checkout PR base ref
         if: github.event_name == 'pull_request'
-        run: git checkout --detach --force "${{ github.event.pull_request.base.sha }}"
+        # The default checkout above is a shallow, single-commit fetch of the
+        # PR merge ref, so the base sha usually isn't present locally yet -
+        # fetch it explicitly rather than unshallowing the whole repo just to
+        # reach one commit.
+        run: |
+          git fetch --no-tags --prune --depth=1 origin "${{ github.event.pull_request.base.sha }}"
+          git checkout --detach --force "${{ github.event.pull_request.base.sha }}"
 
       - name: Install base-ref dependencies
         if: github.event_name == 'pull_request'
