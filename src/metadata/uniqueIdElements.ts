@@ -125,6 +125,7 @@ export default [
         'agentName',
         'externalCredentialPrincipal',
         'servicePresenceStatus',
+        'configName',
       ],
     },
     omniSupervisorConfig: {
@@ -153,6 +154,7 @@ export default [
         'agentName',
         'externalCredentialPrincipal',
         'servicePresenceStatus',
+        'configName',
       ],
     },
     profile: {
