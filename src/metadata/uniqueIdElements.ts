@@ -1,3 +1,7 @@
+// Unique ID elements for repeating child elements of metadata types.
+// These are used to generate stable, human-readable filenames for shards of repeating elements.
+// The default behavior is to use the `<fullName>` or `<name>` of the child element, but some metadata types have repeating children that do not carry a unique name.
+// In those cases, we can specify a different field (or compound of fields) to use as the unique ID.
 export default [
   {
     app: {
