@@ -6,7 +6,7 @@
     "@oclif/core": "4.11.11",
     "@salesforce/core": "8.31.4",
     "@salesforce/sf-plugins-core": "12.2.25",
-    "@salesforce/source-deploy-retrieve": "12.37.0",
+    "@salesforce/source-deploy-retrieve": "12.37.2",
     "config-disassembler": "3.0.2"
   },
   "devDependencies": {
