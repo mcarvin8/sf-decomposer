@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.39.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.38.5...v6.39.0) (2026-07-14)
+
+
+### Features
+
+* **metadata:** refresh SDR registry to 12.37.2 ([25495b1](https://github.com/mcarvin8/sf-decomposer/commit/25495b1cdbdf66355b0a691acda9a9ad48073814))
+
 ## [6.38.5](https://github.com/mcarvin8/sf-decomposer/compare/v6.38.4...v6.38.5) (2026-07-13)
 
 
