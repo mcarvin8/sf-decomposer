@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.39.1](https://github.com/mcarvin8/sf-decomposer/compare/v6.39.0...v6.39.1) (2026-07-16)
+
+
+### Bug Fixes
+
+* **metadata:** add unique id element for Branding Sets ([#544](https://github.com/mcarvin8/sf-decomposer/issues/544)) ([056c5db](https://github.com/mcarvin8/sf-decomposer/commit/056c5db7f6eac2b3ca53d12d100b2092b374db78))
+
 ## [6.39.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.38.5...v6.39.0) (2026-07-14)
 
 
