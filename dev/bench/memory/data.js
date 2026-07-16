@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1784224420949,
+  "lastUpdate": 1784224656951,
   "repoUrl": "https://github.com/mcarvin8/sf-decomposer",
   "entries": {
     "Decompose Memory (large)": [
@@ -806,6 +806,70 @@ window.BENCHMARK_DATA = {
           {
             "name": "manyfiles.json5.decompose",
             "value": -0.004,
+            "unit": "MB"
+          },
+          {
+            "name": "manyfiles.json5.recompose",
+            "value": 0,
+            "unit": "MB"
+          },
+          {
+            "name": "manyfiles.yaml.decompose",
+            "value": -0.004,
+            "unit": "MB"
+          },
+          {
+            "name": "manyfiles.yaml.recompose",
+            "value": 0,
+            "unit": "MB"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "41898282+github-actions[bot]@users.noreply.github.com",
+            "name": "github-actions[bot]",
+            "username": "github-actions[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "74025626610c4b45d0bd7ae81a389d911b795b9d",
+          "message": "chore(main): release 6.39.1 (#545)",
+          "timestamp": "2026-07-16T13:33:06-04:00",
+          "tree_id": "674c9eb5af44c15802774a8e634f7f991f90ac63",
+          "url": "https://github.com/mcarvin8/sf-decomposer/commit/74025626610c4b45d0bd7ae81a389d911b795b9d"
+        },
+        "date": 1784224656910,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "manyfiles.xml.decompose",
+            "value": -0.003,
+            "unit": "MB"
+          },
+          {
+            "name": "manyfiles.xml.recompose",
+            "value": 0.001,
+            "unit": "MB"
+          },
+          {
+            "name": "manyfiles.json.decompose",
+            "value": -0.004,
+            "unit": "MB"
+          },
+          {
+            "name": "manyfiles.json.recompose",
+            "value": 0,
+            "unit": "MB"
+          },
+          {
+            "name": "manyfiles.json5.decompose",
+            "value": -0.005,
             "unit": "MB"
           },
           {
