@@ -48,9 +48,7 @@ export default [
       ],
     },
     brandingSet: {
-      uniqueIdElements: [
-        'propertyName',
-      ],
+      uniqueIdElements: ['propertyName'],
     },
     duplicateRule: {
       // `<duplicateRuleMatchRules>` items carry `<matchingRule>`. Each
