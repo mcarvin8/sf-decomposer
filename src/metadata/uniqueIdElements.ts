@@ -47,6 +47,11 @@ export default [
         'chatButtonName',
       ],
     },
+    brandingSet: {
+      uniqueIdElements: [
+        'propertyName',
+      ],
+    },
     duplicateRule: {
       // `<duplicateRuleMatchRules>` items carry `<matchingRule>`. Each
       // match rule appears once per duplicate rule, so the field is unique
