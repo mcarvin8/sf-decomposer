@@ -63,6 +63,12 @@ export default [
       uniqueIdElements: ['milestoneName'],
     },
     flow: {
+      // `<stages>` and `<textTemplates>` items aren't canvas nodes (no
+      // connector/position), so unlike decisions/screens/loops/etc. they
+      // don't inherit a `name` from a shared base type — `label`/`text` are
+      // their real natural keys. `<subflows>` items key off `flowName` (the
+      // name of the called flow) despite being canvas nodes; confirmed
+      // against real Flow metadata.
       uniqueIdElements: [
         'apexClass',
         'object',
@@ -73,6 +79,9 @@ export default [
         'assignToReference',
         'choiceText',
         'promptText',
+        'label',
+        'flowName',
+        'text',
       ],
     },
     genAiPlugin: {
