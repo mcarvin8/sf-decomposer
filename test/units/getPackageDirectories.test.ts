@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { getPackageDirectories } from '../../src/metadata/getPackageDirectories.js';
+import { buildPackageDirectoryIndex, getPackageDirectories } from '../../src/metadata/getPackageDirectories.js';
 import { SFDX_CONFIG_FILE } from '../utils/constants.js';
 
 // `getPackageDirectories` resolves `<metaDirectory>` under each package dir declared
@@ -206,5 +206,95 @@ describe('getPackageDirectories', () => {
     const { metadataPaths } = await getPackageDirectories('permissionsets', undefined);
 
     expect(metadataPaths).toEqual([resolve(outer)]);
+  });
+});
+
+// `buildPackageDirectoryIndex` answers the same "find directories named X" query as
+// `getPackageDirectories`, but for every requested name in one shared walk instead of one walk
+// per name. It must reproduce each name's independent result exactly, including the
+// nested-same-name exclusion above, while still finding a *different* name's directory nested
+// inside a directory that already matched some other name (since two independent
+// `getPackageDirectories` calls, run separately per type today, would each find their own match
+// regardless of what the other call matched).
+describe('buildPackageDirectoryIndex', () => {
+  const originalCwd = process.cwd();
+  let project: Project;
+
+  beforeEach(async () => {
+    project = await makeProject();
+    process.chdir(project.root);
+  });
+
+  afterEach(async () => {
+    process.chdir(originalCwd);
+    await rm(project.root, { recursive: true, force: true });
+  });
+
+  it('resolves matches for multiple directory names in a single call', async () => {
+    const permsDir = join(project.forceAppDir, 'permissionsets');
+    const workflowsDir = join(project.altDir, 'workflows');
+    await mkdir(permsDir, { recursive: true });
+    await mkdir(workflowsDir, { recursive: true });
+
+    const { index } = await buildPackageDirectoryIndex(['permissionsets', 'workflows'], undefined);
+
+    expect(index.get('permissionsets')).toEqual([resolve(permsDir)]);
+    expect(index.get('workflows')).toEqual([resolve(workflowsDir)]);
+  });
+
+  it('returns an empty array for a requested name with no match anywhere', async () => {
+    const { index } = await buildPackageDirectoryIndex(['missingDir'], undefined);
+
+    expect(index.get('missingDir')).toEqual([]);
+  });
+
+  it('finds nested-depth matches, matching getPackageDirectories', async () => {
+    const deep = join(project.forceAppDir, 'main', 'default', 'permissionsets');
+    await mkdir(deep, { recursive: true });
+
+    const { index } = await buildPackageDirectoryIndex(['permissionsets'], undefined);
+
+    expect(index.get('permissionsets')).toEqual([resolve(deep)]);
+  });
+
+  it('honours ignoreDirs across every requested name', async () => {
+    const inForceApp = join(project.forceAppDir, 'permissionsets');
+    const inAlt = join(project.altDir, 'permissionsets');
+    await mkdir(inForceApp, { recursive: true });
+    await mkdir(inAlt, { recursive: true });
+
+    const { index } = await buildPackageDirectoryIndex(['permissionsets'], ['package']);
+
+    expect(index.get('permissionsets')).toEqual([resolve(inForceApp)]);
+  });
+
+  it('does not double-count a same-named directory nested inside its own match', async () => {
+    const outer = join(project.forceAppDir, 'permissionsets');
+    const nested = join(outer, 'permissionsets');
+    await mkdir(nested, { recursive: true });
+
+    const { index } = await buildPackageDirectoryIndex(['permissionsets'], undefined);
+
+    expect(index.get('permissionsets')).toEqual([resolve(outer)]);
+  });
+
+  it('still finds a different requested name nested inside a directory that already matched another name', async () => {
+    // "permissionsets" matches first; "workflows" nested inside it must still be found, since
+    // independent single-target searches (today's per-type calls) would each find their own name
+    // with no knowledge of the other.
+    const outer = join(project.forceAppDir, 'permissionsets');
+    const inner = join(outer, 'workflows');
+    await mkdir(inner, { recursive: true });
+
+    const { index } = await buildPackageDirectoryIndex(['permissionsets', 'workflows'], undefined);
+
+    expect(index.get('permissionsets')).toEqual([resolve(outer)]);
+    expect(index.get('workflows')).toEqual([resolve(inner)]);
+  });
+
+  it('returns the same ignorePath as getPackageDirectories', async () => {
+    const { ignorePath } = await buildPackageDirectoryIndex(['permissionsets'], undefined);
+
+    expect(ignorePath).toBe(resolve(project.root, '.sfdecomposerignore'));
   });
 });

@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { DEFAULT_UNIQUE_ID_ELEMENTS } from '../../src/helpers/constants.js';
+import { buildPackageDirectoryIndex } from '../../src/metadata/getPackageDirectories.js';
 import { getRegistryValuesBySuffix } from '../../src/metadata/getRegistryValuesBySuffix.js';
 import { SFDX_CONFIG_FILE } from '../utils/constants.js';
 
@@ -209,5 +210,33 @@ describe('getRegistryValuesBySuffix', () => {
     const { metaAttributes } = await getRegistryValuesBySuffix('permissionset', 'decompose', ['altpkg']);
 
     expect(metaAttributes.metadataPaths).toEqual([resolve(project.forceAppDir, 'permissionsets')]);
+  });
+
+  it('uses a pre-built pathIndex instead of walking the filesystem when provided', async () => {
+    const dir = join(project.forceAppDir, 'permissionsets');
+    await mkdir(dir, { recursive: true });
+
+    const withoutIndex = await getRegistryValuesBySuffix('permissionset', 'decompose', undefined);
+
+    const pathIndex = await buildPackageDirectoryIndex(['permissionsets'], undefined);
+    const withIndex = await getRegistryValuesBySuffix(
+      'permissionset',
+      'decompose',
+      undefined,
+      undefined,
+      undefined,
+      pathIndex,
+    );
+
+    expect(withIndex.metaAttributes).toEqual(withoutIndex.metaAttributes);
+    expect(withIndex.ignorePath).toBe(withoutIndex.ignorePath);
+  });
+
+  it('throws the same not-found error via pathIndex when the type directory is absent', async () => {
+    const pathIndex = await buildPackageDirectoryIndex(['animationRules'], undefined);
+
+    await expect(
+      getRegistryValuesBySuffix('animationRule', 'decompose', undefined, undefined, undefined, pathIndex),
+    ).rejects.toThrow('No directories named animationRules were found in any package directory.');
   });
 });

@@ -35,13 +35,14 @@ function getChildSuffixMap(registryAccess: RegistryAccess): Map<string, Metadata
   return childSuffixMap;
 }
 
-export async function getRegistryValuesBySuffix(
-  metaSuffix: string,
-  command: string,
-  ignoreDirs: string[] | undefined,
-  repoRootOverride?: string,
-  uniqueIdOverride?: string,
-): Promise<{ metaAttributes: MetaAttributes; ignorePath: string }> {
+/**
+ * Resolves and validates the SDR registry entry for a metadata suffix (rejects `object`, unknown
+ * suffixes, and unsupported adapter strategies). Synchronous and side-effect free, so callers can
+ * use it to learn a type's `directoryName` ahead of time — e.g. to build a shared
+ * `buildPackageDirectoryIndex` covering every requested type in one filesystem walk — without
+ * duplicating this lookup logic.
+ */
+export function resolveMetadataTypeEntry(metaSuffix: string): MetadataType {
   if (metaSuffix === 'object') {
     throw Error('Custom Objects are not supported by this plugin.');
   }
@@ -64,13 +65,28 @@ export async function getRegistryValuesBySuffix(
     );
   }
 
+  return metadataTypeEntry;
+}
+
+export async function getRegistryValuesBySuffix(
+  metaSuffix: string,
+  command: string,
+  ignoreDirs: string[] | undefined,
+  repoRootOverride?: string,
+  uniqueIdOverride?: string,
+  pathIndex?: { index: Map<string, string[]>; ignorePath: string },
+): Promise<{ metaAttributes: MetaAttributes; ignorePath: string }> {
+  const metadataTypeEntry = resolveMetadataTypeEntry(metaSuffix);
+
   let uniqueIdElements: string | undefined;
   if (command === 'decompose') uniqueIdElements = uniqueIdOverride ?? getUniqueIdElements(metaSuffix);
-  const { metadataPaths, ignorePath } = await getPackageDirectories(
-    `${metadataTypeEntry.directoryName}`,
-    ignoreDirs,
-    repoRootOverride,
-  );
+
+  const { metadataPaths, ignorePath } = pathIndex
+    ? {
+        metadataPaths: pathIndex.index.get(`${metadataTypeEntry.directoryName}`) ?? [],
+        ignorePath: pathIndex.ignorePath,
+      }
+    : await getPackageDirectories(`${metadataTypeEntry.directoryName}`, ignoreDirs, repoRootOverride);
   if (metadataPaths.length === 0)
     throw Error(`No directories named ${metadataTypeEntry.directoryName} were found in any package directory.`);
 
