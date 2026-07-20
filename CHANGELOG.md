@@ -5,6 +5,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.39.2](https://github.com/mcarvin8/sf-decomposer/compare/v6.39.1...v6.39.2) (2026-07-20)
+
+
+### Bug Fixes
+
+* **metadata:** add unique id elements for Flow stages, subflows, textTemplates ([#547](https://github.com/mcarvin8/sf-decomposer/issues/547)) ([c18eb3d](https://github.com/mcarvin8/sf-decomposer/commit/c18eb3d79fdbe70d36a46b3e884b73e4024c7059))
+
+
+### Performance Improvements
+
+* **metadata:** batch package-directory walk across metadata types ([#549](https://github.com/mcarvin8/sf-decomposer/issues/549)) ([a67afbe](https://github.com/mcarvin8/sf-decomposer/commit/a67afbe7733f4a4a6a97e8720cdffd4ffc925066))
+* **metadata:** batch package-directory walk for manifest-mode resolution ([#550](https://github.com/mcarvin8/sf-decomposer/issues/550)) ([9779cac](https://github.com/mcarvin8/sf-decomposer/commit/9779cacb47a85b9ebe5281c3cff38755fad8ac72))
+* **metadata:** reuse parseManifest's directory index, skip a redundant walk ([#551](https://github.com/mcarvin8/sf-decomposer/issues/551)) ([0a33e2b](https://github.com/mcarvin8/sf-decomposer/commit/0a33e2b7a173cfb0bbea2fd4245472f2d8cfe869))
+
 ## [6.39.1](https://github.com/mcarvin8/sf-decomposer/compare/v6.39.0...v6.39.1) (2026-07-16)
 
 
