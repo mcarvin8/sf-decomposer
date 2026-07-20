@@ -14,6 +14,11 @@ export type ManifestFilter = {
   suffixes: string[];
   // Non-wildcard manifest members whose XML file was not found in local source.
   unresolvedComponents: Array<{ type: string; member: string }>;
+  // The package-directory index already built here to resolve manifest entries, covering every
+  // parent type's directoryName found in the manifest. Callers (decomposeMetadataTypes.ts etc.)
+  // reuse this directly in manifest mode instead of building a second, redundant one -- every
+  // suffix that survives into `suffixes` above already has real, verified directories in here.
+  directoryIndex: { index: Map<string, string[]>; ignorePath: string };
 };
 
 type GroupedMembers = {
@@ -64,7 +69,8 @@ export async function parseManifest(
   // per parent type (mirrors buildPackageDirectoryIndex's use in getRegistryValuesBySuffix.ts for
   // the non-manifest path).
   const directoryNames = new Set(groupedEntries.map(({ parentType }) => `${parentType.directoryName}`));
-  const { index: directoryIndex } = await buildPackageDirectoryIndex(directoryNames, ignoreDirs, repoRoot);
+  const directoryIndex = await buildPackageDirectoryIndex(directoryNames, ignoreDirs, repoRoot);
+  const { index: directoryPathsByName } = directoryIndex;
 
   const resolvedPerGroup = await Promise.all(
     groupedEntries.map(async ({ parentType, parentMembers, wildcard }) => {
@@ -72,7 +78,7 @@ export async function parseManifest(
       /* istanbul ignore next -- @preserve: parent metadata types always declare a suffix in SDR's registry. Stryker disable next-line all */
       if (!suffix) return undefined;
 
-      const typeDirs = directoryIndex.get(`${parentType.directoryName}`) ?? [];
+      const typeDirs = directoryPathsByName.get(`${parentType.directoryName}`) ?? [];
       // Stryker disable next-line ConditionalExpression
       if (typeDirs.length === 0) {
         const unresolvedMembers = wildcard ? [] : [...parentMembers];
@@ -135,7 +141,7 @@ export async function parseManifest(
     }
   }
 
-  return { parentXmlsBySuffix, suffixes: orderedSuffixes, unresolvedComponents };
+  return { parentXmlsBySuffix, suffixes: orderedSuffixes, unresolvedComponents, directoryIndex };
 }
 
 /**

@@ -218,6 +218,26 @@ describe('parseManifest', () => {
     );
   });
 
+  it('exposes a directoryIndex covering every parent type found in the manifest, reusable by callers instead of a second walk', async () => {
+    // decomposeMetadataTypes.ts/recomposeMetadataTypes.ts/verifyMetadataTypes.ts reuse this
+    // directly in manifest mode instead of building a second buildPackageDirectoryIndex over the
+    // same tree. Assert it's populated for every distinct parent type the manifest declares.
+    const permissionsetDir = join(project.forceAppDir, 'permissionsets');
+    const workflowDir = join(project.forceAppDir, 'workflows');
+    await writeMetaFile(join(permissionsetDir, 'HR.permissionset-meta.xml'));
+    await writeMetaFile(join(workflowDir, 'Account.workflow-meta.xml'));
+
+    const manifest = await writeManifest(project.root, [
+      { name: 'PermissionSet', members: ['HR'] },
+      { name: 'Workflow', members: ['Account'] },
+    ]);
+    const result = await parseManifest(manifest, undefined);
+
+    expect(result.directoryIndex.index.get('permissionsets')).toEqual([resolve(permissionsetDir)]);
+    expect(result.directoryIndex.index.get('workflows')).toEqual([resolve(workflowDir)]);
+    expect(result.directoryIndex.ignorePath).toBe(resolve(project.root, '.sfdecomposerignore'));
+  });
+
   it('honours ignoreDirs by basename match, skipping the filtered package directory', async () => {
     const kept = join(project.forceAppDir, 'permissionsets', 'Keep.permissionset-meta.xml');
     const skipped = join(project.altDir, 'permissionsets', 'Skip.permissionset-meta.xml');
