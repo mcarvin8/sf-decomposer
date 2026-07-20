@@ -71,19 +71,26 @@ export async function verifyMetadataTypes(options: VerifyOptions): Promise<Verif
     postpurge: false,
   };
 
-  // Resolve every requested type's directoryName up front so the filesystem walk below covers
-  // all of them in one pass, instead of each type re-walking the whole package directory tree.
-  // Unsupported/unknown suffixes are skipped here; the per-type getRegistryValuesBySuffix call
-  // below still throws (and, in manifest mode, is caught/logged there) exactly as it does today.
-  const directoryNames = new Set<string>();
-  for (const metadataType of effectiveTypes) {
-    try {
-      directoryNames.add(`${resolveMetadataTypeEntry(metadataType).directoryName}`);
-    } catch {
-      /* istanbul ignore next -- @preserve: handled per-type by getRegistryValuesBySuffix below */
+  // In manifest mode, parseManifest already built a directory index covering every type it
+  // found -- reuse it rather than walking the same tree a second time. Otherwise, resolve every
+  // requested type's directoryName up front so the filesystem walk below covers all of them in
+  // one pass, instead of each type re-walking the whole package directory tree. Unsupported/
+  // unknown suffixes are skipped here; the per-type getRegistryValuesBySuffix call below still
+  // throws (and, in manifest mode, is caught/logged there) exactly as it does today.
+  let pathIndex: { index: Map<string, string[]>; ignorePath: string };
+  if (manifestFilter) {
+    pathIndex = manifestFilter.directoryIndex;
+  } else {
+    const directoryNames = new Set<string>();
+    for (const metadataType of effectiveTypes) {
+      try {
+        directoryNames.add(`${resolveMetadataTypeEntry(metadataType).directoryName}`);
+      } catch {
+        /* istanbul ignore next -- @preserve: handled per-type by getRegistryValuesBySuffix below */
+      }
     }
+    pathIndex = await buildPackageDirectoryIndex(directoryNames, ignoreDirs, undefined);
   }
-  const pathIndex = await buildPackageDirectoryIndex(directoryNames, ignoreDirs, undefined);
 
   const typeLimit = pLimit(CONCURRENCY_LIMITS.METADATA_TYPES);
   const typeResults: TypeVerifyResult[] = await Promise.all(
