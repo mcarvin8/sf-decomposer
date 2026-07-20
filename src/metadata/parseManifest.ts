@@ -1,11 +1,10 @@
 'use strict';
 
-import { readdir, readFile, stat } from 'node:fs/promises';
-import { basename, join, resolve } from 'node:path';
+import { readdir, stat } from 'node:fs/promises';
+import { join, resolve } from 'node:path';
 import { ManifestResolver, MetadataType, RegistryAccess } from '@salesforce/source-deploy-retrieve';
-import { SFDX_PROJECT_FILE_NAME } from '../helpers/constants.js';
-import { SfdxProject } from '../helpers/types.js';
 import { getRepoRoot } from '../service/core/getRepoRoot.js';
+import { buildPackageDirectoryIndex } from './getPackageDirectories.js';
 
 export type ManifestFilter = {
   // Maps metadata suffix to the set of absolute parent metadata xml file paths
@@ -28,20 +27,10 @@ export async function parseManifest(
   ignoreDirs: string[] | undefined,
   repoRootOverride?: string,
 ): Promise<ManifestFilter> {
-  const { repoRoot, dxConfigFilePath } = repoRootOverride
-    ? { repoRoot: repoRootOverride, dxConfigFilePath: join(repoRootOverride, SFDX_PROJECT_FILE_NAME) }
-    : ((await getRepoRoot()) as { repoRoot: string; dxConfigFilePath: string });
+  const { repoRoot } = repoRootOverride
+    ? { repoRoot: repoRootOverride }
+    : ((await getRepoRoot()) as { repoRoot: string });
   const absManifestPath = resolve(repoRoot, manifestPath);
-
-  // Stryker disable next-line StringLiteral
-  const sfdxProjectRaw: string = await readFile(dxConfigFilePath, 'utf-8');
-  const sfdxProject: SfdxProject = JSON.parse(sfdxProjectRaw) as SfdxProject;
-
-  // Stryker disable next-line ArrayDeclaration
-  const normalizedIgnoreDirs = (ignoreDirs ?? []).map((dir) => basename(dir));
-  const packageDirs = sfdxProject.packageDirectories
-    .map((directory) => resolve(repoRoot, directory.path))
-    .filter((dir) => !normalizedIgnoreDirs.includes(basename(dir)));
 
   const registry = new RegistryAccess();
   const resolver = new ManifestResolver(undefined, registry);
@@ -70,13 +59,20 @@ export async function parseManifest(
   const orderedSuffixes: string[] = [];
 
   const groupedEntries = Array.from(byParentType.values());
+
+  // Resolve every group's type directory in one shared walk instead of one full recursive walk
+  // per parent type (mirrors buildPackageDirectoryIndex's use in getRegistryValuesBySuffix.ts for
+  // the non-manifest path).
+  const directoryNames = new Set(groupedEntries.map(({ parentType }) => `${parentType.directoryName}`));
+  const { index: directoryIndex } = await buildPackageDirectoryIndex(directoryNames, ignoreDirs, repoRoot);
+
   const resolvedPerGroup = await Promise.all(
     groupedEntries.map(async ({ parentType, parentMembers, wildcard }) => {
       const suffix = parentType.suffix;
       /* istanbul ignore next -- @preserve: parent metadata types always declare a suffix in SDR's registry. Stryker disable next-line all */
       if (!suffix) return undefined;
 
-      const typeDirs = await findTypeDirectories(packageDirs, parentType.directoryName);
+      const typeDirs = directoryIndex.get(`${parentType.directoryName}`) ?? [];
       // Stryker disable next-line ConditionalExpression
       if (typeDirs.length === 0) {
         const unresolvedMembers = wildcard ? [] : [...parentMembers];
@@ -183,30 +179,6 @@ export async function resolveEffectiveMetadataTypes(
   }
 
   return { manifestFilter, effectiveTypes };
-}
-
-async function findTypeDirectories(packageDirs: string[], directoryName: string): Promise<string[]> {
-  const results = await Promise.all(packageDirs.map((pkgDir) => searchRecursively(pkgDir, directoryName)));
-  return results.flat();
-}
-
-async function searchRecursively(dir: string, targetName: string): Promise<string[]> {
-  try {
-    const entries = await readdir(dir, { withFileTypes: true });
-    const directMatches = entries
-      .filter((entry) => entry.isDirectory() && entry.name === targetName)
-      .map((entry) => join(dir, entry.name));
-
-    const nestedPromises = entries
-      .filter((entry) => entry.isDirectory() && entry.name !== targetName)
-      .map((entry) => searchRecursively(join(dir, entry.name), targetName));
-
-    const nested = await Promise.all(nestedPromises);
-    return [...directMatches, ...nested.flat()];
-  } catch {
-    /* istanbul ignore next -- @preserve: Filesystem permission errors are platform-specific. Stryker disable next-line BlockStatement */
-    return [];
-  }
 }
 
 async function resolveMemberXml(
