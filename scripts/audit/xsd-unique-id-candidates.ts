@@ -30,15 +30,20 @@
  * Algorithm (regex-based; metadata.xsd is regular enough that a full XML
  * parser isn't needed, matching this harness's dependency-free convention):
  *   1. Extract every <xsd:complexType name="..."> ... </xsd:complexType>
- *      block and its direct <xsd:element name="..." type="..." maxOccurs="..."/>
- *      children.
+ *      block, its direct <xsd:element name="..." type="..." maxOccurs="..."/>
+ *      children, and its `<xsd:extension base="tns:X">` parent, if any (WSDL's
+ *      inheritance mechanism — nearly every real record type extends
+ *      `Metadata`, directly or via an intermediate like WorkflowAction).
  *   2. A field is a "repeating child record" if maxOccurs="unbounded" and its
  *      type references another complexType defined in the schema (not a
  *      primitive like xsd:string or an enum).
- *   3. If the child complexType itself carries a `name` or `fullName` field,
- *      it's skipped entirely — the disassembler's default id resolution
- *      (fullName/name) already handles it, so there's no gap to report.
- *      Otherwise, rank its own string-typed fields as unique-id candidates:
+ *   3. Resolve the child complexType's *effective* fields by walking its
+ *      extension chain up to (and including) `Metadata` — that's where
+ *      `fullName` actually lives for almost every type, not on the type's own
+ *      <xsd:sequence>. If the resolved fields include `name` or `fullName`,
+ *      the candidate is skipped entirely: the disassembler's default id
+ *      resolution already handles it, so there's no gap to report. Otherwise,
+ *      rank the effective string-typed fields as unique-id candidates:
  *      an exact/substring match against the parent field name (e.g.
  *      `application` inside `applicationVisibilities`) ranks highest; any
  *      other required (minOccurs != "0") string field is a secondary
@@ -80,6 +85,8 @@ interface XsdField {
 interface XsdComplexType {
   name: string;
   fields: XsdField[];
+  /** Name of the type in `<xsd:extension base="tns:X">`, if this type extends another (e.g. WorkflowAlert -> WorkflowAction -> Metadata). */
+  baseType: string | undefined;
 }
 
 interface Candidate {
@@ -96,6 +103,8 @@ interface Candidate {
 const COMPLEX_TYPE_RE = /<xsd:complexType\s+name="([^"]+)"[^>]*>([\s\S]*?)<\/xsd:complexType>/g;
 /** Matches a self-closing <xsd:element .../> tag; attributes are extracted separately since their order varies across schema sources. */
 const ELEMENT_TAG_RE = /<xsd:element\b([^>]*?)\/>/g;
+/** Matches the base type name in `<xsd:extension base="tns:X">` (WSDL's inheritance mechanism — every real record type extends `Metadata`, directly or via an intermediate like WorkflowAction). */
+const EXTENSION_BASE_RE = /<xsd:extension\s+base="(?:[^:"]+:)?([^"]+)"/;
 
 function getAttr(attrs: string, name: string): string | undefined {
   return new RegExp(`\\b${name}="([^"]*)"`).exec(attrs)?.[1];
@@ -132,7 +141,8 @@ function parseXsd(xsdText: string): Map<string, XsdComplexType> {
         maxOccurs: getAttr(attrs, 'maxOccurs') ?? '1',
       });
     }
-    types.set(name, { name, fields });
+    const baseType = EXTENSION_BASE_RE.exec(body)?.[1];
+    types.set(name, { name, fields, baseType });
   }
   return types;
 }
@@ -173,9 +183,33 @@ function currentUniqueIdIndex(sourcePath: string): Map<string, string[]> {
   return merged;
 }
 
-/** Rank a child complexType's own fields as unique-id candidates for `listFieldName`. */
-function rankCandidateFields(child: XsdComplexType, listFieldName: string): string[] {
-  const stringFields = child.fields.filter((f) => f.type === 'string');
+/**
+ * Resolve a complexType's full field list, following `<xsd:extension base="tns:X">`
+ * up through its ancestor chain (e.g. WorkflowAlert -> WorkflowAction -> Metadata).
+ * Every real record type inherits `fullName` this way rather than declaring it
+ * directly, so callers that only read `type.fields` will miss it entirely.
+ */
+function effectiveFields(
+  type: XsdComplexType,
+  types: Map<string, XsdComplexType>,
+  cache: Map<string, XsdField[]>,
+  seen: Set<string> = new Set(),
+): XsdField[] {
+  const cached = cache.get(type.name);
+  if (cached) return cached;
+  if (seen.has(type.name)) return type.fields; // cyclic extension shouldn't happen; fall back rather than loop forever
+  seen.add(type.name);
+
+  const base = type.baseType ? types.get(type.baseType) : undefined;
+  const inherited = base ? effectiveFields(base, types, cache, seen) : [];
+  const merged = [...inherited, ...type.fields];
+  cache.set(type.name, merged);
+  return merged;
+}
+
+/** Rank a child complexType's own (and inherited) fields as unique-id candidates for `listFieldName`. */
+function rankCandidateFields(fields: XsdField[], listFieldName: string): string[] {
+  const stringFields = fields.filter((f) => f.type === 'string');
 
   const nameMatch = stringFields.find(
     (f) => listFieldName.toLowerCase().includes(f.name.toLowerCase()) && f.name.length > 2,
@@ -190,6 +224,7 @@ function rankCandidateFields(child: XsdComplexType, listFieldName: string): stri
 
 function findCandidates(types: Map<string, XsdComplexType>, scopeType?: string): Candidate[] {
   const index = currentUniqueIdIndex(UNIQUE_ID_ELEMENTS_SOURCE);
+  const fieldCache = new Map<string, XsdField[]>();
   const out: Candidate[] = [];
 
   for (const parent of types.values()) {
@@ -202,14 +237,19 @@ function findCandidates(types: Map<string, XsdComplexType>, scopeType?: string):
       const child = types.get(field.type);
       if (!child) continue; // referenced type not in this schema file (or an enum)
 
-      // `name`/`fullName` are already the default unique-id fields for every metadata
-      // type (see the file header comment in uniqueIdElements.ts). If the child element
-      // itself carries either field, the disassembler's default resolution already
-      // handles it — flagging any other field on this child as a "candidate" would be
-      // noise, not a real gap, regardless of which field rankCandidateFields prefers.
-      if (child.fields.some((f) => f.name === 'name' || f.name === 'fullName')) continue;
+      const childFields = effectiveFields(child, types, fieldCache);
 
-      const candidateFields = rankCandidateFields(child, field.name);
+      // `name`/`fullName` are already the default unique-id fields for every metadata
+      // type (see the file header comment in uniqueIdElements.ts). Nearly every real
+      // record type only carries these via `<xsd:extension base="tns:Metadata">`
+      // (directly or through an intermediate like WorkflowAction) rather than as an
+      // own-field, which is why this checks the resolved `childFields`, not
+      // `child.fields`. If either is present, the disassembler's default resolution
+      // already handles it — flagging any other field on this child as a "candidate"
+      // would be noise, not a real gap, regardless of what rankCandidateFields prefers.
+      if (childFields.some((f) => f.name === 'name' || f.name === 'fullName')) continue;
+
+      const candidateFields = rankCandidateFields(childFields, field.name);
       if (candidateFields.length === 0) continue;
 
       const candidateKey = candidateFields.join('+');
