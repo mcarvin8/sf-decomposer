@@ -256,7 +256,29 @@ function findCandidates(types: Map<string, XsdComplexType>, scopeType?: string):
 
       const suffixGuess = parent.name.toLowerCase();
       const existing = index.get(suffixGuess) ?? [];
-      const alreadyCovered = candidateFields.every((f) => existing.includes(f)) || existing.includes(candidateKey);
+      // `existing` is a flat pool of fields/compound-keys tried against *every* repeating
+      // child of this parent type (first-match-wins), not just this one — so a match here
+      // doesn't require it to equal our own ranked `candidateKey` (e.g.
+      // StandardValueSetTranslation's `masterLabel` already covers ValueTranslation, even
+      // though this ranker would have picked `translation`, a weaker substring match).
+      // But an existing entry only counts as coverage if it includes every one of this
+      // child's *required* string fields (or, if none are required, every string field) —
+      // not just any one field it happens to share with the child. Otherwise a single-field
+      // entry meant for some other child of this parent (e.g. Profile's bare `startAddress`)
+      // would wrongly "cover" a child like ProfileLoginIpRange that actually needs both
+      // `startAddress` and `endAddress` to avoid collisions.
+      const childFieldNames = new Set(childFields.map((f) => f.name));
+      const requiredStringFields = childFields.filter((f) => f.type === 'string' && f.minOccurs !== '0');
+      const coverageTargets =
+        requiredStringFields.length > 0
+          ? requiredStringFields.map((f) => f.name)
+          : childFields.filter((f) => f.type === 'string').map((f) => f.name);
+      const alreadyCovered = existing.some((entry) => {
+        const entryFields = entry.split('+');
+        return (
+          entryFields.every((f) => childFieldNames.has(f)) && coverageTargets.every((f) => entryFields.includes(f))
+        );
+      });
       const hasKeyMatch = index.has(suffixGuess);
 
       out.push({

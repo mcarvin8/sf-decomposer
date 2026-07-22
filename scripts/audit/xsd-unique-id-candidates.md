@@ -5,12 +5,12 @@ These are XSD-only candidates: the schema says the field exists and repeats, not
 it's actually unique in production data. Cross-check with `npm run audit:sweep` before
 adding any of these to `src/metadata/uniqueIdElements.ts`.
 
-Total: 463 candidates — 15 true gaps against an existing
-key, 35 already covered, 413 with no matching key in
+Total: 463 candidates — 13 true gaps against an existing
+key, 37 already covered, 413 with no matching key in
 uniqueIdElements.ts today (new type or naming mismatch — verify the real registry suffix
 before adding, see `getRegistryValuesBySuffix.ts`).
 
-## Gaps against an existing key (15)
+## Gaps against an existing key (13)
 
 Parent type has an entry in `uniqueIdElements.ts` already; this list field isn't covered yet.
 
@@ -23,14 +23,12 @@ Parent type has an entry in `uniqueIdElements.ts` already; this list field isn't
 | EntitlementProcess | exitCriteriaFilterItems | FilterItem | `field` |
 | EntitlementProcess | milestones | EntitlementProcessMilestoneItem | `businessHours+criteriaBooleanFilter+milestoneCriteriaFormula+milestoneName+minutesCustomClass` |
 | GenAiPromptTemplate | templateVersions | GenAiPromptTemplateVersion | `classification+content+defaultLanguageScope+description+keywords+primaryModel+versionIdentifier` |
-| GlobalValueSetTranslation | valueTranslation | ValueTranslation | `translation` |
 | MlDomain | mlIntents | MlIntent | `developerName+label` |
 | MlDomain | mlSlotClasses | MlSlotClass | `developerName+label` |
 | OmniSupervisorConfig | omniSupervisorConfigAction | OmniSupervisorConfigAction | `customActionFlow` |
 | OmniSupervisorConfig | omniSupervisorConfigTab | OmniSupervisorConfigTab | `flexiPage` |
+| Profile | loginFlows | LoginFlow | `flow` |
 | Profile | loginIpRanges | ProfileLoginIpRange | `endAddress+startAddress` |
-| Profile | profileActionOverrides | ProfileActionOverride | `actionName+pageOrSobjectType` |
-| StandardValueSetTranslation | valueTranslation | ValueTranslation | `translation` |
 
 ## No key match — verify real registry suffix first (413)
 
@@ -454,13 +452,14 @@ Parent type has an entry in `uniqueIdElements.ts` already; this list field isn't
 | WorkflowRule | criteriaItems | FilterItem | `field` |
 | WorkflowRule | workflowTimeTriggers | WorkflowTimeTrigger | `offsetFromField+timeLength` |
 
-## Already covered (35)
+## Already covered (37)
 
 | Parent Type | List Field | Child Type | Candidate Key |
 |---|---|---|---|
 | Bot | conversationChannelProviders | ConversationDefinitionChannelProvider | `chatButtonName` |
 | BrandingSet | brandingSetProperty | BrandingSetProperty | `propertyName` |
 | GenAiPlugin | genAiFunctions | GenAiPluginFunctionDef | `functionName` |
+| GlobalValueSetTranslation | valueTranslation | ValueTranslation | `translation` |
 | OmniSupervisorConfig | omniSupervisorConfigGroup | OmniSupervisorConfigGroup | `group` |
 | OmniSupervisorConfig | omniSupervisorConfigProfile | OmniSupervisorConfigProfile | `profile` |
 | OmniSupervisorConfig | omniSupervisorConfigQueue | OmniSupervisorConfigQueue | `queue` |
@@ -483,9 +482,9 @@ Parent type has an entry in `uniqueIdElements.ts` already; this list field isn't
 | Profile | fieldPermissions | ProfileFieldLevelSecurity | `field` |
 | Profile | flowAccesses | ProfileFlowAccess | `flow` |
 | Profile | layoutAssignments | ProfileLayoutAssignment | `layout` |
-| Profile | loginFlows | LoginFlow | `flow` |
 | Profile | objectPermissions | ProfileObjectPermissions | `object` |
 | Profile | pageAccesses | ProfileApexPageAccess | `apexPage` |
+| Profile | profileActionOverrides | ProfileActionOverride | `actionName+pageOrSobjectType` |
 | Profile | recordTypeVisibilities | ProfileRecordTypeVisibility | `recordType` |
 | Profile | tabVisibilities | ProfileTabVisibility | `tab` |
 | Queue | queueSobject | QueueSobject | `sobjectType` |
@@ -493,3 +492,4 @@ Parent type has an entry in `uniqueIdElements.ts` already; this list field isn't
 | RecordType | picklistValues | RecordTypePicklistValue | `picklist` |
 | ReportType | sections | ReportLayoutSection | `masterLabel` |
 | ServiceChannel | serviceChannelFieldPriorities | ServiceChannelFieldPriority | `value` |
+| StandardValueSetTranslation | valueTranslation | ValueTranslation | `translation` |
