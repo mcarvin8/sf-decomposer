@@ -35,13 +35,16 @@
  *   2. A field is a "repeating child record" if maxOccurs="unbounded" and its
  *      type references another complexType defined in the schema (not a
  *      primitive like xsd:string or an enum).
- *   3. For that child complexType, rank its own string-typed fields as
- *      unique-id candidates: an exact/substring match against the parent
- *      field name (e.g. `application` inside `applicationVisibilities`)
- *      ranks highest; any other required (minOccurs != "0") string field is
- *      a secondary candidate; multiple candidates are suggested as a
- *      compound key, widest-first, mirroring the `app`/`profile` compound
- *      entries already in uniqueIdElements.ts.
+ *   3. If the child complexType itself carries a `name` or `fullName` field,
+ *      it's skipped entirely — the disassembler's default id resolution
+ *      (fullName/name) already handles it, so there's no gap to report.
+ *      Otherwise, rank its own string-typed fields as unique-id candidates:
+ *      an exact/substring match against the parent field name (e.g.
+ *      `application` inside `applicationVisibilities`) ranks highest; any
+ *      other required (minOccurs != "0") string field is a secondary
+ *      candidate; multiple candidates are suggested as a compound key,
+ *      widest-first, mirroring the `app`/`profile` compound entries already
+ *      in uniqueIdElements.ts.
  *   4. Cross-reference against the current uniqueIdElements.ts (matched by
  *      lowercasing the XSD type name — imperfect for divergent suffixes like
  *      CustomApplication -> `app`; those print as "no key match, verify
@@ -199,14 +202,17 @@ function findCandidates(types: Map<string, XsdComplexType>, scopeType?: string):
       const child = types.get(field.type);
       if (!child) continue; // referenced type not in this schema file (or an enum)
 
+      // `name`/`fullName` are already the default unique-id fields for every metadata
+      // type (see the file header comment in uniqueIdElements.ts). If the child element
+      // itself carries either field, the disassembler's default resolution already
+      // handles it — flagging any other field on this child as a "candidate" would be
+      // noise, not a real gap, regardless of which field rankCandidateFields prefers.
+      if (child.fields.some((f) => f.name === 'name' || f.name === 'fullName')) continue;
+
       const candidateFields = rankCandidateFields(child, field.name);
       if (candidateFields.length === 0) continue;
 
       const candidateKey = candidateFields.join('+');
-      // `name`/`fullName` are already the default unique-id fields for every metadata
-      // type (see the file header comment in uniqueIdElements.ts) — reporting them as
-      // "candidates" is just noise, not a gap.
-      if (candidateKey === 'name' || candidateKey === 'fullName') continue;
 
       const suffixGuess = parent.name.toLowerCase();
       const existing = index.get(suffixGuess) ?? [];
