@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.39.3](https://github.com/mcarvin8/sf-decomposer/compare/v6.39.2...v6.39.3) (2026-07-27)
+
+
+### Bug Fixes
+
+* **metadata:** add compound unique ID key for profile login IP ranges and fix friendlyName case ([#552](https://github.com/mcarvin8/sf-decomposer/issues/552)) ([55ef25b](https://github.com/mcarvin8/sf-decomposer/commit/55ef25be78eeea579947cb39ee087f11a829109c))
+
 ## [6.39.2](https://github.com/mcarvin8/sf-decomposer/compare/v6.39.1...v6.39.2) (2026-07-20)
 
 
