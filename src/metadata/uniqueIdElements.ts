@@ -200,6 +200,7 @@ export default [
         'tab',
         'field',
         'startAddress',
+        'startAddress+endAddress',
         'dataCategoryGroup',
         'layout',
         'weekdayStart',
