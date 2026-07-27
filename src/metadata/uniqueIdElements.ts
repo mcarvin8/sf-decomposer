@@ -204,7 +204,7 @@ export default [
         'dataCategoryGroup',
         'layout',
         'weekdayStart',
-        'friendlyname',
+        'friendlyName',
         'agentName',
         'servicePresenceStatus',
         'configName',
