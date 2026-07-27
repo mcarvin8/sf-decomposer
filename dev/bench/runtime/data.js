@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1784571742413,
+  "lastUpdate": 1785141729360,
   "repoUrl": "https://github.com/mcarvin8/sf-decomposer",
   "entries": {
     "Decompose Runtime (large)": [
@@ -567,6 +567,68 @@ window.BENCHMARK_DATA = {
           {
             "name": "large.yaml.recompose",
             "value": 3852.68,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Matt Carvin",
+            "username": "mcarvin8",
+            "email": "90224411+mcarvin8@users.noreply.github.com"
+          },
+          "committer": {
+            "name": "Matt Carvin",
+            "username": "mcarvin8",
+            "email": "90224411+mcarvin8@users.noreply.github.com"
+          },
+          "id": "95a32c13dc43bdbd20465d26c8456954a0d6dd75",
+          "message": "chore(audit): require existing entry to cover all required fields, not just one\n\nThe prior alreadyCovered fix suppressed a candidate if any existing pool\nentry shared a single field with the child, which wrongly suppressed\nProfile's loginIpRanges: the pool's bare `startAddress` (added for some\nother Profile child) \"covered\" ProfileLoginIpRange even though that child\nneeds both startAddress and endAddress to avoid collisions. Now an existing\nentry only counts as coverage if it includes every one of the child's\nrequired string fields (or all string fields, if none are required) — so a\nsingle shared field no longer masks a real compound-key gap.",
+          "timestamp": "2026-07-22T16:16:08Z",
+          "url": "https://github.com/mcarvin8/sf-decomposer/commit/95a32c13dc43bdbd20465d26c8456954a0d6dd75"
+        },
+        "date": 1785141728436,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "large.xml.decompose",
+            "value": 6231.09,
+            "unit": "ms"
+          },
+          {
+            "name": "large.xml.recompose",
+            "value": 17341.3,
+            "unit": "ms"
+          },
+          {
+            "name": "large.json.decompose",
+            "value": 5521.75,
+            "unit": "ms"
+          },
+          {
+            "name": "large.json.recompose",
+            "value": 3263.66,
+            "unit": "ms"
+          },
+          {
+            "name": "large.json5.decompose",
+            "value": 5497.26,
+            "unit": "ms"
+          },
+          {
+            "name": "large.json5.recompose",
+            "value": 3367.67,
+            "unit": "ms"
+          },
+          {
+            "name": "large.yaml.decompose",
+            "value": 5999.18,
+            "unit": "ms"
+          },
+          {
+            "name": "large.yaml.recompose",
+            "value": 3952.14,
             "unit": "ms"
           }
         ]
