@@ -5,6 +5,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.0.0](https://github.com/mcarvin8/sf-decomposer/compare/v6.39.3...v7.0.0) (2026-08-05)
+
+
+### ⚠ BREAKING CHANGES
+
+* **engines:** minimum supported node version raised from 22.0.0 to 22.19.0.
+
+### Features
+
+* **deps:** bump config-disassembler from 3.0.2 to 3.1.0 ([#555](https://github.com/mcarvin8/sf-decomposer/issues/555)) ([8ff52e6](https://github.com/mcarvin8/sf-decomposer/commit/8ff52e618a0950b14daf1d3cf8b09984572ae889))
+
+
+### Bug Fixes
+
+* **engines:** raise node engine floor to 22.19.0 to match dep tree ([84aad17](https://github.com/mcarvin8/sf-decomposer/commit/84aad17d8c8e1ec78e5c62cb972d1595faf2a562))
+
 ## [6.39.3](https://github.com/mcarvin8/sf-decomposer/compare/v6.39.2...v6.39.3) (2026-07-27)
 
 
