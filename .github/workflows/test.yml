@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   lint:
-    name: Lint Dependencies
+    name: Lint
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -28,6 +28,9 @@ jobs:
 
       - name: Check unused dependencies
         run: npm run lint:dependencies
+
+      - name: Check Node.js engine versions
+        run: npm run lint:engine
 
   unit-tests:
     name: Unit Tests (${{ matrix.os }}, node ${{ matrix.node-version }})
