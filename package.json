@@ -22,6 +22,7 @@
     "husky": "9.1.7",
     "knip": "6.23.0",
     "lint-staged": "17.0.8",
+    "ls-engines": "0.10.1",
     "oclif": "4.23.24",
     "patch-package": "8.0.1",
     "shx": "0.4.0",
@@ -31,7 +32,7 @@
     "wireit": "0.14.13"
   },
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=22.19.0"
   },
   "files": [
     "/lib",
@@ -95,6 +96,7 @@
     "format": "wireit",
     "lint": "wireit",
     "lint:dependencies": "wireit",
+    "lint:engine": "wireit",
     "postpack": "shx rm -f oclif.manifest.json oclif.lock",
     "prepack": "wireit",
     "prepare": "husky && patch-package",
@@ -191,6 +193,14 @@
       "dependencies": [
         "lint"
       ]
+    },
+    "lint:engine": {
+      "command": "ls-engines --no-current --no-dev --mode=virtual",
+      "files": [
+        "package.json",
+        "package-lock.json"
+      ],
+      "output": []
     },
     "prepack": {
       "command": "oclif manifest && oclif readme",
