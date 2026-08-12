@@ -8,12 +8,22 @@ updates:
       day: 'tuesday'
     versioning-strategy: increase
     commit-message:
-      prefix: 'feat(deps)'
+      prefix: "fix(deps)"
+      prefix-development: "chore(dev-deps)"
     cooldown:
       default-days: 1
     allow:
-      - dependency-name: '@salesforce/source-deploy-retrieve'
-      - dependency-name: 'config-disassembler'
+      - dependency-type: "all"
+    groups:
+      salesforce-source-deploy-retrieve:
+        patterns:
+          - "@salesforce/source-deploy-retrieve"
+      dependencies:
+        dependency-type: "production"
+        exclude-patterns:
+          - "@salesforce/source-deploy-retrieve"
+      dev-dependencies:
+        dependency-type: "development"
 
   - package-ecosystem: 'github-actions'
     directory: '/'
