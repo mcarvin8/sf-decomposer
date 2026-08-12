@@ -12,8 +12,6 @@ updates:
       prefix-development: "chore(dev-deps)"
     cooldown:
       default-days: 1
-    allow:
-      - dependency-type: "all"
     groups:
       salesforce-source-deploy-retrieve:
         patterns:
