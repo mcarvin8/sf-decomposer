@@ -34,7 +34,7 @@ jobs:
           persist-credentials: true
 
       - name: MegaLinter
-        uses: oxsecurity/megalinter/flavors/javascript@v9
+        uses: oxsecurity/megalinter/flavors/javascript@v10
         id: ml
         env:
           VALIDATE_ALL_CODEBASE: true
