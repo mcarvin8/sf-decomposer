@@ -1,11 +1,11 @@
 ---
 version: 2
 updates:
-  - package-ecosystem: 'npm'
-    directory: '/'
+  - package-ecosystem: "npm"
+    directory: "/"
     schedule:
-      interval: 'weekly'
-      day: 'tuesday'
+      interval: "weekly"
+      day: "tuesday"
     versioning-strategy: increase
     commit-message:
       prefix: "fix(deps)"
@@ -22,10 +22,13 @@ updates:
           - "@salesforce/source-deploy-retrieve"
       dev-dependencies:
         dependency-type: "development"
-
-  - package-ecosystem: 'github-actions'
-    directory: '/'
+  - package-ecosystem: "github-actions"
+    directory: "/"
     schedule:
-      interval: 'monthly'
+      interval: "monthly"
     commit-message:
-      prefix: 'build'
+      prefix: "build"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
