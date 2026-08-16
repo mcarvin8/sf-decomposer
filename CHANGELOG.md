@@ -5,6 +5,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.1.0](https://github.com/mcarvin8/sf-decomposer/compare/v7.0.1...v7.1.0) (2026-08-16)
+
+
+### Features
+
+* **metadata:** support AiAgentDefinition, AiAgentDefinitionVersion ([0b9a62e](https://github.com/mcarvin8/sf-decomposer/commit/0b9a62ecf4c5f43805209e11d9273ee772cbc3ca))
+
+
+### Bug Fixes
+
+* **deps:** bump the dependencies group across 1 directory with 3 updates ([#563](https://github.com/mcarvin8/sf-decomposer/issues/563)) ([c72defc](https://github.com/mcarvin8/sf-decomposer/commit/c72defc8a0904a40d8bbb68f5304c7d3d0c1ba86))
+
 ## [7.0.1](https://github.com/mcarvin8/sf-decomposer/compare/v7.0.0...v7.0.1) (2026-08-12)
 
 
