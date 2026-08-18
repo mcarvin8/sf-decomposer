@@ -1,0 +1,39 @@
+diff --git a/node_modules/@stryker-mutator/vitest-runner/dist/src/vitest-test-runner.js b/node_modules/@stryker-mutator/vitest-runner/dist/src/vitest-test-runner.js
+index 84f1ca0..7ae393d 100644
+--- a/node_modules/@stryker-mutator/vitest-runner/dist/src/vitest-test-runner.js
++++ b/node_modules/@stryker-mutator/vitest-runner/dist/src/vitest-test-runner.js
+@@ -38,17 +38,29 @@ export class VitestTestRunner {
+         }
+         if (semver.satisfies(version, '<4.1.0')) {
+             return {
+-                pool: 'threads',
++                // Use forks pool: native addons (e.g. config-disassembler) and code that calls
++                // process.chdir() are not safe inside worker_threads.
++                pool: 'forks',
+                 poolOptions: {
+-                    threads: {
+-                        maxThreads: 1,
+-                        minThreads: 1,
++                    forks: {
++                        maxForks: 1,
++                        minForks: 1,
++                        singleFork: true,
+                     },
+                 },
+             };
+         }
+         return {
+-            pool: 'threads',
++            // Use forks pool: native addons (e.g. config-disassembler) and code that calls
++            // process.chdir() are not safe inside worker_threads.
++            pool: 'forks',
++            poolOptions: {
++                forks: {
++                    maxForks: 1,
++                    minForks: 1,
++                    singleFork: true,
++                },
++            },
+             maxWorkers: 1,
+         };
+     }
