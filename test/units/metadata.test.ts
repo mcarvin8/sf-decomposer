@@ -16,7 +16,6 @@ describe('decomposer unit tests - unique id strategy', () => {
   let sfdxConfigPath: string;
   const originalDirectory: string = resolve('fixtures/package-dir-1');
   const originalDirectory2: string = resolve('fixtures/package-dir-2');
-  const originalCwd = process.cwd();
 
   const configFile = {
     packageDirectories: [{ path: 'force-app', default: true }, { path: 'package' }],
@@ -38,11 +37,11 @@ describe('decomposer unit tests - unique id strategy', () => {
     await cp(originalDirectory, forceAppDir, { recursive: true, force: true });
     await cp(originalDirectory2, packageDir, { recursive: true, force: true });
     await writeFile(sfdxConfigPath, JSON.stringify(configFile, null, 2));
-    process.chdir(tempProjectDir);
+    vi.spyOn(process, 'cwd').mockReturnValue(tempProjectDir);
   });
 
   afterAll(async () => {
-    process.chdir(originalCwd);
+    vi.spyOn(process, 'cwd').mockRestore();
     await rm(tempProjectDir, { recursive: true, force: true });
   });
 

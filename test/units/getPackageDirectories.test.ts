@@ -3,7 +3,7 @@
 import { mkdir, mkdtemp, realpath, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { buildPackageDirectoryIndex, getPackageDirectories } from '../../src/metadata/getPackageDirectories.js';
 import { SFDX_CONFIG_FILE } from '../utils/constants.js';
@@ -47,11 +47,11 @@ describe('getPackageDirectories', () => {
 
   beforeEach(async () => {
     project = await makeProject();
-    process.chdir(project.root);
+    vi.spyOn(process, 'cwd').mockReturnValue(project.root);
   });
 
   afterEach(async () => {
-    process.chdir(originalCwd);
+    vi.spyOn(process, 'cwd').mockRestore();
     await rm(project.root, { recursive: true, force: true });
   });
 
@@ -129,7 +129,7 @@ describe('getPackageDirectories', () => {
   it('chdir-s into the discovered repo root', async () => {
     // Start a level above the project, but pointing cwd at the project root. The
     // function should chdir to the project root.
-    process.chdir(project.root);
+    vi.spyOn(process, 'cwd').mockReturnValue(project.root);
     await getPackageDirectories('permissionsets', undefined);
     expect(process.cwd()).toBe(resolve(project.root));
   });
@@ -148,7 +148,7 @@ describe('getPackageDirectories', () => {
   it('uses repoRootOverride instead of discovering the repo root from cwd', async () => {
     // Start outside the project entirely so cwd-based discovery could never find it, then
     // confirm passing repoRootOverride still resolves against the right sfdx-project.json.
-    process.chdir(originalCwd);
+    vi.spyOn(process, 'cwd').mockReturnValue(originalCwd);
     const a = join(project.forceAppDir, 'permissionsets');
     await mkdir(a, { recursive: true });
 
@@ -217,16 +217,15 @@ describe('getPackageDirectories', () => {
 // `getPackageDirectories` calls, run separately per type today, would each find their own match
 // regardless of what the other call matched).
 describe('buildPackageDirectoryIndex', () => {
-  const originalCwd = process.cwd();
   let project: Project;
 
   beforeEach(async () => {
     project = await makeProject();
-    process.chdir(project.root);
+    vi.spyOn(process, 'cwd').mockReturnValue(project.root);
   });
 
   afterEach(async () => {
-    process.chdir(originalCwd);
+    vi.spyOn(process, 'cwd').mockRestore();
     await rm(project.root, { recursive: true, force: true });
   });
 

@@ -1087,16 +1087,15 @@ describe('configOverrides helper', () => {
 
   describe('resolveDefaultConfigPath', () => {
     let tempProjectDir: string;
-    const originalCwd = process.cwd();
 
     beforeEach(async () => {
       tempProjectDir = await mkdtemp(join(tmpdir(), 'resolve-config-test-'));
       await writeFile(join(tempProjectDir, SFDX_PROJECT_FILE_NAME), JSON.stringify({ packageDirectories: [] }));
-      process.chdir(tempProjectDir);
+      vi.spyOn(process, 'cwd').mockReturnValue(tempProjectDir);
     });
 
     afterEach(async () => {
-      process.chdir(originalCwd);
+      vi.spyOn(process, 'cwd').mockRestore();
       await rm(tempProjectDir, { recursive: true, force: true });
     });
 
@@ -1137,16 +1136,15 @@ describe('configOverrides helper', () => {
 
   describe('validateConfigManifest', () => {
     let tempProjectDir: string;
-    const originalCwd = process.cwd();
 
     beforeEach(async () => {
       tempProjectDir = await mkdtemp(join(tmpdir(), 'validate-config-manifest-test-'));
       await writeFile(join(tempProjectDir, SFDX_PROJECT_FILE_NAME), JSON.stringify({ packageDirectories: [] }));
-      process.chdir(tempProjectDir);
+      vi.spyOn(process, 'cwd').mockReturnValue(tempProjectDir);
     });
 
     afterEach(async () => {
-      process.chdir(originalCwd);
+      vi.spyOn(process, 'cwd').mockRestore();
       await rm(tempProjectDir, { recursive: true, force: true });
     });
 

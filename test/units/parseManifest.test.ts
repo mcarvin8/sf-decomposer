@@ -3,7 +3,7 @@
 import { mkdir, mkdtemp, realpath, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { parseManifest } from '../../src/metadata/parseManifest.js';
 import { SFDX_CONFIG_FILE } from '../utils/constants.js';
@@ -71,11 +71,11 @@ describe('parseManifest', () => {
 
   beforeEach(async () => {
     project = await makeProject();
-    process.chdir(project.root);
+    vi.spyOn(process, 'cwd').mockReturnValue(project.root);
   });
 
   afterEach(async () => {
-    process.chdir(originalCwd);
+    vi.spyOn(process, 'cwd').mockRestore();
     await rm(project.root, { recursive: true, force: true });
   });
 
@@ -97,7 +97,7 @@ describe('parseManifest', () => {
   it('uses repoRootOverride instead of discovering the repo root from cwd', async () => {
     // Start outside the project entirely so cwd-based discovery could never find it, then
     // confirm passing repoRootOverride still resolves the manifest and package dirs correctly.
-    process.chdir(originalCwd);
+    vi.spyOn(process, 'cwd').mockReturnValue(originalCwd);
     const hrAdmin = join(project.forceAppDir, 'permissionsets', 'HR_Admin.permissionset-meta.xml');
     await writeMetaFile(hrAdmin);
 

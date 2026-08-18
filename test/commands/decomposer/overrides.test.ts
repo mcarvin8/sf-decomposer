@@ -17,7 +17,6 @@ describe('decomposer overrides (per-type)', () => {
   let profilesDir: string;
   let permissionsetsDir: string;
   const originalDirectory: string = resolve('fixtures/package-dir-1');
-  const originalCwd = process.cwd();
 
   const sfdxConfig = {
     packageDirectories: [{ path: 'force-app', default: true }],
@@ -35,11 +34,11 @@ describe('decomposer overrides (per-type)', () => {
 
     await cp(originalDirectory, forceAppDir, { recursive: true, force: true });
     await writeFile(join(tempProjectDir, SFDX_CONFIG_FILE), JSON.stringify(sfdxConfig, null, 2));
-    process.chdir(tempProjectDir);
+    vi.spyOn(process, 'cwd').mockReturnValue(tempProjectDir);
   });
 
   afterAll(async () => {
-    process.chdir(originalCwd);
+    vi.spyOn(process, 'cwd').mockRestore();
     await rm(tempProjectDir, { recursive: true, force: true });
   });
 
@@ -208,7 +207,6 @@ describe('decomposer per-component overrides', () => {
   let forceAppDir: string;
   let permissionsetsDir: string;
   const fixtureDir: string = resolve('fixtures/package-dir-1');
-  const originalCwd = process.cwd();
 
   const sfdxConfig = {
     packageDirectories: [{ path: 'force-app', default: true }],
@@ -230,11 +228,11 @@ describe('decomposer per-component overrides', () => {
     await copyFile(hrAdminPath, bigPermSetPath);
 
     await writeFile(join(tempProjectDir, SFDX_CONFIG_FILE), JSON.stringify(sfdxConfig, null, 2));
-    process.chdir(tempProjectDir);
+    vi.spyOn(process, 'cwd').mockReturnValue(tempProjectDir);
   });
 
   afterEach(async () => {
-    process.chdir(originalCwd);
+    vi.spyOn(process, 'cwd').mockRestore();
     await rm(tempProjectDir, { recursive: true, force: true });
   });
 
@@ -411,7 +409,6 @@ describe('decomposer bot multi-rule overrides', () => {
   let packageDir: string;
   let botRoot: string;
   const fixtureDir: string = resolve('fixtures/package-dir-2');
-  const originalCwd = process.cwd();
 
   const sfdxConfig = {
     packageDirectories: [{ path: 'package', default: true }],
@@ -427,11 +424,11 @@ describe('decomposer bot multi-rule overrides', () => {
 
     await cp(fixtureDir, packageDir, { recursive: true, force: true });
     await writeFile(join(tempProjectDir, SFDX_CONFIG_FILE), JSON.stringify(sfdxConfig, null, 2));
-    process.chdir(tempProjectDir);
+    vi.spyOn(process, 'cwd').mockReturnValue(tempProjectDir);
   });
 
   afterEach(async () => {
-    process.chdir(originalCwd);
+    vi.spyOn(process, 'cwd').mockRestore();
     await rm(tempProjectDir, { recursive: true, force: true });
   });
 

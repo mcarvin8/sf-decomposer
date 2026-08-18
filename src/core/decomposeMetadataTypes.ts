@@ -104,7 +104,14 @@ export async function decomposeMetadataTypes(options: DecomposeOptions): Promise
         return;
       }
 
-      await decomposeFileHandler(metaAttributes, typeResolved, ignorePath, overrides, manifestXmlPaths);
+      await decomposeFileHandler(
+        metaAttributes,
+        typeResolved,
+        ignorePath,
+        overrides,
+        manifestXmlPaths,
+        dirname(ignorePath),
+      );
 
       processed.push(metadataType);
       if (updateForceignore || updateGitattributes) {

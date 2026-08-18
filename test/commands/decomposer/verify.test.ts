@@ -11,7 +11,6 @@ describe('decomposer verify', () => {
   let tempProjectDir: string;
   let forceAppDir: string;
   const fixtureDir: string = resolve('fixtures/package-dir-1');
-  const originalCwd = process.cwd();
 
   const sfdxConfig = {
     packageDirectories: [{ path: 'force-app', default: true }],
@@ -25,11 +24,11 @@ describe('decomposer verify', () => {
     forceAppDir = join(tempProjectDir, 'force-app');
     await cp(fixtureDir, forceAppDir, { recursive: true, force: true });
     await writeFile(join(tempProjectDir, SFDX_CONFIG_FILE), JSON.stringify(sfdxConfig, null, 2));
-    process.chdir(tempProjectDir);
+    vi.spyOn(process, 'cwd').mockReturnValue(tempProjectDir);
   });
 
   afterEach(async () => {
-    process.chdir(originalCwd);
+    vi.spyOn(process, 'cwd').mockRestore();
     await rm(tempProjectDir, { recursive: true, force: true });
   });
 
@@ -150,7 +149,6 @@ describe('decomposer verify (component overrides)', () => {
   let tempProjectDir: string;
   let forceAppDir: string;
   const fixtureDir: string = resolve('fixtures/package-dir-1');
-  const originalCwd = process.cwd();
 
   const sfdxConfig = {
     packageDirectories: [{ path: 'force-app', default: true }],
@@ -167,11 +165,11 @@ describe('decomposer verify (component overrides)', () => {
     const bigPermSetPath = join(forceAppDir, 'permissionsets', 'Big_PermSet.permissionset-meta.xml');
     await copyFile(hrAdminPath, bigPermSetPath);
     await writeFile(join(tempProjectDir, SFDX_CONFIG_FILE), JSON.stringify(sfdxConfig, null, 2));
-    process.chdir(tempProjectDir);
+    vi.spyOn(process, 'cwd').mockReturnValue(tempProjectDir);
   });
 
   afterEach(async () => {
-    process.chdir(originalCwd);
+    vi.spyOn(process, 'cwd').mockRestore();
     await rm(tempProjectDir, { recursive: true, force: true });
   });
 
@@ -217,7 +215,6 @@ describe('decomposer verify (bot, including botVersion siblings)', () => {
   let tempProjectDir: string;
   let forceAppDir: string;
   const fixtureDir: string = resolve('fixtures/package-dir-2');
-  const originalCwd = process.cwd();
 
   const sfdxConfig = {
     packageDirectories: [{ path: 'force-app', default: true }],
@@ -231,11 +228,11 @@ describe('decomposer verify (bot, including botVersion siblings)', () => {
     forceAppDir = join(tempProjectDir, 'force-app');
     await cp(fixtureDir, forceAppDir, { recursive: true, force: true });
     await writeFile(join(tempProjectDir, SFDX_CONFIG_FILE), JSON.stringify(sfdxConfig, null, 2));
-    process.chdir(tempProjectDir);
+    vi.spyOn(process, 'cwd').mockReturnValue(tempProjectDir);
   });
 
   afterEach(async () => {
-    process.chdir(originalCwd);
+    vi.spyOn(process, 'cwd').mockRestore();
     await rm(tempProjectDir, { recursive: true, force: true });
   });
 

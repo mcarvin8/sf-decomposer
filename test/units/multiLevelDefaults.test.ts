@@ -49,7 +49,6 @@ describe('Bot multi-level default applied without explicit overrides', () => {
   let packageDir: string;
   let botRoot: string;
   const fixtureDir: string = resolve('fixtures/package-dir-2');
-  const originalCwd = process.cwd();
 
   const sfdxConfig = {
     packageDirectories: [{ path: 'package', default: true }],
@@ -65,11 +64,11 @@ describe('Bot multi-level default applied without explicit overrides', () => {
 
     await cp(fixtureDir, packageDir, { recursive: true, force: true });
     await writeFile(join(tempProjectDir, SFDX_CONFIG_FILE), JSON.stringify(sfdxConfig, null, 2));
-    process.chdir(tempProjectDir);
+    vi.spyOn(process, 'cwd').mockReturnValue(tempProjectDir);
   });
 
   afterEach(async () => {
-    process.chdir(originalCwd);
+    vi.spyOn(process, 'cwd').mockRestore();
     await rm(tempProjectDir, { recursive: true, force: true });
   });
 

@@ -3,7 +3,7 @@
 import { mkdir, mkdtemp, realpath, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_UNIQUE_ID_ELEMENTS } from '../../src/helpers/constants.js';
 import { buildPackageDirectoryIndex } from '../../src/metadata/getPackageDirectories.js';
 import { getRegistryValuesBySuffix } from '../../src/metadata/getRegistryValuesBySuffix.js';
@@ -44,16 +44,15 @@ async function makeProject(): Promise<Project> {
 }
 
 describe('getRegistryValuesBySuffix', () => {
-  const originalCwd = process.cwd();
   let project: Project;
 
   beforeEach(async () => {
     project = await makeProject();
-    process.chdir(project.root);
+    vi.spyOn(process, 'cwd').mockReturnValue(project.root);
   });
 
   afterEach(async () => {
-    process.chdir(originalCwd);
+    vi.spyOn(process, 'cwd').mockRestore();
     await rm(project.root, { recursive: true, force: true });
   });
 

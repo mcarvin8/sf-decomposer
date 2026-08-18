@@ -7,7 +7,7 @@
     "@salesforce/core": "9.1.2",
     "@salesforce/sf-plugins-core": "13.0.0",
     "@salesforce/source-deploy-retrieve": "13.1.1",
-    "config-disassembler": "3.2.0"
+    "config-disassembler": "3.3.0"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.9",
@@ -24,7 +24,6 @@
     "lint-staged": "17.3.0",
     "ls-engines": "0.10.1",
     "oclif": "4.23.30",
-    "patch-package": "8.0.1",
     "shx": "0.4.0",
     "tsx": "4.23.12",
     "typescript": "7.0.2",
@@ -99,7 +98,7 @@
     "lint:engine": "wireit",
     "postpack": "shx rm -f oclif.manifest.json oclif.lock",
     "prepack": "wireit",
-    "prepare": "husky && patch-package",
+    "prepare": "husky",
     "test": "wireit",
     "test:mutation": "stryker run",
     "test:mutation:incremental": "node scripts/incremental-mutation.mjs",

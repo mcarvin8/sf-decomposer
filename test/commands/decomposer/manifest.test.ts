@@ -61,7 +61,6 @@ describe('decomposer manifest scoping', () => {
   let unscopedManifestPath: string;
   const originalDirectory: string = resolve('fixtures/package-dir-1');
   const originalDirectory2: string = resolve('fixtures/package-dir-2');
-  const originalCwd = process.cwd();
 
   const configFile = {
     packageDirectories: [{ path: 'force-app', default: true }, { path: 'package' }],
@@ -84,11 +83,11 @@ describe('decomposer manifest scoping', () => {
     await writeFile(sfdxConfigPath, JSON.stringify(configFile, null, 2));
     await writeFile(manifestPath, MANIFEST_XML);
     await writeFile(unscopedManifestPath, UNSCOPED_MANIFEST_XML);
-    process.chdir(tempProjectDir);
+    vi.spyOn(process, 'cwd').mockReturnValue(tempProjectDir);
   });
 
   afterAll(async () => {
-    process.chdir(originalCwd);
+    vi.spyOn(process, 'cwd').mockRestore();
     await rm(tempProjectDir, { recursive: true, force: true });
   });
 
@@ -190,7 +189,7 @@ describe('decomposer manifest scoping', () => {
     await cp(originalDirectory2, freshPackage, { recursive: true, force: true });
     await writeFile(join(freshDir, SFDX_CONFIG_FILE), JSON.stringify(configFile, null, 2));
     await writeFile(join(freshDir, 'package.xml'), MANIFEST_XML);
-    process.chdir(freshDir);
+    vi.spyOn(process, 'cwd').mockReturnValue(freshDir);
 
     const localLog = vi.fn();
     try {
@@ -211,7 +210,7 @@ describe('decomposer manifest scoping', () => {
       // workflow is in manifest but not in metadataTypes, so it should not be processed
       expect(output).not.toContain('All metadata files have been decomposed for the metadata type: workflow');
     } finally {
-      process.chdir(tempProjectDir);
+      vi.spyOn(process, 'cwd').mockReturnValue(tempProjectDir);
       await rm(freshDir, { recursive: true, force: true });
     }
   });
@@ -266,7 +265,6 @@ const UNSUPPORTED_TYPE_MANIFEST_XML = `<?xml version="1.0" encoding="UTF-8"?>
 describe('decomposer manifest scoping - labels, bot, wildcard, errors', () => {
   const originalDirectory: string = resolve('fixtures/package-dir-1');
   const originalDirectory2: string = resolve('fixtures/package-dir-2');
-  const originalCwd = process.cwd();
   const configFile = {
     packageDirectories: [{ path: 'force-app', default: true }, { path: 'package' }],
     namespace: '',
@@ -280,12 +278,12 @@ describe('decomposer manifest scoping - labels, bot, wildcard, errors', () => {
     await cp(originalDirectory2, join(dir, 'package'), { recursive: true, force: true });
     await writeFile(join(dir, SFDX_CONFIG_FILE), JSON.stringify(configFile, null, 2));
     await writeFile(join(dir, manifestName), manifestBody);
-    process.chdir(dir);
+    vi.spyOn(process, 'cwd').mockReturnValue(dir);
     return dir;
   }
 
   afterAll(() => {
-    process.chdir(originalCwd);
+    vi.spyOn(process, 'cwd').mockRestore();
   });
 
   it('decomposes and recomposes labels + bot via manifest (strict-directory path)', async () => {
@@ -329,7 +327,7 @@ describe('decomposer manifest scoping - labels, bot, wildcard, errors', () => {
       await compareDirectories(resolve(originalDirectory, 'labels'), join(dir, 'force-app', 'labels'));
       await compareDirectories(resolve(originalDirectory2, 'bots'), join(dir, 'package', 'bots'));
     } finally {
-      process.chdir(originalCwd);
+      vi.spyOn(process, 'cwd').mockRestore();
       await rm(dir, { recursive: true, force: true });
     }
   });
@@ -366,7 +364,7 @@ describe('decomposer manifest scoping - labels, bot, wildcard, errors', () => {
 
       await compareDirectories(resolve(originalDirectory, 'permissionsets'), join(dir, 'force-app', 'permissionsets'));
     } finally {
-      process.chdir(originalCwd);
+      vi.spyOn(process, 'cwd').mockRestore();
       await rm(dir, { recursive: true, force: true });
     }
   });
@@ -400,7 +398,7 @@ describe('decomposer manifest scoping - labels, bot, wildcard, errors', () => {
       expect(output).toMatch(/Skipping cls:.*not supported/);
       expect(output).toContain('All metadata files have been decomposed for the metadata type: permissionset');
     } finally {
-      process.chdir(originalCwd);
+      vi.spyOn(process, 'cwd').mockRestore();
       await rm(dir, { recursive: true, force: true });
     }
   });
@@ -437,7 +435,7 @@ describe('decomposer manifest scoping - labels, bot, wildcard, errors', () => {
       const output = log.mock.calls.flat().join('\n');
       expect(output).toContain('All metadata files have been decomposed for the metadata type: bot');
     } finally {
-      process.chdir(originalCwd);
+      vi.spyOn(process, 'cwd').mockRestore();
       await rm(dir, { recursive: true, force: true });
     }
   });
@@ -472,7 +470,7 @@ describe('decomposer manifest scoping - labels, bot, wildcard, errors', () => {
       // bot is in the manifest but excluded by the metadata-type intersection
       expect(output).not.toContain('All metadata files have been recomposed for the metadata type: bot');
     } finally {
-      process.chdir(originalCwd);
+      vi.spyOn(process, 'cwd').mockRestore();
       await rm(dir, { recursive: true, force: true });
     }
   });
@@ -514,7 +512,7 @@ describe('decomposer manifest scoping - labels, bot, wildcard, errors', () => {
       expect(output).toMatch(/Skipping cls:.*not supported/);
       expect(output).toContain('All metadata files have been recomposed for the metadata type: permissionset');
     } finally {
-      process.chdir(originalCwd);
+      vi.spyOn(process, 'cwd').mockRestore();
       await rm(dir, { recursive: true, force: true });
     }
   });
@@ -558,7 +556,7 @@ describe('decomposer manifest scoping - labels, bot, wildcard, errors', () => {
       const output = log.mock.calls.flat().join('\n');
       expect(output).toContain('All metadata files have been decomposed for the metadata type: report');
     } finally {
-      process.chdir(originalCwd);
+      vi.spyOn(process, 'cwd').mockRestore();
       await rm(dir, { recursive: true, force: true });
     }
   });
@@ -597,7 +595,7 @@ describe('decomposer manifest scoping - labels, bot, wildcard, errors', () => {
       const botEntries = await readdir(botDir);
       expect(botEntries.some((entry) => entry === 'Assessment_Bot' || entry === 'v1')).toBe(true);
     } finally {
-      process.chdir(originalCwd);
+      vi.spyOn(process, 'cwd').mockRestore();
       await rm(dir, { recursive: true, force: true });
     }
   });
@@ -628,7 +626,7 @@ describe('decomposer manifest scoping - labels, bot, wildcard, errors', () => {
         }),
       ).rejects.toThrow(/Either --metadata-type or --manifest/);
     } finally {
-      process.chdir(originalCwd);
+      vi.spyOn(process, 'cwd').mockRestore();
       await rm(dir, { recursive: true, force: true });
     }
   });
