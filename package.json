@@ -10,7 +10,7 @@
     "config-disassembler": "3.2.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.8",
+    "@biomejs/biome": "2.5.9",
     "@commitlint/cli": "21.2.2",
     "@commitlint/config-conventional": "21.2.2",
     "@salesforce/cli-plugins-testkit": "5.3.66",
@@ -285,5 +285,8 @@
   },
   "bugs": {
     "url": "https://github.com/mcarvin8/sf-decomposer/issues"
+  },
+  "allowScripts": {
+    "esbuild@0.28.1": true
   }
 }
