@@ -81,13 +81,12 @@ function defaultMetaAttributes(over: Partial<Record<string, unknown>> = {}): {
 }
 
 describe('verifyMetadataTypes', () => {
-  const originalCwd = process.cwd();
   let project: Project;
   let logMock: Mock;
 
   beforeEach(async () => {
     project = await makeProject();
-    process.chdir(project.root);
+    vi.spyOn(process, 'cwd').mockReturnValue(project.root);
     logMock = vi.fn();
 
     verifyXmlRoundtripSpy.mockReset().mockResolvedValue({ status: 'identical' });
@@ -107,7 +106,7 @@ describe('verifyMetadataTypes', () => {
   });
 
   afterEach(async () => {
-    process.chdir(originalCwd);
+    vi.spyOn(process, 'cwd').mockRestore();
     await rm(project.root, { recursive: true, force: true });
   });
 
@@ -259,7 +258,7 @@ describe('verifyMetadataTypes', () => {
 
   it('computes the drift path relative to the correct package directory among several', async () => {
     project = await makeProject(['force-app', 'unpackaged']);
-    process.chdir(project.root);
+    vi.spyOn(process, 'cwd').mockReturnValue(project.root);
     const filePath = join(project.root, 'unpackaged', 'permissionsets', 'HR_Admin.permissionset-meta.xml');
     listParentXmlFilesForTypeSpy.mockResolvedValue([{ filePath, fullName: 'HR_Admin' }]);
     verifyXmlRoundtripSpy.mockResolvedValue({ status: 'drift', reason: 'content drift' });
@@ -278,7 +277,7 @@ describe('verifyMetadataTypes', () => {
 
   it('picks the most specific (longest) package directory when one is nested inside another', async () => {
     project = await makeProject(['force-app', join('force-app', 'nested')]);
-    process.chdir(project.root);
+    vi.spyOn(process, 'cwd').mockReturnValue(project.root);
     const filePath = join(project.root, 'force-app', 'nested', 'permissionsets', 'HR_Admin.permissionset-meta.xml');
     listParentXmlFilesForTypeSpy.mockResolvedValue([{ filePath, fullName: 'HR_Admin' }]);
     verifyXmlRoundtripSpy.mockResolvedValue({ status: 'drift', reason: 'content drift' });

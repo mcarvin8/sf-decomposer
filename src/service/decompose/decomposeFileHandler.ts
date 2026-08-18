@@ -1,7 +1,7 @@
 'use strict';
 
 import { readdir, stat } from 'node:fs/promises';
-import { basename, dirname, join, relative, resolve } from 'node:path';
+import { basename, dirname, join, resolve } from 'node:path';
 import { DisassembleXMLFileHandler } from 'config-disassembler';
 import {
   hasComponentOverridesForType,
@@ -27,6 +27,7 @@ export async function decomposeFileHandler(
   ignorePath: string,
   overrides?: DecomposerOverride[],
   manifestXmlPaths?: Set<string>,
+  repoRoot?: string,
 ): Promise<void> {
   const { metadataPaths, metaSuffix, strictDirectoryName, folderType, uniqueIdElements } = metaAttributes;
 
@@ -40,6 +41,7 @@ export async function decomposeFileHandler(
       strictDirectoryName,
       folderType,
       overrides,
+      repoRoot,
     );
     return;
   }
@@ -50,26 +52,34 @@ export async function decomposeFileHandler(
   const tasks = metadataPaths.map((metadataPath) =>
     limit(async () => {
       if (strictDirectoryName || folderType) {
-        await subDirectoryHandler(metadataPath, uniqueIdElements, typeResolved, ignorePath, metaSuffix, overrides);
+        await subDirectoryHandler(
+          metadataPath,
+          uniqueIdElements,
+          typeResolved,
+          ignorePath,
+          metaSuffix,
+          overrides,
+          repoRoot,
+        );
       } else if (metaSuffix === 'labels') {
         // Labels live in a single shared file; component-scope overrides are not applicable.
         // Skip the prePurge flag in the disassembler for labels due to file moving.
         if (typeResolved.prepurge) await prePurgeLabels(metadataPath);
         const absoluteLabelFilePath = resolve(metadataPath, CUSTOM_LABELS_FILE);
-        const relativeLabelFilePath = relative(process.cwd(), absoluteLabelFilePath);
 
         await disassembleHandler(
-          relativeLabelFilePath,
+          absoluteLabelFilePath,
           uniqueIdElements,
           { ...typeResolved, prepurge: false },
           ignorePath,
           metaSuffix,
+          repoRoot,
         );
         await moveAndRenameLabels(metadataPath);
       } else if (hasComponentOverridesForType(metaSuffix, overrides)) {
-        await perFileHandler(metadataPath, uniqueIdElements, typeResolved, ignorePath, metaSuffix, overrides);
+        await perFileHandler(metadataPath, uniqueIdElements, typeResolved, ignorePath, metaSuffix, overrides, repoRoot);
       } else {
-        await disassembleHandler(metadataPath, uniqueIdElements, typeResolved, ignorePath, metaSuffix);
+        await disassembleHandler(metadataPath, uniqueIdElements, typeResolved, ignorePath, metaSuffix, repoRoot);
       }
       if (metaSuffix === 'workflow') {
         await renameWorkflows(metadataPath);
@@ -89,6 +99,7 @@ async function decomposeFromManifest(
   strictDirectoryName: boolean,
   folderType: string,
   overrides?: DecomposerOverride[],
+  repoRoot?: string,
 ): Promise<void> {
   const limit = pLimit(CONCURRENCY_LIMITS.PACKAGE_DIRS);
   const xmlPaths = Array.from(manifestXmlPaths);
@@ -100,13 +111,13 @@ async function decomposeFromManifest(
       limit(async () => {
         if (typeResolved.prepurge) await prePurgeLabels(labelDir);
         const absoluteLabelFilePath = resolve(labelDir, CUSTOM_LABELS_FILE);
-        const relativeLabelFilePath = relative(process.cwd(), absoluteLabelFilePath);
         await disassembleHandler(
-          relativeLabelFilePath,
+          absoluteLabelFilePath,
           uniqueIdElements,
           { ...typeResolved, prepurge: false },
           ignorePath,
           metaSuffix,
+          repoRoot,
         );
         await moveAndRenameLabels(labelDir);
       }),
@@ -125,7 +136,7 @@ async function decomposeFromManifest(
       limit(() => {
         const fullName = basename(parentDir);
         const resolved = resolveDecomposeOptionsForComponent(metaSuffix, fullName, typeResolved, overrides);
-        return disassembleHandler(parentDir, uniqueIdElements, resolved, ignorePath, metaSuffix);
+        return disassembleHandler(parentDir, uniqueIdElements, resolved, ignorePath, metaSuffix, repoRoot);
       }),
     );
     await Promise.all(tasks);
@@ -136,7 +147,7 @@ async function decomposeFromManifest(
     limit(() => {
       const fullName = stripMetaSuffix(basename(xmlPath), metaSuffix);
       const resolved = resolveDecomposeOptionsForComponent(metaSuffix, fullName, typeResolved, overrides);
-      return disassembleHandler(xmlPath, uniqueIdElements, resolved, ignorePath, metaSuffix);
+      return disassembleHandler(xmlPath, uniqueIdElements, resolved, ignorePath, metaSuffix, repoRoot);
     }),
   );
   await Promise.all(tasks);
@@ -156,6 +167,7 @@ async function disassembleHandler(
   options: ResolvedDecomposeTypeOptions,
   ignorePath: string,
   metaSuffix: string,
+  repoRoot?: string,
 ): Promise<void> {
   const handler: DisassembleXMLFileHandler = new DisassembleXMLFileHandler();
   const { strategy, multiLevel, splitTags, sidecarElements } = resolveEffectiveDisassembleOptions(metaSuffix, options);
@@ -171,6 +183,7 @@ async function disassembleHandler(
     multiLevel,
     splitTags,
     sidecarElements,
+    baseDir: repoRoot,
   });
 }
 
@@ -187,6 +200,7 @@ async function subDirectoryHandler(
   ignorePath: string,
   metaSuffix: string,
   overrides?: DecomposerOverride[],
+  repoRoot?: string,
 ): Promise<void> {
   const subFiles = await readdir(metadataPath);
 
@@ -209,7 +223,7 @@ async function subDirectoryHandler(
       processLimit(() => {
         const fullName = basename(subFilePath);
         const resolved = resolveDecomposeOptionsForComponent(metaSuffix, fullName, typeResolved, overrides);
-        return disassembleHandler(subFilePath, uniqueIdElements, resolved, ignorePath, metaSuffix);
+        return disassembleHandler(subFilePath, uniqueIdElements, resolved, ignorePath, metaSuffix, repoRoot);
       }),
     );
 
@@ -228,6 +242,7 @@ async function perFileHandler(
   ignorePath: string,
   metaSuffix: string,
   overrides?: DecomposerOverride[],
+  repoRoot?: string,
 ): Promise<void> {
   const metaEnding = `.${metaSuffix}-meta.xml`;
   const entries = await readdir(metadataPath, { withFileTypes: true });
@@ -239,7 +254,7 @@ async function perFileHandler(
       const filePath = join(metadataPath, entry.name);
       const fullName = entry.name.slice(0, -metaEnding.length);
       const resolved = resolveDecomposeOptionsForComponent(metaSuffix, fullName, typeResolved, overrides);
-      return disassembleHandler(filePath, uniqueIdElements, resolved, ignorePath, metaSuffix);
+      return disassembleHandler(filePath, uniqueIdElements, resolved, ignorePath, metaSuffix, repoRoot);
     }),
   );
 

@@ -25,7 +25,6 @@ describe('Edge case coverage tests', () => {
     let forceAppDir: string;
     let labelsDir: string;
     const originalDirectory: string = resolve('fixtures/package-dir-1');
-    const originalCwd = process.cwd();
 
     const configFile = {
       packageDirectories: [{ path: 'force-app', default: true }],
@@ -48,11 +47,11 @@ describe('Edge case coverage tests', () => {
       await writeFile(extraFilePath, '<test>extra content</test>', 'utf-8');
 
       await writeFile(join(tempProjectDir, SFDX_CONFIG_FILE), JSON.stringify(configFile, null, 2));
-      process.chdir(tempProjectDir);
+      vi.spyOn(process, 'cwd').mockReturnValue(tempProjectDir);
     });
 
     afterAll(async () => {
-      process.chdir(originalCwd);
+      vi.spyOn(process, 'cwd').mockRestore();
       await rm(tempProjectDir, { recursive: true, force: true });
     });
 
@@ -84,7 +83,6 @@ describe('Edge case coverage tests', () => {
     let tempProjectDir: string;
     let forceAppDir: string;
     const originalDirectory: string = resolve('fixtures/package-dir-1');
-    const originalCwd = process.cwd();
 
     const configFile = {
       packageDirectories: [{ path: 'force-app', default: true }],
@@ -99,11 +97,11 @@ describe('Edge case coverage tests', () => {
 
       await cp(originalDirectory, forceAppDir, { recursive: true, force: true });
       await writeFile(join(tempProjectDir, SFDX_CONFIG_FILE), JSON.stringify(configFile, null, 2));
-      process.chdir(tempProjectDir);
+      vi.spyOn(process, 'cwd').mockReturnValue(tempProjectDir);
     });
 
     afterAll(async () => {
-      process.chdir(originalCwd);
+      vi.spyOn(process, 'cwd').mockRestore();
       await rm(tempProjectDir, { recursive: true, force: true });
     });
 
@@ -131,7 +129,6 @@ describe('Edge case coverage tests', () => {
     let tempProjectDir: string;
     let forceAppDir: string;
     const originalDirectory: string = resolve('fixtures/package-dir-1');
-    const originalCwd = process.cwd();
 
     const configFile = {
       packageDirectories: [{ path: 'force-app', default: true }],
@@ -146,11 +143,11 @@ describe('Edge case coverage tests', () => {
 
       await cp(originalDirectory, forceAppDir, { recursive: true, force: true });
       await writeFile(join(tempProjectDir, SFDX_CONFIG_FILE), JSON.stringify(configFile, null, 2));
-      process.chdir(tempProjectDir);
+      vi.spyOn(process, 'cwd').mockReturnValue(tempProjectDir);
     });
 
     afterAll(async () => {
-      process.chdir(originalCwd);
+      vi.spyOn(process, 'cwd').mockRestore();
       await rm(tempProjectDir, { recursive: true, force: true });
     });
 
@@ -187,7 +184,6 @@ describe('Edge case coverage tests', () => {
     let forceAppDir: string;
     let logMock: Mock;
     const originalDirectory2: string = resolve('fixtures/package-dir-2');
-    const originalCwd = process.cwd();
 
     const configFile = {
       packageDirectories: [{ path: 'force-app', default: true }],
@@ -203,11 +199,11 @@ describe('Edge case coverage tests', () => {
 
       await cp(originalDirectory2, forceAppDir, { recursive: true, force: true });
       await writeFile(join(tempProjectDir, SFDX_CONFIG_FILE), JSON.stringify(configFile, null, 2));
-      process.chdir(tempProjectDir);
+      vi.spyOn(process, 'cwd').mockReturnValue(tempProjectDir);
     });
 
     afterAll(async () => {
-      process.chdir(originalCwd);
+      vi.spyOn(process, 'cwd').mockRestore();
       await rm(tempProjectDir, { recursive: true, force: true });
     });
 
@@ -259,7 +255,6 @@ describe('Edge case coverage tests', () => {
     let tempProjectDir: string;
     let forceAppDir: string;
     const originalDirectory: string = resolve('fixtures/package-dir-1');
-    const originalCwd = process.cwd();
 
     const configFile = {
       packageDirectories: [{ path: 'force-app', default: true }],
@@ -274,11 +269,11 @@ describe('Edge case coverage tests', () => {
 
       await cp(originalDirectory, forceAppDir, { recursive: true, force: true });
       await writeFile(join(tempProjectDir, SFDX_CONFIG_FILE), JSON.stringify(configFile, null, 2));
-      process.chdir(tempProjectDir);
+      vi.spyOn(process, 'cwd').mockReturnValue(tempProjectDir);
     });
 
     afterAll(async () => {
-      process.chdir(originalCwd);
+      vi.spyOn(process, 'cwd').mockRestore();
       await rm(tempProjectDir, { recursive: true, force: true });
     });
 
