@@ -1,1 +1,10 @@
 npm run build
+npm run prepack
+npm run postpack
+
+if ! git diff --quiet -- README.md; then
+  echo ""
+  echo "README.md command reference is out of date ('oclif readme' just regenerated it)."
+  echo "Review the diff, then: git add README.md && git commit --amend --no-edit (or a new commit) -- then push again."
+  exit 1
+fi

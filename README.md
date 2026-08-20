@@ -138,135 +138,197 @@ Pass `-x manifest/package.xml` to both `decompose` and `recompose` (and `deploy`
 
 ### Commands
 
-| Command                   | Description                                                                       |
-|---------------------------|-----------------------------------------------------------------------------------|
-| `sf decomposer decompose` | Decompose metadata in package directories into smaller files.                     |
-| `sf decomposer recompose` | Recompose decomposed files back into deployment-ready metadata.                   |
-| `sf decomposer verify`    | Round-trip check: disassemble + reassemble each parent XML in isolation and diff. |
+<!-- commands -->
+* [`sf decomposer decompose`](#sf-decomposer-decompose)
+* [`sf decomposer recompose`](#sf-decomposer-recompose)
+* [`sf decomposer verify`](#sf-decomposer-verify)
 
-#### sf decomposer decompose
+## `sf decomposer decompose`
 
-Decomposes metadata in all local package directories (from `sfdx-project.json`) into smaller files.
-
-```
-USAGE
-  $ sf decomposer decompose [-m <value>] [-x <value>] [-f <value>] [-i <value>] [-s <value>] [--prepurge --postpurge -p -c --update-forceignore --json]
-
-FLAGS
-  -m, --metadata-type=<value>             Metadata suffix to process (e.g. flow, labels). Repeatable. Optional when --manifest is provided.
-  -x, --manifest=<value>                  Path to a package.xml manifest. When provided, only the components listed in the manifest are decomposed.
-  -f, --format=<value>                    Output format: xml | yaml | json | json5 [default: xml]
-  -i, --ignore-package-directory=<value>  Package directory to skip (as in sfdx-project.json). Repeatable.
-  -s, --strategy=<value>                  unique-id | grouped-by-tag [default: unique-id]
-  --prepurge                              Remove existing decomposed files before decomposing [default: false]
-  --postpurge                             Remove original metadata files after decomposing [default: false]
-  -p, --decompose-nested-permissions      With grouped-by-tag, further decompose permission set and muting permission set object/field permissions
-  -c, --config                            Load all settings from .sfdecomposer.config.json in the repo root. Supplies metadataSuffixes, manifest, and all run-wide options; CLI flags take precedence. Makes -m and -x optional when the config defines them. [default: false]
-  --update-forceignore                    Automatically add decomposed file paths to .forceignore after successful decomposition [default: false]
-  --update-gitattributes                  Automatically add root metadata file patterns to .gitattributes after successful decomposition [default: false]
-
-GLOBAL FLAGS
-  --json  Output as JSON.
-```
-
-> At least one of `--metadata-type`, `--manifest`, or `--config` (with `metadataSuffixes` or `manifest` in the config) is required.
-
-**Examples**
-
-```bash
-# Decompose flows (XML), purge before/after
-sf decomposer decompose -m "flow" -f "xml" --prepurge --postpurge
-
-# Decompose flows and labels in YAML
-sf decomposer decompose -m "flow" -m "labels" -f "yaml" --prepurge --postpurge
-
-# Decompose flows, excluding the force-app package
-sf decomposer decompose -m "flow" -i "force-app"
-
-# Decompose only the components listed in a manifest
-sf decomposer decompose -x "manifest/package.xml" --prepurge
-
-# Restrict a manifest run to a single metadata type
-sf decomposer decompose -x "manifest/package.xml" -m "permissionset"
-
-# Use config file for all options (no CLI flags needed)
-sf decomposer decompose --config
-```
-
-#### sf decomposer recompose
-
-Recomposes decomposed files into deployment-compatible metadata.
+Decomposes the metadata files created by retrievals.
 
 ```
 USAGE
-  $ sf decomposer recompose [-m <value>] [-x <value>] [-i <value>] [-c --postpurge --json]
+  $ sf decomposer decompose [--json] [--flags-dir <value>] [-m <value>...] [-x <value>] [--prepurge] [--postpurge] [-f
+    xml|json|yaml|json5] [-i <value>...] [-s unique-id|grouped-by-tag] [-p] [-c] [--update-forceignore]
+    [--update-gitattributes]
 
 FLAGS
-  -m, --metadata-type=<value>             Metadata suffix to process (e.g. flow, labels). Repeatable. Optional when --manifest or --config is provided.
-  -x, --manifest=<value>                  Path to a package.xml manifest. When provided, only the components listed in the manifest are recomposed.
-  -i, --ignore-package-directory=<value>  Package directory to skip. Repeatable.
-  --postpurge                             Remove decomposed files after recomposing [default: false]
-  -c, --config                            Load all settings from .sfdecomposer.config.json in the repo root. Supplies metadataSuffixes, manifest, and postPurge; CLI flags take precedence. Makes -m and -x optional when the config defines them. [default: false]
+  -c, --config
+      Load all settings from .sfdecomposer.config.json in the repo root. When set, all top-level fields (metadataSuffixes,
+      manifest, prePurge, postPurge, decomposedFormat, strategy, ignorePackageDirectories, decomposeNestedPermissions,
+      updateForceignore, updateGitattributes) and the "overrides" array are applied. Explicit CLI flags take precedence
+      over config values. Makes --metadata-type and --manifest optional when either is defined in the config.
+
+  -f, --format=<option>
+      [default: xml] File format for the decomposed files.
+      <options: xml|json|yaml|json5>
+
+  -i, --ignore-package-directory=<value>...
+      Ignore a package directory.
+
+  -m, --metadata-type=<value>...
+      The metadata suffix to process, such as 'flow', 'labels', etc. Required unless --manifest is provided.
+
+  -p, --decompose-nested-permissions
+      Additionally decompose object and field permissions on a permission set when strategy is set to "grouped-by-tag".
+
+  -s, --strategy=<option>
+      [default: unique-id] Strategy to follow when decomposing files.
+      <options: unique-id|grouped-by-tag>
+
+  -x, --manifest=<value>
+      Path to a package.xml manifest file. When provided, only the metadata listed in the manifest is decomposed. If
+      --metadata-type is also provided, the intersection of the two is used.
+
+  --postpurge
+      Purge the original files after decomposing them.
+
+  --prepurge
+      Purge directories of pre-existing decomposed files.
+
+  --update-forceignore
+      Automatically add decomposed file paths to .forceignore after successful decomposition.
+
+  --update-gitattributes
+      Automatically add root metadata file patterns to .gitattributes after successful decomposition, suppressing noisy
+      diffs on recomposed files while keeping them tracked for tools like sfdx-git-delta.
 
 GLOBAL FLAGS
-  --json  Output as JSON.
+  --flags-dir=<value>  Import flag values from a directory.
+  --json               Format output as json.
+
+DESCRIPTION
+  Decomposes the metadata files created by retrievals.
+
+  Decompose large metadata files into smaller files.
+
+  You should run this after you retrieve metadata from an org.
+
+EXAMPLES
+  `sf decomposer decompose -m "flow" -f "xml" --prepurge --postpurge`
+
+  `sf decomposer decompose -m "flow" -m "labels" -f "xml" --prepurge --postpurge`
+
+  `sf decomposer decompose -m "flow" -f "xml" -i "force-app"`
+
+  `sf decomposer decompose -x "manifest/package.xml" --postpurge`
+
+  `sf decomposer decompose -x "manifest/package.xml" -m "flow"`
 ```
 
-> At least one of `--metadata-type`, `--manifest`, or `--config` (with `metadataSuffixes` or `manifest` in the config) is required.
+_See code: [src/commands/decomposer/decompose.ts](https://github.com/mcarvin8/sf-decomposer/blob/v7.1.1/src/commands/decomposer/decompose.ts)_
 
-**Examples**
+## `sf decomposer recompose`
 
-```bash
-sf decomposer recompose -m "flow" --postpurge
-sf decomposer recompose -m "flow" -i "force-app"
-
-# Recompose only the components listed in a deploy manifest before deploying
-sf decomposer recompose -x "manifest/package.xml"
-sf project deploy start -x "manifest/package.xml"
-
-# Use config file for all options (no CLI flags needed)
-sf decomposer recompose --config
-```
-
-#### sf decomposer verify
-
-Non-destructive round-trip check: disassembles and reassembles each parent metadata XML file in an isolated temp directory, then compares the reconstructed XML against the original using **structural XML equality** (sibling and attribute order are ignored). Exits non-zero on any drift; your working tree is never modified.
-
-> RECOMMENDATION: Set `RUST_LOG=off` in your environment variables to remove rust crate noise on the verify command.
+Recomposes the files created by the `decompose` command before deployments.
 
 ```
 USAGE
-  $ sf decomposer verify [-m <value>] [-x <value>] [-f <value>] [-i <value>] [-s <value>] [-p -c --json]
+  $ sf decomposer recompose [--json] [--flags-dir <value>] [-m <value>...] [-x <value>] [--postpurge] [-i <value>...]
+  [-c]
 
 FLAGS
-  -m, --metadata-type=<value>             Metadata suffix to verify (e.g. flow, labels). Repeatable. Optional when --manifest is provided.
-  -x, --manifest=<value>                  Path to a package.xml manifest. When provided, only the components listed in the manifest are verified.
-  -f, --format=<value>                    Output format used for the round-trip decompose: xml | yaml | json | json5 [default: xml]
-  -i, --ignore-package-directory=<value>  Package directory to skip. Repeatable.
-  -s, --strategy=<value>                  unique-id | grouped-by-tag [default: unique-id]
-  -p, --decompose-nested-permissions      With grouped-by-tag, further decompose permission set and muting permission set object/field permissions.
-  -c, --config                            Load all settings from .sfdecomposer.config.json in the repo root. Supplies metadataSuffixes, manifest, and all run-wide options; CLI flags take precedence. Makes -m and -x optional when the config defines them. [default: false]
+  -c, --config                               Load all settings from .sfdecomposer.config.json in the repo root. When
+                                             set, top-level fields (metadataSuffixes, manifest, postPurge,
+                                             ignorePackageDirectories) are applied. Explicit CLI flags take precedence
+                                             over config values. Makes --metadata-type and --manifest optional when
+                                             either is defined in the config.
+  -i, --ignore-package-directory=<value>...  Ignore a package directory.
+  -m, --metadata-type=<value>...             The metadata suffix to process, such as 'flow', 'labels', etc. Required
+                                             unless --manifest is provided.
+  -x, --manifest=<value>                     Path to a package.xml manifest file. When provided, only the metadata
+                                             listed in the manifest is recomposed. If --metadata-type is also provided,
+                                             the intersection of the two is used.
+      --postpurge                            Purge the decomposed files after recomposing them.
 
 GLOBAL FLAGS
-  --json  Output as JSON.
+  --flags-dir=<value>  Import flag values from a directory.
+  --json               Format output as json.
+
+DESCRIPTION
+  Recomposes the files created by the `decompose` command before deployments.
+
+  Recompose the decomposed files into deployment-compatible metadata files.
+
+  You should run this before you deploy decomposed metadata to an org.
+
+EXAMPLES
+  `sf decomposer recompose -m "flow" --postpurge`
+
+  `sf decomposer recompose -m "flow" -i "force-app"`
+
+  `sf decomposer recompose -x "manifest/package.xml" --postpurge`
+
+  `sf decomposer recompose -x "manifest/package.xml" -m "flow"`
 ```
 
-> At least one of `--metadata-type`, `--manifest`, or `--config` (with `metadataSuffixes` or `manifest` in the config) is required.
+_See code: [src/commands/decomposer/recompose.ts](https://github.com/mcarvin8/sf-decomposer/blob/v7.1.1/src/commands/decomposer/recompose.ts)_
 
-**Examples**
+## `sf decomposer verify`
 
-```bash
-# Verify two metadata types round-trip cleanly with defaults
-sf decomposer verify -m "permissionset" -m "profile"
+Round-trip verify that decompose followed by recompose preserves your metadata byte-for-byte.
 
-# Verify a different strategy + nested-perms split before committing the change
-sf decomposer verify -m "permissionset" -s "grouped-by-tag" -p
+```
+USAGE
+  $ sf decomposer verify [--json] [--flags-dir <value>] [-m <value>...] [-x <value>] [-f xml|json|yaml|json5] [-i
+    <value>...] [-s unique-id|grouped-by-tag] [-p] [-c]
 
-# CI gate: verify just the components in a deploy manifest, using the repo-root config
-sf decomposer verify -x "manifest/package.xml" --config
+FLAGS
+  -c, --config
+      Load all settings from .sfdecomposer.config.json in the repo root. When set, all top-level fields (metadataSuffixes,
+      manifest, decomposedFormat, strategy, ignorePackageDirectories, decomposeNestedPermissions) and the "overrides"
+      array are applied. Explicit CLI flags take precedence over config values. Makes --metadata-type and --manifest
+      optional when either is defined in the config.
+
+  -f, --format=<option>
+      [default: xml] File format to decompose into for the round-trip check.
+      <options: xml|json|yaml|json5>
+
+  -i, --ignore-package-directory=<value>...
+      Ignore a package directory.
+
+  -m, --metadata-type=<value>...
+      The metadata suffix to verify, such as 'flow', 'labels', etc. Required unless --manifest is provided.
+
+  -p, --decompose-nested-permissions
+      Additionally decompose object and field permissions on a permission set when strategy is set to "grouped-by-tag".
+
+  -s, --strategy=<option>
+      [default: unique-id] Strategy to follow when decomposing files for the round-trip check.
+      <options: unique-id|grouped-by-tag>
+
+  -x, --manifest=<value>
+      Path to a package.xml manifest file. When provided, only the metadata listed in the manifest is verified. If
+      --metadata-type is also provided, the intersection of the two is used.
+
+GLOBAL FLAGS
+  --flags-dir=<value>  Import flag values from a directory.
+  --json               Format output as json.
+
+DESCRIPTION
+  Round-trip verify that decompose followed by recompose preserves your metadata byte-for-byte.
+
+  For every parent metadata XML file belonging to the requested metadata types, disassembles and
+  reassembles it in an isolated temp directory using the same flags and `.sfdecomposer.config.json`
+  overrides you would use in production, then compares the reconstructed XML against the original.
+  Comparison is **structural** (sibling and attribute order are ignored, matching how Salesforce
+  treats metadata). The command never modifies your working tree.
+
+  Files where the only delta is ordering are surfaced as informational notices ("reordered") and do
+  not fail the run. Genuine semantic differences are reported as drift and exit non-zero, which
+  makes the command suitable as a CI gate before committing strategy, format, or override changes.
+
+EXAMPLES
+  `sf decomposer verify -m "permissionset" -f "xml"`
+
+  `sf decomposer verify -m "permissionset" -m "profile" -s "grouped-by-tag" -p`
+
+  `sf decomposer verify -x "manifest/package.xml" --config`
 ```
 
-Files whose **only** delta is sibling or attribute ordering are reported as informational notices, not drift. Salesforce treats metadata as order-agnostic, so the deploy is safe — the notice warns that committing the post-recompose output will show a git diff even though the metadata is functionally identical.
+_See code: [src/commands/decomposer/verify.ts](https://github.com/mcarvin8/sf-decomposer/blob/v7.1.1/src/commands/decomposer/verify.ts)_
+<!-- commandsstop -->
 
 ---
 
