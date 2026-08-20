@@ -1,6 +1,4 @@
-npm run build
-npm run prepack
-npm run postpack
+npm run readme
 
 if ! git diff --quiet -- README.md; then
   echo ""

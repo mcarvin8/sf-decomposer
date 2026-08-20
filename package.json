@@ -99,6 +99,7 @@
     "postpack": "shx rm -f oclif.manifest.json oclif.lock",
     "prepack": "wireit",
     "prepare": "husky",
+    "readme": "wireit",
     "test": "wireit",
     "test:mutation": "wireit",
     "test:mutation:incremental": "wireit",
@@ -203,6 +204,25 @@
     },
     "prepack": {
       "command": "oclif manifest && oclif readme",
+      "files": [
+        "src/commands/decomposer/decompose.ts",
+        "src/commands/decomposer/recompose.ts",
+        "src/commands/decomposer/verify.ts",
+        "messages/decomposer.decompose.md",
+        "messages/decomposer.recompose.md",
+        "messages/decomposer.verify.md",
+        "README.md"
+      ],
+      "dependencies": [
+        "build"
+      ],
+      "output": [
+        "README.md"
+      ],
+      "clean": false
+    },
+    "readme": {
+      "command": "oclif readme",
       "files": [
         "src/commands/decomposer/decompose.ts",
         "src/commands/decomposer/recompose.ts",
