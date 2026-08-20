@@ -20,8 +20,8 @@ A Salesforce CLI plugin that **decomposes** large metadata XML files into smalle
   - [3. Configure .forceignore](#3-configure-forceignore)
   - [4. Configure Hooks](#4-configure-hooks-recommended)
 - [Daily Workflow](#daily-workflow)
+- [Commands](#commands)
 - [Reference](#reference)
-  - [Commands](#commands)
   - [Decompose Strategies](#decompose-strategies)
   - [Supported Metadata](#supported-metadata)
   - [Manifest-scoped Runs](#manifest-scoped-runs)
@@ -134,9 +134,7 @@ Pass `-x manifest/package.xml` to both `decompose` and `recompose` (and `deploy`
 
 ---
 
-## Reference
-
-### Commands
+## Commands
 
 <!-- commands -->
 * [`sf decomposer decompose`](#sf-decomposer-decompose)
@@ -331,6 +329,8 @@ _See code: [src/commands/decomposer/verify.ts](https://github.com/mcarvin8/sf-de
 <!-- commandsstop -->
 
 ---
+
+## Reference
 
 ### Decompose Strategies
 
