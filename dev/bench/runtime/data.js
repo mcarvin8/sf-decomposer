@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787077643538,
+  "lastUpdate": 1787550324572,
   "repoUrl": "https://github.com/mcarvin8/sf-decomposer",
   "entries": {
     "Decompose Runtime (large)": [
@@ -1135,6 +1135,68 @@ window.BENCHMARK_DATA = {
           {
             "name": "large.yaml.recompose",
             "value": 3520.68,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Matt Carvin",
+            "username": "mcarvin8",
+            "email": "90224411+mcarvin8@users.noreply.github.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "3e3ac915356b2a14ee3ab812f6171d08597a51ad",
+          "message": "chore: add readme script to wireit",
+          "timestamp": "2026-08-20T19:22:31Z",
+          "url": "https://github.com/mcarvin8/sf-decomposer/commit/3e3ac915356b2a14ee3ab812f6171d08597a51ad"
+        },
+        "date": 1787550323433,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "large.xml.decompose",
+            "value": 3676.68,
+            "unit": "ms"
+          },
+          {
+            "name": "large.xml.recompose",
+            "value": 9277.47,
+            "unit": "ms"
+          },
+          {
+            "name": "large.json.decompose",
+            "value": 3077.64,
+            "unit": "ms"
+          },
+          {
+            "name": "large.json.recompose",
+            "value": 2029.16,
+            "unit": "ms"
+          },
+          {
+            "name": "large.json5.decompose",
+            "value": 3070.87,
+            "unit": "ms"
+          },
+          {
+            "name": "large.json5.recompose",
+            "value": 2038.44,
+            "unit": "ms"
+          },
+          {
+            "name": "large.yaml.decompose",
+            "value": 3264.26,
+            "unit": "ms"
+          },
+          {
+            "name": "large.yaml.recompose",
+            "value": 2331.4,
             "unit": "ms"
           }
         ]
