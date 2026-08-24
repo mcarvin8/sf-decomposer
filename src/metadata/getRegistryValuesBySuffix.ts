@@ -1,11 +1,11 @@
 'use strict';
 
-import { MetadataType, RegistryAccess } from '@salesforce/source-deploy-retrieve';
-
 import { DEFAULT_UNIQUE_ID_ELEMENTS, UNSUPPORTED_ADAPTERS } from '../helpers/constants.js';
 import { MetaAttributes } from '../helpers/types.js';
 import { getPackageDirectories } from './getPackageDirectories.js';
 import { getUniqueIdElements } from './getUniqueIdElements.js';
+import { RegistryAccess } from './registry/registryAccess.js';
+import { MetadataType } from './registry/types.js';
 
 // Singleton instance for RegistryAccess to avoid repeated instantiation
 let registryAccessInstance: RegistryAccess | null = null;
@@ -22,8 +22,7 @@ function getRegistryAccessInstance(): RegistryAccess {
 function getChildSuffixMap(registryAccess: RegistryAccess): Map<string, MetadataType> {
   if (!childSuffixMap) {
     childSuffixMap = new Map();
-    const reg = (registryAccess as unknown as { registry: { childTypes: Record<string, string> } }).registry;
-    for (const childXmlNameLower of Object.keys(reg.childTypes)) {
+    for (const childXmlNameLower of Object.keys(registryAccess.childTypes)) {
       const parentType = registryAccess.getParentType(childXmlNameLower);
       const childEntry = parentType?.children?.types[childXmlNameLower];
       /* v8 ignore next -- defensive guard; SDR registry always provides a suffix for child types */

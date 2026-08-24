@@ -1,7 +1,6 @@
 'use strict';
 
 import { Command, Config } from '@oclif/core';
-import { ScopedPostRetrieve } from '@salesforce/source-deploy-retrieve';
 
 export type DecomposerResult = {
   metadata: string[];
@@ -81,11 +80,20 @@ export type MetaAttributes = {
   uniqueIdElements: string;
 };
 
+// Local stand-in for SDR's ScopedPostRetrieve -- only the field the hook actually reads.
+type RetrieveHookResult = {
+  retrieveResult: {
+    response: {
+      status?: string;
+    };
+  };
+};
+
 export type PostRetrieveHookOptions = {
   Command: Command;
   argv: string[];
   commandId: string;
-  result?: ScopedPostRetrieve;
+  result?: RetrieveHookResult;
   config: Config;
 };
 

@@ -1,10 +1,12 @@
 'use strict';
 
-import { readdir, stat } from 'node:fs/promises';
+import { readdir, readFile, stat } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
-import { ManifestResolver, MetadataType, RegistryAccess } from '@salesforce/source-deploy-retrieve';
 import { getRepoRoot } from '../service/core/getRepoRoot.js';
 import { buildPackageDirectoryIndex } from './getPackageDirectories.js';
+import { RegistryAccess } from './registry/registryAccess.js';
+import { resolveManifestComponents } from './registry/resolveManifestComponents.js';
+import { MetadataType } from './registry/types.js';
 
 export type ManifestFilter = {
   // Maps metadata suffix to the set of absolute parent metadata xml file paths
@@ -38,8 +40,8 @@ export async function parseManifest(
   const absManifestPath = resolve(repoRoot, manifestPath);
 
   const registry = new RegistryAccess();
-  const resolver = new ManifestResolver(undefined, registry);
-  const { components } = await resolver.resolve(absManifestPath);
+  const manifestContents = await readFile(absManifestPath, 'utf-8');
+  const components = resolveManifestComponents(manifestContents, registry);
 
   // Group declared manifest entries by their effective parent metadata type.
   const byParentType = new Map<string, GroupedMembers>();
