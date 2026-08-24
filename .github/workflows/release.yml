@@ -84,6 +84,19 @@ jobs:
           NODE_AUTH_TOKEN="" npm publish --access public --tag latest --provenance
           echo "published=true" >> "$GITHUB_OUTPUT"
 
+      # release-please only ever creates the exact vX.Y.Z tag. action.yml pins the GitHub Action
+      # to a floating major-version tag (docker://ghcr.io/.../vX) so consumers using
+      # `uses: mcarvin8/sf-decomposer@vX` don't need to bump on every release -- but `@vX` only
+      # resolves if a real git tag vX exists and points at the latest vX.Y.Z. Move it here.
+      - name: Move floating major version tag
+        if: steps.publish.outputs.published == 'true'
+        run: |
+          MAJOR="v$(node -p "require('./package.json').version.split('.')[0]")"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -f "$MAJOR"
+          git push origin "$MAJOR" --force
+
       # `npm publish` runs the `prepack` script (oclif manifest && oclif readme),
       # which regenerates README.md's Command Reference against the version
       # release-please just bumped. Push that back to main so the repo's README
