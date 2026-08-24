@@ -4,11 +4,6 @@ import { describe, expect, it } from 'vitest';
 
 import { parseManifestXml } from '../../src/metadata/registry/manifestXml.js';
 
-// Adapted from mcarvin8/sf-package-combiner's parseManifest.test.ts (same author/license).
-// Unlike that repo's parser, this one doesn't return the <version> text (no caller here needs
-// it) -- it still validates <version> structurally, since a malformed manifest should still fail
-// loudly.
-
 const xmlns = 'http://soap.sforce.com/2006/04/metadata';
 
 describe('parseManifestXml', () => {

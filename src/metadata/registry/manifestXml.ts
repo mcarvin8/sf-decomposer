@@ -1,9 +1,9 @@
 'use strict';
 
-// Ported from mcarvin8/sf-package-combiner (same author/license): the syntactic layer that turns
-// package.xml text into { name, members } pairs. Registry-aware resolution (parent/child/folder
-// types) is layered on top in resolveManifestComponents.ts, mirroring how SDR's ManifestResolver
-// separates manifest parsing from registry lookups.
+// The syntactic layer that turns package.xml text into { name, members } pairs.
+// Registry-aware resolution (parent/child/folder types) is layered on top in
+// resolveManifestComponents.ts, mirroring how SDR's ManifestResolver separates
+// manifest parsing from registry lookups.
 
 import { parseXml, XmlNode } from './xmlParser.js';
 

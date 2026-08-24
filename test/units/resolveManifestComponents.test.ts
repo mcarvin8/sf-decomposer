@@ -60,6 +60,35 @@ describe('resolveManifestComponents', () => {
     ]);
   });
 
+  it('resolves a bare folder-name member alone (no sibling at all) to the folder type', () => {
+    // With no other member in the group, `!fullName.includes('/')` alone must decide the
+    // outcome -- there is no sibling for `.some(...)` to find a match against.
+    const components = resolveManifestComponents(manifest([{ name: 'Report', members: ['FolderX'] }]), registry);
+
+    expect(components).toEqual([{ fullName: 'FolderX', type: registry.getTypeByName('ReportFolder') }]);
+  });
+
+  it('nests a named member under its folder only when a sibling truly starts with <fullName>/', () => {
+    // 'FolderA/Report10' shares the 'FolderA/Report1' prefix but is not nested under it (no '/'
+    // right after 'Report1'), so it must not count as a nesting match.
+    const notNested = resolveManifestComponents(
+      manifest([{ name: 'Report', members: ['FolderA/Report1', 'FolderA/Report10'] }]),
+      registry,
+    );
+    expect(notNested).toEqual([
+      { fullName: 'FolderA/Report1', type: registry.getTypeByName('Report') },
+      { fullName: 'FolderA/Report10', type: registry.getTypeByName('Report') },
+    ]);
+
+    // A genuine sibling nested one level under 'FolderA/Report1/' does count -- and an unrelated
+    // sibling that never matches must not prevent that from registering (kills `.some`->`.every`).
+    const nested = resolveManifestComponents(
+      manifest([{ name: 'Report', members: ['FolderA/Report1', 'FolderA/Report1/Sub', 'FolderA/Unrelated'] }]),
+      registry,
+    );
+    expect(nested[0]).toEqual({ fullName: 'FolderA/Report1', type: registry.getTypeByName('ReportFolder') });
+  });
+
   it('resolves a non-InFolder folder type (Territory2) to itself, not its folder type', () => {
     const components = resolveManifestComponents(manifest([{ name: 'Territory2', members: ['NA_West'] }]), registry);
 

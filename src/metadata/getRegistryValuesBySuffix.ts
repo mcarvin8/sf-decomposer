@@ -13,6 +13,9 @@ let registryAccessInstance: RegistryAccess | null = null;
 let childSuffixMap: Map<string, MetadataType> | null = null;
 
 function getRegistryAccessInstance(): RegistryAccess {
+  // Stryker disable next-line ConditionalExpression -- caching is a pure perf optimization here;
+  // RegistryAccess itself is a stateless wrapper around registryAccess.ts's own module-level
+  // (and therefore already-singleton) registry data, so a "recreated" instance behaves identically.
   if (!registryAccessInstance) {
     registryAccessInstance = new RegistryAccess();
   }
@@ -20,12 +23,17 @@ function getRegistryAccessInstance(): RegistryAccess {
 }
 
 function getChildSuffixMap(registryAccess: RegistryAccess): Map<string, MetadataType> {
+  // Stryker disable next-line ConditionalExpression -- same reasoning as getRegistryAccessInstance above.
   if (!childSuffixMap) {
     childSuffixMap = new Map();
     for (const childXmlNameLower of Object.keys(registryAccess.childTypes)) {
       const parentType = registryAccess.getParentType(childXmlNameLower);
+      // Stryker disable next-line OptionalChaining -- defensive guard; every key in childTypes
+      // is guaranteed (by the vendored registry's own invariants) to resolve to a real parentType
+      // with a children.types entry for that key.
       const childEntry = parentType?.children?.types[childXmlNameLower];
       /* v8 ignore next -- defensive guard; SDR registry always provides a suffix for child types */
+      // Stryker disable next-line ConditionalExpression, OptionalChaining -- same registry invariant.
       if (childEntry?.suffix) {
         childSuffixMap.set(childEntry.suffix, childEntry);
       }

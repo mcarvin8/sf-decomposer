@@ -35,6 +35,10 @@ describe('RegistryAccess', () => {
         'Metadata type not found in registry for name: DefinitelyNotARealType.',
       );
     });
+
+    it('trims surrounding whitespace', () => {
+      expect(registry.getTypeByName('  PermissionSet  ').name).toBe('PermissionSet');
+    });
   });
 
   describe('getTypeBySuffix', () => {
@@ -60,6 +64,10 @@ describe('RegistryAccess', () => {
 
     it('is case-insensitive', () => {
       expect(registry.getParentType('RecordType')?.name).toBe('CustomObject');
+    });
+
+    it('trims surrounding whitespace', () => {
+      expect(registry.getParentType('  recordtype  ')?.name).toBe('CustomObject');
     });
   });
 

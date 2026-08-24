@@ -1,8 +1,5 @@
 'use strict';
 
-// Ported from mcarvin8/sf-package-combiner (same author/license) so this plugin doesn't need
-// a general-purpose XML dependency just to read package.xml manifests.
-
 export type XmlNode = {
   tagName: string;
   children: Array<XmlNode | string>;
@@ -51,11 +48,17 @@ class XmlCursor {
   }
 
   private skipWhitespace(): void {
+    // Stryker disable next-line ConditionalExpression, EqualityOperator -- at i===length, xml[i]
+    // is undefined and /\s/.test(undefined) is false, so the loop always stops there regardless
+    // of whether the bound check is `<` or `<=`.
     while (this.i < this.length && /\s/.test(this.xml[this.i])) this.i++;
   }
 
   private parseName(): string {
     const start = this.i;
+    // Stryker disable next-line EqualityOperator -- an off-by-one bound (i<=length) only lets the
+    // loop run one extra step to length+1; xml.slice clamps beyond the string end and every later
+    // bound check uses >=, so the extra step is unobservable.
     while (this.i < this.length && !/[\s/>]/.test(this.xml[this.i])) this.i++;
     if (this.i === start) {
       throw new Error(`expected element name at position ${this.i}`);
@@ -64,6 +67,7 @@ class XmlCursor {
   }
 
   private parseAttribute(): void {
+    // Stryker disable next-line EqualityOperator -- same reasoning as parseName's bound check.
     while (this.i < this.length && !/[\s=/>]/.test(this.xml[this.i])) this.i++;
     this.skipWhitespace();
     if (this.xml[this.i] !== '=') {

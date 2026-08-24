@@ -34,6 +34,10 @@ function isMemberNestedInFolder(
 ): boolean {
   const isInFolderType = type.inFolder;
   const isNestedInFolder = !fullName.includes('/') || members.some((m) => m.includes(`${fullName}/`));
+  // Stryker disable next-line ConditionalExpression -- defensive guard; in the current vendored
+  // registry every non-InFolder type with a folderType (Territory2 and friends) points at a
+  // folder type whose own folderType equals its id, so this is always false when it's actually
+  // selected below (isInFolderType is false for exactly those types).
   const isNonMatchingFolder = parentType.folderType !== parentType.id;
   return isInFolderType ? isNestedInFolder : isNonMatchingFolder;
 }
@@ -48,6 +52,7 @@ function resolveType(
 ): MetadataType {
   /* v8 ignore next 3 -- defensive guard; the only caller only invokes this once parentType and
      type.folderType are both already known truthy (parentType is derived from type.folderType) */
+  // Stryker disable next-line ConditionalExpression, LogicalOperator
   if (!parentType || !type.folderType) {
     return type;
   }

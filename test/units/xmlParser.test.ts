@@ -4,9 +4,6 @@ import { describe, expect, it } from 'vitest';
 
 import { parseXml } from '../../src/metadata/registry/xmlParser.js';
 
-// Ported from mcarvin8/sf-package-combiner's xmlParser.test.ts (same author/license) --
-// src/metadata/registry/xmlParser.ts is a verbatim port of that repo's parser.
-
 describe('parseXml', () => {
   it('parses a simple element with text content', () => {
     const roots = parseXml('<Package><version>60.0</version></Package>');
