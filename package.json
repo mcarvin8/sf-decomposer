@@ -1,7 +1,7 @@
 {
   "name": "sf-decomposer",
   "description": "Decompose Salesforce metadata into granular, VCS-friendly files; recompose for deployment.",
-  "version": "7.1.1",
+  "version": "7.2.0",
   "dependencies": {
     "@oclif/core": "4.13.5",
     "@salesforce/core": "9.1.2",
