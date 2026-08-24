@@ -215,7 +215,7 @@ EXAMPLES
   `sf decomposer decompose -x "manifest/package.xml" -m "flow"`
 ```
 
-_See code: [src/commands/decomposer/decompose.ts](https://github.com/mcarvin8/sf-decomposer/blob/v7.1.1/src/commands/decomposer/decompose.ts)_
+_See code: [src/commands/decomposer/decompose.ts](https://github.com/mcarvin8/sf-decomposer/blob/v7.2.0/src/commands/decomposer/decompose.ts)_
 
 ## `sf decomposer recompose`
 
@@ -261,7 +261,7 @@ EXAMPLES
   `sf decomposer recompose -x "manifest/package.xml" -m "flow"`
 ```
 
-_See code: [src/commands/decomposer/recompose.ts](https://github.com/mcarvin8/sf-decomposer/blob/v7.1.1/src/commands/decomposer/recompose.ts)_
+_See code: [src/commands/decomposer/recompose.ts](https://github.com/mcarvin8/sf-decomposer/blob/v7.2.0/src/commands/decomposer/recompose.ts)_
 
 ## `sf decomposer verify`
 
@@ -325,7 +325,7 @@ EXAMPLES
   `sf decomposer verify -x "manifest/package.xml" --config`
 ```
 
-_See code: [src/commands/decomposer/verify.ts](https://github.com/mcarvin8/sf-decomposer/blob/v7.1.1/src/commands/decomposer/verify.ts)_
+_See code: [src/commands/decomposer/verify.ts](https://github.com/mcarvin8/sf-decomposer/blob/v7.2.0/src/commands/decomposer/verify.ts)_
 <!-- commandsstop -->
 
 ---
