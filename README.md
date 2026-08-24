@@ -21,6 +21,7 @@ A Salesforce CLI plugin that **decomposes** large metadata XML files into smalle
   - [4. Configure Hooks](#4-configure-hooks-recommended)
 - [Daily Workflow](#daily-workflow)
 - [Commands](#commands)
+- [GitHub Action](#github-action)
 - [Reference](#reference)
   - [Decompose Strategies](#decompose-strategies)
   - [Supported Metadata](#supported-metadata)
@@ -215,7 +216,7 @@ EXAMPLES
   `sf decomposer decompose -x "manifest/package.xml" -m "flow"`
 ```
 
-_See code: [src/commands/decomposer/decompose.ts](https://github.com/mcarvin8/sf-decomposer/blob/v7.1.1/src/commands/decomposer/decompose.ts)_
+_See code: [src/commands/decomposer/decompose.ts](https://github.com/mcarvin8/sf-decomposer/blob/v7.2.0/src/commands/decomposer/decompose.ts)_
 
 ## `sf decomposer recompose`
 
@@ -261,7 +262,7 @@ EXAMPLES
   `sf decomposer recompose -x "manifest/package.xml" -m "flow"`
 ```
 
-_See code: [src/commands/decomposer/recompose.ts](https://github.com/mcarvin8/sf-decomposer/blob/v7.1.1/src/commands/decomposer/recompose.ts)_
+_See code: [src/commands/decomposer/recompose.ts](https://github.com/mcarvin8/sf-decomposer/blob/v7.2.0/src/commands/decomposer/recompose.ts)_
 
 ## `sf decomposer verify`
 
@@ -325,8 +326,56 @@ EXAMPLES
   `sf decomposer verify -x "manifest/package.xml" --config`
 ```
 
-_See code: [src/commands/decomposer/verify.ts](https://github.com/mcarvin8/sf-decomposer/blob/v7.1.1/src/commands/decomposer/verify.ts)_
+_See code: [src/commands/decomposer/verify.ts](https://github.com/mcarvin8/sf-decomposer/blob/v7.2.0/src/commands/decomposer/verify.ts)_
 <!-- commandsstop -->
+
+---
+
+## GitHub Action
+
+`decompose`, `recompose`, and `verify` are also available as a GitHub Action — a container action, so it needs **no Salesforce CLI and no `sf-decomposer` plugin install**. One action, dispatched by a `mode` input, mirrors the three CLI commands one-for-one: same flags (as inputs), same `.sfdecomposer.config.json` support via `config: true`.
+
+```yaml
+- uses: actions/checkout@v7
+
+- name: Decompose retrieved metadata
+  uses: mcarvin8/sf-decomposer@v1
+  with:
+    mode: decompose
+    metadata-type: |
+      permissionset
+      flow
+    postpurge: 'true'
+
+- name: Verify the round trip before merging
+  uses: mcarvin8/sf-decomposer@v1
+  with:
+    mode: verify
+    config: 'true'
+```
+
+Or point it at an existing `.sfdecomposer.config.json` for either step instead of listing flags: `with: { mode: decompose, config: 'true' }`.
+
+**Inputs** (all optional except `mode`; multi-value inputs are newline-separated, matching `actions/checkout`'s own multiline convention):
+
+| Input                           | Used by                  | Description                                                                          |
+| -------------------------------- | ------------------------- | -------------------------------------------------------------------------------------- |
+| `mode`                           | all                        | `decompose`, `recompose`, or `verify`.                                                 |
+| `metadata-type`                  | all                        | Metadata suffix(es) to process, one per line.                                          |
+| `manifest`                       | all                        | Path to a package.xml manifest to scope the run to.                                    |
+| `ignore-package-directory`       | all                        | Package director(y/ies) to skip, one per line.                                         |
+| `config`                         | all                        | Read settings from `.sfdecomposer.config.json`, same as the CLI's `--config`.          |
+| `format`                         | decompose, verify          | `xml`, `json`, `json5`, or `yaml`. Default `xml`.                                      |
+| `strategy`                       | decompose, verify          | `unique-id` or `grouped-by-tag`. Default `unique-id`.                                  |
+| `decompose-nested-permissions`   | decompose, verify          | With `grouped-by-tag`, further decompose permission set object/field permissions.      |
+| `prepurge`                       | decompose                  | Remove existing decomposed files before decomposing.                                   |
+| `postpurge`                      | decompose, recompose       | After decompose, remove originals; after recompose, remove decomposed files.           |
+| `update-forceignore`             | decompose                  | Append decomposed file patterns to `.forceignore`.                                     |
+| `update-gitattributes`           | decompose                  | Mark decomposed files as generated in `.gitattributes`.                                |
+
+**Outputs:** `metadata` (newline-separated list of processed suffixes), `types-count`; `verify` additionally sets `drift-count` and `reordered-count`, and fails the step when `drift-count` is greater than 0.
+
+See [`action.yml`](action.yml) for the full input/output reference.
 
 ---
 
