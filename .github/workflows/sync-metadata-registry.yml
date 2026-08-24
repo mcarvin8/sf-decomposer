@@ -1,0 +1,150 @@
+---
+name: Sync Metadata Registry
+
+# This plugin no longer depends on @salesforce/source-deploy-retrieve (SDR) at runtime; instead
+# it vendors a snapshot of SDR's metadataRegistry.json at src/metadata/registry/metadataRegistry.json.
+# This workflow checks weekly for upstream changes to that file (pulled from the latest published
+# SDR npm package, not installed as a dependency) and opens a PR when it drifts. This replaces the
+# old Dependabot-triggered registry-diff/auto-merge flow, which only ever fired for SDR version bumps.
+
+on:
+  schedule:
+    - cron: '0 6 * * 1' # Every Monday at 06:00 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 'lts/*'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Fetch latest SDR registry and check for drift
+        id: fetch
+        run: |
+          OLD_FILE="src/metadata/registry/metadataRegistry.json"
+          REGISTRY_PATH="lib/src/registry/metadataRegistry.json"
+
+          NEW_VERSION=$(npm view @salesforce/source-deploy-retrieve version)
+          TARBALL=$(npm pack "@salesforce/source-deploy-retrieve@${NEW_VERSION}" --pack-destination /tmp 2>/dev/null)
+          mkdir -p /tmp/sdr-new
+          tar -xzf "/tmp/${TARBALL}" -C /tmp/sdr-new
+          NEW_FILE="/tmp/sdr-new/package/${REGISTRY_PATH}"
+
+          echo "new_version=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "new_file=${NEW_FILE}" >> "$GITHUB_OUTPUT"
+
+          if diff -q "$OLD_FILE" "$NEW_FILE" > /dev/null 2>&1; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No drift between vendored registry and SDR ${NEW_VERSION}."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "Vendored registry drifted from SDR ${NEW_VERSION}."
+          fi
+
+      - name: Build PR title/body and refresh docs
+        if: steps.fetch.outputs.changed == 'true'
+        env:
+          NEW_VERSION: ${{ steps.fetch.outputs.new_version }}
+          NEW_FILE: ${{ steps.fetch.outputs.new_file }}
+        run: |
+          OLD_FILE="src/metadata/registry/metadataRegistry.json"
+          cp "$OLD_FILE" /tmp/old-registry.json
+
+          # Diff added top-level type API names
+          jq -r '.types[].name' /tmp/old-registry.json | sort -u > /tmp/old-types.txt
+          jq -r '.types[].name' "$NEW_FILE" | sort -u > /tmp/new-types.txt
+          comm -23 /tmp/new-types.txt /tmp/old-types.txt > /tmp/added-types.txt
+
+          # Diff added child type API names with parent context (tab-separated: child<TAB>parent)
+          # shellcheck disable=SC2016 # $p is a jq variable, not a shell variable
+          CHILD_QUERY='.types[] | select(.children) | .name as $p | .children.types[] | "\(.name)\t\($p)"'
+          jq -r "$CHILD_QUERY" /tmp/old-registry.json | sort -u > /tmp/old-children.txt
+          jq -r "$CHILD_QUERY" "$NEW_FILE" | sort -u > /tmp/new-children.txt
+          comm -23 /tmp/new-children.txt /tmp/old-children.txt > /tmp/added-children.txt
+
+          # Build PR title — prefer top-level types, fall back to child-only, then to a refresh message
+          PREFIX="feat(metadata): support "
+          MAX_LEN=72
+          ADDED_TOP_COUNT=$(wc -l < /tmp/added-types.txt | tr -d ' ')
+          ADDED_CHILD_COUNT=$(wc -l < /tmp/added-children.txt | tr -d ' ')
+
+          if [ "$ADDED_TOP_COUNT" -gt 0 ]; then
+            cp /tmp/added-types.txt /tmp/title-source.txt
+            TITLE_COUNT="$ADDED_TOP_COUNT"
+          elif [ "$ADDED_CHILD_COUNT" -gt 0 ]; then
+            cut -f1 /tmp/added-children.txt > /tmp/title-source.txt
+            TITLE_COUNT="$ADDED_CHILD_COUNT"
+          else
+            TITLE_COUNT=0
+          fi
+
+          if [ "$TITLE_COUNT" -eq 0 ]; then
+            TITLE="feat(metadata): refresh SDR registry to ${NEW_VERSION}"
+          else
+            JOINED=$(paste -sd "," /tmp/title-source.txt | sed 's/,/, /g')
+            CANDIDATE="${PREFIX}${JOINED}"
+            if [ "${#CANDIDATE}" -le "$MAX_LEN" ]; then
+              TITLE="$CANDIDATE"
+            else
+              TITLE="${PREFIX}${TITLE_COUNT} new metadata types"
+            fi
+          fi
+
+          # Build PR body — bump line + two sections
+          {
+            echo "Refreshes the vendored metadata registry (\`src/metadata/registry/metadataRegistry.json\`) from [@salesforce/source-deploy-retrieve@${NEW_VERSION}](https://github.com/forcedotcom/source-deploy-retrieve)."
+            echo ""
+            echo "This plugin doesn't depend on SDR at runtime — this is a periodic snapshot, synced weekly by [.github/workflows/sync-metadata-registry.yml](.github/workflows/sync-metadata-registry.yml)."
+            echo ""
+            if [ -s /tmp/added-types.txt ]; then
+              echo "### New types"
+              echo ""
+              sed 's/^/- /' /tmp/added-types.txt
+              echo ""
+            fi
+            if [ -s /tmp/added-children.txt ]; then
+              echo "### New child types"
+              echo ""
+              awk -F'\t' '{print "- " $1 " (under " $2 ")"}' /tmp/added-children.txt
+              echo ""
+            fi
+          } > /tmp/pr-body.md
+
+          echo "$TITLE" > /tmp/pr-title.txt
+
+          cp "$NEW_FILE" "$OLD_FILE"
+          npx tsx scripts/update-metadata-support.ts --old /tmp/old-registry.json --new "$NEW_FILE"
+
+      - name: Open pull request
+        if: steps.fetch.outputs.changed == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TITLE=$(cat /tmp/pr-title.txt)
+          BRANCH="chore/sync-metadata-registry-$(date +%Y%m%d)"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add src/metadata/registry/metadataRegistry.json METADATA_SUPPORT.md
+          git commit -m "$TITLE"
+          git push origin "$BRANCH"
+          gh pr create --title "$TITLE" --body-file /tmp/pr-body.md --base main --head "$BRANCH"
+
+      - name: Clean up temp files
+        if: always()
+        run: rm -rf /tmp/sdr-new /tmp/salesforce-source-deploy-retrieve-*.tgz /tmp/old-registry.json

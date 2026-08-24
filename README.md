@@ -492,9 +492,9 @@ permissionsets/
 
 ### Supported Metadata
 
-All parent and child metadata types from this plugin's version of **@salesforce/source-deploy-retrieve** (SDR) are supported, except where noted below. Child types (e.g. `field`, `listView`, `validationRule`) resolve via their parent in the SDR registry and behave like any other type — most are leaf-only and will be skipped non-fatally if their files contain no nested repeatable elements (the Rust disassembler logs a skip at `RUST_LOG=error`, but the CLI does not fail).
+All parent and child metadata types from this plugin's vendored copy of the [@salesforce/source-deploy-retrieve](https://github.com/forcedotcom/source-deploy-retrieve) (SDR) metadata registry are supported, except where noted below. Child types (e.g. `field`, `listView`, `validationRule`) resolve via their parent in the registry and behave like any other type — most are leaf-only and will be skipped non-fatally if their files contain no nested repeatable elements (the Rust disassembler logs a skip at `RUST_LOG=error`, but the CLI does not fail).
 
-Use the metadata **suffix** for `-m` / `--metadata-type`, as in [SDR's metadataRegistry.json](https://github.com/forcedotcom/source-deploy-retrieve/blob/main/src/registry/metadataRegistry.json), or infer from the file name: `*.{suffix}-meta.xml`.
+Use the metadata **suffix** for `-m` / `--metadata-type`, as in the vendored [`metadataRegistry.json`](src/metadata/registry/metadataRegistry.json) (synced weekly from upstream SDR — see [`sync-metadata-registry.yml`](.github/workflows/sync-metadata-registry.yml)), or infer from the file name: `*.{suffix}-meta.xml`.
 
 | Metadata Type                 | CLI value                     | Notes                                                                                                                                                                                                                                                                                                                 |
 |-------------------------------|-------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -689,7 +689,7 @@ Error (1): sfdx-project.json not found in any parent directory.
 
 #### Package Directories Not Found for Given Metadata Type
 
-This plugin relies on the @salesforce/source-deploy-retrieve metadata registry to map each metadata type to its expected directory name.
+This plugin relies on a vendored snapshot of the @salesforce/source-deploy-retrieve metadata registry to map each metadata type to its expected directory name.
 
 If you provide a metadata type whose corresponding directory does not exist in any of your package directories, the plugin will fail with:
 
@@ -723,7 +723,7 @@ Example `WARN` (CustomApplication where four `actionOverrides` siblings shared t
 ### Built With
 
 - [config-disassembler-node](https://github.com/mcarvin8/config-disassembler-node) – Disassemble XML (and other config formats) into smaller, manageable files and reassemble when needed. Node.js + Rust (NAPI-RS).
-- [@salesforce/source-deploy-retrieve](https://github.com/forcedotcom/source-deploy-retrieve) – JavaScript toolkit for working with Salesforce metadata.
+- [@salesforce/source-deploy-retrieve](https://github.com/forcedotcom/source-deploy-retrieve) – Source of the vendored metadata registry (`src/metadata/registry/metadataRegistry.json`), synced weekly. Not a runtime dependency — this plugin ships its own minimal registry lookup and package.xml parser instead.
 
 ---
 

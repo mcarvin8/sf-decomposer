@@ -13,13 +13,8 @@ updates:
     cooldown:
       default-days: 1
     groups:
-      salesforce-source-deploy-retrieve:
-        patterns:
-          - "@salesforce/source-deploy-retrieve"
       dependencies:
         dependency-type: "production"
-        exclude-patterns:
-          - "@salesforce/source-deploy-retrieve"
       dev-dependencies:
         dependency-type: "development"
   - package-ecosystem: "github-actions"

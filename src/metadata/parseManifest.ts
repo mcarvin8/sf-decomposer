@@ -1,10 +1,12 @@
 'use strict';
 
-import { readdir, stat } from 'node:fs/promises';
+import { readdir, readFile, stat } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
-import { ManifestResolver, MetadataType, RegistryAccess } from '@salesforce/source-deploy-retrieve';
 import { getRepoRoot } from '../service/core/getRepoRoot.js';
 import { buildPackageDirectoryIndex } from './getPackageDirectories.js';
+import { RegistryAccess } from './registry/registryAccess.js';
+import { resolveManifestComponents } from './registry/resolveManifestComponents.js';
+import { MetadataType } from './registry/types.js';
 
 export type ManifestFilter = {
   // Maps metadata suffix to the set of absolute parent metadata xml file paths
@@ -38,15 +40,20 @@ export async function parseManifest(
   const absManifestPath = resolve(repoRoot, manifestPath);
 
   const registry = new RegistryAccess();
-  const resolver = new ManifestResolver(undefined, registry);
-  const { components } = await resolver.resolve(absManifestPath);
+  const manifestContents = await readFile(absManifestPath, 'utf-8');
+  const components = resolveManifestComponents(manifestContents, registry);
 
   // Group declared manifest entries by their effective parent metadata type.
   const byParentType = new Map<string, GroupedMembers>();
   for (const component of components) {
     const parentType = registry.getParentType(component.type.name) ?? component.type;
     const parentMember = component.fullName.split('.')[0];
-    const isWildcard = component.fullName === '*' || parentMember === '*';
+    // Stryker disable next-line ConditionalExpression, StringLiteral -- whenever fullName === '*'
+    // exactly, parentMember (= fullName.split('.')[0]) is provably also '*' ('*'.split('.')[0] is
+    // '*'), so this disjunct can never independently change isWildcard's result below -- the
+    // parentMember check already covers that case.
+    const isFullNameWildcard = component.fullName === '*';
+    const isWildcard = isFullNameWildcard || parentMember === '*';
 
     let entry = byParentType.get(parentType.name);
     if (!entry) {
@@ -75,7 +82,8 @@ export async function parseManifest(
   const resolvedPerGroup = await Promise.all(
     groupedEntries.map(async ({ parentType, parentMembers, wildcard }) => {
       const suffix = parentType.suffix;
-      /* istanbul ignore next -- @preserve: parent metadata types always declare a suffix in SDR's registry. Stryker disable next-line all */
+      /* istanbul ignore next -- @preserve: parent metadata types always declare a suffix in SDR's registry. */
+      // Stryker disable next-line all
       if (!suffix) return undefined;
 
       const typeDirs = directoryPathsByName.get(`${parentType.directoryName}`) ?? [];
@@ -121,7 +129,8 @@ export async function parseManifest(
   const unresolvedComponents: Array<{ type: string; member: string }> = [];
 
   for (const entry of resolvedPerGroup) {
-    /* istanbul ignore next -- @preserve: undefined only reachable via the suffix-less branch already ignored above. Stryker disable next-line ConditionalExpression */
+    /* istanbul ignore next -- @preserve: undefined only reachable via the suffix-less branch already ignored above. */
+    // Stryker disable next-line ConditionalExpression
     if (!entry) continue;
     const { suffix, xmlPaths, unresolvedMembers } = entry;
 
@@ -131,7 +140,8 @@ export async function parseManifest(
 
     if (xmlPaths.size === 0) continue;
 
-    /* istanbul ignore else -- @preserve: multiple parent types sharing a suffix is not produced by SDR's registry. Stryker disable next-line ConditionalExpression: */
+    /* istanbul ignore else -- @preserve: multiple parent types sharing a suffix is not produced by SDR's registry. */
+    // Stryker disable next-line ConditionalExpression
     if (!parentXmlsBySuffix.has(suffix)) {
       parentXmlsBySuffix.set(suffix, xmlPaths);
       orderedSuffixes.push(suffix);
@@ -193,7 +203,8 @@ async function resolveMemberXml(
   member: string,
 ): Promise<string | undefined> {
   const { suffix, strictDirectoryName, folderType } = parentType;
-  /* istanbul ignore next -- @preserve: types reaching this point always have a suffix Stryker disable next-line all: paired with the istanbul-ignore above. */
+  /* istanbul ignore next -- @preserve: types reaching this point always have a suffix. */
+  // Stryker disable next-line all
   if (!suffix) return undefined;
 
   // Labels type has a single file regardless of member name.
@@ -222,7 +233,8 @@ async function resolveMemberXml(
 
 async function listParentXmlPaths(typeDir: string, parentType: MetadataType): Promise<string[]> {
   const { suffix, strictDirectoryName } = parentType;
-  /* istanbul ignore next -- @preserve: types reaching this point always have a suffix Stryker disable next-line all: paired with the istanbul-ignore above. */
+  /* istanbul ignore next -- @preserve: types reaching this point always have a suffix. */
+  // Stryker disable next-line all
   if (!suffix) return [];
 
   const metaEnding = `.${suffix}-meta.xml`;
@@ -230,6 +242,10 @@ async function listParentXmlPaths(typeDir: string, parentType: MetadataType): Pr
   if (strictDirectoryName) {
     const entries = await readdir(typeDir, { withFileTypes: true });
     const results = await Promise.all(
+      // Stryker disable next-line MethodExpression -- defensive guard, not provably killable: a
+      // filesystem can't have a file and a directory sharing the same name under the same parent,
+      // so `join(typeDir, entry.name, ...)` can never resolve to a real file for a non-directory
+      // entry regardless of this filter -- exists() below would reject it either way.
       entries
         .filter((entry) => entry.isDirectory())
         .map(async (entry) => {
@@ -254,8 +270,8 @@ async function exists(path: string): Promise<boolean> {
   try {
     await stat(path);
     return true;
-  } catch {
     // Stryker disable next-line BlockStatement
+  } catch {
     return false;
   }
 }

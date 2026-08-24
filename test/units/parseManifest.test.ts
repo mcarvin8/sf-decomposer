@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { parseManifest } from '../../src/metadata/parseManifest.js';
+import { parseManifest, resolveEffectiveMetadataTypes } from '../../src/metadata/parseManifest.js';
 import { SFDX_CONFIG_FILE } from '../utils/constants.js';
 
 // ---- Test workspace plumbing --------------------------------------------
@@ -552,5 +552,84 @@ describe('parseManifest', () => {
 
     expect(result.suffixes).toEqual(['workflow']);
     expect(new Set(result.parentXmlsBySuffix.get('workflow'))).toEqual(new Set([resolve(a), resolve(b)]));
+  });
+
+  it('discriminates wildcard-detection on the parentMember disjunct alone (fullName !== literal "*")', async () => {
+    // '*.Foo' is not itself the literal wildcard string, but its parentMember (split on '.')
+    // is '*' -- so only the `parentMember === '*'` disjunct decides the outcome here.
+    const a = join(project.forceAppDir, 'permissionsets', 'A.permissionset-meta.xml');
+    const b = join(project.forceAppDir, 'permissionsets', 'B.permissionset-meta.xml');
+    await writeMetaFile(a);
+    await writeMetaFile(b);
+
+    const manifest = await writeManifest(project.root, [{ name: 'PermissionSet', members: ['*.Foo'] }]);
+    const result = await parseManifest(manifest, undefined);
+
+    expect(new Set(result.parentXmlsBySuffix.get('permissionset'))).toEqual(new Set([resolve(a), resolve(b)]));
+  });
+
+  it('suppresses per-member unresolved reporting when a type mixes a wildcard with explicit members and its directory does not exist at all', async () => {
+    // No `permissionsets` directory anywhere -- typeDirs is empty. The wildcard signals "whatever
+    // exists" rather than a specific named component, so nothing should be reported unresolved,
+    // even though an explicit member was also declared alongside the wildcard.
+    const manifest = await writeManifest(project.root, [{ name: 'PermissionSet', members: ['*', 'HR_Admin'] }]);
+    const result = await parseManifest(manifest, undefined);
+
+    expect(result.suffixes).toEqual([]);
+    expect(result.unresolvedComponents).toEqual([]);
+  });
+
+  it('reports only the member that failed to resolve when a group mixes a resolved and an unresolved member', async () => {
+    const resolved = join(project.forceAppDir, 'permissionsets', 'Found.permissionset-meta.xml');
+    await writeMetaFile(resolved);
+
+    const manifest = await writeManifest(project.root, [{ name: 'PermissionSet', members: ['Found', 'Missing'] }]);
+    const result = await parseManifest(manifest, undefined);
+
+    expect(new Set(result.parentXmlsBySuffix.get('permissionset'))).toEqual(new Set([resolve(resolved)]));
+    expect(result.unresolvedComponents).toEqual([{ type: 'permissionset', member: 'Missing' }]);
+  });
+});
+
+describe('resolveEffectiveMetadataTypes', () => {
+  let project: Project;
+
+  beforeEach(async () => {
+    project = await makeProject();
+    vi.spyOn(process, 'cwd').mockReturnValue(project.root);
+  });
+
+  afterEach(async () => {
+    vi.spyOn(process, 'cwd').mockRestore();
+    await rm(project.root, { recursive: true, force: true });
+  });
+
+  it('throws when metadataTypes is a defined-but-empty array and no manifest is provided', async () => {
+    await expect(resolveEffectiveMetadataTypes([], undefined, undefined, project.root, vi.fn())).rejects.toThrow(
+      'Either --metadata-type or --manifest must be provided.',
+    );
+  });
+
+  it('converts only the botVersion entry to bot, leaving other types untouched', async () => {
+    const { effectiveTypes } = await resolveEffectiveMetadataTypes(
+      ['botVersion', 'permissionset'],
+      undefined,
+      undefined,
+      project.root,
+      vi.fn(),
+    );
+
+    expect(effectiveTypes).toEqual(['bot', 'permissionset']);
+  });
+
+  it('logs the exact unresolved-component warning for each component the manifest could not resolve', async () => {
+    const manifest = await writeManifest(project.root, [{ name: 'PermissionSet', members: ['Missing'] }]);
+    const log = vi.fn();
+
+    await resolveEffectiveMetadataTypes(undefined, manifest, undefined, project.root, log);
+
+    expect(log).toHaveBeenCalledWith(
+      'Warning: manifest component permissionset:Missing not found in local source; skipping.',
+    );
   });
 });
