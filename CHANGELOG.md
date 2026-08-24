@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.3.0](https://github.com/mcarvin8/sf-decomposer/compare/v7.2.0...v7.3.0) (2026-08-24)
+
+
+### Features
+
+* **action:** add a GitHub Action wrapping decompose/recompose/verify ([#572](https://github.com/mcarvin8/sf-decomposer/issues/572)) ([b32391d](https://github.com/mcarvin8/sf-decomposer/commit/b32391dff7dd2d77868b4a67cc70f7563dd1e55b))
+
 ## [7.2.0](https://github.com/mcarvin8/sf-decomposer/compare/v7.1.1...v7.2.0) (2026-08-24)
 
 
