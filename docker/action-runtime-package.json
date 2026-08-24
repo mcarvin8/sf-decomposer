@@ -1,0 +1,9 @@
+{
+  "name": "sf-decomposer-action-runtime",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "config-disassembler": "3.3.0",
+    "@actions/core": "3.0.1"
+  }
+}

@@ -1,0 +1,70 @@
+name: 'SF Decomposer'
+description: 'Decompose, recompose, and verify Salesforce metadata XML without the Salesforce CLI.'
+author: 'Matt Carvin'
+branding:
+  icon: 'scissors'
+  color: 'blue'
+
+inputs:
+  mode:
+    description: "Command to run: 'decompose', 'recompose', or 'verify'."
+    required: true
+  metadata-type:
+    description: 'Metadata suffix(es) to process, one per line (e.g. "permissionset").'
+    required: false
+  manifest:
+    description: 'Path to a package.xml manifest to scope the run to.'
+    required: false
+  ignore-package-directory:
+    description: 'Package director(y/ies) to skip, one per line.'
+    required: false
+  config:
+    description: 'Read settings from .sfdecomposer.config.json in the repo root, same as the CLI --config flag.'
+    required: false
+    default: 'false'
+  format:
+    description: "Decomposed file format: 'xml', 'json', 'json5', or 'yaml'. Ignored in 'recompose' mode."
+    required: false
+    default: 'xml'
+  strategy:
+    description: "Decompose strategy: 'unique-id' or 'grouped-by-tag'. Ignored in 'recompose' mode."
+    required: false
+    default: 'unique-id'
+  decompose-nested-permissions:
+    description: 'With grouped-by-tag, further decompose permission set/muting permission set object and field permissions. Only used in decompose and verify mode.'
+    required: false
+    default: 'false'
+  prepurge:
+    description: 'Remove existing decomposed files before decomposing. Only used in decompose mode.'
+    required: false
+    default: 'false'
+  postpurge:
+    description: 'After decompose, remove originals; after recompose, remove decomposed files.'
+    required: false
+    default: 'false'
+  update-forceignore:
+    description: 'Append decomposed file patterns to .forceignore. Only used in decompose mode.'
+    required: false
+    default: 'false'
+  update-gitattributes:
+    description: 'Mark decomposed files as generated in .gitattributes. Only used in decompose mode.'
+    required: false
+    default: 'false'
+
+outputs:
+  metadata:
+    description: 'Newline-separated list of metadata suffixes that were processed.'
+  types-count:
+    description: 'Number of distinct metadata types processed.'
+  drift-count:
+    description: 'Verify mode only: number of files that drifted between the original tree and the round-tripped output.'
+  reordered-count:
+    description: 'Verify mode only: number of files whose only delta was sibling/attribute ordering.'
+
+runs:
+  using: 'docker'
+  # Pinned to the current major version's floating tag (moved to the latest release within v7 by
+  # .github/workflows/release.yml's publish-image job on every release) so consumers pull a
+  # prebuilt image instead of every run building one from the Dockerfile. Only needs a commit
+  # here when the major version bumps, not on every patch/minor release.
+  image: 'docker://ghcr.io/mcarvin8/sf-decomposer:v7'
