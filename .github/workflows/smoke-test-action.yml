@@ -93,8 +93,11 @@ jobs:
           cat /tmp/decompose-output.txt
 
       - name: Confirm decompose processed the type
+        # @actions/core.setOutput always writes the `KEY<<DELIM / VALUE / DELIM` heredoc format
+        # (even for a plain single-line value like "1"), not `KEY=VALUE` -- extract the line
+        # right after the `types-count<<...` marker.
         run: |
-          TYPES_COUNT=$(grep '^types-count=' /tmp/decompose-output.txt | cut -d= -f2)
+          TYPES_COUNT=$(awk '/^types-count<</{f=1;next} f{print;exit}' /tmp/decompose-output.txt)
           echo "types-count: $TYPES_COUNT"
           if [ "$TYPES_COUNT" != "1" ]; then
             echo "Expected types-count 1, got '$TYPES_COUNT'."
@@ -125,7 +128,7 @@ jobs:
 
       - name: Confirm verify reported zero drift
         run: |
-          DRIFT_COUNT=$(grep '^drift-count=' /tmp/verify-output.txt | cut -d= -f2)
+          DRIFT_COUNT=$(awk '/^drift-count<</{f=1;next} f{print;exit}' /tmp/verify-output.txt)
           echo "drift-count: $DRIFT_COUNT"
           if [ "$DRIFT_COUNT" != "0" ]; then
             echo "Expected drift-count 0, got '$DRIFT_COUNT'."
