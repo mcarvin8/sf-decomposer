@@ -8,7 +8,10 @@
 [![Mutation testing badge](https://img.shields.io/endpoint?style=flat&url=https%3A%2F%2Fbadge-api.stryker-mutator.io%2Fgithub.com%2Fmcarvin8%2Fsf-decomposer%2Fmain)](https://dashboard.stryker-mutator.io/reports/github.com/mcarvin8/sf-decomposer/main)
 [![Performance](https://img.shields.io/badge/Performance-Dashboard-58a6ff)](https://mcarvin8.github.io/sf-decomposer/dev/bench/runtime/)
 
-A Salesforce CLI plugin that **decomposes** large metadata XML files into smaller, version-control–friendly files (XML, JSON, YAML, JSON5), and **recomposes** them back into deployment-ready metadata.
+**Decomposes** large Salesforce metadata XML files into smaller, version-control–friendly files (XML, JSON, YAML, JSON5), and **recomposes** them back into deployment-ready metadata — as a Salesforce CLI plugin, or as a GitHub Action that needs neither the CLI nor a plugin install.
+
+- Using the Salesforce CLI? Start at [Setup](#setup).
+- Running this in CI without the CLI? Skip straight to [GitHub Action](#github-action).
 
 <!-- TABLE OF CONTENTS -->
 <details>
