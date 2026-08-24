@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.2.0](https://github.com/mcarvin8/sf-decomposer/compare/v7.1.1...v7.2.0) (2026-08-24)
+
+
+### Features
+
+* **metadata:** vendor SDR registry to drop runtime dependency ([#568](https://github.com/mcarvin8/sf-decomposer/issues/568)) ([76285e8](https://github.com/mcarvin8/sf-decomposer/commit/76285e850b3b4fe0b0732bf7de14d7b7dd056999))
+
 ## [7.1.1](https://github.com/mcarvin8/sf-decomposer/compare/v7.1.0...v7.1.1) (2026-08-18)
 
 
