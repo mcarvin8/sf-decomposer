@@ -34,4 +34,7 @@ COPY docker/action-runtime-package.json ./package.json
 RUN npm install --omit=dev
 COPY --from=build /app/lib ./lib
 
-ENTRYPOINT ["node", "lib/action/index.js"]
+# Absolute path: GitHub Actions runs container actions with `--workdir /github/workspace`
+# (the caller's checkout), overriding this image's own WORKDIR -- a relative path here would
+# resolve against the caller's workspace instead of /app and fail with MODULE_NOT_FOUND.
+ENTRYPOINT ["node", "/app/lib/action/index.js"]
