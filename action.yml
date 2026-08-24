@@ -1,5 +1,5 @@
 name: 'SF Decomposer'
-description: 'Decompose, recompose, and verify Salesforce metadata XML without the Salesforce CLI.'
+description: 'Decompose Salesforce metadata into granular, VCS-friendly files; recompose for deployment.'
 author: 'Matt Carvin'
 branding:
   icon: 'scissors'
