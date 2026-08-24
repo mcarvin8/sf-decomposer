@@ -361,20 +361,20 @@ Or point it at an existing `.sfdecomposer.config.json` for either step instead o
 
 **Inputs** (all optional except `mode`; multi-value inputs are newline-separated, matching `actions/checkout`'s own multiline convention):
 
-| Input                           | Used by                  | Description                                                                          |
-| -------------------------------- | ------------------------- | -------------------------------------------------------------------------------------- |
-| `mode`                           | all                        | `decompose`, `recompose`, or `verify`.                                                 |
-| `metadata-type`                  | all                        | Metadata suffix(es) to process, one per line.                                          |
-| `manifest`                       | all                        | Path to a package.xml manifest to scope the run to.                                    |
-| `ignore-package-directory`       | all                        | Package director(y/ies) to skip, one per line.                                         |
-| `config`                         | all                        | Read settings from `.sfdecomposer.config.json`, same as the CLI's `--config`.          |
-| `format`                         | decompose, verify          | `xml`, `json`, `json5`, or `yaml`. Default `xml`.                                      |
-| `strategy`                       | decompose, verify          | `unique-id` or `grouped-by-tag`. Default `unique-id`.                                  |
-| `decompose-nested-permissions`   | decompose, verify          | With `grouped-by-tag`, further decompose permission set object/field permissions.      |
-| `prepurge`                       | decompose                  | Remove existing decomposed files before decomposing.                                   |
-| `postpurge`                      | decompose, recompose       | After decompose, remove originals; after recompose, remove decomposed files.           |
-| `update-forceignore`             | decompose                  | Append decomposed file patterns to `.forceignore`.                                     |
-| `update-gitattributes`           | decompose                  | Mark decomposed files as generated in `.gitattributes`.                                |
+| Input                          | Used by              | Description                                                                       |
+|--------------------------------|----------------------|-----------------------------------------------------------------------------------|
+| `mode`                         | all                  | `decompose`, `recompose`, or `verify`.                                            |
+| `metadata-type`                | all                  | Metadata suffix(es) to process, one per line.                                     |
+| `manifest`                     | all                  | Path to a package.xml manifest to scope the run to.                               |
+| `ignore-package-directory`     | all                  | Package director(y/ies) to skip, one per line.                                    |
+| `config`                       | all                  | Read settings from `.sfdecomposer.config.json`, same as the CLI's `--config`.     |
+| `format`                       | decompose, verify    | `xml`, `json`, `json5`, or `yaml`. Default `xml`.                                 |
+| `strategy`                     | decompose, verify    | `unique-id` or `grouped-by-tag`. Default `unique-id`.                             |
+| `decompose-nested-permissions` | decompose, verify    | With `grouped-by-tag`, further decompose permission set object/field permissions. |
+| `prepurge`                     | decompose            | Remove existing decomposed files before decomposing.                              |
+| `postpurge`                    | decompose, recompose | After decompose, remove originals; after recompose, remove decomposed files.      |
+| `update-forceignore`           | decompose            | Append decomposed file patterns to `.forceignore`.                                |
+| `update-gitattributes`         | decompose            | Mark decomposed files as generated in `.gitattributes`.                           |
 
 **Outputs:** `metadata` (newline-separated list of processed suffixes), `types-count`; `verify` additionally sets `drift-count` and `reordered-count`, and fails the step when `drift-count` is greater than 0.
 
