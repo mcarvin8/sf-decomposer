@@ -31,7 +31,11 @@ function parseTypesElement(typesEl: XmlNode): ParsedManifestType {
   const children = typesEl.children.filter(isElement);
   const nameEls = children.filter((el) => el.tagName === 'name');
   const memberEls = children.filter((el) => el.tagName === 'members');
+  const otherEl = children.find((el) => el.tagName !== 'name' && el.tagName !== 'members');
 
+  if (otherEl) {
+    throw new Error(`unexpected element <${otherEl.tagName}> inside <types>`);
+  }
   if (nameEls.length !== 1) {
     throw new Error(`<types> must contain exactly one <name> element, found ${nameEls.length}`);
   }
@@ -78,6 +82,9 @@ export function parseManifestXml(xml: string): ParsedManifest {
         throw new Error('<Package> must not contain more than one <version> element');
       }
       versionSeen = true;
+      if (!getText(child)) {
+        throw new Error('<Package><version> element must not be empty');
+      }
     } else {
       throw new Error(`unexpected element <${child.tagName}> inside <Package>`);
     }

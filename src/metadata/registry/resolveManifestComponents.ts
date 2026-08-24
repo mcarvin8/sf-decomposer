@@ -46,6 +46,8 @@ function resolveType(
   members: string[],
   parentType: MetadataType | undefined,
 ): MetadataType {
+  /* v8 ignore next 3 -- defensive guard; the only caller only invokes this once parentType and
+     type.folderType are both already known truthy (parentType is derived from type.folderType) */
   if (!parentType || !type.folderType) {
     return type;
   }

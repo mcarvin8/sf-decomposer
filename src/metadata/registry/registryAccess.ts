@@ -25,6 +25,7 @@ export class RegistryAccess {
     const parentTypeId = registry.childTypes[lower];
     if (parentTypeId) {
       const childType = registry.types[parentTypeId]?.children?.types[lower];
+      /* v8 ignore next -- defensive guard; the vendored registry is always internally consistent */
       if (!childType) {
         throw new Error(`Metadata registry has no child type definition for '${lower}' under '${parentTypeId}'.`);
       }
