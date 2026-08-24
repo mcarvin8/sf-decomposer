@@ -342,7 +342,7 @@ _See code: [src/commands/decomposer/verify.ts](https://github.com/mcarvin8/sf-de
 - uses: actions/checkout@v7
 
 - name: Decompose retrieved metadata
-  uses: mcarvin8/sf-decomposer@v1
+  uses: mcarvin8/sf-decomposer@v7
   with:
     mode: decompose
     metadata-type: |
@@ -351,7 +351,7 @@ _See code: [src/commands/decomposer/verify.ts](https://github.com/mcarvin8/sf-de
     postpurge: 'true'
 
 - name: Verify the round trip before merging
-  uses: mcarvin8/sf-decomposer@v1
+  uses: mcarvin8/sf-decomposer@v7
   with:
     mode: verify
     config: 'true'

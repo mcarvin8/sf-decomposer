@@ -1,12 +1,14 @@
-# Manual smoke test: exercises the GitHub Action end to end (decompose, recompose, verify)
-# against a synthetic SFDX project, on real GitHub Actions infra.
+# Manual smoke test: exercises the GitHub Action's container end to end (decompose, recompose,
+# verify) against a synthetic SFDX project, on real GitHub Actions infra.
 #
-# The Action's core functions require the working directory to be inside an SFDX project
-# (an sfdx-project.json ancestor) -- this repo's own checkout is not one, so unlike a
-# single-file-path tool this can't just point `uses: ./` at a bare checkout. Instead: the
-# Action's own source is checked out into `action-src/` (so `uses: ./action-src` builds this
-# PR's actual Dockerfile), while the job's primary workspace root is a synthetic SFDX project
-# written directly by this workflow -- that's where the container's cwd actually lands.
+# This builds and runs the Dockerfile directly with `docker build`/`docker run` instead of
+# `uses: ./` -- action.yml's `runs.image` now points at a published ghcr.io image (for fast
+# consumer cold starts; see release.yml's publish-image job), and a container action's
+# `runs.image` is either a Dockerfile path or a registry reference, never both. Testing via
+# `uses: ./` would validate the *last published image*, not this PR's actual Dockerfile changes.
+# Driving `docker run` directly re-creates just enough of what the real runner does (see the
+# INPUT_* env var convention and the GITHUB_OUTPUT file @actions/core writes to) to test this
+# PR's container for real.
 name: Smoke test (GitHub Action)
 
 on:
@@ -16,6 +18,7 @@ on:
       - '.github/workflows/smoke-test-action.yml'
       - 'action.yml'
       - 'Dockerfile'
+      - 'docker/**'
       - 'src/action/**'
       - 'src/core/**'
       - 'src/metadata/**'
@@ -27,13 +30,188 @@ permissions:
 
 jobs:
   decompose-recompose-verify-local:
-    name: decompose -> recompose -> verify round trip (local checkout)
+    name: decompose -> recompose -> verify round trip (this PR's Dockerfile)
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Action source
+      - name: Checkout
         uses: actions/checkout@v7
-        with:
-          path: action-src
+
+      - name: Build the Action image from this PR's Dockerfile
+        run: docker build -t sf-decomposer-action:pr .
+
+      - name: Write a synthetic SFDX project into the workspace
+        run: |
+          mkdir -p fixture/force-app/permissionsets
+          cat > fixture/sfdx-project.json <<'EOF'
+          {
+            "packageDirectories": [{ "path": "force-app", "default": true }],
+            "namespace": "",
+            "sourceApiVersion": "62.0"
+          }
+          EOF
+          cat > fixture/force-app/permissionsets/Smoke_Test.permissionset-meta.xml <<'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
+              <label>Smoke Test</label>
+              <hasActivationRequired>false</hasActivationRequired>
+              <userLicense>Salesforce</userLicense>
+              <objectPermissions>
+                  <object>Account</object>
+                  <allowRead>true</allowRead>
+                  <allowCreate>false</allowCreate>
+                  <allowEdit>false</allowEdit>
+                  <allowDelete>false</allowDelete>
+                  <viewAllRecords>false</viewAllRecords>
+                  <modifyAllRecords>false</modifyAllRecords>
+              </objectPermissions>
+          </PermissionSet>
+          EOF
+
+      - name: Decompose
+        run: |
+          : > /tmp/decompose-output.txt
+          docker run --rm \
+            -e INPUT_MODE=decompose \
+            -e "INPUT_METADATA-TYPE=permissionset" \
+            -e GITHUB_OUTPUT=/github/output.txt \
+            -v /tmp/decompose-output.txt:/github/output.txt \
+            -v "$PWD/fixture":/github/workspace \
+            -w /github/workspace \
+            sf-decomposer-action:pr
+          cat /tmp/decompose-output.txt
+
+      - name: Confirm decompose processed the type
+        run: |
+          TYPES_COUNT=$(grep '^types-count=' /tmp/decompose-output.txt | cut -d= -f2)
+          echo "types-count: $TYPES_COUNT"
+          if [ "$TYPES_COUNT" != "1" ]; then
+            echo "Expected types-count 1, got '$TYPES_COUNT'."
+            exit 1
+          fi
+          if [ ! -d fixture/force-app/permissionsets/Smoke_Test ]; then
+            echo "Expected a decomposed force-app/permissionsets/Smoke_Test directory."
+            ls -la fixture/force-app/permissionsets/
+            exit 1
+          fi
+
+      - name: Verify (no drift expected after a fresh decompose)
+        run: |
+          : > /tmp/verify-output.txt
+          docker run --rm \
+            -e INPUT_MODE=verify \
+            -e "INPUT_METADATA-TYPE=permissionset" \
+            -e GITHUB_OUTPUT=/github/output.txt \
+            -v /tmp/verify-output.txt:/github/output.txt \
+            -v "$PWD/fixture":/github/workspace \
+            -w /github/workspace \
+            sf-decomposer-action:pr
+          cat /tmp/verify-output.txt
+
+      - name: Confirm verify reported zero drift
+        run: |
+          DRIFT_COUNT=$(grep '^drift-count=' /tmp/verify-output.txt | cut -d= -f2)
+          echo "drift-count: $DRIFT_COUNT"
+          if [ "$DRIFT_COUNT" != "0" ]; then
+            echo "Expected drift-count 0, got '$DRIFT_COUNT'."
+            exit 1
+          fi
+
+      - name: Recompose
+        run: |
+          : > /tmp/recompose-output.txt
+          docker run --rm \
+            -e INPUT_MODE=recompose \
+            -e "INPUT_METADATA-TYPE=permissionset" \
+            -e INPUT_POSTPURGE=true \
+            -e GITHUB_OUTPUT=/github/output.txt \
+            -v /tmp/recompose-output.txt:/github/output.txt \
+            -v "$PWD/fixture":/github/workspace \
+            -w /github/workspace \
+            sf-decomposer-action:pr
+          cat /tmp/recompose-output.txt
+
+      - name: Confirm recompose restored the original single file
+        run: |
+          if [ ! -f fixture/force-app/permissionsets/Smoke_Test.permissionset-meta.xml ]; then
+            echo "Expected the recomposed force-app/permissionsets/Smoke_Test.permissionset-meta.xml file."
+            ls -la fixture/force-app/permissionsets/
+            exit 1
+          fi
+          if [ -d fixture/force-app/permissionsets/Smoke_Test ]; then
+            echo "postpurge should have removed the decomposed directory."
+            exit 1
+          fi
+          # Not a byte-for-byte comparison against the original: attribute/sibling reordering is
+          # an expected, non-failing outcome of a round trip (see the tool's own "reordered" vs
+          # "drift" distinction) -- the earlier verify step already confirmed zero semantic drift.
+          grep -q '<PermissionSet ' fixture/force-app/permissionsets/Smoke_Test.permissionset-meta.xml
+          grep -q '<object>Account</object>' fixture/force-app/permissionsets/Smoke_Test.permissionset-meta.xml
+
+  invalid-mode-failure-path-local:
+    name: invalid mode failure path (this PR's Dockerfile)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Build the Action image from this PR's Dockerfile
+        run: docker build -t sf-decomposer-action:pr .
+
+      - name: Run with an invalid mode (expected to exit non-zero)
+        run: |
+          mkdir -p fixture
+          if docker run --rm \
+            -e INPUT_MODE=bogus \
+            -v "$PWD/fixture":/github/workspace \
+            -w /github/workspace \
+            sf-decomposer-action:pr; then
+            echo "Expected the container to exit non-zero for an invalid mode."
+            exit 1
+          fi
+          echo "Confirmed: an invalid mode correctly exited non-zero."
+
+  missing-metadata-and-manifest-failure-path-local:
+    name: missing metadata-type/manifest failure path (this PR's Dockerfile)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Build the Action image from this PR's Dockerfile
+        run: docker build -t sf-decomposer-action:pr .
+
+      - name: Write a synthetic SFDX project into the workspace
+        run: |
+          mkdir -p fixture/force-app
+          cat > fixture/sfdx-project.json <<'EOF'
+          {
+            "packageDirectories": [{ "path": "force-app", "default": true }],
+            "namespace": "",
+            "sourceApiVersion": "62.0"
+          }
+          EOF
+
+      - name: Decompose with neither metadata-type nor manifest set (expected to exit non-zero)
+        run: |
+          if docker run --rm \
+            -e INPUT_MODE=decompose \
+            -v "$PWD/fixture":/github/workspace \
+            -w /github/workspace \
+            sf-decomposer-action:pr; then
+            echo "Expected the container to exit non-zero when neither metadata-type nor manifest is set."
+            exit 1
+          fi
+          echo "Confirmed: missing metadata-type/manifest correctly exited non-zero."
+
+  published-image-round-trip:
+    # Only runs on-demand (post-release), since the ghcr.io image action.yml now points at
+    # doesn't exist until the first release publishes it. Validates what consumers actually pull.
+    name: decompose -> verify round trip (published @v7)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
 
       - name: Write a synthetic SFDX project into the workspace
         run: |
@@ -65,12 +243,12 @@ jobs:
 
       - name: Decompose
         id: decompose
-        uses: ./action-src
+        uses: mcarvin8/sf-decomposer@v7
         with:
           mode: decompose
           metadata-type: permissionset
 
-      - name: Confirm decompose processed the type
+      - name: Show outputs and confirm the type processed
         run: |
           echo "metadata: ${{ steps.decompose.outputs.metadata }}"
           echo "types-count: ${{ steps.decompose.outputs.types-count }}"
@@ -78,108 +256,18 @@ jobs:
             echo "Expected types-count 1, got '${{ steps.decompose.outputs.types-count }}'."
             exit 1
           fi
-          if [ ! -d force-app/permissionsets/Smoke_Test ]; then
-            echo "Expected a decomposed force-app/permissionsets/Smoke_Test directory."
-            ls -la force-app/permissionsets/
-            exit 1
-          fi
 
-      - name: Verify (no drift expected after a fresh decompose)
-        id: verify-clean
-        uses: ./action-src
+      - name: Verify
+        id: verify
+        uses: mcarvin8/sf-decomposer@v7
         with:
           mode: verify
           metadata-type: permissionset
 
       - name: Confirm verify reported zero drift
         run: |
-          echo "drift-count: ${{ steps.verify-clean.outputs.drift-count }}"
-          if [ "${{ steps.verify-clean.outputs.drift-count }}" != "0" ]; then
-            echo "Expected drift-count 0, got '${{ steps.verify-clean.outputs.drift-count }}'."
+          echo "drift-count: ${{ steps.verify.outputs.drift-count }}"
+          if [ "${{ steps.verify.outputs.drift-count }}" != "0" ]; then
+            echo "Expected drift-count 0, got '${{ steps.verify.outputs.drift-count }}'."
             exit 1
           fi
-
-      - name: Recompose
-        id: recompose
-        uses: ./action-src
-        with:
-          mode: recompose
-          metadata-type: permissionset
-          postpurge: 'true'
-
-      - name: Confirm recompose restored the original single file
-        run: |
-          echo "metadata: ${{ steps.recompose.outputs.metadata }}"
-          if [ ! -f force-app/permissionsets/Smoke_Test.permissionset-meta.xml ]; then
-            echo "Expected the recomposed force-app/permissionsets/Smoke_Test.permissionset-meta.xml file."
-            ls -la force-app/permissionsets/
-            exit 1
-          fi
-          if [ -d force-app/permissionsets/Smoke_Test ]; then
-            echo "postpurge should have removed the decomposed directory."
-            exit 1
-          fi
-          # Not a byte-for-byte comparison against the original: attribute/sibling reordering is
-          # an expected, non-failing outcome of a round trip (see the tool's own "reordered" vs
-          # "drift" distinction) -- the earlier verify step already confirmed zero semantic drift.
-          grep -q '<PermissionSet ' force-app/permissionsets/Smoke_Test.permissionset-meta.xml
-          grep -q '<object>Account</object>' force-app/permissionsets/Smoke_Test.permissionset-meta.xml
-
-  invalid-mode-failure-path-local:
-    name: invalid mode failure path (local checkout)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Action source
-        uses: actions/checkout@v7
-        with:
-          path: action-src
-
-      - name: Run with an invalid mode (expected to fail)
-        id: invalid-mode
-        continue-on-error: true
-        uses: ./action-src
-        with:
-          mode: bogus
-
-      - name: Confirm the step actually failed
-        run: |
-          if [ "${{ steps.invalid-mode.outcome }}" != "failure" ]; then
-            echo "Expected the invalid-mode step to fail (outcome was '${{ steps.invalid-mode.outcome }}')."
-            exit 1
-          fi
-          echo "Confirmed: an invalid mode correctly failed the step."
-
-  missing-metadata-and-manifest-failure-path-local:
-    name: missing metadata-type/manifest failure path (local checkout)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Action source
-        uses: actions/checkout@v7
-        with:
-          path: action-src
-
-      - name: Write a synthetic SFDX project into the workspace
-        run: |
-          mkdir -p force-app
-          cat > sfdx-project.json <<'EOF'
-          {
-            "packageDirectories": [{ "path": "force-app", "default": true }],
-            "namespace": "",
-            "sourceApiVersion": "62.0"
-          }
-          EOF
-
-      - name: Decompose with neither metadata-type nor manifest set (expected to fail)
-        id: decompose-missing-input
-        continue-on-error: true
-        uses: ./action-src
-        with:
-          mode: decompose
-
-      - name: Confirm the step actually failed
-        run: |
-          if [ "${{ steps.decompose-missing-input.outcome }}" != "failure" ]; then
-            echo "Expected the step to fail (outcome was '${{ steps.decompose-missing-input.outcome }}')."
-            exit 1
-          fi
-          echo "Confirmed: missing metadata-type/manifest correctly failed the step."

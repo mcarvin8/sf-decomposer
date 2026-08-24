@@ -63,4 +63,8 @@ outputs:
 
 runs:
   using: 'docker'
-  image: 'Dockerfile'
+  # Pinned to the current major version's floating tag (moved to the latest release within v7 by
+  # .github/workflows/release.yml's publish-image job on every release) so consumers pull a
+  # prebuilt image instead of every run building one from the Dockerfile. Only needs a commit
+  # here when the major version bumps, not on every patch/minor release.
+  image: 'docker://ghcr.io/mcarvin8/sf-decomposer:v7'
