@@ -1,6 +1,7 @@
 export default {
   entry: [
     'src/commands/decomposer/*.ts',
+    'src/action/*.ts',
     'src/hooks/*.ts',
     'bin/dev.js',
     'bin/run.js',

@@ -1,0 +1,17 @@
+node_modules
+lib
+dist
+.wireit
+.git
+.github
+test
+messages
+docs
+reports
+coverage
+perf-fixtures
+perf-results
+scripts
+*.md
+*.tgz
+*.log

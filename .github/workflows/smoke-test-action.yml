@@ -1,0 +1,184 @@
+# Manual smoke test: exercises the GitHub Action end to end (decompose, recompose, verify)
+# against a synthetic SFDX project, on real GitHub Actions infra.
+#
+# The Action's core functions require the working directory to be inside an SFDX project
+# (an sfdx-project.json ancestor) -- this repo's own checkout is not one, so unlike a
+# single-file-path tool this can't just point `uses: ./` at a bare checkout. Instead: the
+# Action's own source is checked out into `action-src/` (so `uses: ./action-src` builds this
+# PR's actual Dockerfile), while the job's primary workspace root is a synthetic SFDX project
+# written directly by this workflow -- that's where the container's cwd actually lands.
+name: Smoke test (GitHub Action)
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/smoke-test-action.yml'
+      - 'action.yml'
+      - 'Dockerfile'
+      - 'src/action/**'
+      - 'src/core/**'
+      - 'src/metadata/**'
+      - 'src/service/**'
+      - 'src/helpers/**'
+
+permissions:
+  contents: read
+
+jobs:
+  decompose-recompose-verify-local:
+    name: decompose -> recompose -> verify round trip (local checkout)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Action source
+        uses: actions/checkout@v7
+        with:
+          path: action-src
+
+      - name: Write a synthetic SFDX project into the workspace
+        run: |
+          mkdir -p force-app/permissionsets
+          cat > sfdx-project.json <<'EOF'
+          {
+            "packageDirectories": [{ "path": "force-app", "default": true }],
+            "namespace": "",
+            "sourceApiVersion": "62.0"
+          }
+          EOF
+          cat > force-app/permissionsets/Smoke_Test.permissionset-meta.xml <<'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
+              <label>Smoke Test</label>
+              <hasActivationRequired>false</hasActivationRequired>
+              <userLicense>Salesforce</userLicense>
+              <objectPermissions>
+                  <object>Account</object>
+                  <allowRead>true</allowRead>
+                  <allowCreate>false</allowCreate>
+                  <allowEdit>false</allowEdit>
+                  <allowDelete>false</allowDelete>
+                  <viewAllRecords>false</viewAllRecords>
+                  <modifyAllRecords>false</modifyAllRecords>
+              </objectPermissions>
+          </PermissionSet>
+          EOF
+          git init -q
+          git add -A
+          git commit -q -m "synthetic fixture" --author="smoke-test <noreply@example.com>"
+
+      - name: Decompose
+        id: decompose
+        uses: ./action-src
+        with:
+          mode: decompose
+          metadata-type: permissionset
+
+      - name: Confirm decompose processed the type
+        run: |
+          echo "metadata: ${{ steps.decompose.outputs.metadata }}"
+          echo "types-count: ${{ steps.decompose.outputs.types-count }}"
+          if [ "${{ steps.decompose.outputs.types-count }}" != "1" ]; then
+            echo "Expected types-count 1, got '${{ steps.decompose.outputs.types-count }}'."
+            exit 1
+          fi
+          if [ ! -d force-app/permissionsets/Smoke_Test ]; then
+            echo "Expected a decomposed force-app/permissionsets/Smoke_Test directory."
+            ls -la force-app/permissionsets/
+            exit 1
+          fi
+
+      - name: Verify (no drift expected after a fresh decompose)
+        id: verify-clean
+        uses: ./action-src
+        with:
+          mode: verify
+          metadata-type: permissionset
+
+      - name: Confirm verify reported zero drift
+        run: |
+          echo "drift-count: ${{ steps.verify-clean.outputs.drift-count }}"
+          if [ "${{ steps.verify-clean.outputs.drift-count }}" != "0" ]; then
+            echo "Expected drift-count 0, got '${{ steps.verify-clean.outputs.drift-count }}'."
+            exit 1
+          fi
+
+      - name: Recompose
+        id: recompose
+        uses: ./action-src
+        with:
+          mode: recompose
+          metadata-type: permissionset
+          postpurge: 'true'
+
+      - name: Confirm recompose restored the original single file
+        run: |
+          echo "metadata: ${{ steps.recompose.outputs.metadata }}"
+          if [ ! -f force-app/permissionsets/Smoke_Test.permissionset-meta.xml ]; then
+            echo "Expected the recomposed force-app/permissionsets/Smoke_Test.permissionset-meta.xml file."
+            ls -la force-app/permissionsets/
+            exit 1
+          fi
+          if [ -d force-app/permissionsets/Smoke_Test ]; then
+            echo "postpurge should have removed the decomposed directory."
+            exit 1
+          fi
+          git diff --exit-code force-app/permissionsets/Smoke_Test.permissionset-meta.xml
+
+  invalid-mode-failure-path-local:
+    name: invalid mode failure path (local checkout)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Action source
+        uses: actions/checkout@v7
+        with:
+          path: action-src
+
+      - name: Run with an invalid mode (expected to fail)
+        id: invalid-mode
+        continue-on-error: true
+        uses: ./action-src
+        with:
+          mode: bogus
+
+      - name: Confirm the step actually failed
+        run: |
+          if [ "${{ steps.invalid-mode.outcome }}" != "failure" ]; then
+            echo "Expected the invalid-mode step to fail (outcome was '${{ steps.invalid-mode.outcome }}')."
+            exit 1
+          fi
+          echo "Confirmed: an invalid mode correctly failed the step."
+
+  missing-metadata-and-manifest-failure-path-local:
+    name: missing metadata-type/manifest failure path (local checkout)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Action source
+        uses: actions/checkout@v7
+        with:
+          path: action-src
+
+      - name: Write a synthetic SFDX project into the workspace
+        run: |
+          mkdir -p force-app
+          cat > sfdx-project.json <<'EOF'
+          {
+            "packageDirectories": [{ "path": "force-app", "default": true }],
+            "namespace": "",
+            "sourceApiVersion": "62.0"
+          }
+          EOF
+
+      - name: Decompose with neither metadata-type nor manifest set (expected to fail)
+        id: decompose-missing-input
+        continue-on-error: true
+        uses: ./action-src
+        with:
+          mode: decompose
+
+      - name: Confirm the step actually failed
+        run: |
+          if [ "${{ steps.decompose-missing-input.outcome }}" != "failure" ]; then
+            echo "Expected the step to fail (outcome was '${{ steps.decompose-missing-input.outcome }}')."
+            exit 1
+          fi
+          echo "Confirmed: missing metadata-type/manifest correctly failed the step."
