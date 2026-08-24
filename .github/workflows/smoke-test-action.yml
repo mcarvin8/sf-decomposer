@@ -68,11 +68,23 @@ jobs:
           EOF
 
       - name: Decompose
+        # A real `uses:` invocation has GitHub Actions inject every action.yml `default:` value
+        # automatically, even when a workflow's `with:` block omits that input. Driving `docker
+        # run` directly bypasses that, so every default-valued input must be set explicitly here
+        # -- @actions/core.getBooleanInput throws (not "defaults to false") on a missing value.
         run: |
           : > /tmp/decompose-output.txt
           docker run --rm \
             -e INPUT_MODE=decompose \
             -e "INPUT_METADATA-TYPE=permissionset" \
+            -e INPUT_CONFIG=false \
+            -e INPUT_FORMAT=xml \
+            -e INPUT_STRATEGY=unique-id \
+            -e "INPUT_DECOMPOSE-NESTED-PERMISSIONS=false" \
+            -e INPUT_PREPURGE=false \
+            -e INPUT_POSTPURGE=false \
+            -e "INPUT_UPDATE-FORCEIGNORE=false" \
+            -e "INPUT_UPDATE-GITATTRIBUTES=false" \
             -e GITHUB_OUTPUT=/github/output.txt \
             -v /tmp/decompose-output.txt:/github/output.txt \
             -v "$PWD/fixture":/github/workspace \
@@ -100,6 +112,10 @@ jobs:
           docker run --rm \
             -e INPUT_MODE=verify \
             -e "INPUT_METADATA-TYPE=permissionset" \
+            -e INPUT_CONFIG=false \
+            -e INPUT_FORMAT=xml \
+            -e INPUT_STRATEGY=unique-id \
+            -e "INPUT_DECOMPOSE-NESTED-PERMISSIONS=false" \
             -e GITHUB_OUTPUT=/github/output.txt \
             -v /tmp/verify-output.txt:/github/output.txt \
             -v "$PWD/fixture":/github/workspace \
@@ -122,6 +138,7 @@ jobs:
           docker run --rm \
             -e INPUT_MODE=recompose \
             -e "INPUT_METADATA-TYPE=permissionset" \
+            -e INPUT_CONFIG=false \
             -e INPUT_POSTPURGE=true \
             -e GITHUB_OUTPUT=/github/output.txt \
             -v /tmp/recompose-output.txt:/github/output.txt \
@@ -195,6 +212,14 @@ jobs:
         run: |
           if docker run --rm \
             -e INPUT_MODE=decompose \
+            -e INPUT_CONFIG=false \
+            -e INPUT_FORMAT=xml \
+            -e INPUT_STRATEGY=unique-id \
+            -e "INPUT_DECOMPOSE-NESTED-PERMISSIONS=false" \
+            -e INPUT_PREPURGE=false \
+            -e INPUT_POSTPURGE=false \
+            -e "INPUT_UPDATE-FORCEIGNORE=false" \
+            -e "INPUT_UPDATE-GITATTRIBUTES=false" \
             -v "$PWD/fixture":/github/workspace \
             -w /github/workspace \
             sf-decomposer-action:pr; then
