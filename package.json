@@ -35,6 +35,7 @@
   },
   "files": [
     "/lib",
+    "!/lib/action/**",
     "/messages",
     "/oclif.manifest.json",
     "/oclif.lock",
