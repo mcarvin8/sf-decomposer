@@ -32,8 +32,8 @@ function getChildSuffixMap(registryAccess: RegistryAccess): Map<string, Metadata
       // is guaranteed (by the vendored registry's own invariants) to resolve to a real parentType
       // with a children.types entry for that key.
       const childEntry = parentType?.children?.types[childXmlNameLower];
-      /* v8 ignore next -- defensive guard; SDR registry always provides a suffix for child types */
       // Stryker disable next-line ConditionalExpression, OptionalChaining -- same registry invariant.
+      /* v8 ignore next -- defensive guard; SDR registry always provides a suffix for child types */
       if (childEntry?.suffix) {
         childSuffixMap.set(childEntry.suffix, childEntry);
       }
