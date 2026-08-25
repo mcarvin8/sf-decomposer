@@ -238,4 +238,15 @@ describe('getRegistryValuesBySuffix', () => {
       getRegistryValuesBySuffix('animationRule', 'decompose', undefined, undefined, undefined, pathIndex),
     ).rejects.toThrow('No directories named animationRules were found in any package directory.');
   });
+
+  it('falls back to an empty path list when the pathIndex has no entry at all for the type directory', async () => {
+    // A pathIndex built for a *different* set of directory names (unlike buildPackageDirectoryIndex's
+    // own always-seeded keys) has no `permissionsets` key whatsoever, exercising the `?? []` fallback
+    // rather than an existing-but-empty array.
+    const pathIndex = await buildPackageDirectoryIndex(['animationRules'], undefined);
+
+    await expect(
+      getRegistryValuesBySuffix('permissionset', 'decompose', undefined, undefined, undefined, pathIndex),
+    ).rejects.toThrow('No directories named permissionsets were found in any package directory.');
+  });
 });

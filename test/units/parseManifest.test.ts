@@ -579,6 +579,27 @@ describe('parseManifest', () => {
     expect(result.unresolvedComponents).toEqual([]);
   });
 
+  it('merges xmlPaths from two distinct parent types that share the same registry suffix', async () => {
+    // AppointmentAssignmentPolicy and AppointmentSchedulingPolicy are distinct SDR registry types
+    // that both use the `.policy` suffix, so they land in separate `byParentType` groups but the
+    // same `parentXmlsBySuffix` entry -- exercising the else-branch merge (existing.add(xmlPath)).
+    const assignmentFile = join(project.forceAppDir, 'appointmentAssignmentPolicies', 'P1', 'P1.policy-meta.xml');
+    const schedulingFile = join(project.forceAppDir, 'appointmentSchedulingPolicies', 'P2', 'P2.policy-meta.xml');
+    await writeMetaFile(assignmentFile);
+    await writeMetaFile(schedulingFile);
+
+    const manifest = await writeManifest(project.root, [
+      { name: 'AppointmentAssignmentPolicy', members: ['P1'] },
+      { name: 'AppointmentSchedulingPolicy', members: ['P2'] },
+    ]);
+    const result = await parseManifest(manifest, undefined);
+
+    expect(result.suffixes).toEqual(['policy']);
+    expect(new Set(result.parentXmlsBySuffix.get('policy'))).toEqual(
+      new Set([resolve(assignmentFile), resolve(schedulingFile)]),
+    );
+  });
+
   it('reports only the member that failed to resolve when a group mixes a resolved and an unresolved member', async () => {
     const resolved = join(project.forceAppDir, 'permissionsets', 'Found.permissionset-meta.xml');
     await writeMetaFile(resolved);

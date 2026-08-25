@@ -82,10 +82,13 @@ export async function parseManifest(
   const resolvedPerGroup = await Promise.all(
     groupedEntries.map(async ({ parentType, parentMembers, wildcard }) => {
       const suffix = parentType.suffix;
-      /* istanbul ignore next -- @preserve: parent metadata types always declare a suffix in SDR's registry. */
       // Stryker disable next-line all
+      /* v8 ignore next -- @preserve: parent metadata types always declare a suffix in SDR's registry. */
       if (!suffix) return undefined;
 
+      /* v8 ignore next -- @preserve: `directoryNames` (built above from these same groups'
+         directoryName values) always seeds every key buildPackageDirectoryIndex returns, so
+         `.get()` here can never miss. */
       const typeDirs = directoryPathsByName.get(`${parentType.directoryName}`) ?? [];
       // Stryker disable next-line ConditionalExpression
       if (typeDirs.length === 0) {
@@ -129,8 +132,8 @@ export async function parseManifest(
   const unresolvedComponents: Array<{ type: string; member: string }> = [];
 
   for (const entry of resolvedPerGroup) {
-    /* istanbul ignore next -- @preserve: undefined only reachable via the suffix-less branch already ignored above. */
     // Stryker disable next-line ConditionalExpression
+    /* v8 ignore next -- @preserve: undefined only reachable via the suffix-less branch already ignored above. */
     if (!entry) continue;
     const { suffix, xmlPaths, unresolvedMembers } = entry;
 
@@ -140,8 +143,9 @@ export async function parseManifest(
 
     if (xmlPaths.size === 0) continue;
 
-    /* istanbul ignore else -- @preserve: multiple parent types sharing a suffix is not produced by SDR's registry. */
-    // Stryker disable next-line ConditionalExpression
+    // Multiple distinct parent types can share the same suffix in SDR's registry (e.g.
+    // AppointmentAssignmentPolicy and AppointmentSchedulingPolicy both use `.policy`), so a later
+    // group's xmlPaths must merge into the suffix's existing Set rather than overwrite it.
     if (!parentXmlsBySuffix.has(suffix)) {
       parentXmlsBySuffix.set(suffix, xmlPaths);
       orderedSuffixes.push(suffix);
@@ -203,8 +207,8 @@ async function resolveMemberXml(
   member: string,
 ): Promise<string | undefined> {
   const { suffix, strictDirectoryName, folderType } = parentType;
-  /* istanbul ignore next -- @preserve: types reaching this point always have a suffix. */
   // Stryker disable next-line all
+  /* v8 ignore next -- @preserve: types reaching this point always have a suffix. */
   if (!suffix) return undefined;
 
   // Labels type has a single file regardless of member name.
@@ -233,8 +237,8 @@ async function resolveMemberXml(
 
 async function listParentXmlPaths(typeDir: string, parentType: MetadataType): Promise<string[]> {
   const { suffix, strictDirectoryName } = parentType;
-  /* istanbul ignore next -- @preserve: types reaching this point always have a suffix. */
   // Stryker disable next-line all
+  /* v8 ignore next -- @preserve: types reaching this point always have a suffix. */
   if (!suffix) return [];
 
   const metaEnding = `.${suffix}-meta.xml`;

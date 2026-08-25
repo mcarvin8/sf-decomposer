@@ -9,6 +9,8 @@ const {
   setOutputSpy,
   setFailedSpy,
   errorSpy,
+  warningSpy,
+  infoSpy,
   verifyMetadataTypesSpy,
   loadConfigFileSpy,
   resolveDefaultConfigPathSpy,
@@ -20,6 +22,8 @@ const {
   setOutputSpy: vi.fn(),
   setFailedSpy: vi.fn(),
   errorSpy: vi.fn(),
+  warningSpy: vi.fn(),
+  infoSpy: vi.fn(),
   verifyMetadataTypesSpy: vi.fn(),
   loadConfigFileSpy: vi.fn(),
   resolveDefaultConfigPathSpy: vi.fn(),
@@ -33,7 +37,8 @@ vi.mock('@actions/core', () => ({
   setOutput: setOutputSpy,
   setFailed: setFailedSpy,
   error: errorSpy,
-  warning: vi.fn(),
+  warning: warningSpy,
+  info: infoSpy,
 }));
 
 vi.mock('../../src/core/verifyMetadataTypes.js', () => ({
@@ -133,5 +138,49 @@ describe('runVerify', () => {
         decomposeNestedPerms: true,
       }),
     );
+  });
+
+  it('leaves configManifest undefined when an explicit manifest input is already provided', async () => {
+    setInputs({
+      strings: { manifest: 'explicit-manifest.xml' },
+      booleans: { config: true },
+    });
+    resolveDefaultConfigPathSpy.mockResolvedValue('/repo/.sfdecomposer.config.json');
+    loadConfigFileSpy.mockResolvedValue({ metadataSuffixes: 'permissionset', manifest: 'config-manifest.xml' });
+    validateConfigManifestSpy.mockResolvedValue('explicit-manifest.xml');
+    verifyMetadataTypesSpy.mockResolvedValue({ metadata: ['permissionset'], drift: [], reordered: [] });
+
+    await runVerify();
+
+    expect(validateConfigManifestSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ configManifest: undefined, manifest: 'explicit-manifest.xml' }),
+    );
+  });
+
+  it('forwards a warning from validateConfigManifest via core.warning', async () => {
+    setInputs({ booleans: { config: true } });
+    resolveDefaultConfigPathSpy.mockResolvedValue('/repo/.sfdecomposer.config.json');
+    loadConfigFileSpy.mockResolvedValue({ metadataSuffixes: 'permissionset', manifest: 'manifest.xml' });
+    validateConfigManifestSpy.mockImplementation(async ({ warn }: { warn: (msg: string) => void }) => {
+      warn('manifest missing, falling back');
+      return undefined;
+    });
+    verifyMetadataTypesSpy.mockResolvedValue({ metadata: ['permissionset'], drift: [], reordered: [] });
+
+    await runVerify();
+
+    expect(warningSpy).toHaveBeenCalledWith('manifest missing, falling back');
+  });
+
+  it('forwards a log message from verifyMetadataTypes via core.info', async () => {
+    setInputs({ multiline: { 'metadata-type': ['permissionset'] } });
+    verifyMetadataTypesSpy.mockImplementation(async ({ log }: { log: (msg: string) => void }) => {
+      log('verifying permissionset');
+      return { metadata: ['permissionset'], drift: [], reordered: [] };
+    });
+
+    await runVerify();
+
+    expect(infoSpy).toHaveBeenCalledWith('verifying permissionset');
   });
 });

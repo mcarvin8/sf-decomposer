@@ -8,6 +8,7 @@ const {
   getBooleanInputSpy,
   setOutputSpy,
   warningSpy,
+  infoSpy,
   decomposeMetadataTypesSpy,
   loadConfigFileSpy,
   resolveDefaultConfigPathSpy,
@@ -18,6 +19,7 @@ const {
   getBooleanInputSpy: vi.fn(),
   setOutputSpy: vi.fn(),
   warningSpy: vi.fn(),
+  infoSpy: vi.fn(),
   decomposeMetadataTypesSpy: vi.fn(),
   loadConfigFileSpy: vi.fn(),
   resolveDefaultConfigPathSpy: vi.fn(),
@@ -30,6 +32,7 @@ vi.mock('@actions/core', () => ({
   getBooleanInput: getBooleanInputSpy,
   setOutput: setOutputSpy,
   warning: warningSpy,
+  info: infoSpy,
 }));
 
 vi.mock('../../src/core/decomposeMetadataTypes.js', () => ({
@@ -150,5 +153,33 @@ describe('runDecompose', () => {
     await runDecompose();
 
     expect(warningSpy).toHaveBeenCalledWith('manifest missing, falling back');
+  });
+
+  it('leaves configManifest undefined when an explicit manifest input is already provided', async () => {
+    setInputs({
+      strings: { manifest: 'explicit-manifest.xml' },
+      booleans: { config: true },
+    });
+    resolveDefaultConfigPathSpy.mockResolvedValue('/repo/.sfdecomposer.config.json');
+    loadConfigFileSpy.mockResolvedValue({ metadataSuffixes: 'permissionset', manifest: 'config-manifest.xml' });
+    validateConfigManifestSpy.mockResolvedValue('explicit-manifest.xml');
+
+    await runDecompose();
+
+    expect(validateConfigManifestSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ configManifest: undefined, manifest: 'explicit-manifest.xml' }),
+    );
+  });
+
+  it('forwards a log message from decomposeMetadataTypes via core.info', async () => {
+    setInputs({ multiline: { 'metadata-type': ['permissionset'] } });
+    decomposeMetadataTypesSpy.mockImplementation(async ({ log }: { log: (msg: string) => void }) => {
+      log('decomposing permissionset');
+      return { metadata: ['permissionset'] };
+    });
+
+    await runDecompose();
+
+    expect(infoSpy).toHaveBeenCalledWith('decomposing permissionset');
   });
 });

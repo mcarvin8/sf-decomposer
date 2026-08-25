@@ -7,6 +7,8 @@ const {
   getMultilineInputSpy,
   getBooleanInputSpy,
   setOutputSpy,
+  warningSpy,
+  infoSpy,
   recomposeMetadataTypesSpy,
   loadConfigFileSpy,
   resolveDefaultConfigPathSpy,
@@ -16,6 +18,8 @@ const {
   getMultilineInputSpy: vi.fn(),
   getBooleanInputSpy: vi.fn(),
   setOutputSpy: vi.fn(),
+  warningSpy: vi.fn(),
+  infoSpy: vi.fn(),
   recomposeMetadataTypesSpy: vi.fn(),
   loadConfigFileSpy: vi.fn(),
   resolveDefaultConfigPathSpy: vi.fn(),
@@ -27,7 +31,8 @@ vi.mock('@actions/core', () => ({
   getMultilineInput: getMultilineInputSpy,
   getBooleanInput: getBooleanInputSpy,
   setOutput: setOutputSpy,
-  warning: vi.fn(),
+  warning: warningSpy,
+  info: infoSpy,
 }));
 
 vi.mock('../../src/core/recomposeMetadataTypes.js', () => ({
@@ -94,5 +99,47 @@ describe('runRecompose', () => {
     expect(recomposeMetadataTypesSpy).toHaveBeenCalledWith(
       expect.objectContaining({ metadataTypes: ['permissionset'], postpurge: true }),
     );
+  });
+
+  it('leaves configManifest undefined when an explicit manifest input is already provided', async () => {
+    setInputs({
+      strings: { manifest: 'explicit-manifest.xml' },
+      booleans: { config: true },
+    });
+    resolveDefaultConfigPathSpy.mockResolvedValue('/repo/.sfdecomposer.config.json');
+    loadConfigFileSpy.mockResolvedValue({ metadataSuffixes: 'permissionset', manifest: 'config-manifest.xml' });
+    validateConfigManifestSpy.mockResolvedValue('explicit-manifest.xml');
+
+    await runRecompose();
+
+    expect(validateConfigManifestSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ configManifest: undefined, manifest: 'explicit-manifest.xml' }),
+    );
+  });
+
+  it('forwards a warning from validateConfigManifest via core.warning', async () => {
+    setInputs({ booleans: { config: true } });
+    resolveDefaultConfigPathSpy.mockResolvedValue('/repo/.sfdecomposer.config.json');
+    loadConfigFileSpy.mockResolvedValue({ metadataSuffixes: 'permissionset', manifest: 'manifest.xml' });
+    validateConfigManifestSpy.mockImplementation(async ({ warn }: { warn: (msg: string) => void }) => {
+      warn('manifest missing, falling back');
+      return undefined;
+    });
+
+    await runRecompose();
+
+    expect(warningSpy).toHaveBeenCalledWith('manifest missing, falling back');
+  });
+
+  it('forwards a log message from recomposeMetadataTypes via core.info', async () => {
+    setInputs({ multiline: { 'metadata-type': ['permissionset'] } });
+    recomposeMetadataTypesSpy.mockImplementation(async ({ log }: { log: (msg: string) => void }) => {
+      log('recomposing permissionset');
+      return { metadata: ['permissionset'] };
+    });
+
+    await runRecompose();
+
+    expect(infoSpy).toHaveBeenCalledWith('recomposing permissionset');
   });
 });
