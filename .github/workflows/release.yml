@@ -84,6 +84,17 @@ jobs:
           NODE_AUTH_TOKEN="" npm publish --access public --tag latest --provenance
           echo "published=true" >> "$GITHUB_OUTPUT"
 
+      # `npm publish` runs the `prepack` script (oclif manifest && oclif readme),
+      # which regenerates README.md's Command Reference against the version
+      # release-please just bumped. Push that back to main so the repo's README
+      # never drifts from what was just published.
+      - name: Commit regenerated README
+        if: steps.publish.outputs.published == 'true'
+        uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          commit_message: "docs: regenerate command reference [skip ci]"
+          file_pattern: README.md
+
       # release-please only ever creates the exact vX.Y.Z tag. action.yml pins the GitHub Action
       # to a floating major-version tag (docker://ghcr.io/.../vX) so consumers using
       # `uses: mcarvin8/sf-decomposer@vX` don't need to bump on every release -- but `@vX` only
@@ -96,17 +107,6 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git tag -f "$MAJOR"
           git push origin "$MAJOR" --force
-
-      # `npm publish` runs the `prepack` script (oclif manifest && oclif readme),
-      # which regenerates README.md's Command Reference against the version
-      # release-please just bumped. Push that back to main so the repo's README
-      # never drifts from what was just published.
-      - name: Commit regenerated README
-        if: steps.publish.outputs.published == 'true'
-        uses: stefanzweifel/git-auto-commit-action@v7
-        with:
-          commit_message: "docs: regenerate command reference [skip ci]"
-          file_pattern: README.md
 
   # Publishes the GitHub Action's container image to GHCR so consumers pull a prebuilt image
   # (action.yml's runs.image) instead of every workflow run building it fresh from the
