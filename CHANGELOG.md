@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.3.2](https://github.com/mcarvin8/sf-decomposer/compare/v7.3.1...v7.3.2) (2026-08-25)
+
+
+### Bug Fixes
+
+* **ci:** commit updated readme before moving floating major tag ([a772ba5](https://github.com/mcarvin8/sf-decomposer/commit/a772ba524dbe2e56ba77e26825aa3d8587b27ea7))
+
 ## [7.3.1](https://github.com/mcarvin8/sf-decomposer/compare/v7.3.0...v7.3.1) (2026-08-25)
 
 
