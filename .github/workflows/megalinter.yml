@@ -96,7 +96,7 @@ jobs:
               github.head_ref ||
               github.ref
             }}
-          commit_message: '[MegaLinter] Apply linters fixes'
+          commit_message: 'chore(megalinter): apply linters fixes [skip ci]'
           commit_user_name: megalinter-bot
           commit_user_email: 129584137+megalinter-bot@users.noreply.github.com
           file_pattern: '. :!.github/workflows/**'
