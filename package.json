@@ -39,8 +39,7 @@
     "/messages",
     "/oclif.manifest.json",
     "/oclif.lock",
-    "/CHANGELOG.md",
-    "/HANDBOOK.md"
+    "/CHANGELOG.md"
   ],
   "keywords": [
     "salesforce",
