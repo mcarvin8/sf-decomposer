@@ -5,8 +5,9 @@ import { fileURLToPath } from 'node:url';
 import { MetadataRegistryData, MetadataType } from './types.js';
 
 // Read (not statically imported) so the compiled lib/ output doesn't need the tsconfig's
-// "module" target bumped just for JSON import-attribute syntax; the wireit "compile" step
-// copies metadataRegistry.json next to this file's compiled output.
+// "module" target bumped just for JSON import-attribute syntax; tsconfig.json's "include"
+// (with resolveJsonModule) has tsc copy metadataRegistry.json next to this file's compiled
+// output.
 // Stryker disable next-line StringLiteral -- mutating this path breaks module load for every
 // test in the suite (readFileSync/JSON.parse throws at import time), so it's exhaustively
 // exercised already; there's no meaningful assertion to write against a hardcoded sibling path.
