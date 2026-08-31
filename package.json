@@ -149,7 +149,7 @@
       ]
     },
     "compile": {
-      "command": "tsc -p . --pretty --incremental && shx mkdir -p lib/metadata/registry && shx cp src/metadata/registry/metadataRegistry.json lib/metadata/registry/metadataRegistry.json",
+      "command": "tsc -p . --pretty --incremental",
       "files": [
         "src/**/*.ts",
         "src/metadata/registry/metadataRegistry.json",
