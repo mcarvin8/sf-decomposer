@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787659309183,
+  "lastUpdate": 1788175995261,
   "repoUrl": "https://github.com/mcarvin8/sf-decomposer",
   "entries": {
     "Decompose Runtime (large)": [
@@ -1389,6 +1389,68 @@ window.BENCHMARK_DATA = {
           {
             "name": "large.yaml.recompose",
             "value": 3933.97,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Matt Carvin",
+            "username": "mcarvin8",
+            "email": "90224411+mcarvin8@users.noreply.github.com"
+          },
+          "committer": {
+            "name": "Matt Carvin",
+            "username": "mcarvin8",
+            "email": "90224411+mcarvin8@users.noreply.github.com"
+          },
+          "id": "21e773aa0fbefa08613e362003cc0cf54b6a25ed",
+          "message": "docs(metadata): support AiAgentDefinition, AiAgentDefinitionVersion\n\nRefreshes METADATA_SUPPORT.md against the vendored SDR registry snapshot.\n\nCo-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-25T18:55:09Z",
+          "url": "https://github.com/mcarvin8/sf-decomposer/commit/21e773aa0fbefa08613e362003cc0cf54b6a25ed"
+        },
+        "date": 1788175994394,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "large.xml.decompose",
+            "value": 5109.4,
+            "unit": "ms"
+          },
+          {
+            "name": "large.xml.recompose",
+            "value": 12594.77,
+            "unit": "ms"
+          },
+          {
+            "name": "large.json.decompose",
+            "value": 3327.08,
+            "unit": "ms"
+          },
+          {
+            "name": "large.json.recompose",
+            "value": 2098.26,
+            "unit": "ms"
+          },
+          {
+            "name": "large.json5.decompose",
+            "value": 3352.37,
+            "unit": "ms"
+          },
+          {
+            "name": "large.json5.recompose",
+            "value": 2157.25,
+            "unit": "ms"
+          },
+          {
+            "name": "large.yaml.decompose",
+            "value": 3744.89,
+            "unit": "ms"
+          },
+          {
+            "name": "large.yaml.recompose",
+            "value": 2560.04,
             "unit": "ms"
           }
         ]
