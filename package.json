@@ -3,10 +3,10 @@
   "description": "Decompose Salesforce metadata into granular, VCS-friendly files; recompose for deployment.",
   "version": "7.3.2",
   "dependencies": {
-    "@oclif/core": "4.14.0",
-    "@salesforce/core": "9.1.5",
-    "@salesforce/sf-plugins-core": "13.0.3",
-    "config-disassembler": "3.3.0"
+    "@oclif/core": "5.0.0",
+    "@salesforce/core": "9.1.9",
+    "@salesforce/sf-plugins-core": "13.0.4",
+    "config-disassembler": "3.4.0"
   },
   "devDependencies": {
     "@actions/core": "3.0.1",
