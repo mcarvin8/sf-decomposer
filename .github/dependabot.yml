@@ -16,10 +16,8 @@ updates:
     groups:
       dependencies:
         dependency-type: "production"
-        group-by: dependency-name
       dev-dependencies:
         dependency-type: "development"
-        group-by: dependency-name
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
