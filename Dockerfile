@@ -28,7 +28,7 @@ FROM node:22-slim
 WORKDIR /app
 # Keep these two versions in sync with root package.json's "config-disassembler" dependency
 # and "@actions/core" devDependency.
-COPY docker/action-runtime-package.json ./package.json
+COPY docker/package.json ./package.json
 RUN npm install --omit=dev
 COPY --from=build /app/lib ./lib
 
