@@ -15,9 +15,7 @@ COPY package.json package-lock.json ./
 RUN npm ci
 COPY tsconfig.json ./
 COPY src ./src
-RUN npx tsc -p . --pretty \
-    && mkdir -p lib/metadata/registry \
-    && cp src/metadata/registry/metadataRegistry.json lib/metadata/registry/metadataRegistry.json
+RUN npx tsc -p . --pretty
 
 # The runtime stage does NOT `npm ci` the repo's own package.json -- that lists
 # @oclif/core/@salesforce/core/@salesforce/sf-plugins-core as production dependencies too
