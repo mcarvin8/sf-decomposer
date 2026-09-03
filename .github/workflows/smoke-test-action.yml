@@ -31,6 +31,7 @@ permissions:
 jobs:
   decompose-recompose-verify-local:
     name: decompose -> recompose -> verify round trip (this PR's Dockerfile)
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -169,6 +170,7 @@ jobs:
 
   invalid-mode-failure-path-local:
     name: invalid mode failure path (this PR's Dockerfile)
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -192,6 +194,7 @@ jobs:
 
   missing-metadata-and-manifest-failure-path-local:
     name: missing metadata-type/manifest failure path (this PR's Dockerfile)
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
