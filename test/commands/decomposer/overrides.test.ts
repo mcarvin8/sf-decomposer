@@ -373,10 +373,11 @@ describe('decomposer per-component overrides', () => {
       log: logMock,
     });
 
-    // Filter out the `.config-disassembler.json` metadata sidecar and the `.key_order.json`
-    // helper file (both are always JSON regardless of decomposed format and would confuse
-    // the per-format assertions below).
-    const isSidecar = (f: string): boolean => f.endsWith('.config-disassembler.json') || f.endsWith('.key_order.json');
+    // Filter out the `.config-disassembler.json` metadata sidecar and the `.key_order.json` /
+    // `.trailing_newline.json` helper files (all are always JSON regardless of decomposed
+    // format and would confuse the per-format assertions below).
+    const isSidecar = (f: string): boolean =>
+      f.endsWith('.config-disassembler.json') || f.endsWith('.key_order.json') || f.endsWith('.trailing_newline.json');
     const hrAdminFiles = (await collectFiles(join(permissionsetsDir, 'HR_Admin'))).filter((f) => !isSidecar(f));
     const bigPermSetFiles = (await collectFiles(join(permissionsetsDir, 'Big_PermSet'))).filter((f) => !isSidecar(f));
 
