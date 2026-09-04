@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.4.0](https://github.com/mcarvin8/sf-decomposer/compare/v7.3.4...v7.4.0) (2026-09-04)
+
+
+### Features
+
+* **metadata:** refresh SDR registry to 13.3.1 ([#595](https://github.com/mcarvin8/sf-decomposer/issues/595)) ([759faab](https://github.com/mcarvin8/sf-decomposer/commit/759faabf1527702040fe9c2b3d369dffbd9e1236))
+
 ## [7.3.4](https://github.com/mcarvin8/sf-decomposer/compare/v7.3.3...v7.3.4) (2026-09-03)
 
 
