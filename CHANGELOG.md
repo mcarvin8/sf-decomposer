@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.4.2](https://github.com/mcarvin8/sf-decomposer/compare/v7.4.1...v7.4.2) (2026-09-08)
+
+
+### Bug Fixes
+
+* **recompose:** preserve CustomLabels trailing newline, tighten perf byte-retention to 100% ([#599](https://github.com/mcarvin8/sf-decomposer/issues/599)) ([3c19e4b](https://github.com/mcarvin8/sf-decomposer/commit/3c19e4b90ed27e1f532771038ca5dca1e63fd9c6))
+
 ## [7.4.1](https://github.com/mcarvin8/sf-decomposer/compare/v7.4.0...v7.4.1) (2026-09-08)
 
 
