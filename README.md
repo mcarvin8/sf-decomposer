@@ -37,6 +37,7 @@
   - [Built With](#built-with)
 - [Migrating from Salesforce Native Decomposition](#migrating-from-salesforce-native-decomposition)
 - [Contributing](#contributing)
+- [Issues](#issues)
 - [License](#license)
 
 </details>
