@@ -4,7 +4,7 @@
 import { readdir, rename, rm, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { CONCURRENCY_LIMITS, CUSTOM_LABELS_FILE } from '../../helpers/constants.js';
+import { CONCURRENCY_LIMITS, CUSTOM_LABELS_FILE, TRAILING_NEWLINE_SIDECAR } from '../../helpers/constants.js';
 import { pLimit } from '../../helpers/pLimit.js';
 import { moveFiles } from '../core/moveFiles.js';
 
@@ -41,5 +41,17 @@ export async function moveAndRenameLabels(metadataPath: string): Promise<void> {
 
   // istanbul ignore next -- callback only invoked if non-label files exist after rename
   await moveFiles(sourceDirectory, destinationDirectory, () => true);
+
+  // config-disassembler wrote the trailing-newline sidecar in the "CustomLabels" stem
+  // directory itself (sibling to the "labels" shard subdirectory we just emptied above),
+  // not inside it -- rescue it before the rm() below destroys it, so reassembleLabels can
+  // hand it back to reassemble() and the recomposed file's trailing newline round-trips
+  // like every other metadata type's.
+  await moveFiles(
+    join(metadataPath, 'CustomLabels'),
+    destinationDirectory,
+    (fileName) => fileName === TRAILING_NEWLINE_SIDECAR,
+  );
+
   await rm(join(metadataPath, 'CustomLabels'), { recursive: true });
 }

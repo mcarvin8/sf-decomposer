@@ -1,35 +1,39 @@
 'use strict';
 
-import { readFile, rm, writeFile } from 'node:fs/promises';
+import { rm } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { CUSTOM_LABELS_FILE } from '../../helpers/constants.js';
+import { CUSTOM_LABELS_FILE, TRAILING_NEWLINE_SIDECAR } from '../../helpers/constants.js';
 import { moveFiles } from '../core/moveFiles.js';
 import { deleteFilesInDirectory } from './deleteFilesinDirectory.js';
 import { reassembleHandler } from './recomposeFileHandler.js';
 
 export async function reassembleLabels(metadataPath: string, metaSuffix: string, postpurge: boolean): Promise<void> {
+  const customLabelsDir = join(metadataPath, 'CustomLabels');
   let sourceDirectory = metadataPath;
-  let destinationDirectory = join(metadataPath, 'CustomLabels', 'labels');
+  let destinationDirectory = join(customLabelsDir, 'labels');
 
-  await moveFiles(sourceDirectory, destinationDirectory, (fileName) => fileName !== CUSTOM_LABELS_FILE);
+  await moveFiles(
+    sourceDirectory,
+    destinationDirectory,
+    (fileName) => fileName !== CUSTOM_LABELS_FILE && fileName !== TRAILING_NEWLINE_SIDECAR,
+  );
+
+  // The trailing-newline sidecar (rescued to metadataPath during decompose -- see
+  // moveAndRenameLabels in customLabels.ts) belongs in the "CustomLabels" stem directory
+  // itself, sibling to the "labels" shard subdirectory, not inside it -- that's where
+  // config-disassembler's reassemble() looks for it, matching how it wrote the sidecar
+  // for every other metadata type's single-level disassembly.
+  await moveFiles(metadataPath, customLabelsDir, (fileName) => fileName === TRAILING_NEWLINE_SIDECAR);
 
   // do not use postpurge flag due to file moving
-  await reassembleHandler(join(metadataPath, 'CustomLabels'), `${metaSuffix}-meta.xml`, false);
+  await reassembleHandler(customLabelsDir, `${metaSuffix}-meta.xml`, false);
 
-  // config-disassembler's reassemble() drops the final trailing newline for this
-  // double-nested-directory path (CustomLabels/labels/*), unlike every other metadata
-  // type's single-level reassembly. Restore it so CustomLabels round-trips byte-for-byte
-  // like everything else, rather than silently losing 1 byte on every recompose.
-  const assembledPath = join(metadataPath, CUSTOM_LABELS_FILE);
-  const assembled = await readFile(assembledPath, 'utf8');
-  if (!assembled.endsWith('\n')) await writeFile(assembledPath, `${assembled}\n`, 'utf8');
-
-  sourceDirectory = join(metadataPath, 'CustomLabels', 'labels');
+  sourceDirectory = join(customLabelsDir, 'labels');
   destinationDirectory = metadataPath;
 
   await moveFiles(sourceDirectory, destinationDirectory, () => true);
 
-  await rm(join(metadataPath, 'CustomLabels'), { recursive: true });
+  await rm(customLabelsDir, { recursive: true });
   if (postpurge) await deleteFilesInDirectory(destinationDirectory);
 }

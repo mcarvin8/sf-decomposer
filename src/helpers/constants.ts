@@ -1,6 +1,11 @@
 'use strict';
 export const SFDX_PROJECT_FILE_NAME = 'sfdx-project.json';
 export const CUSTOM_LABELS_FILE = 'CustomLabels.labels-meta.xml';
+// config-disassembler writes this alongside the shard directory it disassembles a parent XML
+// into, recording whether the source file ended in a newline, and reads it back on reassemble.
+// CustomLabels' decompose/recompose shuffle (customLabels.ts / reassembleLabels.ts) must
+// carry it across manually since it lives one level up from the actual label shard files.
+export const TRAILING_NEWLINE_SIDECAR = '.trailing_newline.json';
 export const DEFAULT_UNIQUE_ID_ELEMENTS: string = 'fullName,name';
 export const DECOMPOSED_FILE_TYPES: string[] = ['xml', 'json', 'yaml', 'json5'];
 export const DECOMPOSED_STRATEGIES: string[] = ['unique-id', 'grouped-by-tag'];
