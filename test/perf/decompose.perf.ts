@@ -104,7 +104,7 @@ let fixtureFiles = 0;
 // decomposer collapsed distinct elements into one shard (the
 // `actionOverrides` hash collision bug fixed in config-disassembler 0.4.3).
 const fixtureFileBytes = new Map<string, number>();
-const RETENTION_THRESHOLD = 0.99;
+const RETENTION_THRESHOLD = 1;
 
 describe(`perf: decompose/recompose round-trip (profile=${PROFILE})`, () => {
   beforeAll(async () => {
@@ -187,10 +187,8 @@ describe(`perf: decompose/recompose round-trip (profile=${PROFILE})`, () => {
         // would produce the same shrunken output.
         //
         // We also collect every (path, original, recomposed, ratio) tuple so
-        // the per-format summary can print the full distribution. The
-        // RETENTION_THRESHOLD guard only fires below 0.99, but a regression
-        // that nibbles a file from 100.00% down to 99.50% should still be
-        // visible in PR logs before it crosses the floor.
+        // the per-format summary can print the full distribution alongside
+        // the RETENTION_THRESHOLD floor.
         const retention: Array<{ path: string; original: number; recomposed: number; ratio: number }> = [];
         for (const [path, content] of firstRoundtrip) {
           const original = fixtureFileBytes.get(path);
@@ -419,7 +417,7 @@ function printSummary(
     lines.push(
       `[perf] retention (${format}): min=${formatPercent(minRatio)} ` +
         `mean=${formatPercent(meanRatio)} max=${formatPercent(maxRatio)} ` +
-        `(threshold=${formatPercent(0.99)})`,
+        `(threshold=${formatPercent(RETENTION_THRESHOLD)})`,
     );
     for (const r of sorted) {
       lines.push(
