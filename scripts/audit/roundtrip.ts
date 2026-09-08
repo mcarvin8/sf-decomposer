@@ -18,7 +18,7 @@
 import { existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-
+import { runAudit } from './audit.js';
 import {
   type AuditRow,
   DEFAULT_PLUGIN_ROOT,
@@ -28,7 +28,6 @@ import {
   parseFlags,
   requireString,
 } from './lib.js';
-import { runAudit } from './audit.js';
 import { ROUNDTRIP_PAIRS } from './type-pairs.js';
 
 const HELP_TEXT = `Usage: npm run audit:roundtrip -- [options]

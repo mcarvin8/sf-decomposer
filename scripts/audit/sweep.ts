@@ -18,10 +18,9 @@ import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
-  type SweepRow,
+  countHashFiles,
   DEFAULT_PLUGIN_ROOT,
   DEFAULT_WORK_ROOT,
-  countHashFiles,
   formatTable,
   listSubdirs,
   listXmlFilesRecursive,
@@ -29,6 +28,7 @@ import {
   parseFlags,
   requireString,
   runCli,
+  type SweepRow,
   stageProject,
   topHashDirs,
 } from './lib.js';
