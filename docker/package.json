@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "config-disassembler": "3.4.1",
+    "config-disassembler": "3.4.2",
     "@actions/core": "3.0.1"
   }
 }

@@ -14,7 +14,7 @@
  * harness can run in any CI environment without an extra install step.
  */
 
-import { spawnSync, type SpawnSyncReturns } from 'node:child_process';
+import { type SpawnSyncReturns, spawnSync } from 'node:child_process';
 import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';

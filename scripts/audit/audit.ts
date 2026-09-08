@@ -31,9 +31,9 @@ import { fileURLToPath } from 'node:url';
 
 import {
   type AuditRow,
+  countHashFiles,
   DEFAULT_PLUGIN_ROOT,
   DEFAULT_WORK_ROOT,
-  countHashFiles,
   formatTable,
   listFlatXml,
   listSubdirs,
