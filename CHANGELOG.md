@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.4.3](https://github.com/mcarvin8/sf-decomposer/compare/v7.4.2...v7.4.3) (2026-09-09)
+
+
+### Bug Fixes
+
+* **rust:** add XML round-trip fuzz harness, bump config-disassembler to 3.4.7 ([#602](https://github.com/mcarvin8/sf-decomposer/issues/602)) ([7863bb1](https://github.com/mcarvin8/sf-decomposer/commit/7863bb19780bd04077e70d7abf882a7524392dfe))
+
 ## [7.4.2](https://github.com/mcarvin8/sf-decomposer/compare/v7.4.1...v7.4.2) (2026-09-08)
 
 
