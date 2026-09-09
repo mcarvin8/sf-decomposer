@@ -1,6 +1,7 @@
 'use strict';
 
 import { describe, expect, it } from 'vitest';
+import { resolveMetadataTypeEntry } from '../../src/metadata/getRegistryValuesBySuffix.js';
 import { getUniqueIdElements } from '../../src/metadata/getUniqueIdElements.js';
 import uniqueIdElements from '../../src/metadata/uniqueIdElements.js';
 
@@ -89,6 +90,26 @@ describe('uniqueIdElements registry', () => {
         expect(id.trim().length, `entry "${suffix}" contains an empty id`).toBeGreaterThan(0);
       }
       expect(new Set(ids).size, `entry "${suffix}" has duplicate ids: ${ids.join(', ')}`).toBe(ids.length);
+    }
+  });
+
+  it('every registered suffix still resolves against the vendored metadata registry', () => {
+    // src/metadata/registry/metadataRegistry.json is synced weekly from upstream SDR
+    // (see .github/workflows/sync-metadata-registry.yml). If upstream renames or drops
+    // a suffix, the matching entry above silently stops applying: getUniqueIdElements()
+    // still returns it, but resolveMetadataTypeEntry() is what actually wires it into a
+    // decompose run via getRegistryValuesBySuffix(). An orphaned key here is a live
+    // regression (loses compound-key/hash-collision protection) that produces no test
+    // failure anywhere else, since none of the curated fixtures would necessarily
+    // exercise the renamed type.
+    const merged: Record<string, { uniqueIdElements: string[] }> = {};
+    for (const obj of uniqueIdElements) Object.assign(merged, obj);
+
+    for (const suffix of Object.keys(merged)) {
+      expect(
+        () => resolveMetadataTypeEntry(suffix),
+        `"${suffix}" no longer resolves in the vendored registry -- its uniqueIdElements override is orphaned`,
+      ).not.toThrow();
     }
   });
 
