@@ -238,7 +238,7 @@ jobs:
           # alongside the default `error` lines. A WARN here means a synthetic
           # fixture has degenerated to share unique-id values across siblings
           # (the same shape we patch in src/metadata/uniqueIdElements.ts for
-          # real metadata). The 0.99 byte-retention guard still catches actual
+          # real metadata). The 100% byte-retention guard still catches actual
           # data loss; this just makes the cause visible in the action log.
           # See README -> "XML disassemble output (Rust crate)".
           RUST_LOG: warn

@@ -52,8 +52,8 @@ For each format (`xml`, `json`, `json5`, `yaml`):
 
 1. Decompose the synthetic fixture (timed).
 2. Recompose it back to deployment-ready XML (timed).
-3. **Non-shrinkage:** every recomposed `-meta.xml` retains at least 99% of
-   the original generator-emitted bytes. Catches mass element-collapse
+3. **Non-shrinkage:** every recomposed `-meta.xml` retains 100% of the
+   original generator-emitted bytes (never fewer). Catches mass element-collapse
    regressions (e.g. the `actionOverrides` SHA-256 hash collision bug fixed
    in `config-disassembler@0.4.3`) that would otherwise still pass step 4.
 4. Decompose again, recompose again (timed).
@@ -61,10 +61,9 @@ For each format (`xml`, `json`, `json5`, `yaml`):
    bytes after the first round-trip exactly.
 
 The first round-trip may reorder elements relative to the generator's raw
-output (the decomposer owns sort order) and may differ by a few bytes from
-trailing-newline normalization, hence the 99% threshold rather than 100%.
-The second round-trip must be byte-identical to the first; that's the
-canonical-form regression guard.
+output (the decomposer owns sort order), but must not drop below the
+original byte count. The second round-trip must be byte-identical to the
+first; that's the canonical-form regression guard.
 
 ## Output
 
