@@ -54,7 +54,10 @@ const ILLEGAL_XML_CHARS_PATTERN = new RegExp(
 
 const stripIllegalControlChars = (raw: string): string => raw.replace(ILLEGAL_XML_CHARS_PATTERN, '');
 
-const sanitizeText = (raw: string): string => stripIllegalControlChars(raw).replace(/[<&>]/g, ' ');
+// Quotes are legal, unescaped XML text but get entity-encoded (&quot;/&apos;)
+// by the writer same as `<`/`&`/`>` - stripped here too so the literal-value
+// substring check below isn't comparing against the wrong (escaped) form.
+const sanitizeText = (raw: string): string => stripIllegalControlChars(raw).replace(/[<&>"']/g, ' ');
 
 const sanitizeCdata = (raw: string): string => stripIllegalControlChars(raw).replace(/]]>/g, '] ]>');
 
