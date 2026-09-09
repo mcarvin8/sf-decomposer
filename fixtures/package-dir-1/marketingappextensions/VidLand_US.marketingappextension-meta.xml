@@ -7,7 +7,7 @@
         <description>Register User for VidLand</description>
         <actionSelector>VidLand_Register_User</actionSelector>
         <actionSchema>
-            <![CDATA[
+        <![CDATA[
     {
     "properties": {
     "UserId": {
@@ -35,7 +35,7 @@
 ]]>
         </actionSchema>
         <actionParams>
-            <![CDATA[
+        <![CDATA[
     {
     "isStandard": false,
     "type": "apex"
