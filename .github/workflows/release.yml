@@ -151,8 +151,40 @@ jobs:
             ghcr.io/mcarvin8/sf-decomposer:${{ steps.vars.outputs.major }}
             ghcr.io/mcarvin8/sf-decomposer:latest
 
-  smoke-test:
+  wait-for-npm:
+    # npm's registry can lag a few minutes after `npm publish` returns, so
+    # `sf plugins install` in smoke-test.yml can 404 on a version that was
+    # just published. Poll the registry until it resolves instead of a fixed
+    # sleep, so a fast propagation doesn't waste runner time.
+    name: Wait for npm propagation
     needs: release
+    if: needs.release.outputs.published == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 'lts/*'
+
+      - name: Poll npm for published version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          for i in $(seq 1 40); do
+            if npm view sf-decomposer@"$VERSION" version >/dev/null 2>&1; then
+              echo "sf-decomposer@$VERSION is available on npm"
+              exit 0
+            fi
+            echo "sf-decomposer@$VERSION not yet available, retrying in 15s ($i/40)"
+            sleep 15
+          done
+          echo "Timed out waiting for sf-decomposer@$VERSION on npm"
+          exit 1
+
+  smoke-test:
+    needs: [release, wait-for-npm]
     if: needs.release.outputs.published == 'true'
     uses: ./.github/workflows/smoke-test.yml
     secrets: inherit
