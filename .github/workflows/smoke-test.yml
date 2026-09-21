@@ -34,7 +34,8 @@ jobs:
         shell: bash
         run: |
           npm install --global @salesforce/cli
-          echo 'y' | sf plugins install --force sf-decomposer@latest
+          PLUGIN_VERSION=$(node -p "require('./package.json').version")
+          echo 'y' | sf plugins install --force sf-decomposer@${PLUGIN_VERSION}
           sf version --verbose --json
 
       - name: Use runner Salesforce CLI home in Testkit
