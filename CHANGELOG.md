@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.5.0](https://github.com/mcarvin8/sf-decomposer/compare/v7.4.3...v7.5.0) (2026-09-21)
+
+
+### Features
+
+* **metadata:** support ReferralIntakeConfiguration ([#604](https://github.com/mcarvin8/sf-decomposer/issues/604)) ([759b1a1](https://github.com/mcarvin8/sf-decomposer/commit/759b1a1f693b1c0133cd8c6c689758fa17daaac5))
+
 ## [7.4.3](https://github.com/mcarvin8/sf-decomposer/compare/v7.4.2...v7.4.3) (2026-09-09)
 
 
