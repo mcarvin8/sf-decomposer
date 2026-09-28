@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790595579466,
+  "lastUpdate": 1790595874496,
   "repoUrl": "https://github.com/mcarvin8/sf-decomposer",
   "entries": {
     "Decompose Memory (large)": [
@@ -4235,6 +4235,68 @@ window.BENCHMARK_DATA = {
           {
             "name": "manyfiles.yaml.recompose",
             "value": 0.011,
+            "unit": "MB"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Matt Carvin",
+            "username": "mcarvin8",
+            "email": "90224411+mcarvin8@users.noreply.github.com"
+          },
+          "committer": {
+            "name": "Matt Carvin",
+            "username": "mcarvin8",
+            "email": "90224411+mcarvin8@users.noreply.github.com"
+          },
+          "id": "249439c67fe626eb158c893764fa2a8bb8a45495",
+          "message": "ci(release): poll npm registry before triggering smoke test\n\nnpm publish can return before the registry finishes propagating, causing\nsf plugins install in smoke-test.yml to 404 on the just-published version.\nAdd a wait-for-npm job that polls npm view until the version resolves\n(15s interval, 10min cap) before smoke-test runs.\n\nCo-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>",
+          "timestamp": "2026-09-21T13:18:29Z",
+          "url": "https://github.com/mcarvin8/sf-decomposer/commit/249439c67fe626eb158c893764fa2a8bb8a45495"
+        },
+        "date": 1790595874444,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "manyfiles.xml.decompose",
+            "value": -0.004,
+            "unit": "MB"
+          },
+          {
+            "name": "manyfiles.xml.recompose",
+            "value": 0.01,
+            "unit": "MB"
+          },
+          {
+            "name": "manyfiles.json.decompose",
+            "value": -0.004,
+            "unit": "MB"
+          },
+          {
+            "name": "manyfiles.json.recompose",
+            "value": 0.012,
+            "unit": "MB"
+          },
+          {
+            "name": "manyfiles.json5.decompose",
+            "value": -0.004,
+            "unit": "MB"
+          },
+          {
+            "name": "manyfiles.json5.recompose",
+            "value": 0.012,
+            "unit": "MB"
+          },
+          {
+            "name": "manyfiles.yaml.decompose",
+            "value": -0.004,
+            "unit": "MB"
+          },
+          {
+            "name": "manyfiles.yaml.recompose",
+            "value": 0.008,
             "unit": "MB"
           }
         ]
