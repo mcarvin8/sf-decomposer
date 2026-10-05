@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790595872204,
+  "lastUpdate": 1791202365288,
   "repoUrl": "https://github.com/mcarvin8/sf-decomposer",
   "entries": {
     "Decompose Runtime (large)": [
@@ -2147,6 +2147,68 @@ window.BENCHMARK_DATA = {
           {
             "name": "large.yaml.recompose",
             "value": 2606.9,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "dependabot[bot]",
+            "username": "dependabot[bot]",
+            "email": "49699333+dependabot[bot]@users.noreply.github.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "3eb83c0acc4cbd918f251a209c37adb1c66b789a",
+          "message": "fix(deps): bump the dependencies group across 1 directory with 3 updates (#608)",
+          "timestamp": "2026-10-05T00:42:15Z",
+          "url": "https://github.com/mcarvin8/sf-decomposer/commit/3eb83c0acc4cbd918f251a209c37adb1c66b789a"
+        },
+        "date": 1791202364486,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "large.xml.decompose",
+            "value": 4017.33,
+            "unit": "ms"
+          },
+          {
+            "name": "large.xml.recompose",
+            "value": 10081.49,
+            "unit": "ms"
+          },
+          {
+            "name": "large.json.decompose",
+            "value": 3162.34,
+            "unit": "ms"
+          },
+          {
+            "name": "large.json.recompose",
+            "value": 2140.51,
+            "unit": "ms"
+          },
+          {
+            "name": "large.json5.decompose",
+            "value": 3181.24,
+            "unit": "ms"
+          },
+          {
+            "name": "large.json5.recompose",
+            "value": 2128.26,
+            "unit": "ms"
+          },
+          {
+            "name": "large.yaml.decompose",
+            "value": 3351.44,
+            "unit": "ms"
+          },
+          {
+            "name": "large.yaml.recompose",
+            "value": 2458.77,
             "unit": "ms"
           }
         ]
