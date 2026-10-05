@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.5.1](https://github.com/mcarvin8/sf-decomposer/compare/v7.5.0...v7.5.1) (2026-10-05)
+
+
+### Bug Fixes
+
+* **deps:** bump the dependencies group across 1 directory with 3 updates ([#608](https://github.com/mcarvin8/sf-decomposer/issues/608)) ([3eb83c0](https://github.com/mcarvin8/sf-decomposer/commit/3eb83c0acc4cbd918f251a209c37adb1c66b789a))
+
 ## [7.5.0](https://github.com/mcarvin8/sf-decomposer/compare/v7.4.3...v7.5.0) (2026-09-21)
 
 
