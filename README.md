@@ -4,7 +4,6 @@
 [![Downloads/week](https://img.shields.io/npm/dw/sf-decomposer.svg)](https://npmjs.com/package/sf-decomposer)
 [![GitHub Marketplace](https://img.shields.io/badge/marketplace-sf--decomposer-blue?logo=github)](https://github.com/marketplace/actions/sf-decomposer)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/LICENSE.md)
-[![Maintainability](https://qlty.sh/badges/8492c1c6-0f93-4d37-bfad-32fd3b788a2d/maintainability.svg)](https://qlty.sh/gh/mcarvin8/projects/sf-decomposer)
 [![codecov](https://codecov.io/gh/mcarvin8/sf-decomposer/graph/badge.svg?token=YFU52L4XM5)](https://codecov.io/gh/mcarvin8/sf-decomposer)
 [![Mutation testing badge](https://img.shields.io/endpoint?style=flat&url=https%3A%2F%2Fbadge-api.stryker-mutator.io%2Fgithub.com%2Fmcarvin8%2Fsf-decomposer%2Fmain)](https://dashboard.stryker-mutator.io/reports/github.com/mcarvin8/sf-decomposer/main)
 [![Performance](https://img.shields.io/badge/Performance-Dashboard-58a6ff)](https://mcarvin8.github.io/sf-decomposer/dev/bench/runtime/)
