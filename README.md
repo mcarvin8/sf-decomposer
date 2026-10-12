@@ -549,6 +549,8 @@ All parent and child metadata types from this plugin's vendored copy of the [@sa
 
 Use the metadata **suffix** for `-m` / `--metadata-type`, as in the vendored [`metadataRegistry.json`](src/metadata/registry/metadataRegistry.json) (synced weekly from upstream SDR — see [`sync-metadata-registry.yml`](.github/workflows/sync-metadata-registry.yml)), or infer from the file name: `*.{suffix}-meta.xml`.
 
+**Common Examples:**
+
 | Metadata Type                 | CLI value                     | Notes                                                                                                                                                                                                                                                                                                                 |
 |-------------------------------|-------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Custom Labels                 | `labels`                      | Strategy overridden to `unique-id` if `grouped-by-tag` is provided (grouping labels by tag would be no different from the original file).                                                                                                                                                                             |
