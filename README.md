@@ -33,8 +33,8 @@
   - [Ignore Files](#ignore-files)
   - [Using with sfdx-git-delta](#using-with-sfdx-git-delta)
   - [Troubleshooting](#troubleshooting)
-  - [Built With](#built-with)
-- [Migrating from Salesforce Native Decomposition](#migrating-from-salesforce-native-decomposition)
+- [Built With](#built-with)
+- [Migrating from Native Decomposition](#migrating-from-native-decomposition)
 - [Contributing](#contributing)
 - [Issues](#issues)
 - [License](#license)
@@ -773,16 +773,16 @@ Example `WARN` (CustomApplication where four `actionOverrides` siblings shared t
 
 ---
 
-### Built With
+## Built With
 
 - [config-disassembler-node](https://github.com/mcarvin8/config-disassembler-node) – Disassemble XML (and other config formats) into smaller, manageable files and reassemble when needed. Node.js + Rust (NAPI-RS).
 - [@salesforce/source-deploy-retrieve](https://github.com/forcedotcom/source-deploy-retrieve) – Source of the vendored metadata registry (`src/metadata/registry/metadataRegistry.json`), synced weekly. Not a runtime dependency — this plugin ships its own minimal registry lookup and package.xml parser instead.
 
 ---
 
-## Migrating from Salesforce Native Decomposition
+## Migrating from Native Decomposition
 
-Already using `decomposePermissionSetBeta2`, `decomposeCustomLabelsBeta`, or similar flags? See [MIGRATION.md](https://github.com/mcarvin8/sf-decomposer/blob/main/MIGRATION.md) before installing sf-decomposer on that project.
+Already using Salesforce CLI built-in `decomposePermissionSetBeta2`, `decomposeCustomLabelsBeta`, or similar presets? See [MIGRATION.md](https://github.com/mcarvin8/sf-decomposer/blob/main/MIGRATION.md) before switching over to sf-decomposer.
 
 ---
 
