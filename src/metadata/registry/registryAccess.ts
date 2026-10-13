@@ -1,5 +1,9 @@
 'use strict';
 
+// Portions derived from @salesforce/source-deploy-retrieve, Copyright (c) Salesforce, Inc.,
+// licensed under the Apache License, Version 2.0. Modified for this plugin; see
+// THIRD_PARTY_NOTICES.md.
+
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { MetadataRegistryData, MetadataType } from './types.js';

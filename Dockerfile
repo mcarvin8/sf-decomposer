@@ -31,6 +31,8 @@ WORKDIR /app
 COPY docker/package.json ./package.json
 RUN npm install --omit=dev
 COPY --from=build /app/lib ./lib
+# lib/ carries SDR's Apache-2.0 metadataRegistry.json, so its notice ships with it.
+COPY THIRD_PARTY_NOTICES.md ./
 
 # Absolute path: GitHub Actions runs container actions with `--workdir /github/workspace`
 # (the caller's checkout), overriding this image's own WORKDIR -- a relative path here would

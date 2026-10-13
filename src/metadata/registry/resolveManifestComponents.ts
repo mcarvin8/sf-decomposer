@@ -1,5 +1,9 @@
 'use strict';
 
+// Portions derived from @salesforce/source-deploy-retrieve, Copyright (c) Salesforce, Inc.,
+// licensed under the Apache License, Version 2.0. Modified for this plugin; see
+// THIRD_PARTY_NOTICES.md.
+
 import { parseManifestXml } from './manifestXml.js';
 import { RegistryAccess } from './registryAccess.js';
 import { MetadataType } from './types.js';
