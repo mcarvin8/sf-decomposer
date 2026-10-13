@@ -802,4 +802,6 @@ Please open an [issue](https://github.com/mcarvin8/sf-decomposer/issues) to repo
 
 ## License
 
-[MIT](LICENSE.md)
+[MIT](LICENSE.md). Bundled third-party material (Salesforce's metadata
+registry from `@salesforce/source-deploy-retrieve`, Apache-2.0) is listed in
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

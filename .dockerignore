@@ -13,5 +13,6 @@ perf-fixtures
 perf-results
 scripts
 *.md
+!THIRD_PARTY_NOTICES.md
 *.tgz
 *.log
