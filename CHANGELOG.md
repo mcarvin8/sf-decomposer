@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.6.0](https://github.com/mcarvin8/sf-decomposer/compare/v7.5.1...v7.6.0) (2026-10-19)
+
+
+### Features
+
+* **metadata:** support 2 new metadata types ([#611](https://github.com/mcarvin8/sf-decomposer/issues/611)) ([b5c7784](https://github.com/mcarvin8/sf-decomposer/commit/b5c778437e688874af47f39f19fa1c06bbe534bf))
+
 ## [7.5.1](https://github.com/mcarvin8/sf-decomposer/compare/v7.5.0...v7.5.1) (2026-10-13)
 
 
