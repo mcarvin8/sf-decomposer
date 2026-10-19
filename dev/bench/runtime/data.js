@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1792417029839,
+  "lastUpdate": 1792417339746,
   "repoUrl": "https://github.com/mcarvin8/sf-decomposer",
   "entries": {
     "Decompose Runtime (large)": [
@@ -4861,6 +4861,70 @@ window.BENCHMARK_DATA = {
           {
             "name": "manyfiles.yaml.recompose",
             "value": 3058.48,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "41898282+github-actions[bot]@users.noreply.github.com",
+            "name": "github-actions[bot]",
+            "username": "github-actions[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b8143b042d86301b97542d9978ab884c528fa382",
+          "message": "chore(main): release 7.6.0 (#612)\n\nCo-authored-by: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>",
+          "timestamp": "2026-10-19T09:16:51-04:00",
+          "tree_id": "c9760da29cf1414253ecdb231b3d403930ec6391",
+          "url": "https://github.com/mcarvin8/sf-decomposer/commit/b8143b042d86301b97542d9978ab884c528fa382"
+        },
+        "date": 1792417338998,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "manyfiles.xml.decompose",
+            "value": 3660.79,
+            "unit": "ms"
+          },
+          {
+            "name": "manyfiles.xml.recompose",
+            "value": 13712.49,
+            "unit": "ms"
+          },
+          {
+            "name": "manyfiles.json.decompose",
+            "value": 3576.83,
+            "unit": "ms"
+          },
+          {
+            "name": "manyfiles.json.recompose",
+            "value": 2827.31,
+            "unit": "ms"
+          },
+          {
+            "name": "manyfiles.json5.decompose",
+            "value": 3717.29,
+            "unit": "ms"
+          },
+          {
+            "name": "manyfiles.json5.recompose",
+            "value": 2956.77,
+            "unit": "ms"
+          },
+          {
+            "name": "manyfiles.yaml.decompose",
+            "value": 4117.01,
+            "unit": "ms"
+          },
+          {
+            "name": "manyfiles.yaml.recompose",
+            "value": 3452.49,
             "unit": "ms"
           }
         ]
