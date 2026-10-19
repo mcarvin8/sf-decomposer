@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791902468404,
+  "lastUpdate": 1792406479782,
   "repoUrl": "https://github.com/mcarvin8/sf-decomposer",
   "entries": {
     "Decompose Runtime (large)": [
@@ -2335,6 +2335,68 @@ window.BENCHMARK_DATA = {
           {
             "name": "large.yaml.recompose",
             "value": 3385.79,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Matt Carvin",
+            "username": "mcarvin8",
+            "email": "90224411+mcarvin8@users.noreply.github.com"
+          },
+          "committer": {
+            "name": "Matt Carvin",
+            "username": "mcarvin8",
+            "email": "90224411+mcarvin8@users.noreply.github.com"
+          },
+          "id": "37fa00c637b6fa6231e4303d3319ab3a7a3241bd",
+          "message": "docs: add troubleshooting for removing stale metadata references\n\nExplain how to delete decomposed files for deleted or uninstalled\ncomponents (e.g. managed package namespaces) and recompose, so\npermission sets and profiles deploy without stale references.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-10-14T12:41:06Z",
+          "url": "https://github.com/mcarvin8/sf-decomposer/commit/37fa00c637b6fa6231e4303d3319ab3a7a3241bd"
+        },
+        "date": 1792406478585,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "large.xml.decompose",
+            "value": 4513.81,
+            "unit": "ms"
+          },
+          {
+            "name": "large.xml.recompose",
+            "value": 13389.24,
+            "unit": "ms"
+          },
+          {
+            "name": "large.json.decompose",
+            "value": 3452.32,
+            "unit": "ms"
+          },
+          {
+            "name": "large.json.recompose",
+            "value": 2161.41,
+            "unit": "ms"
+          },
+          {
+            "name": "large.json5.decompose",
+            "value": 3482.34,
+            "unit": "ms"
+          },
+          {
+            "name": "large.json5.recompose",
+            "value": 2224.84,
+            "unit": "ms"
+          },
+          {
+            "name": "large.yaml.decompose",
+            "value": 3860.68,
+            "unit": "ms"
+          },
+          {
+            "name": "large.yaml.recompose",
+            "value": 2661.94,
             "unit": "ms"
           }
         ]
