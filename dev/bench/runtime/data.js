@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1792417339746,
+  "lastUpdate": 1793012294139,
   "repoUrl": "https://github.com/mcarvin8/sf-decomposer",
   "entries": {
     "Decompose Runtime (large)": [
@@ -2461,6 +2461,68 @@ window.BENCHMARK_DATA = {
           {
             "name": "large.yaml.recompose",
             "value": 3876.19,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "mcarvin8",
+            "username": "mcarvin8",
+            "email": "90224411+mcarvin8@users.noreply.github.com"
+          },
+          "committer": {
+            "name": "github-actions[bot]",
+            "username": "github-actions[bot]",
+            "email": "41898282+github-actions[bot]@users.noreply.github.com"
+          },
+          "id": "27787c9f56e99964e927ca115b5cb357ff627e87",
+          "message": "docs: regenerate command reference [skip ci]",
+          "timestamp": "2026-10-19T13:18:09Z",
+          "url": "https://github.com/mcarvin8/sf-decomposer/commit/27787c9f56e99964e927ca115b5cb357ff627e87"
+        },
+        "date": 1793012293076,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "large.xml.decompose",
+            "value": 5268.65,
+            "unit": "ms"
+          },
+          {
+            "name": "large.xml.recompose",
+            "value": 15595.15,
+            "unit": "ms"
+          },
+          {
+            "name": "large.json.decompose",
+            "value": 3852.81,
+            "unit": "ms"
+          },
+          {
+            "name": "large.json.recompose",
+            "value": 2454.79,
+            "unit": "ms"
+          },
+          {
+            "name": "large.json5.decompose",
+            "value": 3831.76,
+            "unit": "ms"
+          },
+          {
+            "name": "large.json5.recompose",
+            "value": 2460.87,
+            "unit": "ms"
+          },
+          {
+            "name": "large.yaml.decompose",
+            "value": 4289.91,
+            "unit": "ms"
+          },
+          {
+            "name": "large.yaml.recompose",
+            "value": 3003.99,
             "unit": "ms"
           }
         ]
