@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.7.0](https://github.com/mcarvin8/sf-decomposer/compare/v7.6.0...v7.7.0) (2026-10-26)
+
+
+### Features
+
+* **metadata:** support GenOpPlanEligibilityConfig ([#613](https://github.com/mcarvin8/sf-decomposer/issues/613)) ([d429449](https://github.com/mcarvin8/sf-decomposer/commit/d429449d88e8981a856ffe05793c19c37dc222bf))
+
 ## [7.6.0](https://github.com/mcarvin8/sf-decomposer/compare/v7.5.1...v7.6.0) (2026-10-19)
 
 
