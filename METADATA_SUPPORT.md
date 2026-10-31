@@ -1,6 +1,6 @@
 # sf-decomposer Metadata Support
 
-This table lists every metadata type from the [Salesforce SDR registry](https://github.com/forcedotcom/source-deploy-retrieve/blob/main/src/registry/metadataRegistry.json) (v66) and its support status in **sf-decomposer**.
+This table lists every metadata type from the [Salesforce SDR registry](https://github.com/forcedotcom/source-deploy-retrieve/blob/main/src/registry/metadataRegistry.json) and its support status in **sf-decomposer**.
 
 Use the metadata **suffix** (the CLI value) with `-m` / `--metadata-type`, e.g. `sf decomposer decompose -m "flow"`.
 
@@ -67,7 +67,7 @@ list, as Salesforce continues to expand it.
 
 ---
 
-## Supported Metadata Types (v66)
+## Supported Metadata Types
 
 | Metadata Type                            | CLI Suffix                                 | Support | Notes                                                                                                                                                                                                                                                                                                                                       |
 |:-----------------------------------------|:-------------------------------------------|:--------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
