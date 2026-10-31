@@ -93,7 +93,7 @@
     "clean:build": "wireit",
     "clean:package-manager": "wireit",
     "compile": "wireit",
-    "dependencies:upgrade": "npx npm-check-updates -u && npm install && npm audit fix",
+    "dependencies:upgrade": "npx npm-check-updates -u && npm install && npm audit fix && cd docker && npx npm-check-updates -u",
     "docs:metadata-support": "tsx scripts/update-metadata-support.ts",
     "format": "wireit",
     "lint": "wireit",
