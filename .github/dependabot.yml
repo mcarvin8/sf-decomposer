@@ -1,0 +1,26 @@
+---
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directories:
+      - "/"
+      - "/docker"
+    schedule:
+      interval: "weekly"
+    versioning-strategy: increase
+    commit-message:
+      prefix: "feat(config-disassembler)"
+    cooldown:
+      default-days: 1
+    allow:
+      - dependency-name: "config-disassembler"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    commit-message:
+      prefix: "build(github-actions)"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
