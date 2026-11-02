@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793470780974,
+  "lastUpdate": 1793625755117,
   "repoUrl": "https://github.com/mcarvin8/sf-decomposer",
   "entries": {
     "Decompose Memory (large)": [
@@ -2651,6 +2651,68 @@ window.BENCHMARK_DATA = {
           {
             "name": "large.yaml.recompose",
             "value": 0.04,
+            "unit": "MB"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Matt Carvin",
+            "username": "mcarvin8",
+            "email": "90224411+mcarvin8@users.noreply.github.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "8e99955923cd5f1836f16336816119806e0c1bc9",
+          "message": "docs: remove v66 refs",
+          "timestamp": "2026-10-31T20:51:05Z",
+          "url": "https://github.com/mcarvin8/sf-decomposer/commit/8e99955923cd5f1836f16336816119806e0c1bc9"
+        },
+        "date": 1793625755059,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "large.xml.decompose",
+            "value": -0.028,
+            "unit": "MB"
+          },
+          {
+            "name": "large.xml.recompose",
+            "value": 0.045,
+            "unit": "MB"
+          },
+          {
+            "name": "large.json.decompose",
+            "value": -0.005,
+            "unit": "MB"
+          },
+          {
+            "name": "large.json.recompose",
+            "value": 0.044,
+            "unit": "MB"
+          },
+          {
+            "name": "large.json5.decompose",
+            "value": -0.005,
+            "unit": "MB"
+          },
+          {
+            "name": "large.json5.recompose",
+            "value": 0.036,
+            "unit": "MB"
+          },
+          {
+            "name": "large.yaml.decompose",
+            "value": -0.005,
+            "unit": "MB"
+          },
+          {
+            "name": "large.yaml.recompose",
+            "value": 0.038,
             "unit": "MB"
           }
         ]
