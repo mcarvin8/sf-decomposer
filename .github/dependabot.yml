@@ -9,14 +9,19 @@ updates:
       interval: "weekly"
     versioning-strategy: increase
     commit-message:
-      prefix: "feat(config-disassembler)"
+      prefix: "build(npm)"
     cooldown:
       default-days: 1
     allow:
-      - dependency-name: "config-disassembler"
+      - dependency-type: "direct"
     groups:
       config-disassembler:
         patterns:
+          - "config-disassembler"
+      npm:
+        patterns:
+          - "*"
+        exclude-patterns:
           - "config-disassembler"
   - package-ecosystem: "github-actions"
     directory: "/"
