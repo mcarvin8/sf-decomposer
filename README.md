@@ -420,9 +420,9 @@ Nested/repeatable elements:
 
 ```xml
 <fieldPermissions>
-  <field>Job_Request__c.SalaryPay__c</field>
-  <editable>true</editable>
-  <readable>true</readable>
+    <field>Job_Request__c.SalaryPay__c</field>
+    <editable>true</editable>
+    <readable>true</readable>
 </fieldPermissions>
 <fieldPermissions>
     <field>Job_Request__c.Salary__c</field>
