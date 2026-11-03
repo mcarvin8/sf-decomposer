@@ -438,7 +438,7 @@ Leaf/scalar elements:
 <description>Access for HR admins</description>
 ```
 
-#### unique-id (default)
+#### unique-id strategy (default)
 
 Each nested element gets its own file, named by one or more unique-id fields (or a content hash when no UID is found). Leaf elements stay in a file named like the original XML.
 
@@ -545,7 +545,7 @@ If you see a hash-named shard and want to know whether it came from a collision 
           └── uploadFile.operations-meta.xml
   ```
 
-#### grouped-by-tag
+#### grouped-by-tag strategy
 
 All elements with the same tag (e.g. `<fieldPermissions>`) go into one file named after the tag (e.g. `fieldPermissions.xml`). Leaf elements are still grouped in the original-named file. Best for types with many small repeatable tags where one-file-per-element diffs would be noisy.
 
