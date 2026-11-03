@@ -389,6 +389,57 @@ See [`action.yml`](action.yml) for the full input/output reference.
 
 Two primary strategies control how nested XML elements are split on disk. Both round-trip deterministically and can be mixed across types — or even across components of the same type — via the `overrides` array (see [CONFIGURATION.md](CONFIGURATION.md)). When switching strategies for an existing component, pass `--prepurge` (or `prePurge: true`) to remove leftover files from the prior strategy before writing new ones.
 
+**Nested vs. leaf elements**
+
+The decomposition strategies operate on nested, repeatable XML elements. A nested element is an element that appears multiple times under the same parent and can contain its own child elements or nested arrays. These are the entries that may be split into separate files or subdirectories.
+
+A leaf element is a property or scalar value that does not contain child elements. Leaf content stays in the original XML file unless the type's decomposition rules explicitly extract it to a sidecar file.
+
+Example:
+
+```xml
+<PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
+  <label>HR Admin</label>
+  <description>Access for HR admins</description>
+
+  <fieldPermissions>
+    <field>Job_Request__c.SalaryPay__c</field>
+    <editable>true</editable>
+    <readable>true</readable>
+  </fieldPermissions>
+
+  <fieldPermissions>
+    <field>Job_Request__c.Salary__c</field>
+    <editable>false</editable>
+    <readable>true</readable>
+  </fieldPermissions>
+</PermissionSet>
+```
+
+Nested/repeatable elements:
+
+```xml
+<fieldPermissions>
+  <field>Job_Request__c.SalaryPay__c</field>
+  <editable>true</editable>
+  <readable>true</readable>
+</fieldPermissions>
+<fieldPermissions>
+    <field>Job_Request__c.Salary__c</field>
+    <editable>false</editable>
+    <readable>true</readable>
+</fieldPermissions>
+```
+
+Leaf/scalar elements:
+
+```xml
+<label>HR Admin</label>
+<description>Access for HR admins</description>
+<editable>true</editable>
+<readable>true</readable>
+```
+
 #### unique-id (default)
 
 Each nested element gets its own file, named by one or more unique-id fields (or a content hash when no UID is found). Leaf elements stay in a file named like the original XML.
