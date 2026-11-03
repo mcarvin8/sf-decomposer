@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.10.0](https://github.com/mcarvin8/sf-decomposer/compare/v7.9.0...v7.10.0) (2026-11-03)
+
+
+### Features
+
+* **metadata:** support NtfcnDefinition ([#623](https://github.com/mcarvin8/sf-decomposer/issues/623)) ([3e97177](https://github.com/mcarvin8/sf-decomposer/commit/3e971776c8535b8a3e25e4a4397fb77c41bdeaae))
+
 ## [7.9.0](https://github.com/mcarvin8/sf-decomposer/compare/v7.8.0...v7.9.0) (2026-11-02)
 
 
