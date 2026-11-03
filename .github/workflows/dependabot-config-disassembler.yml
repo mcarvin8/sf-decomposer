@@ -1,0 +1,39 @@
+---
+name: Dependabot Config Disassembler PR Title
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  update-title:
+    name: Update Config Disassembler PR Title
+    runs-on: ubuntu-latest
+
+    if: github.actor == 'dependabot[bot]'
+
+    steps:
+      - name: Fetch Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update PR title
+        if: contains(steps.metadata.outputs.dependency-names, 'config-disassembler')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          NEW_VERSION: ${{ steps.metadata.outputs.new-version }}
+        run: |
+          TITLE="feat(config-disassembler): bump config-disassembler to v${NEW_VERSION}"
+
+          gh pr edit "$PR_NUMBER" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "$TITLE"
+
+          echo "Updated PR title to: $TITLE"
