@@ -393,7 +393,7 @@ Two primary strategies control how nested XML elements are split on disk. Both r
 
 The decomposition strategies operate on nested, repeatable XML elements. A nested element is an element that appears multiple times under the same parent and contain its own child elements. These are the entries that may be split into separate files or subdirectories.
 
-A leaf element is a property or scalar value that does not contain child elements. Leaf content stays in the original XML file unless the type's decomposition rules explicitly extract it to a sidecar file.
+A leaf element is a property or scalar value that does not contain child elements. Leaf content stays in the original XML file unless the type's decomposition rules explicitly extract it to a sidecar file (see `externalServiceRegistration`).
 
 Example:
 
