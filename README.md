@@ -436,8 +436,6 @@ Leaf/scalar elements:
 ```xml
 <label>HR Admin</label>
 <description>Access for HR admins</description>
-<editable>true</editable>
-<readable>true</readable>
 ```
 
 #### unique-id (default)
