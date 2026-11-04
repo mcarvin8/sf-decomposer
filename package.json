@@ -10,7 +10,7 @@
   },
   "devDependencies": {
     "@actions/core": "3.0.1",
-    "@biomejs/biome": "2.6.4",
+    "@biomejs/biome": "2.6.5",
     "@commitlint/cli": "21.2.4",
     "@commitlint/config-conventional": "21.2.4",
     "@salesforce/cli-plugins-testkit": "5.3.87",
@@ -166,19 +166,25 @@
       "clean": "if-file-deleted"
     },
     "format": {
-      "command": "biome format --write src test",
+      "command": "biome format --write src test README.md CONFIGURATION.md CONTRIBUTING.md HANDBOOK.md METADATA_SUPPORT.md MIGRATION.md scripts/audit/README.md scripts/audit/xsd-unique-id-candidates.md",
       "files": [
         "src/**/*.ts",
         "test/**/*.ts",
+        "*.md",
+        "scripts/audit/*.md",
+        "test/**/*.md",
         "biome.json"
       ],
       "output": []
     },
     "lint": {
-      "command": "biome check src test",
+      "command": "biome check src test README.md CONFIGURATION.md CONTRIBUTING.md HANDBOOK.md METADATA_SUPPORT.md MIGRATION.md scripts/audit/README.md scripts/audit/xsd-unique-id-candidates.md",
       "files": [
         "src/**/*.ts",
         "test/**/*.ts",
+        "*.md",
+        "scripts/audit/*.md",
+        "test/**/*.md",
         "messages/**",
         "biome.json",
         "**/tsconfig.json"

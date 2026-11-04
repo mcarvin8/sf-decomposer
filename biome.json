@@ -3,7 +3,17 @@
   "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
   "files": {
     "ignoreUnknown": true,
-    "includes": ["**", "!src/metadata/registry/metadataRegistry.json", "!**/*.md"]
+    "includes": [
+      "**",
+      "!src/metadata/registry/metadataRegistry.json",
+      "!CHANGELOG.md",
+      "!LICENSE.md",
+      "!THIRD_PARTY_NOTICES.md",
+      "!messages/**"
+    ]
+  },
+  "markdown": {
+    "formatter": { "enabled": true }
   },
   "formatter": { "enabled": true, "indentStyle": "space", "indentWidth": 2, "lineWidth": 120 },
   "linter": {

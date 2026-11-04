@@ -135,6 +135,8 @@ jobs:
 
           cp "$NEW_FILE" "$OLD_FILE"
           npx tsx scripts/update-metadata-support.ts --old /tmp/old-registry.json --new "$NEW_FILE"
+          # Match the repo Markdown style so MegaLinter has nothing to push onto the PR.
+          npx biome format --write METADATA_SUPPORT.md
 
       - name: Open pull request
         if: steps.fetch.outputs.changed == 'true'
