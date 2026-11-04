@@ -15,7 +15,7 @@ before adding, see `getRegistryValuesBySuffix.ts`).
 Parent type has an entry in `uniqueIdElements.ts` already; this list field isn't covered yet.
 
 | Parent Type          | List Field                 | Child Type                      | Candidate Key                                                                                     |
-|----------------------|----------------------------|---------------------------------|---------------------------------------------------------------------------------------------------|
+| -------------------- | -------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------- |
 | ApprovalProcess      | allowedSubmitters          | ApprovalSubmitter               | `submitter`                                                                                       |
 | Bot                  | contextVariables           | ConversationContextVariable     | `developerName+label`                                                                             |
 | Bot                  | pageContextVariables       | PageContextVariable             | `developerName+label`                                                                             |
@@ -35,7 +35,7 @@ Parent type has an entry in `uniqueIdElements.ts` already; this list field isn't
 `CustomMetadata` -> `md`). Confirm the suffix before adding an entry.
 
 | Parent Type                                | List Field                             | Child Type                                   | Candidate Key                                                                                                                                          |
-|--------------------------------------------|----------------------------------------|----------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ------------------------------------------ | -------------------------------------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | AccountPlanObjMeasCalcDef                  | conditions                             | AccountPlanObjMeasCalcCond                   | `fieldName+operation+value`                                                                                                                            |
 | ActionableListDefinition                   | actionableListDatasetColumns           | ActionableListDatasetColumn                  | `objectName+sourceColumnApiName+sourceFieldName`                                                                                                       |
 | ActionableListDefinition                   | actionableListMemberStatuses           | ActionableListMemberStatus                   | `status`                                                                                                                                               |
@@ -453,7 +453,7 @@ Parent type has an entry in `uniqueIdElements.ts` already; this list field isn't
 ## Already covered (39)
 
 | Parent Type                 | List Field                          | Child Type                                     | Candidate Key                  |
-|-----------------------------|-------------------------------------|------------------------------------------------|--------------------------------|
+| --------------------------- | ----------------------------------- | ---------------------------------------------- | ------------------------------ |
 | Bot                         | conversationChannelProviders        | ConversationDefinitionChannelProvider          | `chatButtonName`               |
 | BrandingSet                 | brandingSetProperty                 | BrandingSetProperty                            | `propertyName`                 |
 | GenAiPlugin                 | genAiFunctions                      | GenAiPluginFunctionDef                         | `functionName`                 |

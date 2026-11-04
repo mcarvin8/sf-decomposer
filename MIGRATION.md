@@ -33,7 +33,7 @@ Never run both tools on the same metadata type in the same project. Mixing them 
 Currently overlapping types (check [Salesforce docs](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_ws_decomposed_md_types.htm) for the current list — Salesforce continues to expand native coverage):
 
 | Native `sourceBehaviorOptions` flag        | Metadata type               | sf-decomposer suffix          |
-|--------------------------------------------|-----------------------------|-------------------------------|
+| ------------------------------------------ | --------------------------- | ----------------------------- |
 | `decomposeCustomLabelsBeta`                | CustomLabels                | `labels`                      |
 | `decomposeWorkflowBeta`                    | Workflow                    | `workflow`                    |
 | `decomposePermissionSetBeta2`              | PermissionSet               | `permissionset`               |
@@ -126,7 +126,7 @@ permissionsets/
     └── Job_Request__c.objectSettings-meta.xml                 ← that object's field/object/recordType/tab perms, combined into one file
 ```
 
-**sf-decomposer** default (`unique-id`, no flags) is far more granular — one file *per entry*, in per-category subdirectories:
+**sf-decomposer** default (`unique-id`, no flags) is far more granular — one file _per entry_, in per-category subdirectories:
 
 ```
 permissionsets/

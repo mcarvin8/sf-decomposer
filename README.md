@@ -58,7 +58,7 @@ Complete these steps once per project. After setup, see [Daily Workflow](#daily-
 sf-decomposer depends on [config-disassembler-node](https://github.com/mcarvin8/config-disassembler-node), which ships prebuilt native binaries as platform-specific optional npm packages — your package manager installs only the one matching your `os` / `cpu` / `libc`:
 
 | Platform    | Architectures                        |
-|-------------|--------------------------------------|
+| ----------- | ------------------------------------ |
 | **macOS**   | x64 (Intel), arm64 (Apple Silicon)   |
 | **Linux**   | x64 (gnu + musl), arm64 (gnu + musl) |
 | **Windows** | x64, arm64, ia32                     |
@@ -93,7 +93,7 @@ Add `.sfdecomposer.config.json` to your project root. Copy and customize one of 
 - [Sample with overrides](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.sfdecomposer.config.overrides.json) — vary format/strategy per metadata type or component
 
 | Option                       | Required    | Description                                                                                                                                                                                                                 |
-|------------------------------|-------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ---------------------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `metadataSuffixes`           | Conditional | Comma-separated metadata suffixes to decompose/recompose. Required unless `manifest` is set; when both are set, run is scoped to the intersection.                                                                          |
 | `manifest`                   | Conditional | Path (relative to project root) to a `package.xml` manifest. When set, only listed components are decomposed/recomposed.                                                                                                    |
 | `ignorePackageDirectories`   | No          | Comma-separated package directories to skip.                                                                                                                                                                                |
@@ -141,6 +141,7 @@ Pass `-x manifest/package.xml` to both `decompose` and `recompose` (and `deploy`
 
 ## Commands
 
+<!-- biome-ignore format: oclif readme writes this list with `*` bullets -->
 <!-- commands -->
 * [`sf decomposer decompose`](#sf-decomposer-decompose)
 * [`sf decomposer recompose`](#sf-decomposer-recompose)
@@ -349,13 +350,13 @@ _See code: [src/commands/decomposer/verify.ts](https://github.com/mcarvin8/sf-de
     metadata-type: |
       permissionset
       flow
-    postpurge: 'true'
+    postpurge: "true"
 
 - name: Verify the round trip before merging
   uses: mcarvin8/sf-decomposer@v7
   with:
     mode: verify
-    config: 'true'
+    config: "true"
 ```
 
 Or point it at an existing `.sfdecomposer.config.json` for either step instead of listing flags: `with: { mode: decompose, config: 'true' }`.
@@ -363,7 +364,7 @@ Or point it at an existing `.sfdecomposer.config.json` for either step instead o
 **Inputs** (all optional except `mode`; multi-value inputs are newline-separated, matching `actions/checkout`'s own multiline convention):
 
 | Input                          | Used by              | Description                                                                       |
-|--------------------------------|----------------------|-----------------------------------------------------------------------------------|
+| ------------------------------ | -------------------- | --------------------------------------------------------------------------------- |
 | `mode`                         | all                  | `decompose`, `recompose`, or `verify`.                                            |
 | `metadata-type`                | all                  | Metadata suffix(es) to process, one per line.                                     |
 | `manifest`                     | all                  | Path to a package.xml manifest to scope the run to.                               |
@@ -601,7 +602,7 @@ Use the metadata **suffix** for `-m` / `--metadata-type`, as in the vendored [`m
 **Common Examples:**
 
 | Metadata Type                 | CLI value                     | Notes                                                                                                                                                                                                                                                                                                                 |
-|-------------------------------|-------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ----------------------------- | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Custom Labels                 | `labels`                      | Strategy overridden to `unique-id` if `grouped-by-tag` is provided (grouping labels by tag would be no different from the original file).                                                                                                                                                                             |
 | Workflows                     | `workflow`                    |                                                                                                                                                                                                                                                                                                                       |
 | Profiles                      | `profile`                     |                                                                                                                                                                                                                                                                                                                       |
@@ -619,7 +620,7 @@ For a comprehensive breakdown of supported, leaf-only, and unsupported metadata 
 #### Exceptions
 
 | Situation                                                                                      | Message                                                                                                                           |
-|------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------|
+| ---------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | `botVersion` used directly                                                                     | Automatically redirected to `bot` with a warning. No error is thrown.                                                             |
 | Custom Objects                                                                                 | `Custom Objects are not supported by this plugin.`                                                                                |
 | Unsupported SDR strategies (e.g. matchingContentFile, digitalExperience, mixedContent, bundle) | `Metadata types with [matchingContentFile, digitalExperience, mixedContent, bundle] strategies are not supported by this plugin.` |
@@ -770,8 +771,8 @@ The sf-decomposer prerun hook recomposes automatically when `sf project deploy s
 
 If you use the prerun hook, do not combine it with `--postpurge` and sgd. The compatible combinations are:
 
-| Setup                                                             | Works?                                                                         |
-|-------------------------------------------------------------------|--------------------------------------------------------------------------------|
+| Setup                                                             | Works?                                                                          |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------------- |
 | No `--postpurge` + sgd + hook                                     | ✅ Root files in git; hook recompose at deploy is harmless (redundant but safe) |
 | No `--postpurge` + sgd + pre-commit hook + `skipPrerunHook: true` | ✅ Recomposed before commit; deploy hook skipped intentionally                  |
 | No `--postpurge` + sgd, no hook                                   | ✅ Recompose manually before commit                                             |
@@ -831,7 +832,7 @@ This cleanup doesn't work with `grouped-by-tag`, because all entries for a tag s
 The underlying Rust crate logs through [env_logger](https://docs.rs/env_logger). Set `RUST_LOG` to opt into more verbosity:
 
 | Level            | What it covers                                                                                                                                                                                |
-|------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `RUST_LOG=error` | Default. Parse errors and skipped files (leaf-only XML — primitives only, nothing to decompose).                                                                                              |
 | `RUST_LOG=warn`  | Adds [sibling-collision fallback](#filename-safety-unique-id) signals — one line per colliding group (parent tag, collided id, sibling count). **Recommended in CI** when shipping overrides. |
 | `RUST_LOG=off`   | Disables rust crate logging. **Recommended** for the `sf decomposer verify` command.                                                                                                          |
