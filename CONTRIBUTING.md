@@ -174,7 +174,7 @@ src/
 
 Metadata attributes (except unique-ID elements) come from `src/metadata/registry/metadataRegistry.json`, a vendored snapshot of **@salesforce/source-deploy-retrieve**'s (SDR) metadata registry. The `-m` / `--metadata-type` flag uses the metadata **suffix** from that registry. SDR itself is not a runtime dependency — `src/metadata/registry/registryAccess.ts` reimplements the lookups this plugin needs against the vendored file, and `src/metadata/registry/` parses package.xml manifests without an external XML library.
 
-A weekly workflow ([`sync-metadata-registry.yml`](.github/workflows/sync-metadata-registry.yml)) diffs the vendored registry against the latest published SDR version and opens a PR when it drifts, refreshing `METADATA_SUPPORT.md` in the same PR. It does not auto-merge — review and merge like any other PR.
+A weekly workflow ([`sync-metadata-registry.yml`](.github/workflows/sync-metadata-registry.yml)) diffs the vendored registry against the latest published SDR version and opens a PR when it drifts, refreshing [`METADATA_SUPPORT.md`](docs/METADATA_SUPPORT.md) in the same PR. It does not auto-merge — review and merge like any other PR.
 
 ### Unique ID elements
 

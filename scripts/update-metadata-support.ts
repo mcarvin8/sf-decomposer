@@ -1,6 +1,6 @@
 /*
  * Diffs two @salesforce/source-deploy-retrieve metadataRegistry.json snapshots and appends
- * draft rows to METADATA_SUPPORT.md for any metadata type the newer registry adds.
+ * draft rows to docs/METADATA_SUPPORT.md for any metadata type the newer registry adds.
  *
  * Classification is derived only from data the registry actually provides:
  *   - child types (registered under a parent's `children.types`)        -> "Use parent type"
@@ -11,7 +11,7 @@
  *     confirmed by testing real metadata (see scripts/audit/), not by reading the registry.
  *
  * Usage:
- *   node --import ts-node/esm scripts/update-metadata-support.ts --old <old-registry.json> --new <new-registry.json> [--doc METADATA_SUPPORT.md]
+ *   node --import ts-node/esm scripts/update-metadata-support.ts --old <old-registry.json> --new <new-registry.json> [--doc docs/METADATA_SUPPORT.md]
  *
  * Prints a summary (added top-level types / added child types) to stdout for reuse in a PR body.
  */
@@ -56,13 +56,13 @@ function parseArgs(argv: string[]): { old: string; new: string; doc: string } {
   const newPath = get('--new');
   if (!oldPath || !newPath) {
     throw Error(
-      'Usage: updateMetadataSupport.ts --old <old-registry.json> --new <new-registry.json> [--doc METADATA_SUPPORT.md]',
+      'Usage: updateMetadataSupport.ts --old <old-registry.json> --new <new-registry.json> [--doc docs/METADATA_SUPPORT.md]',
     );
   }
   return {
     old: resolve(oldPath),
     new: resolve(newPath),
-    doc: resolve(get('--doc') ?? join(__dirname, '..', 'METADATA_SUPPORT.md')),
+    doc: resolve(get('--doc') ?? join(__dirname, '..', 'docs', 'METADATA_SUPPORT.md')),
   };
 }
 
@@ -146,7 +146,7 @@ function insertRows(doc: string, rows: Row[]): { doc: string; skipped: string[] 
 
   const lines = doc.split('\n');
   const headerIdx = lines.findIndex((l) => l.startsWith('| Metadata Type'));
-  if (headerIdx === -1) throw Error('Could not find the "| Metadata Type" table header in METADATA_SUPPORT.md');
+  if (headerIdx === -1) throw Error('Could not find the "| Metadata Type" table header in docs/METADATA_SUPPORT.md');
   const separatorIdx = headerIdx + 1;
 
   // Column widths come from the separator row's dash runs, so new rows match existing padding.
@@ -192,7 +192,7 @@ function main(): void {
   const { rows, addedTop, addedChildren } = collectNewRows(oldRegistry, newRegistry);
 
   if (rows.length === 0) {
-    console.log('No new metadata types found; METADATA_SUPPORT.md left unchanged.');
+    console.log('No new metadata types found; docs/METADATA_SUPPORT.md left unchanged.');
     return;
   }
 

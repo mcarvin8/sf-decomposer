@@ -136,7 +136,7 @@ jobs:
           cp "$NEW_FILE" "$OLD_FILE"
           npx tsx scripts/update-metadata-support.ts --old /tmp/old-registry.json --new "$NEW_FILE"
           # Match the repo Markdown style so MegaLinter has nothing to push onto the PR.
-          npx biome format --write METADATA_SUPPORT.md
+          npx biome format --write docs/METADATA_SUPPORT.md
 
       - name: Open pull request
         if: steps.fetch.outputs.changed == 'true'
@@ -149,7 +149,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout -b "$BRANCH"
-          git add src/metadata/registry/metadataRegistry.json METADATA_SUPPORT.md
+          git add src/metadata/registry/metadataRegistry.json docs/METADATA_SUPPORT.md
           git commit -m "$TITLE"
           git push origin "$BRANCH"
           gh pr create --title "$TITLE" --body-file /tmp/pr-body.md --base main --head "$BRANCH"

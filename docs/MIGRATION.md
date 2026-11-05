@@ -1,6 +1,6 @@
 # Migrating from Salesforce Native Decomposition to sf-decomposer
 
-This guide is for teams already using Salesforce CLI's built-in beta decomposition who want to switch to sf-decomposer. If you are setting up sf-decomposer in a project that has never used native decomposition, follow the [README Setup](./README.md#setup) instead.
+This guide is for teams already using Salesforce CLI's built-in beta decomposition who want to switch to sf-decomposer. If you are setting up sf-decomposer in a project that has never used native decomposition, follow the [README Setup](../README.md#setup) instead.
 
 ## Contents
 
@@ -246,7 +246,7 @@ Add a hook config to your project root. Adjust `metadataSuffixes` to the types y
 }
 ```
 
-See [Configure Hooks](./README.md#4-configure-hooks-recommended) for the full option reference. Use the [sample with overrides](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.sfdecomposer.config.overrides.json) if you need per-type strategies or formats.
+See [Configure Hooks](../README.md#4-configure-hooks-recommended) for the full option reference. Use the [sample with overrides](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.sfdecomposer.config.overrides.json) if you need per-type strategies or formats.
 
 ### 5. Run the initial decompose
 
@@ -278,7 +278,7 @@ git add force-app/  # or your package directory
 git commit -m "chore: migrate from native decomposition to sf-decomposer"
 ```
 
-From this point on the [daily workflow](./README.md#daily-workflow) applies — hooks handle decompose on retrieve and recompose on deploy automatically.
+From this point on the [daily workflow](../README.md#daily-workflow) applies — hooks handle decompose on retrieve and recompose on deploy automatically.
 
 ---
 

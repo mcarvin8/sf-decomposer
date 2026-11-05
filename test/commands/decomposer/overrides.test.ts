@@ -401,7 +401,7 @@ describe('decomposer per-component overrides', () => {
   });
 });
 
-// End-to-end exercise of the bot recipe documented in HANDBOOK.md. Sample_Chat_Bot is a small
+// End-to-end exercise of the bot recipe documented in docs/HANDBOOK.md. Sample_Chat_Bot is a small
 // placeholder bot whose v1.botVersion has 8 dialogs and a mix of Wait/Message/Navigation/SystemMessage
 // step types — enough surface to prove that two multiLevel rules in one call produce the expected
 // per-dialog and per-step files on disk and round-trip back byte-identical to the fixture.

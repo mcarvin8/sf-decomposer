@@ -6,7 +6,7 @@ This handbook collects ready-to-paste `.sfdecomposer.config.json` recipes for th
 - recomposes back to a **byte-identical** XML deployable to any org,
 - is verified by `sf decomposer verify` before you commit it.
 
-If you want the underlying option grammar instead of recipes, see the [main README](./README.md#per-type--per-component-overrides).
+If you want the underlying option grammar instead of recipes, see the [main README](../README.md#per-type--per-component-overrides).
 
 ## Contents
 
@@ -42,7 +42,7 @@ Built-in `multiLevel` defaults — applied automatically when `strategy` is `uni
 | `bot`                 | `["botDialogs:botDialogs:developerName", "botSteps:botSteps:type"]` |
 | `loyaltyProgramSetup` | `"programProcesses:programProcesses:parameterName,ruleName"`        |
 
-The full registry lives in [`src/metadata/multiLevelDefaults.ts`](./src/metadata/multiLevelDefaults.ts).
+The full registry lives in [`src/metadata/multiLevelDefaults.ts`](../src/metadata/multiLevelDefaults.ts).
 
 Everything else in this handbook is opt-in.
 

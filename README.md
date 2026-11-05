@@ -31,7 +31,7 @@
   - [Decompose Strategies](#decompose-strategies)
   - [Supported Metadata](#supported-metadata)
   - [Manifest-scoped Runs](#manifest-scoped-runs)
-  - [Per-Type & Per-Component Overrides](CONFIGURATION.md)
+  - [Per-Type & Per-Component Overrides](docs/CONFIGURATION.md)
   - [Ignore Files](#ignore-files)
   - [Using with sfdx-git-delta](#using-with-sfdx-git-delta)
   - [Troubleshooting](#troubleshooting)
@@ -108,7 +108,7 @@ Add `.sfdecomposer.config.json` to your project root. Copy and customize one of 
 | `updateGitattributes`        | No          | Set `true` to automatically add root metadata file patterns to `.gitattributes` after each hook-triggered decomposition (default: false).                                                                                   |
 | `skipPrerunHook`             | No          | Set `true` to skip the automatic recompose that fires before `sf project deploy start/validate` (default: false). Useful when you recompose manually in a pre-commit hook and don't want a second recompose at deploy time. |
 | `skipPostRetrieveHook`       | No          | Set `true` to skip the automatic decompose that fires after `sf project retrieve start` (default: false).                                                                                                                   |
-| `overrides`                  | No          | Array of per-type and/or per-component overrides. See [CONFIGURATION.md](CONFIGURATION.md).                                                                                                                                 |
+| `overrides`                  | No          | Array of per-type and/or per-component overrides. See [CONFIGURATION.md](docs/CONFIGURATION.md).                                                                                                                            |
 
 ---
 
@@ -390,7 +390,7 @@ See [`action.yml`](action.yml) for the full input/output reference.
 
 ### Decompose Strategies
 
-Two primary strategies control how nested XML elements are split on disk. Both round-trip deterministically and can be mixed across types — or even across components of the same type — via the `overrides` array (see [CONFIGURATION.md](CONFIGURATION.md)). When switching strategies for an existing component, pass `--prepurge` (or `prePurge: true`) to remove leftover files from the prior strategy before writing new ones.
+Two primary strategies control how nested XML elements are split on disk. Both round-trip deterministically and can be mixed across types — or even across components of the same type — via the `overrides` array (see [CONFIGURATION.md](docs/CONFIGURATION.md)). When switching strategies for an existing component, pass `--prepurge` (or `prePurge: true`) to remove leftover files from the prior strategy before writing new ones.
 
 **Nested vs. leaf elements**
 
@@ -476,7 +476,7 @@ permissionsets/
 
 If you see a hash-named shard and want to know whether it came from a collision (vs. a missing UID), set `RUST_LOG=warn` and rerun — see [Rust crate logging](#xml-disassemble-output-rust-crate).
 
-**Extending with multiLevel.** When a metadata type has deeply-nested repeatable blocks (a block inside a block), add a `multiLevel` override to decompose those inner arrays into their own subdirectories. `bot` and `loyaltyProgramSetup` ship with built-in `multiLevel` defaults applied automatically. See the [admin handbook](https://github.com/mcarvin8/sf-decomposer/blob/main/HANDBOOK.md) for ready-to-paste recipes for Bots, Flexipages, Layouts, Flows, and more.
+**Extending with multiLevel.** When a metadata type has deeply-nested repeatable blocks (a block inside a block), add a `multiLevel` override to decompose those inner arrays into their own subdirectories. `bot` and `loyaltyProgramSetup` ship with built-in `multiLevel` defaults applied automatically. See the [admin handbook](https://github.com/mcarvin8/sf-decomposer/blob/main/docs/HANDBOOK.md) for ready-to-paste recipes for Bots, Flexipages, Layouts, Flows, and more.
 
 **Type-specific notes (unique-id):**
 
@@ -489,7 +489,7 @@ If you see a hash-named shard and want to know whether it came from a collision 
   └── quoteManual.label-meta.xml
   ```
 
-- **Bot (`bot`)** — built-in `multiLevel` default applies two rules automatically: `botDialogs` (outer, keyed by `developerName`) and `botSteps` (inner, keyed by `type`). No config needed to get the canonical layout; override only to change it. See the [admin handbook](https://github.com/mcarvin8/sf-decomposer/blob/main/HANDBOOK.md) for the full layout, step-shape notes, and single-rule variant.
+- **Bot (`bot`)** — built-in `multiLevel` default applies two rules automatically: `botDialogs` (outer, keyed by `developerName`) and `botSteps` (inner, keyed by `type`). No config needed to get the canonical layout; override only to change it. See the [admin handbook](https://github.com/mcarvin8/sf-decomposer/blob/main/docs/HANDBOOK.md) for the full layout, step-shape notes, and single-rule variant.
 
   ```
   bots/
@@ -567,7 +567,7 @@ permissionsets/
     └── userPermissions.xml
 ```
 
-**Extending with splitTags.** A `splitTags` override lets specific tags within a `grouped-by-tag` run break out into per-element files (split mode) or sub-grouped files (group mode), while all other tags stay grouped. See [splitTags grammar](CONFIGURATION.md#splittags-grammar).
+**Extending with splitTags.** A `splitTags` override lets specific tags within a `grouped-by-tag` run break out into per-element files (split mode) or sub-grouped files (group mode), while all other tags stay grouped. See [splitTags grammar](docs/CONFIGURATION.md#splittags-grammar).
 
 **Extending with decomposeNestedPermissions.** For `permissionset` and `mutingpermissionset`, add `--decompose-nested-permissions` (`-p`) to further decompose `<objectPermissions>` into per-object files and group `<fieldPermissions>` by object — similar to Salesforce's `decomposePermissionSetBeta2` but with more format and strategy options.
 
@@ -603,21 +603,21 @@ Use the metadata **suffix** for `-m` / `--metadata-type`, as in the vendored [`m
 
 **Common Examples:**
 
-| Metadata Type                 | CLI value                     | Notes                                                                                                                                                                                                                                                                                                                 |
-| ----------------------------- | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Custom Labels                 | `labels`                      | Strategy overridden to `unique-id` if `grouped-by-tag` is provided (grouping labels by tag would be no different from the original file).                                                                                                                                                                             |
-| Workflows                     | `workflow`                    |                                                                                                                                                                                                                                                                                                                       |
-| Profiles                      | `profile`                     |                                                                                                                                                                                                                                                                                                                       |
-| Permission Sets               | `permissionset`               | Supports `--decompose-nested-permissions` with grouped-by-tag.                                                                                                                                                                                                                                                        |
-| Muting Permission Sets        | `mutingpermissionset`         | Extends permission set metadata type. Supports `--decompose-nested-permissions` with grouped-by-tag.                                                                                                                                                                                                                  |
-| AI Scoring Model Definition   | `aiScoringModelDefinition`    |                                                                                                                                                                                                                                                                                                                       |
-| Decision Matrix Definition    | `decisionMatrixDefinition`    |                                                                                                                                                                                                                                                                                                                       |
-| Bot                           | `bot`                         | Built-in `multiLevel` default splits `botDialogs` (by `developerName`) and `botSteps` (by `type`) automatically. No config required; override only to change the layout. See [Decompose Strategies](#decompose-strategies) and the [admin handbook](https://github.com/mcarvin8/sf-decomposer/blob/main/HANDBOOK.md). |
-| Marketing App Extension       | `marketingappextension`       |                                                                                                                                                                                                                                                                                                                       |
-| Loyalty Program Setup         | `loyaltyProgramSetup`         | Always forced to `unique-id`; `grouped-by-tag` is overridden. Built-in `multiLevel` splits `<programProcesses>` into per-process folders automatically. Recompose always removes the decomposed tree. See [Decompose Strategies](#decompose-strategies).                                                              |
-| External Service Registration | `externalServiceRegistration` | The `<schema>` field is always extracted to a sidecar YAML file (format forced to YAML regardless of `--format`). The `<operations>` array follows normal `unique-id` decomposition, named by `<name>`. See [Decompose Strategies](#decompose-strategies).                                                            |
+| Metadata Type                 | CLI value                     | Notes                                                                                                                                                                                                                                                                                                                      |
+| ----------------------------- | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Custom Labels                 | `labels`                      | Strategy overridden to `unique-id` if `grouped-by-tag` is provided (grouping labels by tag would be no different from the original file).                                                                                                                                                                                  |
+| Workflows                     | `workflow`                    |                                                                                                                                                                                                                                                                                                                            |
+| Profiles                      | `profile`                     |                                                                                                                                                                                                                                                                                                                            |
+| Permission Sets               | `permissionset`               | Supports `--decompose-nested-permissions` with grouped-by-tag.                                                                                                                                                                                                                                                             |
+| Muting Permission Sets        | `mutingpermissionset`         | Extends permission set metadata type. Supports `--decompose-nested-permissions` with grouped-by-tag.                                                                                                                                                                                                                       |
+| AI Scoring Model Definition   | `aiScoringModelDefinition`    |                                                                                                                                                                                                                                                                                                                            |
+| Decision Matrix Definition    | `decisionMatrixDefinition`    |                                                                                                                                                                                                                                                                                                                            |
+| Bot                           | `bot`                         | Built-in `multiLevel` default splits `botDialogs` (by `developerName`) and `botSteps` (by `type`) automatically. No config required; override only to change the layout. See [Decompose Strategies](#decompose-strategies) and the [admin handbook](https://github.com/mcarvin8/sf-decomposer/blob/main/docs/HANDBOOK.md). |
+| Marketing App Extension       | `marketingappextension`       |                                                                                                                                                                                                                                                                                                                            |
+| Loyalty Program Setup         | `loyaltyProgramSetup`         | Always forced to `unique-id`; `grouped-by-tag` is overridden. Built-in `multiLevel` splits `<programProcesses>` into per-process folders automatically. Recompose always removes the decomposed tree. See [Decompose Strategies](#decompose-strategies).                                                                   |
+| External Service Registration | `externalServiceRegistration` | The `<schema>` field is always extracted to a sidecar YAML file (format forced to YAML regardless of `--format`). The `<operations>` array follows normal `unique-id` decomposition, named by `<name>`. See [Decompose Strategies](#decompose-strategies).                                                                 |
 
-For a comprehensive breakdown of supported, leaf-only, and unsupported metadata types — including multi-level decomposition patterns, Salesforce native decomposition conflicts, and adapter strategy limitations — see [**METADATA_SUPPORT.md**](./METADATA_SUPPORT.md).
+For a comprehensive breakdown of supported, leaf-only, and unsupported metadata types — including multi-level decomposition patterns, Salesforce native decomposition conflicts, and adapter strategy limitations — see [**METADATA_SUPPORT.md**](./docs/METADATA_SUPPORT.md).
 
 #### Exceptions
 
@@ -667,7 +667,7 @@ sf project deploy start -x "manifest/package.xml"
 
 The optional `overrides` array in `.sfdecomposer.config.json` lets you vary format, strategy, and decomposition options per metadata suffix or per individual component without splitting the run into multiple invocations.
 
-See [CONFIGURATION.md](CONFIGURATION.md) for the full reference: override fields, component key conventions, precedence rules, and grammar for `splitTags`, `multiLevel`, and `uniqueIdElements`.
+See [CONFIGURATION.md](docs/CONFIGURATION.md) for the full reference: override fields, component key conventions, precedence rules, and grammar for `splitTags`, `multiLevel`, and `uniqueIdElements`.
 
 ---
 
@@ -859,7 +859,7 @@ Example `WARN` (CustomApplication where four `actionOverrides` siblings shared t
 
 ## Migrating from Native Decomposition
 
-Already using Salesforce CLI built-in `decomposePermissionSetBeta2`, `decomposeCustomLabelsBeta`, or similar presets? See [MIGRATION.md](https://github.com/mcarvin8/sf-decomposer/blob/main/MIGRATION.md) before switching over to sf-decomposer.
+Already using Salesforce CLI built-in `decomposePermissionSetBeta2`, `decomposeCustomLabelsBeta`, or similar presets? See [MIGRATION.md](https://github.com/mcarvin8/sf-decomposer/blob/main/docs/MIGRATION.md) before switching over to sf-decomposer.
 
 ---
 

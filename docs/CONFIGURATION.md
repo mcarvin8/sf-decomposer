@@ -103,7 +103,7 @@ Each `<tag>` may appear at most once in a spec. The plugin validates the grammar
 
 > **Caveat:** With `mode: split`, the chosen `<field>` must produce a unique value across every array item — otherwise two items map to the same filename. If items can share a field value, use `mode: group` instead.
 
-See the [admin handbook](https://github.com/mcarvin8/sf-decomposer/blob/main/HANDBOOK.md) for additional `splitTags` and `multiLevel` recipes (flows, workflows, layouts, flexipages, bots).
+See the [admin handbook](https://github.com/mcarvin8/sf-decomposer/blob/main/docs/HANDBOOK.md) for additional `splitTags` and `multiLevel` recipes (flows, workflows, layouts, flexipages, bots).
 
 ### multiLevel grammar
 
@@ -145,7 +145,7 @@ Within one scope, the `(file_pattern, root_to_strip)` pair must be unique across
 
 > **Built-in defaults.** `bot` and `loyaltyProgramSetup` ship with built-in `multiLevel` rules, so you do not need an override to get the canonical layout — supply your own only to replace the default. Full registry: [`src/metadata/multiLevelDefaults.ts`](https://github.com/mcarvin8/sf-decomposer/blob/main/src/metadata/multiLevelDefaults.ts).
 >
-> **Pass all rules at once.** Sequential single-rule decomposes rewrite `.multi_level.json` and only the last rule survives — bundle every rule for a given component into one override. Use [`sf decomposer verify`](./README.md#sf-decomposer-verify) to confirm a new config round-trips before committing it.
+> **Pass all rules at once.** Sequential single-rule decomposes rewrite `.multi_level.json` and only the last rule survives — bundle every rule for a given component into one override. Use [`sf decomposer verify`](../README.md#sf-decomposer-verify) to confirm a new config round-trips before committing it.
 
 ### uniqueIdElements grammar
 
