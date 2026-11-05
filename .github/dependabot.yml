@@ -10,8 +10,6 @@ updates:
     versioning-strategy: increase
     commit-message:
       prefix: "build(npm)"
-    cooldown:
-      default-days: 1
     allow:
       - dependency-type: "direct"
     groups:
