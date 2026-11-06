@@ -16,15 +16,12 @@
 //     few-ms wobble on a tiny value can't produce a +57% headline.
 //   - Benchmarks present on only one side are reported by name, not skipped.
 //
-// Env:     PERF_PROFILE      - included in the sticky-comment marker so the
-//                              `large`/`manyfiles` matrix jobs each get their
-//                              own comment instead of overwriting each other.
-//          GITHUB_TOKEN      - posts/updates the PR comment when set.
-//          GITHUB_REPOSITORY - "owner/repo", set automatically by Actions.
-//          PR_NUMBER         - the PR to comment on.
-// Output:  perf-comparison.md, plus a sticky PR comment when the env above
-//          is present. Regressions never exit non-zero: they're informational
-//          (comment + ::warning::), matching perf.yml's fail-on-alert: false.
+// Env:     PERF_PROFILE - shown in the report heading.
+// Output:  perf-comparison.md. Posting it is perf.yml's perf-comment job: this
+//          script runs inside the job that executes the PR's own code, so it
+//          deliberately reads no GitHub token. Regressions never exit
+//          non-zero: they're informational (comment + ::warning::), matching
+//          perf.yml's fail-on-alert: false.
 
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 
@@ -149,40 +146,6 @@ lines.push('## Stable\n', tableHeader, ...(stable.length > 0 ? stable.map(tableR
 const report = lines.join('\n');
 writeFileSync('perf-comparison.md', report);
 console.log(report);
-
-const token = process.env.GITHUB_TOKEN;
-const repo = process.env.GITHUB_REPOSITORY;
-const prNumber = process.env.PR_NUMBER;
-
-if (token && repo && prNumber) {
-  const commentMarker = `<!-- same-runner-perf:${profile} -->`;
-  const commentBody = `${commentMarker}\n${report}`;
-  const [owner, repoName] = repo.split('/');
-  const apiBase = `https://api.github.com/repos/${owner}/${repoName}`;
-  const headers = {
-    Authorization: `Bearer ${token}`,
-    Accept: 'application/vnd.github.v3+json',
-    'Content-Type': 'application/json',
-  };
-
-  const commentsRes = await fetch(`${apiBase}/issues/${prNumber}/comments?per_page=100`, { headers });
-  const comments = await commentsRes.json();
-  const existing = Array.isArray(comments) ? comments.find((c) => c.body?.includes(commentMarker)) : undefined;
-
-  if (existing) {
-    await fetch(`${apiBase}/issues/comments/${existing.id}`, {
-      method: 'PATCH',
-      headers,
-      body: JSON.stringify({ body: commentBody }),
-    });
-  } else {
-    await fetch(`${apiBase}/issues/${prNumber}/comments`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ body: commentBody }),
-    });
-  }
-}
 
 if (regressions.length > 0) {
   console.warn(

@@ -143,7 +143,8 @@ even repeats, head then base on odd ones, all against the same fixtures and
 harness. Before this, the whole suite ran on base and then on head, so head
 always got the warmer runner. That showed up as a steady head-is-faster bias.
 
-`scripts/compare-perf-baseline.mjs` then posts a sticky comment per profile.
+`scripts/compare-perf-baseline.mjs` then writes `perf-comparison.md`, and the
+`perf-comment` job posts it as a sticky comment per profile.
 The comment updates in place on subsequent pushes (keyed off an HTML marker
 containing the profile name). Its guards:
 
@@ -168,6 +169,13 @@ gh-pages-based publish steps (150%/200%).
 
 Behavior:
 
+- Least privilege. The `perf` job runs the PR's own code, so it holds a
+  read-only token and its checkout drops credentials. Posting happens in
+  `perf-comment` (`pull-requests: write`) and gh-pages publishing in
+  `perf-publish` (`contents: write`). Neither job checks out, installs or
+  runs PR code; both only read the `perf-bench-<profile>` artifact. That
+  artifact is uploaded only when the benchmark run completed, so a crashed
+  run can't publish a truncated baseline.
 - Runs only on PRs from branches in this repo. Fork PRs are skipped because
   `GITHUB_TOKEN` is read-only there and can't post comments.
 - Concurrency-limited: a new push cancels the in-progress perf run for the
