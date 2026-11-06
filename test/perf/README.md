@@ -98,10 +98,11 @@ consumed by [`benchmark-action/github-action-benchmark`][bench] and push them
 to the `gh-pages` branch:
 
 - Runtime: `https://<owner>.github.io/sf-decomposer/dev/bench/runtime/`
+- CPU: `https://<owner>.github.io/sf-decomposer/dev/bench/cpu/`
 - Memory: `https://<owner>.github.io/sf-decomposer/dev/bench/memory/`
 
 The conversion is done by `scripts/perf-to-benchmark.mjs`, which collapses
-`perf-results/*.json` into `perf-runtime.json` (median elapsed ms) and
+`perf-results/*.json` into `perf-runtime.json` (median elapsed ms), `perf-cpu.json` (median CPU ms) and
 `perf-memory.json` (median peak-RSS growth in MB; see below). Ad-hoc `workflow_dispatch` runs
 intentionally do not publish unless `publish: true` is checked, since they
 often vary profile/types/formats inputs and would pollute the timeline.
@@ -120,6 +121,11 @@ child process** (`test/perf/utils/runOp.ts`, spawned by
 `utils/childMeasure.ts`) and records:
 
 - **Runtime:** wall time of the operation inside the child (module loading excluded).
+- **CPU:** user + system CPU time from `process.resourceUsage()`, summed
+  across every thread in the child, including config-disassembler's Rust
+  workers. It is far less sensitive to noisy neighbours than wall time, so a
+  real compute regression in the crate shows up more reliably. CPU ÷ wall is
+  the operation's effective parallelism.
 - **Memory:** `process.resourceUsage().maxRSS` minus the child's RSS just
   before the operation, i.e. how much resident memory the operation added at
   its peak. This includes config-disassembler's native (Rust/napi)
@@ -154,6 +160,12 @@ containing the profile name). Its guards:
   classified.
 - Missing input files fail the step instead of reporting "no regressions".
 - Benchmarks present on only one side are listed by name.
+- Each value shows its median plus the min–max across repeats, e.g.
+  `1985ms [1890-2080ms]`, so a real shift can be told apart from noise.
+- A parallelism table (CPU ÷ wall) compares base and PR. A row is marked
+  `dropped` (plus a `::warning::`) when base ran at 1.5× or more and the PR
+  lost over 25% of it, e.g. the Rust directory-mode fan-out going
+  sequential. Informational only.
 
 The base tree is driven by head's harness. If a PR changes the
 `decomposeMetadataTypes` / `recomposeMetadataTypes` option shapes, update the

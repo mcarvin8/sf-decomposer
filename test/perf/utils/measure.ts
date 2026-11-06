@@ -69,10 +69,17 @@ export type MedianSample = {
   elapsedMedianMs: number;
   elapsedMinMs: number;
   elapsedMaxMs: number;
+  // Median user + system CPU time across all threads, JS and Rust (see
+  // test/perf/utils/runOp.ts). cpu / elapsed = effective parallelism.
+  cpuMedianMs: number;
+  cpuMinMs: number;
+  cpuMaxMs: number;
   // Median peak-RSS growth of a fresh child process running the operation (see
   // test/perf/utils/runOp.ts). Replaces the old in-process heapUsed delta, which
   // could not see native (Rust/napi) allocations and hovered around +/-0.01 MB.
   peakRssDeltaMedianBytes: number;
+  peakRssDeltaMinBytes: number;
+  peakRssDeltaMaxBytes: number;
 };
 
 /** Median of a non-empty array of numbers (average of the two middle values on an even count). */
@@ -94,9 +101,10 @@ export function median(values: number[]): number {
  */
 export function summarizeMedian(
   label: string,
-  results: ReadonlyArray<{ elapsedMs: number; peakRssDeltaBytes: number }>,
+  results: ReadonlyArray<{ elapsedMs: number; cpuMs: number; peakRssDeltaBytes: number }>,
 ): MedianSample {
   const elapsed = results.map((r) => r.elapsedMs);
+  const cpu = results.map((r) => r.cpuMs);
   const peakRss = results.map((r) => r.peakRssDeltaBytes);
   return {
     label,
@@ -104,7 +112,12 @@ export function summarizeMedian(
     elapsedMedianMs: median(elapsed),
     elapsedMinMs: Math.min(...elapsed),
     elapsedMaxMs: Math.max(...elapsed),
+    cpuMedianMs: median(cpu),
+    cpuMinMs: Math.min(...cpu),
+    cpuMaxMs: Math.max(...cpu),
     peakRssDeltaMedianBytes: median(peakRss),
+    peakRssDeltaMinBytes: Math.min(...peakRss),
+    peakRssDeltaMaxBytes: Math.max(...peakRss),
   };
 }
 

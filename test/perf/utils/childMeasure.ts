@@ -7,6 +7,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 export type OpResult = {
   elapsedMs: number;
+  // User + system CPU time across all threads (JS and Rust), in ms.
+  cpuMs: number;
   rssBeforeBytes: number;
   peakRssBytes: number;
   // Primary memory metric: peak resident memory the operation added on top of

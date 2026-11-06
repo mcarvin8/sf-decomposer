@@ -4,7 +4,10 @@
 //
 // Inputs:  perf-results/*.json
 // Outputs: perf-runtime.json - sample.elapsedMedianMs in ms, one entry per
-//                              (profile, format, sample.label)
+//                              (profile, format, sample.label). Every entry
+//                              also carries `range` ("min-max<unit>").
+//          perf-cpu.json     - sample.cpuMedianMs in ms (user + system CPU across
+//                              all threads, JS and Rust), same keys.
 //          perf-memory.json  - sample.peakRssDeltaMedianBytes in MB, same keys.
 //                              Peak RSS growth of a fresh child process per
 //                              operation (see test/perf/utils/runOp.ts), so it
@@ -12,7 +15,7 @@
 //                              allocations -- unlike the JS heapUsed delta this
 //                              replaced, which could not see them and hovered
 //                              around +/-0.01 MB of pure noise.
-//          perf-runtime-base.json / perf-memory-base.json - the same, for reports
+//          perf-{runtime,cpu,memory}-base.json - the same, for reports
 //                              tagged ref: 'base' (PR runs only, when the suite
 //                              was given PERF_BASE_ROOT). Not written otherwise.
 //
@@ -49,7 +52,13 @@ for (const f of files.sort()) {
   merged.set(key, existing);
 }
 
-const series = { head: { runtime: [], memory: [] }, base: { runtime: [], memory: [] } };
+const newSeries = () => ({ runtime: [], cpu: [], memory: [] });
+const series = { head: newSeries(), base: newSeries() };
+const mb = (bytes) => Number((bytes / 1024 / 1024).toFixed(2));
+const ms = (v) => Number(v.toFixed(2));
+// `range` is benchmark-action's free-text spread field (shown in its tooltip);
+// compare-perf-baseline.mjs also prints it next to each value.
+const range = (min, max, unit) => `${min}-${max}${unit}`;
 for (const r of merged.values()) {
   const out = series[r.ref];
   if (!out) throw new Error(`unknown report ref "${r.ref}"`);
@@ -57,26 +66,38 @@ for (const r of merged.values()) {
     // sample.label already begins with the format (e.g. "xml.decompose");
     // prefix only the profile to avoid stuttering.
     const name = `${r.profile}.${s.label}`;
-    out.runtime.push({ name, unit: 'ms', value: Number(s.elapsedMedianMs.toFixed(2)) });
+    out.runtime.push({
+      name,
+      unit: 'ms',
+      value: ms(s.elapsedMedianMs),
+      range: range(ms(s.elapsedMinMs), ms(s.elapsedMaxMs), 'ms'),
+    });
+    out.cpu.push({
+      name,
+      unit: 'ms',
+      value: ms(s.cpuMedianMs),
+      range: range(ms(s.cpuMinMs), ms(s.cpuMaxMs), 'ms'),
+    });
     out.memory.push({
       name,
       unit: 'MB',
-      value: Number((s.peakRssDeltaMedianBytes / 1024 / 1024).toFixed(2)),
+      value: mb(s.peakRssDeltaMedianBytes),
+      range: range(mb(s.peakRssDeltaMinBytes), mb(s.peakRssDeltaMaxBytes), 'MB'),
     });
   }
 }
 
 const write = (path, data) => writeFile(path, JSON.stringify(data, null, 2) + '\n', 'utf8');
 
-await write('perf-runtime.json', series.head.runtime);
-await write('perf-memory.json', series.head.memory);
-console.log(
-  `perf-to-benchmark: wrote ${series.head.runtime.length} runtime + ${series.head.memory.length} memory metrics (head).`,
-);
-if (series.base.runtime.length > 0) {
-  await write('perf-runtime-base.json', series.base.runtime);
-  await write('perf-memory-base.json', series.base.memory);
-  console.log(
-    `perf-to-benchmark: wrote ${series.base.runtime.length} runtime + ${series.base.memory.length} memory metrics (base).`,
-  );
+for (const [ref, suffix] of [
+  ['head', ''],
+  ['base', '-base'],
+]) {
+  const out = series[ref];
+  // base only exists on PR runs (PERF_BASE_ROOT set).
+  if (ref === 'base' && out.runtime.length === 0) continue;
+  await write(`perf-runtime${suffix}.json`, out.runtime);
+  await write(`perf-cpu${suffix}.json`, out.cpu);
+  await write(`perf-memory${suffix}.json`, out.memory);
+  console.log(`perf-to-benchmark: wrote ${out.runtime.length} runtime/cpu/memory metrics (${ref}).`);
 }

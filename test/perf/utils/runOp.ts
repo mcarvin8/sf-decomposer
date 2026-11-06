@@ -43,15 +43,24 @@ const options = { ...(JSON.parse(optionsJson) as Record<string, unknown>), log: 
 // Settle module-load garbage so rssBefore is the process's steady pre-work footprint.
 global.gc?.();
 const rssBeforeBytes = process.memoryUsage().rss;
+const usageBefore = process.resourceUsage();
 const start = performance.now();
 await fn(options);
 const elapsedMs = performance.now() - start;
+const usageAfter = process.resourceUsage();
 // maxRSS is reported in kilobytes on every platform Node supports.
-const peakRssBytes = process.resourceUsage().maxRSS * 1024;
+const peakRssBytes = usageAfter.maxRSS * 1024;
+// User + system CPU time (reported in microseconds), summed across every
+// thread in the process -- including config-disassembler's Rust worker
+// threads. Far less sensitive to noisy neighbours than wall time, and
+// cpuMs / elapsedMs is the operation's effective parallelism.
+const cpuMs =
+  (usageAfter.userCPUTime - usageBefore.userCPUTime + usageAfter.systemCPUTime - usageBefore.systemCPUTime) / 1000;
 
 process.stdout.write(
   `\n__PERF_RESULT__${JSON.stringify({
     elapsedMs,
+    cpuMs,
     rssBeforeBytes,
     peakRssBytes,
     // Clamped at 0: if module loading briefly peaked above where the operation

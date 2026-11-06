@@ -270,8 +270,10 @@ jobs:
           name: perf-bench-${{ matrix.profile }}
           path: |
             perf-runtime.json
+            perf-cpu.json
             perf-memory.json
             perf-runtime-base.json
+            perf-cpu-base.json
             perf-memory-base.json
             perf-comparison.md
           retention-days: 30
@@ -287,6 +289,7 @@ jobs:
             perf-results/
             perf-comparison.md
             perf-runtime-base.json
+            perf-cpu-base.json
             perf-memory-base.json
           retention-days: 90
           if-no-files-found: warn
@@ -362,6 +365,7 @@ jobs:
   # profile/types/formats inputs - don't pollute the timeline. The dashboard
   # renders at
   #   https://<owner>.github.io/sf-decomposer/dev/bench/runtime/
+  #   https://<owner>.github.io/sf-decomposer/dev/bench/cpu/
   #   https://<owner>.github.io/sf-decomposer/dev/bench/memory/
   #
   # The only job holding contents: write. It installs no dependencies and runs
@@ -423,6 +427,21 @@ jobs:
           comment-on-alert: true
           summary-always: true
           benchmark-data-dir-path: dev/bench/runtime
+
+      - name: Publish CPU benchmark
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          # User + system CPU time across all threads (JS and Rust), in ms.
+          name: Decompose CPU (${{ matrix.profile }})
+          tool: customSmallerIsBetter
+          output-file-path: ./perf-cpu.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+          skip-fetch-gh-pages: true
+          alert-threshold: '150%'
+          fail-on-alert: false
+          summary-always: true
+          benchmark-data-dir-path: dev/bench/cpu
 
       - name: Publish memory benchmark
         uses: benchmark-action/github-action-benchmark@v1
