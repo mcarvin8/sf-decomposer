@@ -9,6 +9,10 @@ export type OpResult = {
   elapsedMs: number;
   // User + system CPU time across all threads (JS and Rust), in ms.
   cpuMs: number;
+  // Wall time with at least one config-disassembler (napi) call in flight, and
+  // how many calls were made. elapsedMs - crateMs = wrapper-only time.
+  crateMs: number;
+  crateCalls: number;
   rssBeforeBytes: number;
   peakRssBytes: number;
   // Primary memory metric: peak resident memory the operation added on top of

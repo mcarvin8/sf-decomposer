@@ -74,6 +74,17 @@ export type MedianSample = {
   cpuMedianMs: number;
   cpuMinMs: number;
   cpuMaxMs: number;
+  // Wall time with at least one config-disassembler call in flight (crate), and
+  // the rest of elapsed (wrapper: TS work with no crate call running). Per-rep
+  // wrapper = elapsed - crate, then the median of that -- not median(elapsed) -
+  // median(crate), which can mix values from different repeats.
+  crateMedianMs: number;
+  crateMinMs: number;
+  crateMaxMs: number;
+  wrapperMedianMs: number;
+  wrapperMinMs: number;
+  wrapperMaxMs: number;
+  crateCalls: number;
   // Median peak-RSS growth of a fresh child process running the operation (see
   // test/perf/utils/runOp.ts). Replaces the old in-process heapUsed delta, which
   // could not see native (Rust/napi) allocations and hovered around +/-0.01 MB.
@@ -101,10 +112,18 @@ export function median(values: number[]): number {
  */
 export function summarizeMedian(
   label: string,
-  results: ReadonlyArray<{ elapsedMs: number; cpuMs: number; peakRssDeltaBytes: number }>,
+  results: ReadonlyArray<{
+    elapsedMs: number;
+    cpuMs: number;
+    crateMs: number;
+    crateCalls: number;
+    peakRssDeltaBytes: number;
+  }>,
 ): MedianSample {
   const elapsed = results.map((r) => r.elapsedMs);
   const cpu = results.map((r) => r.cpuMs);
+  const crate = results.map((r) => r.crateMs);
+  const wrapper = results.map((r) => Math.max(0, r.elapsedMs - r.crateMs));
   const peakRss = results.map((r) => r.peakRssDeltaBytes);
   return {
     label,
@@ -115,6 +134,15 @@ export function summarizeMedian(
     cpuMedianMs: median(cpu),
     cpuMinMs: Math.min(...cpu),
     cpuMaxMs: Math.max(...cpu),
+    crateMedianMs: median(crate),
+    crateMinMs: Math.min(...crate),
+    crateMaxMs: Math.max(...crate),
+    wrapperMedianMs: median(wrapper),
+    wrapperMinMs: Math.min(...wrapper),
+    wrapperMaxMs: Math.max(...wrapper),
+    // Deterministic for a given fixture + code; the max guards against a rep
+    // that somehow differed.
+    crateCalls: Math.max(...results.map((r) => r.crateCalls)),
     peakRssDeltaMedianBytes: median(peakRss),
     peakRssDeltaMinBytes: Math.min(...peakRss),
     peakRssDeltaMaxBytes: Math.max(...peakRss),

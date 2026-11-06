@@ -18,6 +18,7 @@
 // Usage: node --expose-gc --import <tsx loader> runOp.ts <srcRoot> <decompose|recompose> <optionsJson>
 // Output: one line `__PERF_RESULT__{json}` on stdout (see OpResult in childMeasure.ts).
 
+import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { pathToFileURL } from 'node:url';
@@ -40,6 +41,47 @@ if (typeof fn !== 'function') {
 
 const options = { ...(JSON.parse(optionsJson) as Record<string, unknown>), log: (): void => {} };
 
+// ---- crate vs wrapper split ---------------------------------------------------
+// sf-decomposer reaches the Rust crate through exactly two napi methods. Wrap
+// them on their prototypes (napi-rs leaves class methods writable) so every
+// call made by the code under test is timed, without touching src/. Load the
+// package with srcRoot's own resolution so a base-ref worktree patches *its*
+// config-disassembler build, i.e. the same module instance its src/ imports.
+//
+// crateMs is the wall time during which at least one crate call was in flight
+// -- not the sum of call durations, which would double-count calls that
+// pLimit runs concurrently. The remainder (elapsed - crate) is time spent with
+// no crate call running: TS file discovery, option resolution, label/bot/
+// workflow handling, purge, and waiting between batches.
+const CRATE_METHODS: ReadonlyArray<[className: string, method: string]> = [
+  ['DisassembleXMLFileHandler', 'disassemble'],
+  ['ReassembleXMLFileHandler', 'reassemble'],
+];
+const crate = createRequire(resolve(srcRoot, 'package.json'))('config-disassembler') as Record<
+  string,
+  { prototype: Record<string, unknown> } | undefined
+>;
+let inFlight = 0;
+let busySince = 0;
+let crateMs = 0;
+let crateCalls = 0;
+for (const [className, method] of CRATE_METHODS) {
+  const proto = crate[className]?.prototype;
+  const original = proto?.[method];
+  if (!proto || typeof original !== 'function') {
+    throw new Error(`config-disassembler under ${srcRoot} has no ${className}.prototype.${method}`);
+  }
+  proto[method] = async function timed(this: unknown, ...args: unknown[]): Promise<unknown> {
+    crateCalls += 1;
+    if (inFlight++ === 0) busySince = performance.now();
+    try {
+      return await (original as (...a: unknown[]) => unknown).apply(this, args);
+    } finally {
+      if (--inFlight === 0) crateMs += performance.now() - busySince;
+    }
+  };
+}
+
 // Settle module-load garbage so rssBefore is the process's steady pre-work footprint.
 global.gc?.();
 const rssBeforeBytes = process.memoryUsage().rss;
@@ -57,10 +99,21 @@ const peakRssBytes = usageAfter.maxRSS * 1024;
 const cpuMs =
   (usageAfter.userCPUTime - usageBefore.userCPUTime + usageAfter.systemCPUTime - usageBefore.systemCPUTime) / 1000;
 
+// Every perf fixture type goes through the crate, so zero calls means the
+// patch hooked a different module instance than src/ imported -- the split
+// would silently report 100% wrapper time. Fail instead.
+if (crateCalls === 0) {
+  throw new Error(
+    `no config-disassembler calls were intercepted during ${op} (src=${srcRoot}); crate/wrapper split is broken`,
+  );
+}
+
 process.stdout.write(
   `\n__PERF_RESULT__${JSON.stringify({
     elapsedMs,
     cpuMs,
+    crateMs,
+    crateCalls,
     rssBeforeBytes,
     peakRssBytes,
     // Clamped at 0: if module loading briefly peaked above where the operation
