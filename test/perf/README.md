@@ -126,6 +126,17 @@ child process** (`test/perf/utils/runOp.ts`, spawned by
   workers. It is far less sensitive to noisy neighbours than wall time, so a
   real compute regression in the crate shows up more reliably. CPU ÷ wall is
   the operation's effective parallelism.
+- **Crate vs wrapper:** the child wraps the two napi methods sf-decomposer
+  calls (`DisassembleXMLFileHandler.prototype.disassemble`,
+  `ReassembleXMLFileHandler.prototype.reassemble`) and records the wall time
+  during which at least one call is in flight. Calls that `pLimit` runs
+  concurrently are not double-counted. `<name>.crate` is that time and
+  `<name>.wrapper` is the rest of the run: TS file discovery, option
+  resolution, labels/bots/workflows and purge. Both are runtime rows, so the
+  same threshold and floor apply. The child fails if it intercepts no crate
+  calls, so a broken hook can't silently report 100% wrapper time. If the TS
+  code starts calling another `config-disassembler` method, add it to
+  `CRATE_METHODS` in `utils/runOp.ts`.
 - **Memory:** `process.resourceUsage().maxRSS` minus the child's RSS just
   before the operation, i.e. how much resident memory the operation added at
   its peak. This includes config-disassembler's native (Rust/napi)

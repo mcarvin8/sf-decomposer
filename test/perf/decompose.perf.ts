@@ -478,6 +478,8 @@ function printMedianSummary(format: string, medianSamples: MedianSample[], repor
       `[perf]   ${s.label.padEnd(20)} median=${formatMs(s.elapsedMedianMs).padStart(10)}   ` +
         `range=[${formatMs(s.elapsedMinMs)}, ${formatMs(s.elapsedMaxMs)}]   ` +
         `cpu median=${formatMs(s.cpuMedianMs).padStart(10)} (x${(s.cpuMedianMs / s.elapsedMedianMs).toFixed(2)})   ` +
+        `crate=${formatMs(s.crateMedianMs)} wrapper=${formatMs(s.wrapperMedianMs)} ` +
+        `(${((s.crateMedianMs / s.elapsedMedianMs) * 100).toFixed(0)}% crate, ${s.crateCalls} calls)   ` +
         `peak rssΔ median=${formatBytes(s.peakRssDeltaMedianBytes)}`,
     );
   }

@@ -6,6 +6,9 @@
 // Outputs: perf-runtime.json - sample.elapsedMedianMs in ms, one entry per
 //                              (profile, format, sample.label). Every entry
 //                              also carries `range` ("min-max<unit>").
+//                              Also <name>.crate / <name>.wrapper: the same
+//                              wall time split into time with a
+//                              config-disassembler call in flight vs TS-only.
 //          perf-cpu.json     - sample.cpuMedianMs in ms (user + system CPU across
 //                              all threads, JS and Rust), same keys.
 //          perf-memory.json  - sample.peakRssDeltaMedianBytes in MB, same keys.
@@ -72,6 +75,24 @@ for (const r of merged.values()) {
       value: ms(s.elapsedMedianMs),
       range: range(ms(s.elapsedMinMs), ms(s.elapsedMaxMs), 'ms'),
     });
+    // Wall-time split of the same operation: time with a config-disassembler
+    // (napi) call in flight vs. TS-only time (see test/perf/utils/runOp.ts).
+    // Same series and unit as the total, so the PR comparison applies the
+    // runtime threshold/floor to each part.
+    if (s.crateMedianMs != null) {
+      out.runtime.push({
+        name: `${name}.crate`,
+        unit: 'ms',
+        value: ms(s.crateMedianMs),
+        range: range(ms(s.crateMinMs), ms(s.crateMaxMs), 'ms'),
+      });
+      out.runtime.push({
+        name: `${name}.wrapper`,
+        unit: 'ms',
+        value: ms(s.wrapperMedianMs),
+        range: range(ms(s.wrapperMinMs), ms(s.wrapperMaxMs), 'ms'),
+      });
+    }
     out.cpu.push({
       name,
       unit: 'ms',
