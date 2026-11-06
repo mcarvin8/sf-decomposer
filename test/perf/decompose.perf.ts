@@ -7,6 +7,7 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { generate, type Profile } from '../../scripts/gen-perf-fixtures.js';
 import { decomposeMetadataTypes } from '../../src/core/decomposeMetadataTypes.js';
 import { recomposeMetadataTypes } from '../../src/core/recomposeMetadataTypes.js';
+import { type OpResult, runOpInChild } from './utils/childMeasure.js';
 import {
   dirBytes,
   formatBytes,
@@ -29,6 +30,8 @@ import {
 //   PERF_PROFILE=small|medium|large|xlarge   (default: large)
 //   PERF_FORMATS=xml,json,json5,yaml         (default: all four)
 //   PERF_TYPES=permissionset,flow,...        (default: types known to round-trip)
+//   PERF_REPEATS=5                           (timing repeats per ref)
+//   PERF_BASE_ROOT=/path/to/base-worktree    (optional: also time that tree's src/, interleaved)
 //
 // The default type list covers the types we generate fixtures for. Since
 // config-disassembler 1.1.2 (Rust crate 0.4.3), the SHA-256 fallback hashes
@@ -89,6 +92,18 @@ const METADATA_TYPES = envList('PERF_TYPES', DEFAULT_METADATA_TYPES);
 // 15-20% for identical code; the median of several repeats is far more resistant to any
 // one of them landing on a GC pause / noisy neighbor / scheduler hiccup.
 const PERF_REPEATS = envNumber('PERF_REPEATS', 5);
+
+// Source trees the timing loop benchmarks. `head` is this checkout. `base` is set only on
+// PR runs (perf.yml points PERF_BASE_ROOT at a git worktree of the PR base ref with its own
+// `npm ci`), so base and head are timed in one interleaved loop on identical fixtures. The
+// harness itself (fixtures, options, measurement) always comes from head; a PR that changes
+// the decompose/recompose option shapes would need a base-compatible options object here.
+type RefName = 'head' | 'base';
+const BASE_ROOT = process.env.PERF_BASE_ROOT?.trim() ? resolve(process.env.PERF_BASE_ROOT.trim()) : undefined;
+const REFS: ReadonlyArray<{ name: RefName; root: string }> = [
+  ...(BASE_ROOT ? [{ name: 'base' as const, root: BASE_ROOT }] : []),
+  { name: 'head', root: resolve('.') },
+];
 
 const FIXTURE_ROOT = resolve('perf-fixtures');
 
@@ -266,66 +281,87 @@ describe(`perf: decompose/recompose round-trip (profile=${PROFILE})`, () => {
         // decompose/recompose mutate the working tree (prepurge/postpurge), so reusing one
         // directory across repeats would measure a different operation on repeat 2..N than on
         // repeat 1 (an already-decomposed tree behaves differently than a pristine one).
-        const log = (): void => {};
-        const decomposeSamples: MeasureResult[] = [];
-        const recomposeSamples: MeasureResult[] = [];
+        //
+        // Every operation runs in a fresh child process (test/perf/utils/runOp.ts) so peak RSS
+        // -- which, unlike JS heapUsed, includes config-disassembler's native allocations -- is
+        // attributable to that one operation.
+        //
+        // When PERF_BASE_ROOT is set (PR runs), the base ref's src/ is timed in the same loop,
+        // interleaved with head: base/head on even repeats, head/base on odd ones. Running all
+        // of base and then all of head (the previous design) handed head a consistently warmer
+        // runner -- page cache, CPU boost state -- and showed up as a steady head-is-faster /
+        // head-frees-more bias on PRs that changed no runtime code.
+        const decomposeOptions = {
+          metadataTypes: METADATA_TYPES,
+          prepurge: true,
+          postpurge: true,
+          format,
+          strategy: 'unique-id',
+          decomposeNestedPerms: false,
+        };
+        const recomposeOptions = { metadataTypes: METADATA_TYPES, postpurge: true };
 
-        for (let rep = 0; rep < PERF_REPEATS; rep++) {
+        const runRep = async (srcRoot: string): Promise<{ decompose: OpResult; recompose: OpResult }> => {
           const repDir = await mkdtemp(join(tmpdir(), `sf-decomposer-perf-median-${format}-`));
           try {
             await cp(FIXTURE_ROOT, repDir, { recursive: true, force: true });
-            process.chdir(repDir);
-
-            const { sample: decomposeSample } = await measure(`${format}.decompose`, async () => {
-              await decomposeMetadataTypes({
-                metadataTypes: METADATA_TYPES,
-                prepurge: true,
-                postpurge: true,
-                format,
-                strategy: 'unique-id',
-                decomposeNestedPerms: false,
-                log,
-              });
-            });
-            decomposeSamples.push(decomposeSample);
-
+            const decompose = await runOpInChild(srcRoot, 'decompose', decomposeOptions, repDir);
             // Recompose immediately after this same rep's decompose, so its precondition
             // (decomposed shards present, no parent -meta.xml) is naturally satisfied without
             // a separate untimed setup step.
-            const { sample: recomposeSample } = await measure(`${format}.recompose`, async () => {
-              await recomposeMetadataTypes({
-                metadataTypes: METADATA_TYPES,
-                postpurge: true,
-                log,
-              });
-            });
-            recomposeSamples.push(recomposeSample);
+            const recompose = await runOpInChild(srcRoot, 'recompose', recomposeOptions, repDir);
+            return { decompose, recompose };
           } finally {
-            process.chdir(originalCwd);
-            // eslint-disable-next-line no-await-in-loop -- each repeat must clean up before the next one starts
             await rm(repDir, { recursive: true, force: true });
+          }
+        };
+
+        const results = new Map<RefName, { decompose: OpResult[]; recompose: OpResult[] }>(
+          REFS.map((r) => [r.name, { decompose: [], recompose: [] }]),
+        );
+
+        // One untimed warm-up rep per ref: the first spawn against each source tree pays for
+        // cold tsx transforms and a cold page cache on that tree's node_modules / .node binary.
+        for (const ref of REFS) {
+          // eslint-disable-next-line no-await-in-loop -- reps must run serially to be comparable
+          await runRep(ref.root);
+        }
+
+        for (let rep = 0; rep < PERF_REPEATS; rep++) {
+          const order = rep % 2 === 0 ? REFS : [...REFS].reverse();
+          for (const ref of order) {
+            // eslint-disable-next-line no-await-in-loop -- reps must run serially to be comparable
+            const { decompose, recompose } = await runRep(ref.root);
+            const bucket = results.get(ref.name)!;
+            bucket.decompose.push(decompose);
+            bucket.recompose.push(recompose);
           }
         }
 
-        const medianSamples: MedianSample[] = [
-          summarizeMedian(`${format}.decompose`, decomposeSamples),
-          summarizeMedian(`${format}.recompose`, recomposeSamples),
-        ];
+        for (const ref of REFS) {
+          const bucket = results.get(ref.name)!;
+          const medianSamples: MedianSample[] = [
+            summarizeMedian(`${format}.decompose`, bucket.decompose),
+            summarizeMedian(`${format}.recompose`, bucket.recompose),
+          ];
 
-        const reportFile = await writeReport({
-          timestamp: new Date().toISOString(),
-          node: process.version,
-          platform: process.platform,
-          arch: process.arch,
-          profile: PROFILE,
-          format,
-          fixtureBytes,
-          fixtureFiles,
-          samples: [],
-          medianSamples,
-        });
+          // eslint-disable-next-line no-await-in-loop -- two reports at most
+          const reportFile = await writeReport({
+            timestamp: new Date().toISOString(),
+            node: process.version,
+            platform: process.platform,
+            arch: process.arch,
+            profile: PROFILE,
+            format,
+            ref: ref.name,
+            fixtureBytes,
+            fixtureFiles,
+            samples: [],
+            medianSamples,
+          });
 
-        printMedianSummary(format, medianSamples, reportFile);
+          printMedianSummary(`${format} [${ref.name}]`, medianSamples, reportFile);
+        }
       });
     });
   }
@@ -441,7 +477,7 @@ function printMedianSummary(format: string, medianSamples: MedianSample[], repor
     lines.push(
       `[perf]   ${s.label.padEnd(20)} median=${formatMs(s.elapsedMedianMs).padStart(10)}   ` +
         `range=[${formatMs(s.elapsedMinMs)}, ${formatMs(s.elapsedMaxMs)}]   ` +
-        `heapΔ median=${formatBytes(s.heapUsedMedianBytes)}`,
+        `peak rssΔ median=${formatBytes(s.peakRssDeltaMedianBytes)}`,
     );
   }
   lines.push(`[perf]   report=${reportFile}`);

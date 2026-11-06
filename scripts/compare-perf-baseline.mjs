@@ -1,17 +1,21 @@
-// Compares this PR's perf-runtime.json / perf-memory.json (built from a run
-// against the PR head) with perf-runtime-base.json / perf-memory-base.json
-// (built from an identical run against the PR base ref, on the same runner,
-// immediately before). See perf.yml's "Run baseline performance suite"
-// step for how the *-base.json files are produced.
+// Compares this PR's perf-runtime.json / perf-memory.json (head ref) with
+// perf-runtime-base.json / perf-memory-base.json (PR base ref). Both come from
+// the SAME perf-suite run: the timing loop interleaves base and head repeats
+// on one runner (see test/perf/decompose.perf.ts and perf.yml's
+// "Prepare PR base-ref worktree" step), so runner drift and warm-up effects
+// land on both sides equally.
 //
-// This exists because comparing against gh-pages history (a different run on
-// a different runner, possibly days old) swings 20-30% between otherwise
-// identical code -- see perf.yml's alert-threshold comments. Same-runner,
-// same-moment diffing removes most of that noise, so this uses a tighter
-// threshold than the gh-pages-based publish steps.
+// Guards (ported from sfdx-git-delta's __tests__/perf/compareBaseline.mjs,
+// plus an absolute floor this suite needs):
+//   - Missing input file -> throw. A crashed run must not read as "no regressions".
+//   - Non-positive value on either side -> listed, never classified. A ratio
+//     against 0 or a negative number is not a measurement (-0.016 / -0.004 = 4.0
+//     used to be reported as a +300% regression).
+//   - Absolute floor -> a row is only a regression/improvement when BOTH the
+//     ratio threshold AND an absolute delta floor are crossed, so a few-KB or
+//     few-ms wobble on a tiny value can't produce a +57% headline.
+//   - Benchmarks present on only one side are reported by name, not skipped.
 //
-// Inputs:  perf-runtime.json, perf-memory.json (head)
-//          perf-runtime-base.json, perf-memory-base.json (base)
 // Env:     PERF_PROFILE      - included in the sticky-comment marker so the
 //                              `large`/`manyfiles` matrix jobs each get their
 //                              own comment instead of overwriting each other.
@@ -19,72 +23,126 @@
 //          GITHUB_REPOSITORY - "owner/repo", set automatically by Actions.
 //          PR_NUMBER         - the PR to comment on.
 // Output:  perf-comparison.md, plus a sticky PR comment when the env above
-//          is present. Never exits non-zero: regressions are informational
-//          (surfaced via the comment and a ::warning::), not a required-check
-//          failure -- matches the rest of perf.yml's fail-on-alert: false.
+//          is present. Regressions never exit non-zero: they're informational
+//          (comment + ::warning::), matching perf.yml's fail-on-alert: false.
 
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 
-// Both metrics are "smaller is better" (elapsed ms, heap delta MB), unlike
-// sfdx-git-delta's ops/sec runtime metric -- so both use the same ratio
-// direction (pr / base) below.
+// Both metrics are "smaller is better" (elapsed ms, peak RSS delta MB).
 const RUNTIME_THRESHOLD = 1.3;
 const MEMORY_THRESHOLD = 1.5;
+// Minimum absolute change before a ratio crossing counts. Runtime rows are
+// multi-second end-to-end runs; memory rows are peak RSS growth of a whole
+// child process, where allocator/page-cache jitter is a few MB.
+const RUNTIME_ABS_FLOOR_MS = 100;
+const MEMORY_ABS_FLOOR_MB = 10;
 
-const loadJson = (path) => (existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')) : []);
+const REQUIRED = ['perf-runtime.json', 'perf-memory.json', 'perf-runtime-base.json', 'perf-memory-base.json'];
+const missingFiles = REQUIRED.filter((p) => !existsSync(p));
+if (missingFiles.length > 0) {
+  throw new Error(
+    `${missingFiles.join(', ')} missing: the benchmark run did not complete (or ran without PERF_BASE_ROOT), ` +
+      'so there is nothing to compare. Refusing to report on absent data.',
+  );
+}
 
+const loadJson = (path) => JSON.parse(readFileSync(path, 'utf8'));
 const prRuntime = loadJson('perf-runtime.json');
 const baseRuntime = loadJson('perf-runtime-base.json');
 const prMemory = loadJson('perf-memory.json');
 const baseMemory = loadJson('perf-memory-base.json');
 
 const toMap = (entries) => new Map(entries.map((e) => [e.name, e.value]));
-const baseRuntimeMap = toMap(baseRuntime);
-const baseMemoryMap = toMap(baseMemory);
+const namesOf = (entries) => new Set(entries.map((e) => e.name));
 
 const regressions = [];
 const improvements = [];
 const stable = [];
+const missing = [];
+const added = [];
 
-function compare(name, baseVal, prVal, unit, threshold) {
+const NOT_APPLICABLE = 'n/a';
+
+function compare(name, baseVal, prVal, unit, threshold, absFloor) {
+  const values = { name, base: `${baseVal}${unit}`, pr: `${prVal}${unit}` };
+  if (!(baseVal > 0) || !(prVal > 0)) {
+    stable.push({ ...values, ratio: NOT_APPLICABLE, change: NOT_APPLICABLE });
+    return;
+  }
   const ratio = prVal / baseVal;
   const pct = ((ratio - 1) * 100).toFixed(1);
   const row = {
-    name,
-    base: baseVal,
-    pr: prVal,
-    unit,
+    ...values,
     ratio: ratio.toFixed(2),
     change: ratio > 1 ? `+${pct}%` : `-${Math.abs(pct)}%`,
   };
-  if (ratio >= threshold) regressions.push(row);
-  else if (ratio <= 1 / threshold) improvements.push(row);
+  const significant = Math.abs(prVal - baseVal) >= absFloor;
+  if (significant && ratio >= threshold) regressions.push(row);
+  else if (significant && ratio <= 1 / threshold) improvements.push(row);
   else stable.push(row);
 }
 
-for (const entry of prRuntime) {
-  const baseVal = baseRuntimeMap.get(entry.name);
-  if (baseVal == null) continue; // new bench name -- no baseline to diff against yet
-  compare(entry.name, baseVal, entry.value, 'ms', RUNTIME_THRESHOLD);
+function compareSeries(series, pr, base, { suffix, unit, threshold, absFloor }) {
+  const baseMap = toMap(base);
+  const prNames = namesOf(pr);
+  for (const entry of pr) {
+    const baseVal = baseMap.get(entry.name);
+    if (baseVal == null) {
+      added.push({ name: entry.name, series, value: `${entry.value}${unit}` });
+      continue;
+    }
+    compare(`${entry.name}${suffix}`, baseVal, entry.value, unit, threshold, absFloor);
+  }
+  for (const entry of base) {
+    if (!prNames.has(entry.name)) missing.push({ name: entry.name, series, value: `${entry.value}${unit}` });
+  }
 }
-for (const entry of prMemory) {
-  const baseVal = baseMemoryMap.get(entry.name);
-  if (baseVal == null) continue;
-  compare(`${entry.name} (heap)`, baseVal, entry.value, 'MB', MEMORY_THRESHOLD);
-}
+
+compareSeries('runtime', prRuntime, baseRuntime, {
+  suffix: '',
+  unit: 'ms',
+  threshold: RUNTIME_THRESHOLD,
+  absFloor: RUNTIME_ABS_FLOOR_MS,
+});
+compareSeries('memory', prMemory, baseMemory, {
+  suffix: ' (peak rss)',
+  unit: 'MB',
+  threshold: MEMORY_THRESHOLD,
+  absFloor: MEMORY_ABS_FLOOR_MB,
+});
 
 const profile = process.env.PERF_PROFILE || 'large';
 
 const tableHeader = '| Benchmark | Base | PR | Ratio | Change |\n|---|---:|---:|---:|---:|';
-const tableRow = (r) => `| ${r.name} | ${r.base}${r.unit} | ${r.pr}${r.unit} | ${r.ratio} | ${r.change} |`;
+const tableRow = (r) => `| ${r.name} | ${r.base} | ${r.pr} | ${r.ratio} | ${r.change} |`;
+const reconciliationHeader = (column) => `| Benchmark | Series | ${column} |\n|---|---|---:|`;
+const reconciliationRow = (r) => `| ${r.name} | ${r.series} | ${r.value} |`;
 
-const lines = [`# Performance comparison (same runner, profile=${profile})\n`];
+const lines = [
+  `# Performance comparison (same runner, interleaved, profile=${profile})\n`,
+  `_Flagged only when the ratio crosses ${RUNTIME_THRESHOLD}x runtime / ${MEMORY_THRESHOLD}x memory ` +
+    `**and** the absolute change is at least ${RUNTIME_ABS_FLOOR_MS}ms / ${MEMORY_ABS_FLOOR_MB}MB._\n`,
+];
 
 if (regressions.length > 0) {
   lines.push('## Regressions\n', tableHeader, ...regressions.map(tableRow), '');
 }
 if (improvements.length > 0) {
   lines.push('## Improvements\n', tableHeader, ...improvements.map(tableRow), '');
+}
+if (missing.length > 0) {
+  lines.push(
+    '## Benchmarks missing from this run\n',
+    reconciliationHeader('Base'),
+    ...missing.map(reconciliationRow),
+    '',
+    'A renamed benchmark appears here under its old name and under "new" below with its new name; ' +
+      'a deleted or skipped benchmark appears only here. The tables above are not a complete comparison.',
+    '',
+  );
+}
+if (added.length > 0) {
+  lines.push('## Benchmarks new in this run\n', reconciliationHeader('PR'), ...added.map(reconciliationRow), '');
 }
 lines.push('## Stable\n', tableHeader, ...(stable.length > 0 ? stable.map(tableRow) : ['| _none_ | | | | |']), '');
 
@@ -129,8 +187,19 @@ if (token && repo && prNumber) {
 if (regressions.length > 0) {
   console.warn(
     `\n::warning::${regressions.length} performance regression(s) detected on the same runner ` +
-      `(runtime threshold: ${RUNTIME_THRESHOLD}x, memory threshold: ${MEMORY_THRESHOLD}x) -- see PR comment for details`,
+      `(runtime: ${RUNTIME_THRESHOLD}x and >=${RUNTIME_ABS_FLOOR_MS}ms, memory: ${MEMORY_THRESHOLD}x and >=${MEMORY_ABS_FLOOR_MB}MB) ` +
+      '-- see PR comment for details',
   );
 } else {
   console.info('No regressions detected.');
+}
+
+const uniqueNames = (rows) => [...new Set(rows.map((r) => r.name))];
+const missingNames = uniqueNames(missing);
+if (missingNames.length > 0) {
+  console.warn(`\n::warning::${missingNames.length} benchmark(s) missing from this run: ${missingNames.join(', ')}`);
+}
+const addedNames = uniqueNames(added);
+if (addedNames.length > 0) {
+  console.info(`\n::notice::${addedNames.length} new benchmark(s) in this run: ${addedNames.join(', ')}`);
 }

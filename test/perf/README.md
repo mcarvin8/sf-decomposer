@@ -101,8 +101,8 @@ to the `gh-pages` branch:
 - Memory: `https://<owner>.github.io/sf-decomposer/dev/bench/memory/`
 
 The conversion is done by `scripts/perf-to-benchmark.mjs`, which collapses
-`perf-results/*.json` into `perf-runtime.json` (`elapsedMs`) and
-`perf-memory.json` (`rssDeltaBytes` in MB). Ad-hoc `workflow_dispatch` runs
+`perf-results/*.json` into `perf-runtime.json` (median elapsed ms) and
+`perf-memory.json` (median peak-RSS growth in MB; see below). Ad-hoc `workflow_dispatch` runs
 intentionally do not publish unless `publish: true` is checked, since they
 often vary profile/types/formats inputs and would pollute the timeline.
 
@@ -113,22 +113,58 @@ To enable on first run:
 2. Trigger one publish-eligible run (e.g. `gh workflow run perf.yml` from a
    release tag, or wait for the next Monday cron).
 
+## How timing and memory are measured
+
+The "measures timing" test runs every decompose and recompose in a **fresh
+child process** (`test/perf/utils/runOp.ts`, spawned by
+`utils/childMeasure.ts`) and records:
+
+- **Runtime:** wall time of the operation inside the child (module loading excluded).
+- **Memory:** `process.resourceUsage().maxRSS` minus the child's RSS just
+  before the operation, i.e. how much resident memory the operation added at
+  its peak. This includes config-disassembler's native (Rust/napi)
+  allocations. The previous metric, JS `heapUsed` after a forced GC, could not
+  see those, sat around ±0.01 MB, and went negative, which produced most of
+  the false "regressions" on PRs.
+
+Each repeat uses a pristine fixture copy. The published number is the median
+of `PERF_REPEATS` (default 5) after one untimed warm-up repeat.
+
+The correctness test (round-trip + idempotence) still runs in-process and its
+`samples` (including heap/RSS deltas) are diagnostic only.
+
 ## Pull-request comparison comment
 
 PRs that touch non-doc files run the `large` and `manyfiles` profiles as
-parallel matrix jobs. Each job benchmarks the PR's base ref and then its head
-ref, back to back, **on the same runner**, then posts a sticky comment (one
-per profile) showing the per-bench deltas between the two
-(`scripts/compare-perf-baseline.mjs`). The comment updates in place on
-subsequent pushes (keyed off an HTML marker containing the profile name).
+parallel matrix jobs. Each job checks the PR base ref out into a separate git
+worktree (with its own `npm ci`) and passes it as `PERF_BASE_ROOT`. The timing
+loop then benchmarks base and head **in one run, interleaved**: base then head on
+even repeats, head then base on odd ones, all against the same fixtures and
+harness. Before this, the whole suite ran on base and then on head, so head
+always got the warmer runner. That showed up as a steady head-is-faster bias.
+
+`scripts/compare-perf-baseline.mjs` then posts a sticky comment per profile.
+The comment updates in place on subsequent pushes (keyed off an HTML marker
+containing the profile name). Its guards:
+
+- A row is flagged only when the ratio crosses the threshold **and** the
+  absolute change clears a floor (100 ms runtime / 10 MB memory).
+- Rows with a zero or negative value on either side are listed, never
+  classified.
+- Missing input files fail the step instead of reporting "no regressions".
+- Benchmarks present on only one side are listed by name.
+
+The base tree is driven by head's harness. If a PR changes the
+`decomposeMetadataTypes` / `recomposeMetadataTypes` option shapes, update the
+options object in the timing test so base still accepts it.
 
 This is deliberately not a comparison against the gh-pages history: that
 history comes from a different run on a different runner, possibly days old,
 and swings 20-30% between otherwise-identical code (see the `alert-threshold`
 comments in `perf.yml`). Benchmarking base and head back to back on one
 runner removes most of that noise, so the PR comparison uses a tighter
-threshold (130% runtime / 150% memory) than the gh-pages-based publish steps
-(150%/200%).
+threshold (130% runtime / 150% memory, plus absolute floors) than the
+gh-pages-based publish steps (150%/200%).
 
 Behavior:
 
@@ -136,8 +172,8 @@ Behavior:
   `GITHUB_TOKEN` is read-only there and can't post comments.
 - Concurrency-limited: a new push cancels the in-progress perf run for the
   same PR so we don't queue redundant jobs.
-- Never touches `gh-pages`: base and head results are both discarded after
-  the comment is posted, so the trend dashboard only ever contains data from
+- Never touches `gh-pages`. Base and head results go only into the comment
+  and the run artifact, so the trend dashboard only ever contains data from
   the schedule/release-triggered runs.
 - Does **not** fail the check on regression. The comment (and a
   `::warning::` annotation) surfaces it; reviewers decide. Tune the

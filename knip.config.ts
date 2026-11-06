@@ -7,6 +7,8 @@ export default {
     'bin/run.js',
     'scripts/**/*.ts',
     '**/*.{nut,test,perf}.ts',
+    // Spawned by path from test/perf/utils/childMeasure.ts, never imported.
+    'test/perf/utils/runOp.ts',
     'vitest*.config.ts',
     '.github/**/*.yml',
   ],
