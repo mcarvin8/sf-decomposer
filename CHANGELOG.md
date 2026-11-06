@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.11.0](https://github.com/mcarvin8/sf-decomposer/compare/v7.10.0...v7.11.0) (2026-11-06)
+
+
+### Features
+
+* **config-disassembler:** bump config-disassembler to v3.6.0 ([#630](https://github.com/mcarvin8/sf-decomposer/issues/630)) ([d84155d](https://github.com/mcarvin8/sf-decomposer/commit/d84155dcfe16d4c7ee920b71828e603e0709fba8))
+
 ## [7.10.0](https://github.com/mcarvin8/sf-decomposer/compare/v7.9.0...v7.10.0) (2026-11-03)
 
 
