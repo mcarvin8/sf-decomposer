@@ -314,7 +314,8 @@
     "test:perf": {
       "command": "vitest run --config ./vitest.perf.config.ts",
       "files": [
-        "test/perf/**/*.perf.ts",
+        "test/perf/**/*.ts",
+        "scripts/gen-perf-fixtures.ts",
         "**/tsconfig.json",
         "vitest.perf.config.ts"
       ],

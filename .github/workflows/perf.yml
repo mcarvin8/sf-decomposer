@@ -7,8 +7,8 @@
 #                          updates, runner-image refreshes, V8/Rust upstream.
 #   - workflow_call      : invoked by release.yml after a successful publish so
 #                          every version on npm has a perf artifact attached.
-#   - pull_request       : benchmarks the PR base ref, then the PR head ref,
-#                          back to back on the same runner, and posts a sticky
+#   - pull_request       : benchmarks the PR base ref and the PR head ref in one
+#                          interleaved loop on the same runner, and posts a sticky
 #                          comment with the deltas (scripts/compare-perf-baseline.mjs).
 #                          Same-runner/same-moment diffing avoids the 20-30%
 #                          run-to-run swings a gh-pages-history comparison
@@ -103,11 +103,10 @@ concurrency:
 jobs:
   perf:
     name: Perf (${{ matrix.profile }})
-    # Skip fork PRs: GITHUB_TOKEN is read-only on PRs from forks, so the
-    # comment step would fail and the publish steps couldn't push anyway.
-    # If/when external contributions need PR perf comments, split this into a
-    # pull_request_target / workflow_run companion that runs in the base repo
-    # context with elevated perms.
+    # Skip fork PRs: GITHUB_TOKEN is read-only on PRs from forks, so
+    # perf-comment couldn't post anyway. If/when external contributions need
+    # PR perf comments, move perf-comment into a workflow_run companion that
+    # runs in the base repo context and downloads this run's artifact.
     if: >-
       github.event_name != 'pull_request' ||
       github.event.pull_request.head.repo.full_name == github.repository
@@ -117,30 +116,29 @@ jobs:
     timeout-minutes: 60
     strategy:
       fail-fast: false
-      # Only pull_request is safe to fully parallelize: its comparison is same-runner-only
-      # and never touches gh-pages, so there's no gh-pages write to race. Every
-      # other trigger that reaches this matrix with 2+ profiles (schedule) pushes to the
-      # same gh-pages branch/file per profile; running those concurrently risks one
-      # matrix entry's push getting rejected (or racing) against the other's. Serialize
-      # (max-parallel: 1) for anything but pull_request -- workflow_dispatch/workflow_call
-      # are single-profile anyway, so this is a no-op there.
-      max-parallel: ${{ github.event_name == 'pull_request' && 2 || 1 }}
+      # No max-parallel: this job never writes to gh-pages (perf-publish does,
+      # serialized), so profiles can always benchmark on parallel runners.
       matrix:
         # inputs.profile is only populated for workflow_dispatch/workflow_call (the only
         # two triggers that declare an `inputs:` block); schedule/pull_request fall through
         # to the two-profile matrix. See the trigger-comment block above for the full
         # rationale.
         profile: ${{ inputs.profile && fromJSON(format('["{0}"]', inputs.profile)) || fromJSON('["large","manyfiles"]') }}
-    # contents:write    - benchmark-action publish steps push to gh-pages.
-    # pull-requests:write - PR comparison step posts/updates the sticky comment.
-    # Steps that don't need a given perm just don't use it; GitHub doesn't
-    # downgrade per-step.
+    # Read-only on purpose. This job runs the PR's own code (`npm ci` install
+    # scripts, src/, test/perf/), so it must not hold a token that can write
+    # anywhere: a compromised dependency would otherwise get push access to
+    # every unprotected branch and gh-pages. Writing happens in perf-comment
+    # (pull-requests: write) and perf-publish (contents: write), which run no
+    # repository code and only consume this job's uploaded artifact.
     permissions:
-      contents: write
-      pull-requests: write
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          # Don't leave the token in .git/config for PR code to read. The
+          # base-ref fetch below works without it (public repo).
+          persist-credentials: false
 
       - name: Setup Node
         uses: actions/setup-node@v7
@@ -152,65 +150,32 @@ jobs:
         run: npm ci
 
       # -----------------------------------------------------------------
-      # Same-runner baseline benchmark (PR only).
+      # Same-runner, interleaved baseline (PR only).
       #
-      # Benchmarks the PR's base ref first, on this exact runner, then
-      # switches back to the PR head and reinstalls before the normal
-      # "Run performance suite" step below benchmarks the head. Both runs
-      # share the same machine/OS image/moment in time, so
-      # scripts/compare-perf-baseline.mjs (further down) can use a much
-      # tighter regression threshold than the gh-pages-history comparison
-      # the schedule/workflow_call paths use.
+      # The PR base ref is checked out into a separate git worktree with its
+      # own `npm ci` (so its own config-disassembler build). The single
+      # "Run performance suite" step below then times BOTH source trees in
+      # one loop, alternating base/head and head/base per repeat, each
+      # operation in a fresh child process (test/perf/decompose.perf.ts).
       #
-      # perf-results/ is cleared after converting the base run so the head
-      # run's own perf-results/ doesn't get merged with the base run's
-      # reports by scripts/perf-to-benchmark.mjs (it merges every *.json in
-      # the directory by (profile, format) key).
+      # This replaces running the whole suite on base and then on head: that
+      # always handed head the warmer runner (page cache, CPU boost), which
+      # showed up as a steady head-is-faster bias on PRs that changed no
+      # runtime code. Fixtures and the measurement harness come from head for
+      # both trees, so harness changes in a PR can't masquerade as perf deltas.
       # -----------------------------------------------------------------
-      - name: Save current ref
+      - name: Prepare PR base-ref worktree
         if: github.event_name == 'pull_request'
-        run: echo "CURRENT_REF=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
-
-      - name: Checkout PR base ref
-        if: github.event_name == 'pull_request'
-        # The default checkout above is a shallow, single-commit fetch of the
-        # PR merge ref, so the base sha usually isn't present locally yet -
-        # fetch it explicitly rather than unshallowing the whole repo just to
-        # reach one commit.
+        # The default checkout is a shallow, single-commit fetch of the PR
+        # merge ref, so the base sha usually isn't present locally yet.
         run: |
           git fetch --no-tags --prune --depth=1 origin "${{ github.event.pull_request.base.sha }}"
-          git checkout --detach --force "${{ github.event.pull_request.base.sha }}"
-
-      - name: Install base-ref dependencies
-        if: github.event_name == 'pull_request'
-        run: npm ci
-
-      - name: Run baseline performance suite (base ref)
-        if: github.event_name == 'pull_request'
-        run: npm run test:perf
+          git worktree add --detach "$RUNNER_TEMP/perf-base" "${{ github.event.pull_request.base.sha }}"
+          cd "$RUNNER_TEMP/perf-base"
+          npm ci
         env:
-          PERF_PROFILE: ${{ matrix.profile }}
-          PERF_FORMATS: ${{ inputs.formats || 'xml,json,json5,yaml' }}
-          PERF_TYPES: ${{ inputs.types }}
-          SF_DISABLE_TELEMETRY: true
-          NODE_OPTIONS: '--max-old-space-size=4096'
-          RUST_LOG: warn
-
-      - name: Convert baseline perf-results to benchmark JSON
-        if: github.event_name == 'pull_request'
-        run: |
-          node scripts/perf-to-benchmark.mjs
-          cp perf-runtime.json perf-runtime-base.json
-          cp perf-memory.json perf-memory-base.json
-          rm -rf perf-results perf-runtime.json perf-memory.json
-
-      - name: Restore PR head ref
-        if: github.event_name == 'pull_request'
-        run: git checkout --force "$CURRENT_REF"
-
-      - name: Reinstall head-ref dependencies
-        if: github.event_name == 'pull_request'
-        run: npm ci
+          # Skip husky's prepare hook inside the throwaway worktree.
+          HUSKY: '0'
 
       - name: Print runner facts
         run: |
@@ -230,6 +195,9 @@ jobs:
           PERF_FORMATS: ${{ inputs.formats || 'xml,json,json5,yaml' }}
           PERF_TYPES: ${{ inputs.types }}
           SF_DISABLE_TELEMETRY: true
+          # PR runs only: also time the base-ref worktree's src/, interleaved
+          # with head (see "Prepare PR base-ref worktree" above).
+          PERF_BASE_ROOT: ${{ github.event_name == 'pull_request' && format('{0}/perf-base', runner.temp) || '' }}
           # Node tuning for reproducibility:
           #   - disable JIT randomization-sensitive optimizations off by default
           #   - explicit max old space so a leak fails loudly rather than swapping
@@ -270,6 +238,48 @@ jobs:
         env:
           PERF_PROFILE: ${{ matrix.profile }}
 
+      # ---------------------------------------------------------------------
+      # Benchmark JSON + PR comparison (no token needed).
+      #
+      # perf-to-benchmark.mjs writes perf-runtime.json / perf-memory.json for
+      # head, and on PR runs (where perf-results/ also holds the interleaved
+      # base reports tagged ref: 'base') perf-runtime-base.json /
+      # perf-memory-base.json too. compare-perf-baseline.mjs diffs the two
+      # into perf-comparison.md; the perf-comment job posts it.
+      #
+      # Neither step fails the job on a regression: regressions surface as
+      # the comment and a ::warning:: annotation, matching the rest of this
+      # workflow's fail-on-alert: false stance.
+      # ---------------------------------------------------------------------
+      - name: Convert perf-results to benchmark JSON
+        run: node scripts/perf-to-benchmark.mjs
+
+      - name: Compare against same-runner baseline (PR)
+        if: github.event_name == 'pull_request'
+        run: node scripts/compare-perf-baseline.mjs
+        env:
+          PERF_PROFILE: ${{ matrix.profile }}
+
+      # Uploaded only when every step above succeeded, so its presence is the
+      # signal perf-publish relies on: a crashed or partial run leaves no
+      # perf-bench-* artifact, and its truncated output can never become a
+      # published baseline.
+      - name: Upload benchmark JSON
+        uses: actions/upload-artifact@v7
+        with:
+          name: perf-bench-${{ matrix.profile }}
+          path: |
+            perf-runtime.json
+            perf-cpu.json
+            perf-memory.json
+            perf-runtime-base.json
+            perf-cpu-base.json
+            perf-memory-base.json
+            perf-comparison.md
+          retention-days: 30
+          if-no-files-found: error
+
+      # Diagnostics, uploaded even on failure.
       - name: Upload perf artifacts
         if: always()
         uses: actions/upload-artifact@v7
@@ -279,41 +289,130 @@ jobs:
             perf-results/
             perf-comparison.md
             perf-runtime-base.json
+            perf-cpu-base.json
             perf-memory-base.json
           retention-days: 90
           if-no-files-found: warn
 
-      # ---------------------------------------------------------------------
-      # Publish runtime + memory trends to the gh-pages dashboard.
-      #
-      # Gated to schedule (weekly) and explicit publish=true callers
-      # (release.yml) only so ad-hoc workflow_dispatch runs - which often vary
-      # the profile/types/formats inputs - don't pollute the timeline. The
-      # dashboard renders at
-      #   https://<owner>.github.io/sf-decomposer/dev/bench/runtime/
-      #   https://<owner>.github.io/sf-decomposer/dev/bench/memory/
-      # First publish creates the gh-pages branch automatically. Pages must
-      # be enabled in repo settings (Source: Deploy from branch -> gh-pages).
-      #
-      # NOTE: do not check `github.event_name == 'workflow_call'` here -
-      # inside a reusable workflow `github.event_name` reflects the caller's
-      # triggering event (e.g. 'push' from release.yml), never 'workflow_call'.
-      #
-      # `name:` below is suffixed with matrix.profile ("Decompose Runtime (large)",
-      # "Decompose Runtime (manyfiles)") rather than shared across profiles. Each publish
-      # call appends a fresh entry to its named series -- it does not merge into an
-      # existing entry for the same commit -- so two profiles sharing one name would
-      # alternate single-profile entries in that series, and PR runs would fight over the
-      # same sticky-comment slot (whichever matrix job finishes last would silently
-      # overwrite the other profile's comment). Separate names give each profile its own
-      # series and its own sticky comment, with no shared state to collide over.
-      # ---------------------------------------------------------------------
-      - name: Convert perf-results to benchmark-action JSON
-        if: github.event_name == 'schedule' || inputs.publish == true
-        run: node scripts/perf-to-benchmark.mjs
+  # ---------------------------------------------------------------------------
+  # Sticky PR comment, one per profile.
+  #
+  # Holds the only write scope a PR run needs, and checks out / installs /
+  # runs nothing from the repository: it downloads perf-comparison.md from
+  # the perf job's artifact and posts it with the preinstalled gh CLI. The
+  # file was produced by the PR's own code, so it is treated as untrusted
+  # text -- only ever used as a comment body, under a marker this job writes.
+  #
+  # always() because a failed perf leg should still replace a stale comment
+  # with a "no comparison" notice rather than leave the last push's numbers up.
+  # Dependabot PRs are included on purpose: they do get this write scope, and
+  # their config-disassembler bumps are the comments that matter most.
+  # ---------------------------------------------------------------------------
+  perf-comment:
+    name: Perf comment (${{ matrix.profile }})
+    needs: [perf]
+    if: >-
+      always() &&
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      needs.perf.result != 'skipped'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      pull-requests: write
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: ${{ inputs.profile && fromJSON(format('["{0}"]', inputs.profile)) || fromJSON('["large","manyfiles"]') }}
+    steps:
+      - name: Download benchmark JSON
+        # Missing when that profile's perf leg failed; the next step posts a
+        # notice instead.
+        continue-on-error: true
+        uses: actions/download-artifact@v8
+        with:
+          name: perf-bench-${{ matrix.profile }}
+
+      - name: Post or update sticky comment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PROFILE: ${{ matrix.profile }}
+        run: |
+          marker="<!-- same-runner-perf:${PROFILE} -->"
+          if [ -f perf-comparison.md ]; then
+            report="$(cat perf-comparison.md)"
+          else
+            report="# Performance comparison (profile=${PROFILE})
+
+          The perf run produced no comparison for this push. Check the Perf (${PROFILE}) job log."
+          fi
+          jq -n --arg marker "$marker" --arg report "$report" '{body: ($marker + "\n" + $report)}' > payload.json
+          id="$(gh api --paginate "repos/${REPO}/issues/${PR_NUMBER}/comments" \
+            --jq ".[] | select(.body | contains(\"${marker}\")) | .id" | head -n1)"
+          if [ -n "$id" ]; then
+            gh api -X PATCH "repos/${REPO}/issues/comments/${id}" --input payload.json > /dev/null
+          else
+            gh api -X POST "repos/${REPO}/issues/${PR_NUMBER}/comments" --input payload.json > /dev/null
+          fi
+
+  # ---------------------------------------------------------------------------
+  # Publish runtime + memory trends to the gh-pages dashboard.
+  #
+  # Gated to schedule (weekly) and explicit publish=true callers (release.yml)
+  # only, so ad-hoc workflow_dispatch runs - which often vary the
+  # profile/types/formats inputs - don't pollute the timeline. The dashboard
+  # renders at
+  #   https://<owner>.github.io/sf-decomposer/dev/bench/runtime/
+  #   https://<owner>.github.io/sf-decomposer/dev/bench/cpu/
+  #   https://<owner>.github.io/sf-decomposer/dev/bench/memory/
+  #
+  # The only job holding contents: write. It installs no dependencies and runs
+  # no repository code (benchmark-action is a bundled JS action), so its
+  # checkout can keep credentials for benchmark-action's own gh-pages push. It
+  # downloads the perf job's perf-bench-* artifact, which only exists when that
+  # profile's run completed (see "Upload benchmark JSON"), so a crashed run
+  # fails the download instead of publishing a truncated baseline.
+  #
+  # NOTE: do not check `github.event_name == 'workflow_call'` here - inside a
+  # reusable workflow `github.event_name` reflects the caller's triggering
+  # event (e.g. 'push' from release.yml), never 'workflow_call'.
+  #
+  # `name:` below is suffixed with matrix.profile ("Decompose Runtime (large)",
+  # "Decompose Runtime (manyfiles)") rather than shared across profiles. Each
+  # publish call appends a fresh entry to its named series -- it does not merge
+  # into an existing entry for the same commit -- so two profiles sharing one
+  # name would alternate single-profile entries in that series.
+  # ---------------------------------------------------------------------------
+  perf-publish:
+    name: Perf publish (${{ matrix.profile }})
+    needs: [perf]
+    if: >-
+      always() &&
+      needs.perf.result != 'skipped' &&
+      (github.event_name == 'schedule' || inputs.publish == true)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      # Every leg pushes to the same gh-pages branch; serialize so pushes
+      # can't race.
+      max-parallel: 1
+      matrix:
+        profile: ${{ inputs.profile && fromJSON(format('["{0}"]', inputs.profile)) || fromJSON('["large","manyfiles"]') }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Download benchmark JSON
+        uses: actions/download-artifact@v8
+        with:
+          name: perf-bench-${{ matrix.profile }}
 
       - name: Publish runtime benchmark
-        if: github.event_name == 'schedule' || inputs.publish == true
         uses: benchmark-action/github-action-benchmark@v1
         with:
           name: Decompose Runtime (${{ matrix.profile }})
@@ -329,11 +428,29 @@ jobs:
           summary-always: true
           benchmark-data-dir-path: dev/bench/runtime
 
-      - name: Publish memory benchmark
-        if: github.event_name == 'schedule' || inputs.publish == true
+      - name: Publish CPU benchmark
         uses: benchmark-action/github-action-benchmark@v1
         with:
-          name: Decompose Memory (${{ matrix.profile }})
+          # User + system CPU time across all threads (JS and Rust), in ms.
+          name: Decompose CPU (${{ matrix.profile }})
+          tool: customSmallerIsBetter
+          output-file-path: ./perf-cpu.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+          skip-fetch-gh-pages: true
+          alert-threshold: '150%'
+          fail-on-alert: false
+          summary-always: true
+          benchmark-data-dir-path: dev/bench/cpu
+
+      - name: Publish memory benchmark
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          # Peak RSS growth per operation (fresh child process), in MB. Renamed
+          # from "Decompose Memory" when the metric changed from JS heapUsed
+          # delta, so the dashboard starts a new series instead of splicing two
+          # incompatible metrics into one line.
+          name: Decompose Peak RSS (${{ matrix.profile }})
           tool: customSmallerIsBetter
           output-file-path: ./perf-memory.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -341,36 +458,8 @@ jobs:
           # gh-pages was already fetched by the runtime step above; skip the
           # second fetch to halve checkout time.
           skip-fetch-gh-pages: true
-          # Memory deltas are noisier than wall-time; use a wider band.
+          # Cross-run (different runner) memory comparison; keep a wide band.
           alert-threshold: '200%'
           fail-on-alert: false
           summary-always: true
           benchmark-data-dir-path: dev/bench/memory
-
-      # ---------------------------------------------------------------------
-      # PR comparison comment: same-runner baseline diff.
-      #
-      # perf-results/ here only holds the head-ref run (the base-ref run was
-      # already converted and cleared out by "Convert baseline perf-results
-      # to benchmark JSON" above), so this conversion produces the head-ref's
-      # perf-runtime.json / perf-memory.json. scripts/compare-perf-baseline.mjs
-      # diffs those against perf-runtime-base.json / perf-memory-base.json
-      # (same runner, same job, benchmarked moments earlier) and posts/updates
-      # a sticky PR comment - see that script for the threshold rationale.
-      #
-      # This never touches gh-pages (no auto-push/save-data-file here at
-      # all) and never fails the job: regressions surface as a comment and a
-      # ::warning:: annotation, matching the rest of this workflow's
-      # fail-on-alert: false stance.
-      # ---------------------------------------------------------------------
-      - name: Convert perf-results for PR comparison
-        if: github.event_name == 'pull_request'
-        run: node scripts/perf-to-benchmark.mjs
-
-      - name: Compare against same-runner baseline (PR)
-        if: github.event_name == 'pull_request'
-        run: node scripts/compare-perf-baseline.mjs
-        env:
-          PERF_PROFILE: ${{ matrix.profile }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}

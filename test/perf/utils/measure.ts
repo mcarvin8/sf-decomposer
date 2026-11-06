@@ -69,7 +69,17 @@ export type MedianSample = {
   elapsedMedianMs: number;
   elapsedMinMs: number;
   elapsedMaxMs: number;
-  heapUsedMedianBytes: number;
+  // Median user + system CPU time across all threads, JS and Rust (see
+  // test/perf/utils/runOp.ts). cpu / elapsed = effective parallelism.
+  cpuMedianMs: number;
+  cpuMinMs: number;
+  cpuMaxMs: number;
+  // Median peak-RSS growth of a fresh child process running the operation (see
+  // test/perf/utils/runOp.ts). Replaces the old in-process heapUsed delta, which
+  // could not see native (Rust/napi) allocations and hovered around +/-0.01 MB.
+  peakRssDeltaMedianBytes: number;
+  peakRssDeltaMinBytes: number;
+  peakRssDeltaMaxBytes: number;
 };
 
 /** Median of a non-empty array of numbers (average of the two middle values on an even count). */
@@ -89,16 +99,25 @@ export function median(values: number[]): number {
  * neighbor, a scheduler hiccup) landing on *most* of the repeats to move it -- one bad run
  * among several good ones just gets outvoted instead of being the only data point.
  */
-export function summarizeMedian(label: string, results: readonly MeasureResult[]): MedianSample {
+export function summarizeMedian(
+  label: string,
+  results: ReadonlyArray<{ elapsedMs: number; cpuMs: number; peakRssDeltaBytes: number }>,
+): MedianSample {
   const elapsed = results.map((r) => r.elapsedMs);
-  const heapUsed = results.map((r) => r.heapUsedDeltaBytes);
+  const cpu = results.map((r) => r.cpuMs);
+  const peakRss = results.map((r) => r.peakRssDeltaBytes);
   return {
     label,
     repeats: results.length,
     elapsedMedianMs: median(elapsed),
     elapsedMinMs: Math.min(...elapsed),
     elapsedMaxMs: Math.max(...elapsed),
-    heapUsedMedianBytes: median(heapUsed),
+    cpuMedianMs: median(cpu),
+    cpuMinMs: Math.min(...cpu),
+    cpuMaxMs: Math.max(...cpu),
+    peakRssDeltaMedianBytes: median(peakRss),
+    peakRssDeltaMinBytes: Math.min(...peakRss),
+    peakRssDeltaMaxBytes: Math.max(...peakRss),
   };
 }
 
@@ -141,6 +160,9 @@ export type PerfReport = {
   arch: string;
   profile: string;
   format: string;
+  // Which source tree produced medianSamples: 'head' (this checkout) or 'base'
+  // (PERF_BASE_ROOT, the PR base-ref worktree). Absent on older reports = head.
+  ref?: 'head' | 'base';
   fixtureBytes: number;
   fixtureFiles: number;
   // Single-shot samples from the correctness round-trip (see decompose.perf.ts's main
@@ -158,7 +180,8 @@ const RESULTS_DIR = resolve(process.cwd(), 'perf-results');
 export async function writeReport(report: PerfReport): Promise<string> {
   await mkdir(RESULTS_DIR, { recursive: true });
   const safeStamp = report.timestamp.replace(/[:.]/g, '-');
-  const file = join(RESULTS_DIR, `${safeStamp}-${report.profile}-${report.format}.json`);
+  const refSuffix = report.ref === 'base' ? '-base' : '';
+  const file = join(RESULTS_DIR, `${safeStamp}-${report.profile}-${report.format}${refSuffix}.json`);
   await writeFile(file, JSON.stringify(report, null, 2) + '\n', 'utf8');
   return file;
 }
