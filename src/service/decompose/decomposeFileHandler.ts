@@ -216,7 +216,7 @@ async function subDirectoryHandler(
   const statResults = await Promise.all(statPromises);
 
   // Limit concurrent subdirectory processing
-  const processLimit = pLimit(CONCURRENCY_LIMITS.SUBDIRECTORIES);
+  const processLimit = pLimit(CONCURRENCY_LIMITS.PER_FILE_DISASSEMBLE);
   const processTasks = statResults
     .filter(({ isDir }) => isDir)
     .map(({ subFilePath }) =>
@@ -248,7 +248,7 @@ async function perFileHandler(
   const entries = await readdir(metadataPath, { withFileTypes: true });
   const xmlEntries = entries.filter((entry) => entry.isFile() && entry.name.endsWith(metaEnding));
 
-  const limit = pLimit(CONCURRENCY_LIMITS.SUBDIRECTORIES);
+  const limit = pLimit(CONCURRENCY_LIMITS.PER_FILE_DISASSEMBLE);
   const tasks = xmlEntries.map((entry) =>
     limit(() => {
       const filePath = join(metadataPath, entry.name);
