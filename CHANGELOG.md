@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.11.5](https://github.com/mcarvin8/sf-decomposer/compare/v7.11.4...v7.11.5) (2026-11-07)
+
+
+### Performance Improvements
+
+* **decompose:** add overrides perf scenario; raise per-file disassemble fan-out to 16 ([#646](https://github.com/mcarvin8/sf-decomposer/issues/646)) ([e0dd057](https://github.com/mcarvin8/sf-decomposer/commit/e0dd0577cc6bf64495727d46d11d0b062c954b60))
+
 ## [7.11.4](https://github.com/mcarvin8/sf-decomposer/compare/v7.11.3...v7.11.4) (2026-11-07)
 
 
