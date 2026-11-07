@@ -42,6 +42,23 @@ describe('moveFiles', () => {
     expect(stats.isFile()).toBe(true);
   });
 
+  it('creates a missing destination directory when there is something to move', async () => {
+    const nestedDest = join(tempDir, 'does', 'not', 'exist');
+
+    await moveFiles(srcDir, nestedDest, () => true);
+
+    expect(await readdir(nestedDest)).toEqual(['testfile.txt']);
+  });
+
+  it('does not create the destination directory when nothing matches', async () => {
+    const missingDest = join(tempDir, 'never-created');
+
+    await moveFiles(srcDir, missingDest, () => false);
+
+    expect(await readdir(tempDir)).not.toContain('never-created');
+    expect(await readdir(srcDir)).toContain('testfile.txt');
+  });
+
   it('should skip files when predicate returns false', async () => {
     const filename = 'skipme.txt';
     await writeFile(join(srcDir, filename), 'should not be moved');
