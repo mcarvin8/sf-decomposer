@@ -20,10 +20,13 @@
 #                          out so they don't pay the ~6-8 minute cost (base +
 #                          head runs).
 #
-# Profile matrix: schedule/pull_request run BOTH `large` (single-huge-file shape) and
+# Profile matrix: schedule/pull_request run `large` (single-huge-file shape),
 # `manyfiles` (many-small-files-in-one-directory shape, the one that actually exercises
 # config-disassembler's directory-mode concurrent fan-out -- see config-disassembler#97/#99)
-# as parallel matrix jobs, so a regression in either shape is caught before merge instead of
+# and `manyfiles-overrides` (the same files plus component-scope config overrides and a
+# `.sfdecomposerignore`, which moves the type onto one crate call per file -- the
+# perFileHandler path; diff its rows against `manyfiles` to see that path's cost)
+# as parallel matrix jobs, so a regression in any shape is caught before merge instead of
 # waiting for the next weekly/release run. workflow_dispatch and workflow_call keep their
 # existing single-profile behavior (`inputs.profile`, default `large`) unchanged -- matrix
 # only kicks in when `inputs.profile` isn't set at all, which is exactly the case for
@@ -43,6 +46,7 @@ on:
           - large
           - xlarge
           - manyfiles
+          - manyfiles-overrides
       formats:
         description: 'Comma-separated formats to test (xml,json,json5,yaml)'
         type: string
@@ -123,7 +127,7 @@ jobs:
         # two triggers that declare an `inputs:` block); schedule/pull_request fall through
         # to the two-profile matrix. See the trigger-comment block above for the full
         # rationale.
-        profile: ${{ inputs.profile && fromJSON(format('["{0}"]', inputs.profile)) || fromJSON('["large","manyfiles"]') }}
+        profile: ${{ inputs.profile && fromJSON(format('["{0}"]', inputs.profile)) || fromJSON('["large","manyfiles","manyfiles-overrides"]') }}
     # Read-only on purpose. This job runs the PR's own code (`npm ci` install
     # scripts, src/, test/perf/), so it must not hold a token that can write
     # anywhere: a compromised dependency would otherwise get push access to
@@ -323,7 +327,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        profile: ${{ inputs.profile && fromJSON(format('["{0}"]', inputs.profile)) || fromJSON('["large","manyfiles"]') }}
+        profile: ${{ inputs.profile && fromJSON(format('["{0}"]', inputs.profile)) || fromJSON('["large","manyfiles","manyfiles-overrides"]') }}
     steps:
       - name: Download benchmark JSON
         # Missing when that profile's perf leg failed; the next step posts a
@@ -402,7 +406,7 @@ jobs:
       # can't race.
       max-parallel: 1
       matrix:
-        profile: ${{ inputs.profile && fromJSON(format('["{0}"]', inputs.profile)) || fromJSON('["large","manyfiles"]') }}
+        profile: ${{ inputs.profile && fromJSON(format('["{0}"]', inputs.profile)) || fromJSON('["large","manyfiles","manyfiles-overrides"]') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7

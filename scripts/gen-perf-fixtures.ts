@@ -19,7 +19,7 @@ import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-export type Profile = 'small' | 'medium' | 'large' | 'xlarge' | 'manyfiles';
+export type Profile = 'small' | 'medium' | 'large' | 'xlarge' | 'manyfiles' | 'manyfiles-overrides';
 
 export interface SizeSpec {
   permissionSet: {
@@ -57,7 +57,7 @@ export interface SizeSpec {
   entitlementProcess: { milestones: number };
 }
 
-const PROFILES: Record<Exclude<Profile, 'manyfiles'>, SizeSpec> = {
+const PROFILES: Record<Exclude<Profile, 'manyfiles' | 'manyfiles-overrides'>, SizeSpec> = {
   small: {
     permissionSet: {
       fieldPerms: 200,
@@ -192,6 +192,23 @@ const MANYFILES_PERMISSION_SET_SPEC: SizeSpec['permissionSet'] = {
   tabSettings: 15,
   recordTypeVis: 15,
 };
+
+// `manyfiles-overrides` is `manyfiles` plus what makes the decompose path expensive in real
+// repos: component-scope config overrides and a `.sfdecomposerignore`. Any component
+// override on a type switches sf-decomposer from ONE directory-mode crate call for the type
+// to one crate call PER FILE (perFileHandler), so diffing the two profiles' rows isolates
+// the cost of that path. The overrides themselves live in test/perf/decompose.perf.ts (they
+// are decompose options, not fixture files); the ignore patterns below deliberately match
+// nothing in the fixture.
+const MANYFILES_OVERRIDES_IGNORE = [
+  '# perf fixture: realistic patterns that match none of the generated files',
+  '**/*.bak',
+  '**/*.orig',
+  '**/.DS_Store',
+  'force-app/main/default/permissionsets/Legacy_*',
+  'force-app/main/default/profiles/**',
+  '',
+].join('\n');
 
 // ---------------------------------------------------------------------------
 // XML helpers
@@ -881,7 +898,7 @@ export async function generate(opts: GenerateOptions): Promise<GenerateResult> {
 
   await writeFile(join(outDir, 'sfdx-project.json'), JSON.stringify(SFDX_PROJECT_JSON, null, 2) + '\n', 'utf8');
 
-  if (profile === 'manyfiles') {
+  if (profile === 'manyfiles' || profile === 'manyfiles-overrides') {
     for (let i = 1; i <= MANYFILES_FILE_COUNT; i++) {
       const content = genPermissionSet(MANYFILES_PERMISSION_SET_SPEC).replace(
         '<label>Mega Permission Set</label>',
@@ -893,6 +910,12 @@ export async function generate(opts: GenerateOptions): Promise<GenerateResult> {
         content,
         files,
       );
+    }
+    if (profile === 'manyfiles-overrides') {
+      // Present so every disassemble call builds the ignore matcher (the crate reloads it per
+      // call), but matching none of the fixture files so both profiles process the same set.
+      // Not added to `files`: it isn't metadata and the round-trip checks don't track it.
+      await writeFile(join(outDir, '.sfdecomposerignore'), MANYFILES_OVERRIDES_IGNORE, 'utf8');
     }
     const totalBytes = files.reduce((s, f) => s + f.bytes, 0);
     return { outDir, profile, files, totalBytes };
@@ -943,7 +966,7 @@ export async function generate(opts: GenerateOptions): Promise<GenerateResult> {
 // CLI
 // ---------------------------------------------------------------------------
 
-const ALL_PROFILES: Profile[] = [...Object.keys(PROFILES), 'manyfiles'] as Profile[];
+const ALL_PROFILES: Profile[] = [...Object.keys(PROFILES), 'manyfiles', 'manyfiles-overrides'] as Profile[];
 
 function parseArgs(argv: string[]): { profile: Profile; outDir: string; clean: boolean } {
   let profile: Profile = 'large';
@@ -966,7 +989,7 @@ function parseArgs(argv: string[]): { profile: Profile; outDir: string; clean: b
           'gen-perf-fixtures.ts',
           '',
           'Options:',
-          '  --profile <small|medium|large|xlarge|manyfiles>   Default: large',
+          '  --profile <small|medium|large|xlarge|manyfiles|manyfiles-overrides>   Default: large',
           '  --out <dir>                             Default: perf-fixtures',
           '  --no-clean                              Do not wipe out dir first',
           '',

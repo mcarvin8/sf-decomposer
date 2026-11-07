@@ -31,6 +31,15 @@ export const UNSUPPORTED_ADAPTERS: string[] = ['matchingContentFile', 'digitalEx
 export const CONCURRENCY_LIMITS = {
   METADATA_TYPES: 3, // Process up to 3 metadata types concurrently
   PACKAGE_DIRS: 5, // Process up to 5 package directories concurrently
-  SUBDIRECTORIES: 5, // Process up to 5 subdirectories concurrently
+  SUBDIRECTORIES: 5, // Process up to 5 subdirectories concurrently (recompose, verify, listing)
+  // Per-file / per-subdirectory *disassemble* calls in flight at once (perFileHandler for
+  // component-scope overrides, subDirectoryHandler for strict-directory types like bots).
+  // Matches config-disassembler's own in-call fan-out (DIRECTORY_CONCURRENCY = 16 files per
+  // directory-mode call), so a type split into per-file calls keeps 16 files in flight
+  // instead of dropping to 5: -6% to -14% decompose wall on the `manyfiles-overrides` perf
+  // profile, peak RSS flat. Deliberately NOT applied to recompose: each reassemble call
+  // already parses up to 32 shards in parallel, so 16 concurrent calls oversubscribed the
+  // cores there (+6% to +10% XML recompose wall in the same run).
+  PER_FILE_DISASSEMBLE: 16,
   FILE_OPERATIONS: 10, // Perform up to 10 file operations concurrently (moves, renames, stats)
 };

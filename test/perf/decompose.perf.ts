@@ -67,7 +67,7 @@ const FORMATS = envList('PERF_FORMATS', ['xml', 'json', 'json5', 'yaml']);
 // many small files in one directory, to exercise config-disassembler's directory-mode
 // concurrent fan-out, rather than the single-huge-file shape the other profiles use.
 const DEFAULT_METADATA_TYPES =
-  PROFILE === 'manyfiles'
+  PROFILE === 'manyfiles' || PROFILE === 'manyfiles-overrides'
     ? ['permissionset']
     : [
         'permissionset',
@@ -86,6 +86,21 @@ const DEFAULT_METADATA_TYPES =
         'entitlementProcess',
       ];
 const METADATA_TYPES = envList('PERF_TYPES', DEFAULT_METADATA_TYPES);
+
+// `manyfiles-overrides`: component-scope overrides on a handful of the 300 permission sets.
+// Any component override on a type moves sf-decomposer off the single directory-mode crate
+// call and onto one call per file (perFileHandler) -- for EVERY file of the type, not just
+// the overridden ones -- which is the path this profile exists to measure. A non-default
+// strategy makes the override real work rather than a no-op. Undefined for other profiles.
+const PERF_OVERRIDES =
+  PROFILE === 'manyfiles-overrides'
+    ? [
+        {
+          components: [1, 2, 3, 4, 5].map((i) => `permissionset:Sample_PermSet_${String(i).padStart(4, '0')}`),
+          strategy: 'grouped-by-tag',
+        },
+      ]
+    : undefined;
 // Number of independent repeats used to compute the median timing/memory sample that
 // actually gets published to the dashboard (see the "measures timing" test below and
 // scripts/perf-to-benchmark.mjs). A single sample on a shared CI runner routinely swings
@@ -174,6 +189,7 @@ describe(`perf: decompose/recompose round-trip (profile=${PROFILE})`, () => {
             format,
             strategy: 'unique-id',
             decomposeNestedPerms: false,
+            overrides: PERF_OVERRIDES,
             log,
           });
         });
@@ -226,6 +242,7 @@ describe(`perf: decompose/recompose round-trip (profile=${PROFILE})`, () => {
             format,
             strategy: 'unique-id',
             decomposeNestedPerms: false,
+            overrides: PERF_OVERRIDES,
             log,
           });
         });
@@ -298,6 +315,7 @@ describe(`perf: decompose/recompose round-trip (profile=${PROFILE})`, () => {
           format,
           strategy: 'unique-id',
           decomposeNestedPerms: false,
+          overrides: PERF_OVERRIDES,
         };
         const recomposeOptions = { metadataTypes: METADATA_TYPES, postpurge: true };
 
