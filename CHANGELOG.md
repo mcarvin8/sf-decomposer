@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.11.4](https://github.com/mcarvin8/sf-decomposer/compare/v7.11.3...v7.11.4) (2026-11-07)
+
+
+### Performance Improvements
+
+* **recompose:** skip the label shard move-back when postpurging ([#644](https://github.com/mcarvin8/sf-decomposer/issues/644)) ([969b8fb](https://github.com/mcarvin8/sf-decomposer/commit/969b8fb59ca5e8dbe522997a2910d05f0061b6ae))
+
 ## [7.11.3](https://github.com/mcarvin8/sf-decomposer/compare/v7.11.2...v7.11.3) (2026-11-06)
 
 
