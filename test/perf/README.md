@@ -39,12 +39,14 @@ Override the list with `PERF_TYPES=permissionset,profile` to time a subset.
 
 Profiles:
 
-| Profile  | Fixture total | Notes                                                      |
-| -------- | ------------- | ---------------------------------------------------------- |
-| `small`  | ~1 MB         | sanity check; finishes in seconds                          |
-| `medium` | ~10 MB        | local dev iteration                                        |
-| `large`  | ~30 MB        | default; calibrated to mimic a 10+ year-old enterprise org |
-| `xlarge` | ~80 MB        | stress test; can take many minutes                         |
+| Profile               | Fixture total | Notes                                                                                                                                                                                               |
+| --------------------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `small`               | ~1 MB         | sanity check; finishes in seconds                                                                                                                                                                   |
+| `medium`              | ~10 MB        | local dev iteration                                                                                                                                                                                 |
+| `large`               | ~30 MB        | default; calibrated to mimic a 10+ year-old enterprise org                                                                                                                                          |
+| `xlarge`              | ~80 MB        | stress test; can take many minutes                                                                                                                                                                  |
+| `manyfiles`           | ~14 MB        | 300 small permission sets in one directory; one directory-mode crate call (the crate fans out internally)                                                                                           |
+| `manyfiles-overrides` | ~14 MB        | `manyfiles` plus component overrides (`grouped-by-tag` on 5 files) and a `.sfdecomposerignore`; forces one crate call per file (`perFileHandler`). Diff against `manyfiles` to see that path's cost |
 
 ## What the test asserts
 
