@@ -214,3 +214,16 @@ jobs:
       profile: manyfiles
       publish: true
     secrets: inherit
+
+  perf-baseline-manyfiles-overrides:
+    # Same files as `manyfiles` plus component-scope config overrides, which
+    # moves sf-decomposer onto the per-file crate path; diff its series against
+    # `manyfiles` to see that path's cost per release. Chained after
+    # perf-baseline-manyfiles for the same gh-pages push-race reason as above.
+    needs: [smoke-test, release, perf-baseline-manyfiles]
+    if: needs.release.outputs.published == 'true'
+    uses: ./.github/workflows/perf.yml
+    with:
+      profile: manyfiles-overrides
+      publish: true
+    secrets: inherit
