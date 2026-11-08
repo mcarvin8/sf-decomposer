@@ -31,7 +31,7 @@ export const UNSUPPORTED_ADAPTERS: string[] = ['matchingContentFile', 'digitalEx
 export const CONCURRENCY_LIMITS = {
   METADATA_TYPES: 3, // Process up to 3 metadata types concurrently
   PACKAGE_DIRS: 5, // Process up to 5 package directories concurrently
-  SUBDIRECTORIES: 5, // Process up to 5 subdirectories concurrently (recompose, verify, listing)
+  SUBDIRECTORIES: 2, // EXPERIMENT (not for merge): probe recompose peak RSS vs wall time at 2 vs 5
   // Per-file / per-subdirectory *disassemble* calls in flight at once (perFileHandler for
   // component-scope overrides, subDirectoryHandler for strict-directory types like bots).
   // Matches config-disassembler's own in-call fan-out (DIRECTORY_CONCURRENCY = 16 files per

@@ -116,9 +116,32 @@ global.gc?.();
 const rssBeforeBytes = process.memoryUsage().rss;
 const peakRssReset = resetPeakRss();
 const usageBefore = process.resourceUsage();
+// EXPERIMENT (diagnosis only, not for merge): sample the memory breakdown during
+// the operation to tell whether its peak is V8 / JS-side or native. The crate's
+// work runs on its own threads, so the event loop stays free for the timer.
+const before = process.memoryUsage();
+const peaks = { rss: before.rss, heapTotal: before.heapTotal, heapUsed: before.heapUsed, external: before.external };
+const sampler = setInterval(() => {
+  const m = process.memoryUsage();
+  peaks.rss = Math.max(peaks.rss, m.rss);
+  peaks.heapTotal = Math.max(peaks.heapTotal, m.heapTotal);
+  peaks.heapUsed = Math.max(peaks.heapUsed, m.heapUsed);
+  peaks.external = Math.max(peaks.external, m.external);
+}, 10);
 const start = performance.now();
 await fn(options);
 const elapsedMs = performance.now() - start;
+clearInterval(sampler);
+{
+  const mb = (b: number): string => (b / 1048576).toFixed(1);
+  process.stderr.write(
+    `[perf-mem] op=${op} src=${srcRoot.endsWith('perf-base') ? 'base' : 'head'} ` +
+      `rss ${mb(before.rss)}->${mb(peaks.rss)} (+${mb(peaks.rss - before.rss)}) ` +
+      `v8HeapTotal ${mb(before.heapTotal)}->${mb(peaks.heapTotal)} (+${mb(peaks.heapTotal - before.heapTotal)}) ` +
+      `v8HeapUsed ${mb(before.heapUsed)}->${mb(peaks.heapUsed)} (+${mb(peaks.heapUsed - before.heapUsed)}) ` +
+      `external ${mb(before.external)}->${mb(peaks.external)} (+${mb(peaks.external - before.external)})\n`,
+  );
+}
 const usageAfter = process.resourceUsage();
 const vmHwmBytes = peakRssReset ? readVmHwmBytes() : undefined;
 const peakRssSource = vmHwmBytes === undefined ? 'maxrss' : 'vmhwm';
