@@ -2,7 +2,8 @@
 
 import { readdir, readFile } from 'node:fs/promises';
 import { basename, join, resolve } from 'node:path';
-import { IGNORE_FILE, SFDX_PROJECT_FILE_NAME } from '../helpers/constants.js';
+import { CONCURRENCY_LIMITS, IGNORE_FILE, SFDX_PROJECT_FILE_NAME } from '../helpers/constants.js';
+import { pLimit } from '../helpers/pLimit.js';
 import { SfdxProject } from '../helpers/types.js';
 import { getRepoRoot } from '../service/core/getRepoRoot.js';
 
@@ -65,8 +66,15 @@ export async function buildPackageDirectoryIndex(
   const index = new Map<string, string[]>();
   for (const name of watchedNames) index.set(name, []);
 
+  // One readdir limiter shared by the whole walk. Unbounded, a decomposed tree (the perf suite's
+  // `large` fixture: ~2.5k directories holding ~72k shard files) had every directory's listing
+  // in flight and alive at once -- ~33 MB of V8 heap paid by every recompose, even of a tiny
+  // metadata type. Only the listing is limited; the recursion itself is unchanged.
+  const listDir = pLimit(CONCURRENCY_LIMITS.FILE_OPERATIONS);
   await Promise.all(
-    packageDirectories.map((directory) => searchMultiTargetRecursively(directory, watchedNames, index, new Set())),
+    packageDirectories.map((directory) =>
+      searchMultiTargetRecursively(directory, watchedNames, index, new Set(), listDir),
+    ),
   );
 
   return { index, ignorePath };
@@ -77,17 +85,20 @@ async function searchMultiTargetRecursively(
   watchedNames: Set<string>,
   index: Map<string, string[]>,
   matchedAncestors: ReadonlySet<string>,
+  listDir: ReturnType<typeof pLimit>,
 ): Promise<void> {
-  let entries;
+  // Keep only the directory entries, so the (far more numerous) file entries can be collected
+  // while this directory's children are walked.
+  let dirs;
   try {
-    entries = await readdir(dir, { withFileTypes: true });
+    dirs = await listDir(async () =>
+      (await readdir(dir, { withFileTypes: true })).filter((entry) => entry.isDirectory()),
+    );
   } catch (_error) {
     // Handle permission errors or other filesystem errors gracefully
     /* istanbul ignore next -- @preserve: Filesystem permission errors are platform-specific */
     return;
   }
-
-  const dirs = entries.filter((entry) => entry.isDirectory());
 
   await Promise.all(
     dirs.map((entry) => {
@@ -97,7 +108,7 @@ async function searchMultiTargetRecursively(
         (index.get(entry.name) as string[]).push(resolve(childPath));
       }
       const nextAncestors = isFreshMatch ? new Set([...matchedAncestors, entry.name]) : matchedAncestors;
-      return searchMultiTargetRecursively(childPath, watchedNames, index, nextAncestors);
+      return searchMultiTargetRecursively(childPath, watchedNames, index, nextAncestors, listDir);
     }),
   );
 }
