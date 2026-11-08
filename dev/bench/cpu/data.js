@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794090142561,
+  "lastUpdate": 1794105037981,
   "repoUrl": "https://github.com/mcarvin8/sf-decomposer",
   "entries": {
     "Decompose CPU (large)": [
@@ -431,6 +431,78 @@ window.BENCHMARK_DATA = {
             "name": "large.yaml.recompose",
             "value": 8931.58,
             "range": "8607.45-9425.91ms",
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "41898282+github-actions[bot]@users.noreply.github.com",
+            "name": "github-actions[bot]",
+            "username": "github-actions[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "ae7a67eceb909494eebfdafe84add98cacbda510",
+          "message": "chore(main): release 7.11.7 (#651)\n\nCo-authored-by: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>",
+          "timestamp": "2026-11-07T21:18:41-05:00",
+          "tree_id": "b5ccd1be38522c8b0bc6631fc1e720458b521ddc",
+          "url": "https://github.com/mcarvin8/sf-decomposer/commit/ae7a67eceb909494eebfdafe84add98cacbda510"
+        },
+        "date": 1794105037933,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "large.xml.decompose",
+            "value": 5264.74,
+            "range": "5227.11-5460.31ms",
+            "unit": "ms"
+          },
+          {
+            "name": "large.xml.recompose",
+            "value": 8323.11,
+            "range": "8267.24-8373.08ms",
+            "unit": "ms"
+          },
+          {
+            "name": "large.json.decompose",
+            "value": 3750.32,
+            "range": "3642.6-3865.54ms",
+            "unit": "ms"
+          },
+          {
+            "name": "large.json.recompose",
+            "value": 5826.02,
+            "range": "5793.15-5992.34ms",
+            "unit": "ms"
+          },
+          {
+            "name": "large.json5.decompose",
+            "value": 3814.05,
+            "range": "3613.52-3844.42ms",
+            "unit": "ms"
+          },
+          {
+            "name": "large.json5.recompose",
+            "value": 6074.05,
+            "range": "5975.4-6119.67ms",
+            "unit": "ms"
+          },
+          {
+            "name": "large.yaml.decompose",
+            "value": 4158.67,
+            "range": "4048.84-4374.17ms",
+            "unit": "ms"
+          },
+          {
+            "name": "large.yaml.recompose",
+            "value": 10250.88,
+            "range": "9958.39-10328.42ms",
             "unit": "ms"
           }
         ]
