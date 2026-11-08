@@ -139,12 +139,23 @@ child process** (`test/perf/utils/runOp.ts`, spawned by
   calls, so a broken hook can't silently report 100% wrapper time. If the TS
   code starts calling another `config-disassembler` method, add it to
   `CRATE_METHODS` in `utils/runOp.ts`.
-- **Memory:** `process.resourceUsage().maxRSS` minus the child's RSS just
-  before the operation, i.e. how much resident memory the operation added at
-  its peak. This includes config-disassembler's native (Rust/napi)
-  allocations. The previous metric, JS `heapUsed` after a forced GC, could not
-  see those, sat around ±0.01 MB, and went negative, which produced most of
-  the false "regressions" on PRs.
+- **Memory:** the operation's peak RSS minus the child's RSS just before the
+  operation, i.e. how much resident memory the operation added at its peak,
+  including config-disassembler's native (Rust/napi) allocations.
+  - **Linux (CI):** the child writes `5` to `/proc/self/clear_refs` just
+    before the operation, which resets the process's RSS high-water mark
+    (`VmHWM`), and reads `VmHWM` from `/proc/self/status` afterwards. That's
+    the operation's own peak.
+  - **Elsewhere:** `process.resourceUsage().maxRSS`, the process's lifetime
+    peak. It also includes the spike from importing and transpiling `src/`
+    before the operation starts, which puts a floor under the reading. Before
+    the Linux reset, that floor made decompose and recompose report
+    near-identical peaks and hid crate-side memory cuts below it.
+  - Each child reports which one it used as `peakRssSource` (`vmhwm` /
+    `maxrss`).
+  - The previous metric, JS `heapUsed` after a forced GC, couldn't see native
+    allocations at all, sat around ±0.01 MB, and went negative, which produced
+    most of the false "regressions" on PRs.
 
 Each repeat uses a pristine fixture copy. The published number is the median
 of `PERF_REPEATS` (default 5) after one untimed warm-up repeat.

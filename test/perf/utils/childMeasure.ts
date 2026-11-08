@@ -15,6 +15,10 @@ export type OpResult = {
   crateCalls: number;
   rssBeforeBytes: number;
   peakRssBytes: number;
+  // How peakRssBytes was measured: 'vmhwm' = the operation's own peak (Linux:
+  // high-water mark reset just before the operation, see runOp.ts); 'maxrss' =
+  // the process's lifetime peak, which includes module loading (other platforms).
+  peakRssSource: 'vmhwm' | 'maxrss';
   // Primary memory metric: peak resident memory the operation added on top of
   // the child's steady pre-work footprint. Includes native (Rust/napi)
   // allocations, which JS heapUsed cannot see.
