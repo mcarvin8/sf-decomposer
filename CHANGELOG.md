@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.11.8](https://github.com/mcarvin8/sf-decomposer/compare/v7.11.7...v7.11.8) (2026-11-08)
+
+
+### Performance Improvements
+
+* **recompose:** bound the package-directory walk's readdir concurrency ([#654](https://github.com/mcarvin8/sf-decomposer/issues/654)) ([c2e06c5](https://github.com/mcarvin8/sf-decomposer/commit/c2e06c565683e850f28788005a68a7981447521d))
+
 ## [7.11.7](https://github.com/mcarvin8/sf-decomposer/compare/v7.11.6...v7.11.7) (2026-11-08)
 
 
