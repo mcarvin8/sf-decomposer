@@ -2,12 +2,30 @@
 
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { Hook } from '@oclif/core';
+import { Command, Config, Hook } from '@oclif/core';
 
 import { decomposeMetadataTypes } from '../core/decomposeMetadataTypes.js';
 import { HOOK_CONFIG_JSON } from '../helpers/constants.js';
-import { ConfigFile, DecomposeOptions, PostRetrieveHookOptions } from '../helpers/types.js';
+import { ConfigFile, DecomposeOptions } from '../helpers/types.js';
 import { getRepoRoot } from '../service/core/getRepoRoot.js';
+
+// Local stand-in for SDR's ScopedPostRetrieve -- only the field the hook actually reads.
+type RetrieveHookResult = {
+  retrieveResult: {
+    response: {
+      status?: string;
+    };
+  };
+};
+
+// Lives here rather than in helpers/types.ts so the shared types stay free of oclif imports.
+type PostRetrieveHookOptions = {
+  Command: Command;
+  argv: string[];
+  commandId: string;
+  result?: RetrieveHookResult;
+  config: Config;
+};
 
 type HookFunction = (this: Hook.Context, options: PostRetrieveHookOptions) => Promise<void>;
 
