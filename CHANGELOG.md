@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.12.1](https://github.com/mcarvin8/sf-decomposer/compare/v7.12.0...v7.12.1) (2026-11-09)
+
+
+### Bug Fixes
+
+* **hook:** move post-retrieve hook types out of helpers/types ([#660](https://github.com/mcarvin8/sf-decomposer/issues/660)) ([2a8b812](https://github.com/mcarvin8/sf-decomposer/commit/2a8b8120e2fc5274c70da72a9829d089caeb637c))
+
 ## [7.12.0](https://github.com/mcarvin8/sf-decomposer/compare/v7.11.8...v7.12.0) (2026-11-09)
 
 
