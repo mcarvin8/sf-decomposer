@@ -1,7 +1,5 @@
 'use strict';
 
-import { Command, Config } from '@oclif/core';
-
 export type DecomposerResult = {
   metadata: string[];
 };
@@ -78,23 +76,6 @@ export type MetaAttributes = {
   folderType: string;
   metadataPaths: string[];
   uniqueIdElements: string;
-};
-
-// Local stand-in for SDR's ScopedPostRetrieve -- only the field the hook actually reads.
-type RetrieveHookResult = {
-  retrieveResult: {
-    response: {
-      status?: string;
-    };
-  };
-};
-
-export type PostRetrieveHookOptions = {
-  Command: Command;
-  argv: string[];
-  commandId: string;
-  result?: RetrieveHookResult;
-  config: Config;
 };
 
 export type DecomposeOptions = {
