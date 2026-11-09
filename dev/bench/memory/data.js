@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794237962406,
+  "lastUpdate": 1794238114455,
   "repoUrl": "https://github.com/mcarvin8/sf-decomposer",
   "entries": {
     "Decompose Memory (large)": [
@@ -7325,6 +7325,78 @@ window.BENCHMARK_DATA = {
             "name": "manyfiles-overrides.yaml.recompose",
             "value": 29.38,
             "range": "28.53-29.45MB",
+            "unit": "MB"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "41898282+github-actions[bot]@users.noreply.github.com",
+            "name": "github-actions[bot]",
+            "username": "github-actions[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "7b7f97a27a5a0722c88957eb7cd9163aae826636",
+          "message": "chore(main): release 7.12.0 (#659)\n\nCo-authored-by: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>",
+          "timestamp": "2026-11-09T10:09:59-05:00",
+          "tree_id": "10b633324d50ffb636bec423577a2917fb1d0c5e",
+          "url": "https://github.com/mcarvin8/sf-decomposer/commit/7b7f97a27a5a0722c88957eb7cd9163aae826636"
+        },
+        "date": 1794238114421,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "manyfiles-overrides.xml.decompose",
+            "value": 22.27,
+            "range": "22.2-24.42MB",
+            "unit": "MB"
+          },
+          {
+            "name": "manyfiles-overrides.xml.recompose",
+            "value": 31.3,
+            "range": "30.76-32.6MB",
+            "unit": "MB"
+          },
+          {
+            "name": "manyfiles-overrides.json.decompose",
+            "value": 23.39,
+            "range": "22.18-23.87MB",
+            "unit": "MB"
+          },
+          {
+            "name": "manyfiles-overrides.json.recompose",
+            "value": 32.41,
+            "range": "31.54-37.11MB",
+            "unit": "MB"
+          },
+          {
+            "name": "manyfiles-overrides.json5.decompose",
+            "value": 22.53,
+            "range": "21.82-25.62MB",
+            "unit": "MB"
+          },
+          {
+            "name": "manyfiles-overrides.json5.recompose",
+            "value": 31.98,
+            "range": "30.71-34.36MB",
+            "unit": "MB"
+          },
+          {
+            "name": "manyfiles-overrides.yaml.decompose",
+            "value": 22.01,
+            "range": "20.86-23.36MB",
+            "unit": "MB"
+          },
+          {
+            "name": "manyfiles-overrides.yaml.recompose",
+            "value": 29.27,
+            "range": "29.05-29.66MB",
             "unit": "MB"
           }
         ]
