@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.12.0](https://github.com/mcarvin8/sf-decomposer/compare/v7.11.8...v7.12.0) (2026-11-09)
+
+
+### Features
+
+* **metadata:** support ExperienceContainer ([#658](https://github.com/mcarvin8/sf-decomposer/issues/658)) ([3de99bd](https://github.com/mcarvin8/sf-decomposer/commit/3de99bd5a196cf17b7ff54bd0354e352b5df2b37))
+
 ## [7.11.8](https://github.com/mcarvin8/sf-decomposer/compare/v7.11.7...v7.11.8) (2026-11-08)
 
 
