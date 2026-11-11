@@ -69,3 +69,8 @@ stdout*.txt
 megalinter-reports/
 .megalinter_github_conf/
 mega-linter.log
+
+# sf-decomposer-core build output (built from src/ by `npm run build:core`)
+packages/core/lib
+packages/core/LICENSE.md
+packages/core/THIRD_PARTY_NOTICES.md

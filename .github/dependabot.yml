@@ -5,6 +5,7 @@ updates:
     directories:
       - "/"
       - "/docker"
+      - "/packages/core"
     schedule:
       interval: "weekly"
     versioning-strategy: increase

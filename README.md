@@ -12,6 +12,7 @@
 
 - Using the Salesforce CLI? Start at [Setup](#setup).
 - Running this in CI without the CLI? Skip straight to [GitHub Action](#github-action).
+- No Salesforce CLI at all? Use the [standalone command](#standalone-command-without-the-salesforce-cli) from `sf-decomposer-core`.
 
 <!-- TABLE OF CONTENTS -->
 <details>
@@ -25,6 +26,7 @@
 - [Daily Workflow](#daily-workflow)
 - [Commands](#commands)
 - [GitHub Action](#github-action)
+- [Standalone Command (without the Salesforce CLI)](#standalone-command-without-the-salesforce-cli)
 - [Reference](#reference)
   - [Decompose Strategies](#decompose-strategies)
   - [Supported Metadata](#supported-metadata)
@@ -381,6 +383,20 @@ Or point it at an existing `.sfdecomposer.config.json` for either step instead o
 **Outputs:** `metadata` (newline-separated list of processed suffixes), `types-count`; `verify` additionally sets `drift-count` and `reordered-count`, and fails the step when `drift-count` is greater than 0.
 
 See [`action.yml`](action.yml) for the full input/output reference.
+
+---
+
+## Standalone Command (without the Salesforce CLI)
+
+[`sf-decomposer-core`](https://www.npmjs.com/package/sf-decomposer-core) publishes the same decompose, recompose, and verify logic as a plain Node.js command, `sf-decomposer`, with no Salesforce CLI and no plugin install. Its only dependency is `config-disassembler`. Flags, `.sfdecomposer.config.json`, and output match `sf decomposer <command>`, plus `--json`.
+
+```bash
+npx sf-decomposer-core decompose -m "flow" -m "permissionset"
+npx sf-decomposer-core recompose -m "flow" -m "permissionset" --postpurge
+npx sf-decomposer-core verify -x "manifest/package.xml" --config
+```
+
+The retrieve/deploy [hooks](#4-configure-hooks-recommended) need the Salesforce CLI, so run `decompose` and `recompose` yourself (or from a pre-commit hook) when using the standalone command. The package also exports a programmatic API; see [its README](packages/core/README.md).
 
 ---
 

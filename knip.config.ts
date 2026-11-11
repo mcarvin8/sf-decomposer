@@ -3,6 +3,9 @@ export default {
     'src/commands/decomposer/*.ts',
     'src/action/*.ts',
     'src/hooks/*.ts',
+    // sf-decomposer-core's standalone CLI (built by tsconfig.core.json); src/index.ts is
+    // already an entry through package.json exports.
+    'src/cli/index.ts',
     'bin/dev.js',
     'bin/run.js',
     'scripts/**/*.ts',
