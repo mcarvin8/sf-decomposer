@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="title">
+  <title id="title">sf-decomposer: a cloud above a metadata file breaking apart into smaller files</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1B2A4A"/>
+      <stop offset="1" stop-color="#0E1628"/>
+    </linearGradient>
+    <linearGradient id="cloud" gradientUnits="userSpaceOnUse" x1="0" y1="52" x2="0" y2="202">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#D9E4F5"/>
+    </linearGradient>
+    <linearGradient id="piece" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7EE8C8"/>
+      <stop offset="1" stop-color="#3CBFA0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="104" fill="url(#bg)"/>
+
+  <!-- Cloud -->
+  <g fill="url(#cloud)">
+    <circle cx="196" cy="150" r="52"/>
+    <circle cx="262" cy="118" r="66"/>
+    <circle cx="326" cy="152" r="48"/>
+    <rect x="148" y="140" width="226" height="62" rx="31"/>
+  </g>
+
+  <!-- Original metadata file, cracked along a jagged line -->
+  <g>
+    <!-- left part, still attached under the cloud -->
+    <path d="M150 232 H232 L222 262 L240 290 L218 322 L236 352 L224 382 H150 Q142 382 142 374 V240 Q142 232 150 232 Z" fill="#F4F7FC"/>
+    <rect x="160" y="262" width="44" height="9" rx="4.5" fill="#9AA9C2"/>
+    <rect x="160" y="286" width="52" height="9" rx="4.5" fill="#9AA9C2"/>
+    <rect x="160" y="310" width="38" height="9" rx="4.5" fill="#9AA9C2"/>
+    <rect x="160" y="334" width="48" height="9" rx="4.5" fill="#9AA9C2"/>
+    <rect x="160" y="358" width="34" height="9" rx="4.5" fill="#9AA9C2"/>
+  </g>
+
+  <!-- Pieces drifting off as small files -->
+  <g transform="translate(270 222) rotate(9)">
+    <path d="M0 0 H50 L70 20 V88 Q70 95 63 95 H7 Q0 95 0 88 Z" fill="url(#piece)"/>
+    <path d="M50 0 V20 H70 Z" fill="#2A8F78"/>
+    <rect x="12" y="40" width="42" height="8" rx="4" fill="#0E1628" opacity="0.55"/>
+    <rect x="12" y="60" width="30" height="8" rx="4" fill="#0E1628" opacity="0.55"/>
+  </g>
+  <g transform="translate(322 306) rotate(16)">
+    <path d="M0 0 H46 L64 18 V80 Q64 87 57 87 H7 Q0 87 0 80 Z" fill="url(#piece)"/>
+    <path d="M46 0 V18 H64 Z" fill="#2A8F78"/>
+    <rect x="11" y="36" width="38" height="8" rx="4" fill="#0E1628" opacity="0.55"/>
+    <rect x="11" y="55" width="27" height="8" rx="4" fill="#0E1628" opacity="0.55"/>
+  </g>
+  <g transform="translate(270 378) rotate(-6)">
+    <path d="M0 0 H42 L58 16 V72 Q58 79 51 79 H7 Q0 79 0 72 Z" fill="url(#piece)"/>
+    <path d="M42 0 V16 H58 Z" fill="#2A8F78"/>
+    <rect x="10" y="32" width="34" height="7" rx="3.5" fill="#0E1628" opacity="0.55"/>
+    <rect x="10" y="50" width="24" height="7" rx="3.5" fill="#0E1628" opacity="0.55"/>
+  </g>
+
+  <!-- Motion marks: short dashes pointing from the crack toward each piece -->
+  <g stroke="#7EE8C8" stroke-width="6" stroke-linecap="round" opacity="0.75">
+    <line x1="244" y1="268" x2="258" y2="265"/>
+    <line x1="256" y1="322" x2="284" y2="329"/>
+    <line x1="240" y1="374" x2="256" y2="382"/>
+  </g>
+</svg>

@@ -42,6 +42,25 @@ describe('packages/core/package.json', () => {
   });
 });
 
+describe('Claude Code plugin', () => {
+  it('has the same version as the plugin package, so Claude Code offers updates on each release', () => {
+    const plugin = JSON.parse(
+      readFileSync(resolve(process.cwd(), 'plugins/sf-decomposer/.claude-plugin/plugin.json'), 'utf-8'),
+    ) as { name: string; version: string };
+    expect(plugin.name).toBe('sf-decomposer');
+    expect(plugin.version).toBe(root.version);
+  });
+
+  it('is bumped by release-please with every release', () => {
+    const config = JSON.parse(readFileSync(resolve(process.cwd(), 'release-please-config.json'), 'utf-8')) as {
+      packages: Record<string, { 'extra-files': Array<{ path: string; jsonpath: string }> }>;
+    };
+    expect(config.packages['.']['extra-files']).toContainEqual(
+      expect.objectContaining({ path: 'plugins/sf-decomposer/.claude-plugin/plugin.json', jsonpath: '$.version' }),
+    );
+  });
+});
+
 describe('release-please config', () => {
   it('bumps packages/core/package.json with every release', () => {
     const config = JSON.parse(readFileSync(resolve(process.cwd(), 'release-please-config.json'), 'utf-8')) as {

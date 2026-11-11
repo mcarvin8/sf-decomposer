@@ -1,0 +1,14 @@
+{
+  "name": "sf-decomposer",
+  "description": "sf-decomposer: work with large Salesforce metadata files as small, reviewable pieces.",
+  "owner": {
+    "name": "Matt Carvin"
+  },
+  "plugins": [
+    {
+      "name": "sf-decomposer",
+      "source": "./plugins/sf-decomposer",
+      "description": "Edit and audit large Salesforce metadata by decomposing it, and set up sf-decomposer in a project."
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "name": "sf-decomposer",
+  "version": "7.13.0",
+  "description": "Edit and audit large Salesforce metadata (permission sets, profiles, labels, flows) by splitting it into small files and rebuilding it, and set up sf-decomposer in a project. No Salesforce CLI needed.",
+  "author": {
+    "name": "Matt Carvin"
+  },
+  "homepage": "https://github.com/mcarvin8/sf-decomposer",
+  "repository": "https://github.com/mcarvin8/sf-decomposer",
+  "license": "MIT",
+  "keywords": [
+    "salesforce",
+    "salesforcedx",
+    "metadata",
+    "permission-sets",
+    "profiles",
+    "decompose"
+  ]
+}

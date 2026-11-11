@@ -32,6 +32,22 @@ jobs:
       - name: Check Node.js engine versions
         run: npm run lint:engine
 
+      - name: Check plugin file types allowed by the Claude plugin directory
+        run: |
+          bad=$(find plugins -type f ! -iname '*.md' ! -iname '*.txt' ! -iname '*.json' ! -iname '*.yaml' ! -iname '*.yml' ! -iname '*.png' ! -iname '*.jpg' ! -iname '*.jpeg' ! -iname '*.gif' ! -iname '*.webp' ! -iname '*.ico')
+          shebang=$(find plugins -type f -exec sh -c 'head -c 2 "$1" | grep -q "^#!" && echo "$1"' _ {} \;)
+          if [ -n "$bad$shebang" ]; then
+            echo "Files the plugin directory refuses (allowed: Markdown, text, JSON, YAML, PNG/JPEG/GIF/WebP/ICO; no #! scripts):"
+            echo "$bad"
+            echo "$shebang"
+            exit 1
+          fi
+
+      - name: Validate Claude Code plugin
+        run: |
+          npx -y @anthropic-ai/claude-code@2.1.316 plugin validate .
+          npx -y @anthropic-ai/claude-code@2.1.316 plugin validate plugins/sf-decomposer
+
   unit-tests:
     name: Unit Tests (${{ matrix.os }}, node ${{ matrix.node-version }})
     runs-on: ${{ matrix.os }}
