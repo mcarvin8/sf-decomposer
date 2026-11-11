@@ -3,54 +3,24 @@
 import * as core from '@actions/core';
 
 import { verifyMetadataTypes } from '../core/verifyMetadataTypes.js';
-import {
-  loadConfigFile,
-  parseConfigSuffixes,
-  resolveDefaultConfigPath,
-  validateConfigManifest,
-} from '../helpers/configOverrides.js';
+import { resolveVerifyOptions } from '../helpers/runOptions.js';
 import { multilineInput, optionalInput, requireMetadataTypesOrManifest } from './inputs.js';
 
 export async function runVerify(): Promise<void> {
-  let metadataTypes = multilineInput('metadata-type');
-  let manifest = optionalInput('manifest');
-  let ignoreDirs = multilineInput('ignore-package-directory');
-  let format = optionalInput('format') ?? 'xml';
-  let strategy = optionalInput('strategy') ?? 'unique-id';
-  let decomposeNestedPerms = core.getBooleanInput('decompose-nested-permissions');
-  let overrides;
-
-  if (core.getBooleanInput('config')) {
-    const config = await loadConfigFile(await resolveDefaultConfigPath());
-    metadataTypes ??= parseConfigSuffixes(config.metadataSuffixes);
-    const configManifest = !manifest ? config.manifest : undefined;
-    manifest ??= config.manifest;
-    ignoreDirs ??= parseConfigSuffixes(config.ignorePackageDirectories);
-    format = optionalInput('format') ?? config.decomposedFormat ?? 'xml';
-    strategy = optionalInput('strategy') ?? config.strategy ?? 'unique-id';
-    decomposeNestedPerms = decomposeNestedPerms || (config.decomposeNestedPermissions ?? false);
-    overrides = config.overrides;
-
-    manifest = await validateConfigManifest({
-      configManifest,
-      metadataTypes,
-      manifest,
-      warn: (msg) => core.warning(msg),
-    });
-  }
-
-  requireMetadataTypesOrManifest(metadataTypes, manifest);
-
-  const result = await verifyMetadataTypes({
-    metadataTypes,
-    format,
-    ignoreDirs,
-    strategy,
-    decomposeNestedPerms,
-    manifest,
-    overrides,
-    log: (msg) => core.info(msg),
+  const options = await resolveVerifyOptions({
+    metadataTypes: multilineInput('metadata-type'),
+    manifest: optionalInput('manifest'),
+    ignoreDirs: multilineInput('ignore-package-directory'),
+    format: optionalInput('format'),
+    strategy: optionalInput('strategy'),
+    decomposeNestedPerms: core.getBooleanInput('decompose-nested-permissions'),
+    config: core.getBooleanInput('config'),
+    warn: (msg) => core.warning(msg),
   });
+
+  requireMetadataTypesOrManifest(options.metadataTypes, options.manifest);
+
+  const result = await verifyMetadataTypes({ ...options, log: (msg) => core.info(msg) });
 
   core.setOutput('metadata', result.metadata.join('\n'));
   core.setOutput('types-count', result.metadata.length);
