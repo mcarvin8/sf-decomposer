@@ -10,6 +10,11 @@
           "type": "json",
           "path": "packages/core/package.json",
           "jsonpath": "$.version"
+        },
+        {
+          "type": "json",
+          "path": "plugins/sf-decomposer/.claude-plugin/plugin.json",
+          "jsonpath": "$.version"
         }
       ]
     }
