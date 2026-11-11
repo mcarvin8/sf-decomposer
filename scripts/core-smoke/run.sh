@@ -30,7 +30,7 @@ PROJECT="$WORK/project"
 mkdir -p "$PROJECT"
 cp -R "$REPO_ROOT/fixtures/package-dir-1" "$PROJECT/force-app"
 cp -R "$REPO_ROOT/fixtures/package-dir-2" "$PROJECT/package"
-cat > "$PROJECT/sfdx-project.json" <<'JSON'
+cat >"$PROJECT/sfdx-project.json" <<'JSON'
 {
   "packageDirectories": [{ "path": "force-app", "default": true }, { "path": "package" }],
   "sourceApiVersion": "58.0"

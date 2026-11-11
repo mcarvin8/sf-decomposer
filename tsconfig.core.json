@@ -5,15 +5,8 @@
     "rootDir": "src",
     "sourceMap": false,
     "incremental": false,
-    "types": [
-      "node"
-    ]
+    "types": ["node"]
   },
-  "files": [
-    "src/index.ts",
-    "src/cli/index.ts"
-  ],
-  "include": [
-    "src/metadata/registry/metadataRegistry.json"
-  ]
+  "files": ["src/index.ts", "src/cli/index.ts"],
+  "include": ["src/metadata/registry/metadataRegistry.json"]
 }
