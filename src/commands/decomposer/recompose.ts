@@ -4,12 +4,7 @@ import { Messages } from '@salesforce/core';
 import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
 
 import { recomposeMetadataTypes } from '../../core/recomposeMetadataTypes.js';
-import {
-  loadConfigFile,
-  parseConfigSuffixes,
-  resolveDefaultConfigPath,
-  validateConfigManifest,
-} from '../../helpers/configOverrides.js';
+import { isMissingMetadataOrManifest, resolveRecomposeOptions } from '../../helpers/runOptions.js';
 import { DecomposerResult } from '../../helpers/types.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
@@ -55,37 +50,19 @@ export default class DecomposerRecompose extends SfCommand<DecomposerResult> {
   public async run(): Promise<DecomposerResult> {
     const { flags } = await this.parse(DecomposerRecompose);
 
-    let metadataTypes = flags['metadata-type'];
-    let manifest = flags['manifest'];
-    let ignoreDirs = flags['ignore-package-directory'];
-    let postpurge = flags['postpurge'];
+    const options = await resolveRecomposeOptions({
+      metadataTypes: flags['metadata-type'],
+      manifest: flags['manifest'],
+      ignoreDirs: flags['ignore-package-directory'],
+      postpurge: flags['postpurge'],
+      config: flags['config'],
+      warn: this.warn.bind(this),
+    });
 
-    if (flags['config']) {
-      const config = await loadConfigFile(await resolveDefaultConfigPath());
-      metadataTypes ??= parseConfigSuffixes(config.metadataSuffixes);
-      const configManifest = !flags['manifest'] ? config.manifest : undefined;
-      manifest ??= config.manifest;
-      ignoreDirs ??= parseConfigSuffixes(config.ignorePackageDirectories);
-      postpurge = flags['postpurge'] || (config.postPurge ?? false);
-
-      manifest = await validateConfigManifest({
-        configManifest,
-        metadataTypes,
-        manifest,
-        warn: this.warn.bind(this),
-      });
-    }
-
-    if (!metadataTypes?.length && !manifest) {
+    if (isMissingMetadataOrManifest(options)) {
       throw messages.createError('error.missingMetadataOrManifest');
     }
 
-    return recomposeMetadataTypes({
-      metadataTypes,
-      postpurge,
-      ignoreDirs,
-      manifest,
-      log: this.log.bind(this),
-    });
+    return recomposeMetadataTypes({ ...options, log: this.log.bind(this) });
   }
 }

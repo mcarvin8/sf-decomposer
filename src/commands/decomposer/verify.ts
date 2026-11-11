@@ -3,13 +3,8 @@
 import { Messages } from '@salesforce/core';
 import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
 import { verifyMetadataTypes } from '../../core/verifyMetadataTypes.js';
-import {
-  loadConfigFile,
-  parseConfigSuffixes,
-  resolveDefaultConfigPath,
-  validateConfigManifest,
-} from '../../helpers/configOverrides.js';
 import { DECOMPOSED_FILE_TYPES, DECOMPOSED_STRATEGIES } from '../../helpers/constants.js';
+import { isMissingMetadataOrManifest, resolveVerifyOptions } from '../../helpers/runOptions.js';
 import { VerifyResult } from '../../helpers/types.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
@@ -72,47 +67,22 @@ export default class DecomposerVerify extends SfCommand<VerifyResult> {
   public async run(): Promise<VerifyResult> {
     const { flags } = await this.parse(DecomposerVerify);
 
-    let metadataTypes = flags['metadata-type'];
-    let manifest = flags['manifest'];
-    let ignoreDirs = flags['ignore-package-directory'];
-    let format = flags['format'] ?? 'xml';
-    let strategy = flags['strategy'] ?? 'unique-id';
-    let decomposeNestedPerms = flags['decompose-nested-permissions'];
-    let overrides;
+    const options = await resolveVerifyOptions({
+      metadataTypes: flags['metadata-type'],
+      manifest: flags['manifest'],
+      ignoreDirs: flags['ignore-package-directory'],
+      format: flags['format'],
+      strategy: flags['strategy'],
+      decomposeNestedPerms: flags['decompose-nested-permissions'],
+      config: flags['config'],
+      warn: this.warn.bind(this),
+    });
 
-    if (flags['config']) {
-      const config = await loadConfigFile(await resolveDefaultConfigPath());
-      metadataTypes ??= parseConfigSuffixes(config.metadataSuffixes);
-      const configManifest = !flags['manifest'] ? config.manifest : undefined;
-      manifest ??= config.manifest;
-      ignoreDirs ??= parseConfigSuffixes(config.ignorePackageDirectories);
-      format = flags['format'] ?? config.decomposedFormat ?? 'xml';
-      strategy = flags['strategy'] ?? config.strategy ?? 'unique-id';
-      decomposeNestedPerms = flags['decompose-nested-permissions'] || (config.decomposeNestedPermissions ?? false);
-      overrides = config.overrides;
-
-      manifest = await validateConfigManifest({
-        configManifest,
-        metadataTypes,
-        manifest,
-        warn: this.warn.bind(this),
-      });
-    }
-
-    if (!metadataTypes?.length && !manifest) {
+    if (isMissingMetadataOrManifest(options)) {
       throw messages.createError('error.missingMetadataOrManifest');
     }
 
-    const result = await verifyMetadataTypes({
-      metadataTypes,
-      format,
-      ignoreDirs,
-      strategy,
-      decomposeNestedPerms,
-      manifest,
-      overrides,
-      log: this.log.bind(this),
-    });
+    const result = await verifyMetadataTypes({ ...options, log: this.log.bind(this) });
 
     if (result.drift.length > 0) {
       throw messages.createError('error.driftDetected', [String(result.drift.length)]);

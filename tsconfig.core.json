@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "packages/core/lib",
+    "rootDir": "src",
+    "sourceMap": false,
+    "incremental": false,
+    "types": ["node"]
+  },
+  "files": ["src/index.ts", "src/cli/index.ts"],
+  "include": ["src/metadata/registry/metadataRegistry.json"]
+}

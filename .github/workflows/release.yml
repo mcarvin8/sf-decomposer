@@ -18,11 +18,11 @@ jobs:
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
     steps:
+      # Manifest mode (release-please-config.json + .release-please-manifest.json) so the
+      # release PR also bumps packages/core/package.json. Tags stay "vX.Y.Z" (no component).
       - name: Release Please
         id: release
         uses: googleapis/release-please-action@v5
-        with:
-          release-type: node
 
   unit-tests:
     name: Unit Tests (ubuntu-latest, node LTS)
@@ -84,6 +84,22 @@ jobs:
         run: |
           NODE_AUTH_TOKEN="" npm publish --access public --tag latest --provenance
           echo "published=true" >> "$GITHUB_OUTPUT"
+
+      # sf-decomposer-core: the standalone `sf-decomposer` command and programmatic API without
+      # Salesforce CLI dependencies, built from the same src/ and released with the same version
+      # (release-please bumps packages/core/package.json via extra-files). Its prepack runs
+      # `build:core`, which also fails if the build picks up plugin-only code or a dependency
+      # other than config-disassembler.
+      - name: Publish core package to NPM
+        if: steps.publish.outputs.published == 'true'
+        run: |
+          ROOT_VERSION=$(node -p "require('./package.json').version")
+          CORE_VERSION=$(node -p "require('./packages/core/package.json').version")
+          if [ "$ROOT_VERSION" != "$CORE_VERSION" ]; then
+            echo "packages/core version $CORE_VERSION does not match $ROOT_VERSION"
+            exit 1
+          fi
+          NODE_AUTH_TOKEN="" npm publish ./packages/core --access public --tag latest --provenance
 
       # `npm publish` runs the `prepack` script (oclif manifest && oclif readme),
       # which regenerates README.md's Command Reference against the version
@@ -169,24 +185,32 @@ jobs:
         with:
           node-version: 'lts/*'
 
-      - name: Poll npm for published version
+      - name: Poll npm for published versions
         run: |
           VERSION=$(node -p "require('./package.json').version")
-          for i in $(seq 1 40); do
-            if npm view sf-decomposer@"$VERSION" version >/dev/null 2>&1; then
-              echo "sf-decomposer@$VERSION is available on npm"
-              exit 0
-            fi
-            echo "sf-decomposer@$VERSION not yet available, retrying in 15s ($i/40)"
-            sleep 15
+          for PACKAGE in sf-decomposer sf-decomposer-core; do
+            for i in $(seq 1 40); do
+              if npm view "$PACKAGE@$VERSION" version >/dev/null 2>&1; then
+                echo "$PACKAGE@$VERSION is available on npm"
+                continue 2
+              fi
+              echo "$PACKAGE@$VERSION not yet available, retrying in 15s ($i/40)"
+              sleep 15
+            done
+            echo "Timed out waiting for $PACKAGE@$VERSION on npm"
+            exit 1
           done
-          echo "Timed out waiting for sf-decomposer@$VERSION on npm"
-          exit 1
 
   smoke-test:
     needs: [release, wait-for-npm]
     if: needs.release.outputs.published == 'true'
     uses: ./.github/workflows/smoke-test.yml
+    secrets: inherit
+
+  smoke-test-core:
+    needs: [release, wait-for-npm]
+    if: needs.release.outputs.published == 'true'
+    uses: ./.github/workflows/smoke-test-core.yml
     secrets: inherit
 
   perf-baseline:

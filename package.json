@@ -37,6 +37,7 @@
   "files": [
     "/lib",
     "!/lib/action/**",
+    "!/lib/cli/**",
     "/messages",
     "/oclif.manifest.json",
     "/oclif.lock",
@@ -89,6 +90,7 @@
     "audit:sweep": "tsx scripts/audit/sweep.ts",
     "audit:xsd": "tsx scripts/audit/xsd-unique-id-candidates.ts",
     "build": "wireit",
+    "build:core": "wireit",
     "clean": "wireit",
     "clean:build": "wireit",
     "clean:package-manager": "wireit",
@@ -148,7 +150,8 @@
     "build": {
       "dependencies": [
         "compile",
-        "lint"
+        "lint",
+        "build:core"
       ]
     },
     "compile": {
@@ -178,7 +181,7 @@
       "output": []
     },
     "lint": {
-      "command": "biome check src test README.md CONTRIBUTING.md docs/CONFIGURATION.md docs/HANDBOOK.md docs/METADATA_SUPPORT.md docs/MIGRATION.md scripts/audit/README.md scripts/audit/xsd-unique-id-candidates.md",
+      "command": "biome check src test README.md packages/core/README.md CONTRIBUTING.md docs/CONFIGURATION.md docs/HANDBOOK.md docs/METADATA_SUPPORT.md docs/MIGRATION.md scripts/audit/README.md scripts/audit/xsd-unique-id-candidates.md",
       "files": [
         "src/**/*.ts",
         "test/**/*.ts",
@@ -187,7 +190,8 @@
         "test/**/*.md",
         "messages/**",
         "biome.json",
-        "**/tsconfig.json"
+        "**/tsconfig.json",
+        "packages/core/README.md"
       ],
       "output": []
     },
@@ -337,6 +341,29 @@
         "vitest.config.ts"
       ],
       "output": []
+    },
+    "build:core": {
+      "command": "tsc -p tsconfig.core.json && shx cp LICENSE.md THIRD_PARTY_NOTICES.md packages/core/ && node scripts/verify-core-package.mjs",
+      "files": [
+        "src/**/*.ts",
+        "!src/commands/**",
+        "!src/hooks/**",
+        "!src/action/**",
+        "src/metadata/registry/metadataRegistry.json",
+        "tsconfig.json",
+        "tsconfig.core.json",
+        "package.json",
+        "packages/core/package.json",
+        "LICENSE.md",
+        "THIRD_PARTY_NOTICES.md",
+        "scripts/verify-core-package.mjs"
+      ],
+      "output": [
+        "packages/core/lib/**",
+        "packages/core/LICENSE.md",
+        "packages/core/THIRD_PARTY_NOTICES.md"
+      ],
+      "clean": true
     }
   },
   "exports": "./lib/index.js",

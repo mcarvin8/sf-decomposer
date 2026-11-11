@@ -1,0 +1,80 @@
+# Smoke test for sf-decomposer-core's standalone `sf-decomposer` command, run the way users run
+# it: installed with npm and called without the Salesforce CLI. See scripts/core-smoke/run.sh.
+#
+# Two sources, deliberately not the same:
+# - pull_request: installs an `npm pack` tarball of this checkout - catches a broken bin,
+#   missing registry JSON, or a native-binary problem before merge.
+# - workflow_call (from release.yml) / workflow_dispatch: installs the exact version from the
+#   npm registry - checks what users actually get.
+name: Smoke test (sf-decomposer-core)
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/smoke-test-core.yml'
+      - 'scripts/core-smoke/**'
+      - 'scripts/verify-core-package.mjs'
+      - 'packages/core/**'
+      - 'tsconfig.core.json'
+      - 'package.json'
+      - 'src/**'
+      - '!src/commands/**'
+      - '!src/hooks/**'
+      - '!src/action/**'
+      - 'fixtures/**'
+  workflow_call:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Published version to test (defaults to the version in package.json)'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  standalone-cli:
+    name: Standalone CLI (${{ matrix.os }}, Node ${{ matrix.node-version }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        # Lowest supported (package.json engines) and current LTS
+        node-version: ['22.19.0', 'lts/*']
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+
+      - name: Pack this checkout
+        if: github.event_name == 'pull_request'
+        run: |
+          npm ci
+          npm run build:core
+          # --ignore-scripts skips core's prepack, which would rebuild what build:core just built.
+          PACK_DIR="$RUNNER_TEMP/pack"
+          mkdir -p "$PACK_DIR"
+          npm pack ./packages/core --ignore-scripts --pack-destination "$PACK_DIR"
+          echo "PACKAGE_SPEC=$(ls "$PACK_DIR"/*.tgz)" >> "$GITHUB_ENV"
+
+      - name: Use published version
+        if: github.event_name != 'pull_request'
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          VERSION="${INPUT_VERSION:-$(node -p "require('./package.json').version")}"
+          echo "PACKAGE_SPEC=sf-decomposer-core@$VERSION" >> "$GITHUB_ENV"
+
+      - name: Decompose / recompose round trip without the Salesforce CLI
+        run: scripts/core-smoke/run.sh "$PACKAGE_SPEC"

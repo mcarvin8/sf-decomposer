@@ -3,13 +3,8 @@
 import { Messages } from '@salesforce/core';
 import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
 import { decomposeMetadataTypes } from '../../core/decomposeMetadataTypes.js';
-import {
-  loadConfigFile,
-  parseConfigSuffixes,
-  resolveDefaultConfigPath,
-  validateConfigManifest,
-} from '../../helpers/configOverrides.js';
 import { DECOMPOSED_FILE_TYPES, DECOMPOSED_STRATEGIES } from '../../helpers/constants.js';
+import { isMissingMetadataOrManifest, resolveDecomposeOptions } from '../../helpers/runOptions.js';
 import { DecomposerResult } from '../../helpers/types.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
@@ -92,58 +87,25 @@ export default class DecomposerDecompose extends SfCommand<DecomposerResult> {
   public async run(): Promise<DecomposerResult> {
     const { flags } = await this.parse(DecomposerDecompose);
 
-    let metadataTypes = flags['metadata-type'];
-    let manifest = flags['manifest'];
-    let ignoreDirs = flags['ignore-package-directory'];
-    let format = flags['format'] ?? 'xml';
-    let strategy = flags['strategy'] ?? 'unique-id';
-    let prepurge = flags['prepurge'];
-    let postpurge = flags['postpurge'];
-    let decomposeNestedPerms = flags['decompose-nested-permissions'];
-    let updateForceignore = flags['update-forceignore'];
-    let updateGitattributes = flags['update-gitattributes'];
-    let overrides;
+    const options = await resolveDecomposeOptions({
+      metadataTypes: flags['metadata-type'],
+      manifest: flags['manifest'],
+      ignoreDirs: flags['ignore-package-directory'],
+      format: flags['format'],
+      strategy: flags['strategy'],
+      prepurge: flags['prepurge'],
+      postpurge: flags['postpurge'],
+      decomposeNestedPerms: flags['decompose-nested-permissions'],
+      updateForceignore: flags['update-forceignore'],
+      updateGitattributes: flags['update-gitattributes'],
+      config: flags['config'],
+      warn: this.warn.bind(this),
+    });
 
-    if (flags['config']) {
-      const config = await loadConfigFile(await resolveDefaultConfigPath());
-      metadataTypes ??= parseConfigSuffixes(config.metadataSuffixes);
-      const configManifest = !flags['manifest'] ? config.manifest : undefined;
-      manifest ??= config.manifest;
-      ignoreDirs ??= parseConfigSuffixes(config.ignorePackageDirectories);
-      format = flags['format'] ?? config.decomposedFormat ?? 'xml';
-      strategy = flags['strategy'] ?? config.strategy ?? 'unique-id';
-      prepurge = flags['prepurge'] || (config.prePurge ?? false);
-      postpurge = flags['postpurge'] || (config.postPurge ?? false);
-      decomposeNestedPerms = flags['decompose-nested-permissions'] || (config.decomposeNestedPermissions ?? false);
-      updateForceignore = flags['update-forceignore'] || (config.updateForceignore ?? false);
-      updateGitattributes = flags['update-gitattributes'] || (config.updateGitattributes ?? false);
-      overrides = config.overrides;
-
-      manifest = await validateConfigManifest({
-        configManifest,
-        metadataTypes,
-        manifest,
-        warn: this.warn.bind(this),
-      });
-    }
-
-    if (!metadataTypes?.length && !manifest) {
+    if (isMissingMetadataOrManifest(options)) {
       throw messages.createError('error.missingMetadataOrManifest');
     }
 
-    return decomposeMetadataTypes({
-      metadataTypes,
-      prepurge,
-      postpurge,
-      format,
-      ignoreDirs,
-      strategy,
-      decomposeNestedPerms,
-      manifest,
-      overrides,
-      updateForceignore,
-      updateGitattributes,
-      log: this.log.bind(this),
-    });
+    return decomposeMetadataTypes({ ...options, log: this.log.bind(this) });
   }
 }
