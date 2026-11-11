@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794346305775,
+  "lastUpdate": 1794414593476,
   "repoUrl": "https://github.com/mcarvin8/sf-decomposer",
   "entries": {
     "Decompose Runtime (large)": [
@@ -4919,6 +4919,174 @@ window.BENCHMARK_DATA = {
             "name": "large.yaml.recompose.wrapper",
             "value": 66.4,
             "range": "33.67-93.66ms",
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "41898282+github-actions[bot]@users.noreply.github.com",
+            "name": "github-actions[bot]",
+            "username": "github-actions[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "20394bf263ef8e276b5683eebb7b4cced67aedbd",
+          "message": "chore(main): release 7.13.0 (#665)\n\nCo-authored-by: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>",
+          "timestamp": "2026-11-11T11:14:45-05:00",
+          "tree_id": "445107a7b6ddac7ad1e70eaad754acc96db302db",
+          "url": "https://github.com/mcarvin8/sf-decomposer/commit/20394bf263ef8e276b5683eebb7b4cced67aedbd"
+        },
+        "date": 1794414592894,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "large.xml.decompose",
+            "value": 2172.44,
+            "range": "1970.08-3195.75ms",
+            "unit": "ms"
+          },
+          {
+            "name": "large.xml.decompose.crate",
+            "value": 2168.71,
+            "range": "1966.24-3192.51ms",
+            "unit": "ms"
+          },
+          {
+            "name": "large.xml.decompose.wrapper",
+            "value": 3.68,
+            "range": "3.24-3.84ms",
+            "unit": "ms"
+          },
+          {
+            "name": "large.xml.recompose",
+            "value": 3853.68,
+            "range": "2967.88-4405.17ms",
+            "unit": "ms"
+          },
+          {
+            "name": "large.xml.recompose.crate",
+            "value": 3755.66,
+            "range": "2871.21-4305.41ms",
+            "unit": "ms"
+          },
+          {
+            "name": "large.xml.recompose.wrapper",
+            "value": 96.67,
+            "range": "91.7-99.76ms",
+            "unit": "ms"
+          },
+          {
+            "name": "large.json.decompose",
+            "value": 1088.85,
+            "range": "1021.16-1241.39ms",
+            "unit": "ms"
+          },
+          {
+            "name": "large.json.decompose.crate",
+            "value": 1083.49,
+            "range": "1017.09-1236.45ms",
+            "unit": "ms"
+          },
+          {
+            "name": "large.json.decompose.wrapper",
+            "value": 5.31,
+            "range": "4.07-5.59ms",
+            "unit": "ms"
+          },
+          {
+            "name": "large.json.recompose",
+            "value": 1403.19,
+            "range": "1365.02-1415.01ms",
+            "unit": "ms"
+          },
+          {
+            "name": "large.json.recompose.crate",
+            "value": 1302.85,
+            "range": "1268.1-1366.95ms",
+            "unit": "ms"
+          },
+          {
+            "name": "large.json.recompose.wrapper",
+            "value": 96.92,
+            "range": "47.78-106.84ms",
+            "unit": "ms"
+          },
+          {
+            "name": "large.json5.decompose",
+            "value": 1126.07,
+            "range": "1111.91-1144.71ms",
+            "unit": "ms"
+          },
+          {
+            "name": "large.json5.decompose.crate",
+            "value": 1122.21,
+            "range": "1107.68-1140.91ms",
+            "unit": "ms"
+          },
+          {
+            "name": "large.json5.decompose.wrapper",
+            "value": 3.86,
+            "range": "3.78-4.23ms",
+            "unit": "ms"
+          },
+          {
+            "name": "large.json5.recompose",
+            "value": 1506.02,
+            "range": "1410.97-1556.43ms",
+            "unit": "ms"
+          },
+          {
+            "name": "large.json5.recompose.crate",
+            "value": 1407.3,
+            "range": "1359.07-1450.2ms",
+            "unit": "ms"
+          },
+          {
+            "name": "large.json5.recompose.wrapper",
+            "value": 98.73,
+            "range": "51.9-114.69ms",
+            "unit": "ms"
+          },
+          {
+            "name": "large.yaml.decompose",
+            "value": 1202.39,
+            "range": "1194.63-1297.04ms",
+            "unit": "ms"
+          },
+          {
+            "name": "large.yaml.decompose.crate",
+            "value": 1197.42,
+            "range": "1189.38-1293.39ms",
+            "unit": "ms"
+          },
+          {
+            "name": "large.yaml.decompose.wrapper",
+            "value": 4.45,
+            "range": "3.65-5.25ms",
+            "unit": "ms"
+          },
+          {
+            "name": "large.yaml.recompose",
+            "value": 2196.44,
+            "range": "2127.6-2223.61ms",
+            "unit": "ms"
+          },
+          {
+            "name": "large.yaml.recompose.crate",
+            "value": 2094.97,
+            "range": "2031.91-2115.64ms",
+            "unit": "ms"
+          },
+          {
+            "name": "large.yaml.recompose.wrapper",
+            "value": 101.69,
+            "range": "95.69-107.98ms",
             "unit": "ms"
           }
         ]
