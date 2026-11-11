@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.14.1](https://github.com/mcarvin8/sf-decomposer/compare/v7.14.0...v7.14.1) (2026-11-11)
+
+
+### Bug Fixes
+
+* **plugin:** never rerun recompose after a partial postpurge ([#669](https://github.com/mcarvin8/sf-decomposer/issues/669)) ([0a36fbe](https://github.com/mcarvin8/sf-decomposer/commit/0a36fbe2939d4cf9d4f2aad0f7866c1f7dc64ccc))
+
 ## [7.14.0](https://github.com/mcarvin8/sf-decomposer/compare/v7.13.0...v7.14.0) (2026-11-11)
 
 
