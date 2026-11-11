@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.13.0](https://github.com/mcarvin8/sf-decomposer/compare/v7.12.2...v7.13.0) (2026-11-11)
+
+
+### Features
+
+* publish sf-decomposer-core without Salesforce CLI dependencies ([#664](https://github.com/mcarvin8/sf-decomposer/issues/664)) ([6c046d0](https://github.com/mcarvin8/sf-decomposer/commit/6c046d099d78ac798ee1d73011937fa7f6ff9a7a))
+
 ## [7.12.2](https://github.com/mcarvin8/sf-decomposer/compare/v7.12.1...v7.12.2) (2026-11-10)
 
 
