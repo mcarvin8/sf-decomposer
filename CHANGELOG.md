@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.14.2](https://github.com/mcarvin8/sf-decomposer/compare/v7.14.1...v7.14.2) (2026-11-11)
+
+
+### Bug Fixes
+
+* **plugin:** stage only rebuilt original files in the setup hook ([#671](https://github.com/mcarvin8/sf-decomposer/issues/671)) ([979d7cd](https://github.com/mcarvin8/sf-decomposer/commit/979d7cd262023561a4ac4784cc9a54ab47ef43d7))
+
 ## [7.14.1](https://github.com/mcarvin8/sf-decomposer/compare/v7.14.0...v7.14.1) (2026-11-11)
 
 

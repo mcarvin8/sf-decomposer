@@ -1,6 +1,6 @@
 {
   "name": "sf-decomposer",
-  "version": "7.14.1",
+  "version": "7.14.2",
   "description": "Edit and audit large Salesforce metadata (permission sets, profiles, labels, flows) by splitting it into small files and rebuilding it, and set up sf-decomposer in a project. No Salesforce CLI needed.",
   "author": {
     "name": "Matt Carvin"
