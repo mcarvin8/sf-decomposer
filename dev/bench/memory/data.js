@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794417632249,
+  "lastUpdate": 1794417795421,
   "repoUrl": "https://github.com/mcarvin8/sf-decomposer",
   "entries": {
     "Decompose Memory (large)": [
@@ -7757,6 +7757,78 @@ window.BENCHMARK_DATA = {
             "name": "manyfiles.yaml.recompose",
             "value": 26.98,
             "range": "26.39-27.38MB",
+            "unit": "MB"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "41898282+github-actions[bot]@users.noreply.github.com",
+            "name": "github-actions[bot]",
+            "username": "github-actions[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "36ffcbbb2a7cac260a4cdb0da5f6a5c8c7e16a32",
+          "message": "chore(main): release 7.14.1 (#670)\n\nCo-authored-by: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>",
+          "timestamp": "2026-11-11T12:08:23-05:00",
+          "tree_id": "958028554361b5b378996edff7f4e48138731b3e",
+          "url": "https://github.com/mcarvin8/sf-decomposer/commit/36ffcbbb2a7cac260a4cdb0da5f6a5c8c7e16a32"
+        },
+        "date": 1794417795368,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "manyfiles.xml.decompose",
+            "value": 22.86,
+            "range": "22.43-23.98MB",
+            "unit": "MB"
+          },
+          {
+            "name": "manyfiles.xml.recompose",
+            "value": 26.78,
+            "range": "26.21-27.98MB",
+            "unit": "MB"
+          },
+          {
+            "name": "manyfiles.json.decompose",
+            "value": 23.35,
+            "range": "23.05-24.26MB",
+            "unit": "MB"
+          },
+          {
+            "name": "manyfiles.json.recompose",
+            "value": 27.92,
+            "range": "27.24-29.25MB",
+            "unit": "MB"
+          },
+          {
+            "name": "manyfiles.json5.decompose",
+            "value": 23.3,
+            "range": "22.8-24.84MB",
+            "unit": "MB"
+          },
+          {
+            "name": "manyfiles.json5.recompose",
+            "value": 27.93,
+            "range": "27.31-28.5MB",
+            "unit": "MB"
+          },
+          {
+            "name": "manyfiles.yaml.decompose",
+            "value": 22.03,
+            "range": "21.14-22.71MB",
+            "unit": "MB"
+          },
+          {
+            "name": "manyfiles.yaml.recompose",
+            "value": 26.27,
+            "range": "25.6-26.55MB",
             "unit": "MB"
           }
         ]
