@@ -100,9 +100,16 @@ files change. Pick one with the user:
   stage the rebuilt files. For husky, `.husky/pre-commit`:
 
   ```sh
-  npx -y sf-decomposer-core@7 recompose --config
-  git diff --name-only | grep -- '-meta\.xml$' | xargs -r git add
+  npx -y sf-decomposer-core@7 recompose --config || exit 1
+  git add -u -- ':(glob)**/permissionsets/*.permissionset-meta.xml' ':(glob)**/profiles/*.profile-meta.xml'
   ```
+
+  Add one pathspec per configured type: its folder and suffix, matching only
+  the original files that sit directly in that folder. Never stage every
+  changed `-meta.xml` file. That would also commit small files and other
+  metadata the user hasn't staged yet. Bots keep their originals one folder
+  down, so they need `**/bots/*/*.bot-meta.xml` and
+  `**/bots/*/*.botVersion-meta.xml`.
 
   Set `"skipPrerunHook": true` in the config so the Salesforce CLI hook doesn't
   recompose a second time at deploy.
