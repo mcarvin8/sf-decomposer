@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.14.0](https://github.com/mcarvin8/sf-decomposer/compare/v7.13.0...v7.14.0) (2026-11-11)
+
+
+### Features
+
+* add a Claude Code plugin with edit-metadata and setup skills ([#667](https://github.com/mcarvin8/sf-decomposer/issues/667)) ([e7c85ba](https://github.com/mcarvin8/sf-decomposer/commit/e7c85ba226d0d4a62b441e40cfcaa330ed2f5922))
+
 ## [7.13.0](https://github.com/mcarvin8/sf-decomposer/compare/v7.12.2...v7.13.0) (2026-11-11)
 
 
