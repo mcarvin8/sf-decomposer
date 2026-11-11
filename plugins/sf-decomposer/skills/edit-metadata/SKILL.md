@@ -105,9 +105,18 @@ folders next to the metadata files.
    npx -y sf-decomposer-core@7 recompose -x <manifest> --postpurge
    ```
 
-7. Run `git status` and `git diff` on the changed files. Untracked folders next
-   to the metadata files mean step 6 didn't finish. Run it again. For a
-   read-only task, the diff should be empty.
+   Run every command from the project root, and never `cd` into a component
+   folder. On Windows, a shell whose working directory is inside a folder
+   locks it, so `--postpurge` stops partway through and still exits 0.
+7. Run `git status` and `git diff` on the changed files. For a read-only task,
+   the diff should be empty. If a component folder is still there after step
+   6, the purge stopped partway and some small files are already gone:
+   - **Never run recompose again.** It would rebuild the original from the
+     files that are left and silently drop the elements that were purged.
+   - The original was rebuilt before the purge started. If `git diff` shows
+     only your intended change, delete the leftover folder.
+   - If the diff is wrong, restore the original with `git checkout -- <file>`,
+     delete the leftover folder, and start again from step 4.
 8. Delete the temporary manifest folder.
 
 Always finish step 6, even if the edit fails or the user changes their mind
