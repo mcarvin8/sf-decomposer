@@ -1,6 +1,7 @@
 ---
-name: edit-metadata
+name: sf-decomposer-edit-metadata
 description: Use when the user asks to read, compare, audit, or change large Salesforce metadata XML files in a Salesforce DX project, such as permission sets, profiles, custom labels, workflows, flows, sharing rules, or bots. Examples include "give the Sales Ops permission set read access to Account.Industry", "which permission sets can edit Opportunity.Amount", "remove every reference to the oldns package from our profiles", "compare these two permission sets", or "rename this custom label". Splits each file into small per-element files with sf-decomposer, works on those, then rebuilds the original file so only the intended change remains. Needs Node.js 22.19+, no Salesforce CLI.
+license: MIT
 ---
 
 # Edit Salesforce metadata with sf-decomposer
