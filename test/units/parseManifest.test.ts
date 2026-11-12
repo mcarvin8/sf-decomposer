@@ -579,12 +579,12 @@ describe('parseManifest', () => {
     expect(result.unresolvedComponents).toEqual([]);
   });
 
-  it('merges xmlPaths from two distinct parent types that share the same registry suffix', async () => {
-    // AppointmentAssignmentPolicy and AppointmentSchedulingPolicy are distinct SDR registry types
-    // that both use the `.policy` suffix, so they land in separate `byParentType` groups but the
-    // same `parentXmlsBySuffix` entry -- exercising the else-branch merge (existing.add(xmlPath)).
-    const assignmentFile = join(project.forceAppDir, 'appointmentAssignmentPolicies', 'P1', 'P1.policy-meta.xml');
-    const schedulingFile = join(project.forceAppDir, 'appointmentSchedulingPolicies', 'P2', 'P2.policy-meta.xml');
+  it('keeps two parent types that share a registry suffix apart, keying the non-resolving one by type name', async () => {
+    // AppointmentAssignmentPolicy and AppointmentSchedulingPolicy both use the `.policy` suffix, but
+    // `policy` only resolves to AppointmentAssignmentPolicy, so AppointmentSchedulingPolicy is keyed by
+    // its type name -- the value that selects it downstream.
+    const assignmentFile = join(project.forceAppDir, 'appointmentAssignmentPolicies', 'P1.policy-meta.xml');
+    const schedulingFile = join(project.forceAppDir, 'appointmentSchedulingPolicies', 'P2.policy-meta.xml');
     await writeMetaFile(assignmentFile);
     await writeMetaFile(schedulingFile);
 
@@ -594,10 +594,9 @@ describe('parseManifest', () => {
     ]);
     const result = await parseManifest(manifest, undefined);
 
-    expect(result.suffixes).toEqual(['policy']);
-    expect(new Set(result.parentXmlsBySuffix.get('policy'))).toEqual(
-      new Set([resolve(assignmentFile), resolve(schedulingFile)]),
-    );
+    expect(result.suffixes).toEqual(['policy', 'AppointmentSchedulingPolicy']);
+    expect(result.parentXmlsBySuffix.get('policy')).toEqual(new Set([resolve(assignmentFile)]));
+    expect(result.parentXmlsBySuffix.get('AppointmentSchedulingPolicy')).toEqual(new Set([resolve(schedulingFile)]));
   });
 
   it('reports only the member that failed to resolve when a group mixes a resolved and an unresolved member', async () => {

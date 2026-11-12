@@ -71,6 +71,8 @@ export type SfdxProject = {
 };
 
 export type MetaAttributes = {
+  /** The `--metadata-type` value the type was selected by (suffix or type name); overrides are keyed by it. */
+  metadataType?: string;
   metaSuffix: string;
   strictDirectoryName: boolean;
   folderType: string;

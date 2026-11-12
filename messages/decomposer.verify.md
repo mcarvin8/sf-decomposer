@@ -22,7 +22,7 @@ makes the command suitable as a CI gate before committing strategy, format, or o
 
 # flags.metadata-type.summary
 
-The metadata suffix to verify, such as 'flow', 'labels', etc. Required unless --manifest is provided.
+The metadata suffix to verify, such as 'flow', 'labels', etc., or an exact type name such as 'CustomSite' for a type whose suffix is shared with another type. Required unless --manifest is provided.
 
 # flags.manifest.summary
 

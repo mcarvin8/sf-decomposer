@@ -663,3 +663,37 @@ describe('decomposeFileHandler in a directory shared by several metadata types',
     expect(lastCall(disassembleSpy).filePath).toBe(join(sharedDir, 'Block_Bad.rule-meta.xml'));
   });
 });
+
+describe('decomposeFileHandler with a type selected by name', () => {
+  const ruleDir = join(TMP_ROOT, 'by-name', 'restrictionRules');
+
+  beforeEach(async () => {
+    disassembleSpy.mockReset();
+    await mkdir(ruleDir, { recursive: true });
+    await writeFile(join(ruleDir, 'Hide_Cases.rule-meta.xml'), '<RestrictionRule/>');
+  });
+
+  afterEach(async () => {
+    await rm(TMP_ROOT, { recursive: true, force: true });
+  });
+
+  it('matches component overrides by the type name while matching files by the real suffix', async () => {
+    // RestrictionRule loses the shared `rule` suffix, so it is selected (and overridden) as `RestrictionRule`.
+    const overrides: DecomposerOverride[] = [
+      { components: ['RestrictionRule:Hide_Cases'], strategy: 'grouped-by-tag' },
+      { components: ['rule:Hide_Cases'], decomposedFormat: 'json' },
+    ];
+    await decomposeFileHandler(
+      { ...makeAttrs({ metadataPaths: [ruleDir], metaSuffix: 'rule' }), metadataType: 'RestrictionRule' },
+      makeTypeOptions(),
+      '.gitignore',
+      overrides,
+    );
+    expect(disassembleSpy).toHaveBeenCalledTimes(1);
+    expect(lastCall(disassembleSpy)).toMatchObject({
+      filePath: join(ruleDir, 'Hide_Cases.rule-meta.xml'),
+      strategy: 'grouped-by-tag',
+      format: 'xml',
+    });
+  });
+});

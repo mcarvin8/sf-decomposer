@@ -43,28 +43,41 @@ function getChildSuffixMap(registryAccess: RegistryAccess): Map<string, Metadata
 }
 
 /**
- * Resolves and validates the SDR registry entry for a metadata suffix (rejects `object`, unknown
- * suffixes, and unsupported adapter strategies). Synchronous and side-effect free, so callers can
+ * Finds the registry entry a `--metadata-type` value refers to, without validating it: first as a
+ * suffix (top-level, then child), then as an exact-case type name (e.g. `CustomSite`). Suffixes
+ * win so existing inputs keep resolving as before; this matters for `dataSource`, which is
+ * ExternalDataSource's suffix while `DataSource` is another type's name.
+ */
+function lookupMetadataTypeEntry(metadataType: string): MetadataType | undefined {
+  const registryAccess = getRegistryAccessInstance();
+  const bySuffix = registryAccess.getTypeBySuffix(metadataType) ?? getChildSuffixMap(registryAccess).get(metadataType);
+  if (bySuffix) return bySuffix;
+  try {
+    const byName = registryAccess.getTypeByName(metadataType);
+    // getTypeByName is case-insensitive and follows aliases; only accept the exact type name.
+    return byName.name === metadataType ? byName : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Resolves and validates the SDR registry entry for a metadata suffix or exact-case type name
+ * (rejects CustomObject, unknown values, and unsupported adapter strategies). Synchronous and side-effect free, so callers can
  * use it to learn a type's `directoryName` ahead of time — e.g. to build a shared
  * `buildPackageDirectoryIndex` covering every requested type in one filesystem walk — without
  * duplicating this lookup logic.
  */
-export function resolveMetadataTypeEntry(metaSuffix: string): MetadataType {
-  if (metaSuffix === 'object') {
-    throw Error('Custom Objects are not supported by this plugin.');
-  }
-
-  const registryAccess = getRegistryAccessInstance();
-  let metadataTypeEntry: MetadataType | undefined = registryAccess.getTypeBySuffix(metaSuffix);
+export function resolveMetadataTypeEntry(metadataType: string): MetadataType {
+  const metadataTypeEntry = lookupMetadataTypeEntry(metadataType);
 
   if (metadataTypeEntry === undefined) {
-    // Child types are not in the top-level suffix index. children.types is keyed by lowercased
-    // xmlName, not suffix — so 'recordType' works (suffix === xmlName lowercased) but 'field'
-    // (xmlName: CustomField) does not. Fall back to the pre-built suffix map.
-    metadataTypeEntry = getChildSuffixMap(registryAccess).get(metaSuffix);
+    throw Error(`Metadata type not found for the given suffix or type name: ${metadataType}.`);
   }
 
-  if (metadataTypeEntry === undefined) throw Error(`Metadata type not found for the given suffix: ${metaSuffix}.`);
+  if (metadataTypeEntry.suffix === 'object') {
+    throw Error('Custom Objects are not supported by this plugin.');
+  }
 
   if (metadataTypeEntry.strategies?.adapter && UNSUPPORTED_ADAPTERS.includes(metadataTypeEntry.strategies.adapter)) {
     throw Error(
@@ -73,6 +86,43 @@ export function resolveMetadataTypeEntry(metaSuffix: string): MetadataType {
   }
 
   return metadataTypeEntry;
+}
+
+/**
+ * Whether a type keeps each component in its own folder (`bots/MyBot/MyBot.bot-meta.xml`). SDR's
+ * `strictDirectoryName` alone only requires the exact directory name; most such types (CustomSite,
+ * EmailServicesFunction, BotTemplate, the policy and restriction-rule types, ...) still keep their
+ * files directly in that directory. Only the `decomposed` adapter (Bot, CustomObjectTranslation)
+ * uses one folder per component.
+ */
+export function usesComponentFolders(type: MetadataType): boolean {
+  return Boolean(type.strictDirectoryName) && type.strategies?.adapter === 'decomposed';
+}
+
+/**
+ * When `metadataType` is a suffix shared by several top-level types (e.g. `site`: CustomSite and
+ * SiteDotCom), returns the type the suffix resolves to and the others, which can only be selected
+ * by type name. Returns `undefined` for unshared suffixes and for type names.
+ */
+export function typesSharingSuffix(metadataType: string): { selected: string; others: string[] } | undefined {
+  const registryAccess = getRegistryAccessInstance();
+  const selected = registryAccess.getTypeBySuffix(metadataType);
+  if (!selected || selected.suffix !== metadataType) return undefined;
+  const others = registryAccess
+    .listTypes()
+    .filter((t) => t.suffix === metadataType && !t.aliasFor && t.name !== selected.name)
+    .map((t) => t.name);
+  return others.length > 0 ? { selected: selected.name, others } : undefined;
+}
+
+/**
+ * The `--metadata-type` value that selects exactly this type: its suffix when the suffix resolves
+ * to it, otherwise its type name (types that lose a shared suffix, e.g. CustomSite).
+ */
+export function selectorForType(type: MetadataType): string {
+  /* v8 ignore next -- @preserve: manifest parent types always declare a suffix in SDR's registry. */
+  if (!type.suffix) return type.name;
+  return getRegistryAccessInstance().getTypeBySuffix(type.suffix)?.name === type.name ? type.suffix : type.name;
 }
 
 /**
@@ -87,7 +137,7 @@ export function parentForInFileChildSuffix(
   metaSuffix: string,
 ): { parentSuffix: string; parentName: string; childName: string } | undefined {
   const registryAccess = getRegistryAccessInstance();
-  const entry = registryAccess.getTypeBySuffix(metaSuffix) ?? getChildSuffixMap(registryAccess).get(metaSuffix);
+  const entry = lookupMetadataTypeEntry(metaSuffix);
   if (!entry) return undefined;
   const parent = registryAccess.getParentType(entry.id);
   if (!parent?.suffix) return undefined;
@@ -106,7 +156,8 @@ export async function getRegistryValuesBySuffix(
   const metadataTypeEntry = resolveMetadataTypeEntry(metaSuffix);
 
   let uniqueIdElements: string | undefined;
-  if (command === 'decompose') uniqueIdElements = uniqueIdOverride ?? getUniqueIdElements(metaSuffix);
+  if (command === 'decompose')
+    uniqueIdElements = uniqueIdOverride ?? getUniqueIdElements(metadataTypeEntry.suffix as string);
 
   const { metadataPaths, ignorePath } = pathIndex
     ? {
@@ -118,8 +169,11 @@ export async function getRegistryValuesBySuffix(
     throw Error(`No directories named ${metadataTypeEntry.directoryName} were found in any package directory.`);
 
   const metaAttributes = {
+    // The value the type was selected by (suffix or type name); overrides are keyed by it.
+    metadataType: metaSuffix,
     metaSuffix: metadataTypeEntry.suffix as string,
-    strictDirectoryName: metadataTypeEntry.strictDirectoryName as boolean,
+    // Despite the name, handlers read this as "one folder per component"; see usesComponentFolders.
+    strictDirectoryName: usesComponentFolders(metadataTypeEntry),
     folderType: metadataTypeEntry.folderType as string,
     metadataPaths,
     uniqueIdElements: uniqueIdElements

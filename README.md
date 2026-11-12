@@ -176,7 +176,8 @@ FLAGS
       Ignore a package directory.
 
   -m, --metadata-type=<value>...
-      The metadata suffix to process, such as 'flow', 'labels', etc. Required unless --manifest is provided.
+      The metadata suffix to process, such as 'flow', 'labels', etc., or an exact type name such as 'CustomSite' for a
+      type whose suffix is shared with another type. Required unless --manifest is provided.
 
   -p, --decompose-nested-permissions
       Additionally decompose object and field permissions on a permission set when strategy is set to "grouped-by-tag".
@@ -243,8 +244,9 @@ FLAGS
                                              over config values. Makes --metadata-type and --manifest optional when
                                              either is defined in the config.
   -i, --ignore-package-directory=<value>...  Ignore a package directory.
-  -m, --metadata-type=<value>...             The metadata suffix to process, such as 'flow', 'labels', etc. Required
-                                             unless --manifest is provided.
+  -m, --metadata-type=<value>...             The metadata suffix to process, such as 'flow', 'labels', etc., or an exact
+                                             type name such as 'CustomSite' for a type whose suffix is shared with
+                                             another type. Required unless --manifest is provided.
   -x, --manifest=<value>                     Path to a package.xml manifest file. When provided, only the metadata
                                              listed in the manifest is recomposed. If --metadata-type is also provided,
                                              the intersection of the two is used.
@@ -297,7 +299,8 @@ FLAGS
       Ignore a package directory.
 
   -m, --metadata-type=<value>...
-      The metadata suffix to verify, such as 'flow', 'labels', etc. Required unless --manifest is provided.
+      The metadata suffix to verify, such as 'flow', 'labels', etc., or an exact type name such as 'CustomSite' for a type
+      whose suffix is shared with another type. Required unless --manifest is provided.
 
   -p, --decompose-nested-permissions
       Additionally decompose object and field permissions on a permission set when strategy is set to "grouped-by-tag".
@@ -646,7 +649,7 @@ permissionsets/
 
 All parent and child metadata types from this plugin's vendored copy of the [@salesforce/source-deploy-retrieve](https://github.com/forcedotcom/source-deploy-retrieve) (SDR) metadata registry are supported, except where noted below. Child types (e.g. `field`, `listView`, `validationRule`) resolve via their parent in the registry and behave like any other type — most are leaf-only and will be skipped non-fatally if their files contain no nested repeatable elements (the Rust disassembler logs a skip at `RUST_LOG=error`, but the CLI does not fail).
 
-Use the metadata **suffix** for `-m` / `--metadata-type`, as in the vendored [`metadataRegistry.json`](src/metadata/registry/metadataRegistry.json) (synced weekly from upstream SDR — see [`sync-metadata-registry.yml`](.github/workflows/sync-metadata-registry.yml)), or infer from the file name: `*.{suffix}-meta.xml`.
+Use the metadata **suffix** for `-m` / `--metadata-type`, as in the vendored [`metadataRegistry.json`](src/metadata/registry/metadataRegistry.json) (synced weekly from upstream SDR — see [`sync-metadata-registry.yml`](.github/workflows/sync-metadata-registry.yml)), or infer from the file name: `*.{suffix}-meta.xml`. A few suffixes are shared by more than one type (e.g. `site` is both SiteDotCom and CustomSite) and only select one of them; pass the exact type name instead (`-m CustomSite`) to select another. Config `overrides` use the same value you pass to `-m`.
 
 **Common Examples:**
 
@@ -674,7 +677,7 @@ For a comprehensive breakdown of supported, leaf-only, and unsupported metadata 
 | Child type stored with its parent (e.g. `assignmentRule`, `sharingCriteriaRule`, `workflowAlert`, `fieldTranslation`) | Automatically redirected to the parent suffix (e.g. `assignmentRules`) with a warning. No error is thrown.                        |
 | Custom Objects                                                                                                        | `Custom Objects are not supported by this plugin.`                                                                                |
 | Unsupported SDR strategies (e.g. matchingContentFile, digitalExperience, mixedContent, bundle)                        | `Metadata types with [matchingContentFile, digitalExperience, mixedContent, bundle] strategies are not supported by this plugin.` |
-| Invalid or unknown suffix                                                                                             | `Metadata type not found for the given suffix: [suffix].`                                                                         |
+| Invalid or unknown suffix or type name                                                                                | `Metadata type not found for the given suffix or type name: [value].`                                                             |
 
 ---
 

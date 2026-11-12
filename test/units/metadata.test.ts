@@ -131,7 +131,7 @@ describe('decomposer unit tests - unique id strategy', () => {
         ignoreDirs: undefined,
         log: logMock,
       }),
-    ).rejects.toThrow('Metadata type not found for the given suffix: bs.');
+    ).rejects.toThrow('Metadata type not found for the given suffix or type name: bs.');
   });
 
   it('decomposes permission sets with the additional strategy', async () => {

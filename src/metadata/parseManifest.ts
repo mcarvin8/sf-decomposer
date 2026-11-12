@@ -4,7 +4,12 @@ import { readdir, readFile, stat } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { getRepoRoot } from '../service/core/getRepoRoot.js';
 import { buildPackageDirectoryIndex } from './getPackageDirectories.js';
-import { parentForInFileChildSuffix } from './getRegistryValuesBySuffix.js';
+import {
+  parentForInFileChildSuffix,
+  selectorForType,
+  typesSharingSuffix,
+  usesComponentFolders,
+} from './getRegistryValuesBySuffix.js';
 import { RegistryAccess } from './registry/registryAccess.js';
 import { resolveManifestComponents } from './registry/resolveManifestComponents.js';
 import { MetadataType } from './registry/types.js';
@@ -86,6 +91,9 @@ export async function parseManifest(
       // Stryker disable next-line all
       /* v8 ignore next -- @preserve: parent metadata types always declare a suffix in SDR's registry. */
       if (!suffix) return undefined;
+      // Key by the value that selects exactly this type downstream: its suffix, or its type name when
+      // it loses a shared suffix (e.g. CustomSite's `site` resolves to SiteDotCom).
+      const selector = selectorForType(parentType);
 
       /* v8 ignore next -- @preserve: `directoryNames` (built above from these same groups'
          directoryName values) always seeds every key buildPackageDirectoryIndex returns, so
@@ -94,7 +102,7 @@ export async function parseManifest(
       // Stryker disable next-line ConditionalExpression
       if (typeDirs.length === 0) {
         const unresolvedMembers = wildcard ? [] : [...parentMembers];
-        return { suffix, xmlPaths: new Set<string>(), unresolvedMembers };
+        return { suffix: selector, xmlPaths: new Set<string>(), unresolvedMembers };
       }
 
       const xmlPaths = new Set<string>();
@@ -126,7 +134,7 @@ export async function parseManifest(
       await Promise.all(resolveTasks);
 
       const unresolvedMembers = [...parentMembers].filter((m) => !resolvedMembers.has(m));
-      return { suffix, xmlPaths, unresolvedMembers };
+      return { suffix: selector, xmlPaths, unresolvedMembers };
     }),
   );
 
@@ -144,16 +152,10 @@ export async function parseManifest(
 
     if (xmlPaths.size === 0) continue;
 
-    // Multiple distinct parent types can share the same suffix in SDR's registry (e.g.
-    // AppointmentAssignmentPolicy and AppointmentSchedulingPolicy both use `.policy`), so a later
-    // group's xmlPaths must merge into the suffix's existing Set rather than overwrite it.
-    if (!parentXmlsBySuffix.has(suffix)) {
-      parentXmlsBySuffix.set(suffix, xmlPaths);
-      orderedSuffixes.push(suffix);
-    } else {
-      const existing = parentXmlsBySuffix.get(suffix) as Set<string>;
-      for (const xmlPath of xmlPaths) existing.add(xmlPath);
-    }
+    // Groups are per parent type and each type has its own selector, so keys never collide: two types
+    // sharing a suffix (AppointmentAssignmentPolicy / AppointmentSchedulingPolicy on `policy`) stay apart.
+    parentXmlsBySuffix.set(suffix, xmlPaths);
+    orderedSuffixes.push(suffix);
   }
 
   return { parentXmlsBySuffix, suffixes: orderedSuffixes, unresolvedComponents, directoryIndex };
@@ -176,6 +178,7 @@ export async function resolveEffectiveMetadataTypes(
   let effectiveTypes: string[];
   // Redirect before the manifest filter so `-m assignmentRule` still matches a manifest's `assignmentRules`.
   const requestedTypes = metadataTypes && redirectInFileChildSuffixes(metadataTypes, log);
+  for (const type of requestedTypes ?? []) warnIfSharedSuffix(type, log);
 
   if (manifest) {
     manifestFilter = await parseManifest(manifest, ignoreDirs, repoRoot);
@@ -196,12 +199,27 @@ export async function resolveEffectiveMetadataTypes(
     effectiveTypes = requestedTypes;
   }
 
-  if (effectiveTypes.some((t) => t === 'botVersion')) {
+  const isBotVersion = (t: string): boolean => t === 'botVersion' || t === 'BotVersion';
+  if (effectiveTypes.some(isBotVersion)) {
     log('Warning: `botVersion` suffix is not supported; automatically using `bot` instead.');
-    effectiveTypes = [...new Set(effectiveTypes.map((t) => (t === 'botVersion' ? 'bot' : t)))];
+    effectiveTypes = [...new Set(effectiveTypes.map((t) => (isBotVersion(t) ? 'bot' : t)))];
   }
 
   return { manifestFilter, effectiveTypes };
+}
+
+/**
+ * Several registry types can share one suffix (e.g. `site`: SiteDotCom and CustomSite), and the suffix
+ * only ever resolves to one of them. Say which, and how to pick the others by type name.
+ */
+function warnIfSharedSuffix(metadataType: string, log: (message: string) => void): void {
+  const shared = typesSharingSuffix(metadataType);
+  if (!shared) return;
+  const all = [shared.selected, ...shared.others].join(', ');
+  log(
+    `Warning: \`${metadataType}\` is the suffix of ${all}; using ${shared.selected}. ` +
+      `Pass a type name (e.g. \`-m ${shared.others[0]}\`) to select another.`,
+  );
 }
 
 /**
@@ -227,7 +245,7 @@ async function resolveMemberXml(
   parentType: MetadataType,
   member: string,
 ): Promise<string | undefined> {
-  const { suffix, strictDirectoryName, folderType } = parentType;
+  const { suffix, folderType } = parentType;
   // Stryker disable next-line all
   /* v8 ignore next -- @preserve: types reaching this point always have a suffix. */
   if (!suffix) return undefined;
@@ -247,7 +265,7 @@ async function resolveMemberXml(
     return (await exists(candidate)) ? resolve(candidate) : undefined;
   }
 
-  if (strictDirectoryName) {
+  if (usesComponentFolders(parentType)) {
     const candidate = join(typeDir, member, `${member}.${suffix}-meta.xml`);
     return (await exists(candidate)) ? resolve(candidate) : undefined;
   }
@@ -257,14 +275,14 @@ async function resolveMemberXml(
 }
 
 async function listParentXmlPaths(typeDir: string, parentType: MetadataType): Promise<string[]> {
-  const { suffix, strictDirectoryName } = parentType;
+  const { suffix } = parentType;
   // Stryker disable next-line all
   /* v8 ignore next -- @preserve: types reaching this point always have a suffix. */
   if (!suffix) return [];
 
   const metaEnding = `.${suffix}-meta.xml`;
 
-  if (strictDirectoryName) {
+  if (usesComponentFolders(parentType)) {
     const entries = await readdir(typeDir, { withFileTypes: true });
     const results = await Promise.all(
       // Stryker disable next-line MethodExpression -- defensive guard, not provably killable: a
