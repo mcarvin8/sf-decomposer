@@ -10,6 +10,9 @@
  *   - at least one complexType child -> decomposable candidate. Real files may omit those
  *       elements, so confirm with the audit harness (`npm run audit`) before marking ✅.
  *
+ * Also covers child types of `decomposed` parents (e.g. CustomObject -> CustomField), which are
+ * stored as their own files and selected by their own suffix.
+ *
  * Child fields are resolved through the `<xsd:extension base=...>` chain (most types extend
  * `Metadata`), using the parser shared with xsd-unique-id-candidates.ts.
  *
@@ -39,7 +42,8 @@ const DOC_PATH = resolve(REPO_ROOT, 'docs/METADATA_SUPPORT.md');
 type RegistryType = {
   name: string;
   suffix?: string;
-  children?: { types: Record<string, { name: string }> };
+  strategies?: { adapter?: string };
+  children?: { types: Record<string, { name: string; suffix?: string }> };
 };
 
 type Verdict = 'leaf-only' | 'decomposable' | 'not in WSDL';
@@ -106,7 +110,13 @@ function classify(wsdlPath: string): { rows: Row[]; settings: Row[]; version: st
     };
   };
 
-  const rows: Row[] = Object.values(registry.types)
+  // Children of a `decomposed` parent (e.g. CustomObject -> CustomField) are stored as their own files
+  // and are selected by their own suffix, so classify them like top-level types. Children of other
+  // parents only exist inside the parent's file and are reached through the parent.
+  const selectable = Object.values(registry.types).flatMap((t) =>
+    t.strategies?.adapter === 'decomposed' ? [t, ...Object.values(t.children?.types ?? {})] : [t],
+  );
+  const rows: Row[] = selectable
     .map((t) => {
       const doc = docStatus.get(t.name) ?? '?';
       const { wsdl, nested } = verdictOf(t.name);
