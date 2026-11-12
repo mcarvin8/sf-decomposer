@@ -1,7 +1,7 @@
 {
   "name": "sf-decomposer-core",
   "description": "Decompose and recompose Salesforce metadata without the Salesforce CLI: a standalone sf-decomposer command and programmatic API.",
-  "version": "7.14.2",
+  "version": "7.15.0",
   "type": "module",
   "exports": {
     ".": {

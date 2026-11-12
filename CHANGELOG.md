@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.15.0](https://github.com/mcarvin8/sf-decomposer/compare/v7.14.2...v7.15.0) (2026-11-12)
+
+
+### Features
+
+* let other coding agents install the sf-decomposer skills ([#673](https://github.com/mcarvin8/sf-decomposer/issues/673)) ([de681f7](https://github.com/mcarvin8/sf-decomposer/commit/de681f7b6c14c1f191b98e12dde1d42630570cd6))
+
 ## [7.14.2](https://github.com/mcarvin8/sf-decomposer/compare/v7.14.1...v7.14.2) (2026-11-11)
 
 
