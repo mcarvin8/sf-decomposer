@@ -88,6 +88,7 @@
     "audit": "tsx scripts/audit/audit.ts",
     "audit:roundtrip": "tsx scripts/audit/roundtrip.ts",
     "audit:sweep": "tsx scripts/audit/sweep.ts",
+    "audit:classify": "tsx scripts/audit/classify-from-wsdl.ts",
     "audit:xsd": "tsx scripts/audit/xsd-unique-id-candidates.ts",
     "build": "wireit",
     "build:core": "wireit",

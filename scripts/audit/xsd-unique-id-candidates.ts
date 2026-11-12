@@ -75,14 +75,14 @@ import { formatTable, parseFlags, requireString } from './lib.js';
 /** Path to the source-of-truth file this script cross-references, relative to this script. */
 const UNIQUE_ID_ELEMENTS_SOURCE = resolve(fileURLToPath(import.meta.url), '../../../src/metadata/uniqueIdElements.ts');
 
-interface XsdField {
+export interface XsdField {
   name: string;
   type: string;
   minOccurs: string;
   maxOccurs: string;
 }
 
-interface XsdComplexType {
+export interface XsdComplexType {
   name: string;
   fields: XsdField[];
   /** Name of the type in `<xsd:extension base="tns:X">`, if this type extends another (e.g. WorkflowAlert -> WorkflowAction -> Metadata). */
@@ -111,7 +111,7 @@ function getAttr(attrs: string, name: string): string | undefined {
 }
 
 /** Primitive/enum-ish type names that can never be a "record" child. */
-const PRIMITIVE_TYPES = new Set([
+export const PRIMITIVE_TYPES = new Set([
   'string',
   'boolean',
   'int',
@@ -123,7 +123,7 @@ const PRIMITIVE_TYPES = new Set([
   'picklist',
 ]);
 
-function parseXsd(xsdText: string): Map<string, XsdComplexType> {
+export function parseXsd(xsdText: string): Map<string, XsdComplexType> {
   const types = new Map<string, XsdComplexType>();
   for (const m of xsdText.matchAll(COMPLEX_TYPE_RE)) {
     const name = m[1] as string;
@@ -189,7 +189,7 @@ function currentUniqueIdIndex(sourcePath: string): Map<string, string[]> {
  * Every real record type inherits `fullName` this way rather than declaring it
  * directly, so callers that only read `type.fields` will miss it entirely.
  */
-function effectiveFields(
+export function effectiveFields(
   type: XsdComplexType,
   types: Map<string, XsdComplexType>,
   cache: Map<string, XsdField[]>,
