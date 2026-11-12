@@ -11,6 +11,7 @@ import {
 import { CONCURRENCY_LIMITS, CUSTOM_LABELS_FILE } from '../../helpers/constants.js';
 import { pLimit } from '../../helpers/pLimit.js';
 import { DecomposerOverride } from '../../helpers/types.js';
+import { directoryOccupancy } from '../../metadata/sharedDirectories.js';
 import { moveAndRenameLabels, prePurgeLabels } from './customLabels.js';
 import { renameWorkflows } from './renameWorkflows.js';
 import { resolveEffectiveDisassembleOptions } from './resolveEffectiveDisassembleOptions.js';
@@ -76,7 +77,13 @@ export async function decomposeFileHandler(
           repoRoot,
         );
         await moveAndRenameLabels(metadataPath);
-      } else if (hasComponentOverridesForType(metaSuffix, overrides)) {
+      } else if (
+        hasComponentOverridesForType(metaSuffix, overrides) ||
+        // The directory can also hold other types' files (e.g. `moderation` holds KeywordList and
+        // ModerationRule): handing the disassembler the whole directory would decompose those too,
+        // so disassemble only this type's `.<suffix>-meta.xml` files.
+        directoryOccupancy(basename(metadataPath), metaSuffix).others.length > 0
+      ) {
         await perFileHandler(metadataPath, uniqueIdElements, typeResolved, ignorePath, metaSuffix, overrides, repoRoot);
       } else {
         await disassembleHandler(metadataPath, uniqueIdElements, typeResolved, ignorePath, metaSuffix, repoRoot);
@@ -231,9 +238,11 @@ async function subDirectoryHandler(
 }
 
 /**
- * Per-file disassembly used when component-scope overrides are present for a non-strict, non-labels
- * metadata type. Walks the type's package directory, resolves options per file, and disassembles
- * each parent metadata XML individually so different components can use different strategies/formats.
+ * Per-file disassembly for a non-strict, non-labels metadata type, used when component-scope
+ * overrides are present or when the directory is shared with other metadata types. Walks the type's
+ * package directory, resolves options per file, and disassembles each `.<suffix>-meta.xml` file
+ * individually, so different components can use different strategies/formats and other types' files
+ * are left alone.
  */
 async function perFileHandler(
   metadataPath: string,

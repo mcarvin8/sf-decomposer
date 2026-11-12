@@ -628,3 +628,38 @@ describe('decomposeFileHandler', () => {
     });
   });
 });
+
+describe('decomposeFileHandler in a directory shared by several metadata types', () => {
+  const sharedDir = join(TMP_ROOT, 'shared', 'moderation');
+
+  beforeEach(async () => {
+    disassembleSpy.mockReset();
+    await mkdir(sharedDir, { recursive: true });
+    await writeFile(join(sharedDir, 'Bad_Words.keywords-meta.xml'), '<KeywordList/>');
+    await writeFile(join(sharedDir, 'Block_Bad.rule-meta.xml'), '<ModerationRule/>');
+  });
+
+  afterEach(async () => {
+    await rm(TMP_ROOT, { recursive: true, force: true });
+  });
+
+  it('disassembles only the requested type files, not the whole directory', async () => {
+    await decomposeFileHandler(
+      makeAttrs({ metadataPaths: [sharedDir], metaSuffix: 'keywords' }),
+      makeTypeOptions(),
+      '.gitignore',
+    );
+    expect(disassembleSpy).toHaveBeenCalledTimes(1);
+    expect(lastCall(disassembleSpy).filePath).toBe(join(sharedDir, 'Bad_Words.keywords-meta.xml'));
+  });
+
+  it('applies the same filtering to the other type sharing the directory', async () => {
+    await decomposeFileHandler(
+      makeAttrs({ metadataPaths: [sharedDir], metaSuffix: 'rule' }),
+      makeTypeOptions(),
+      '.gitignore',
+    );
+    expect(disassembleSpy).toHaveBeenCalledTimes(1);
+    expect(lastCall(disassembleSpy).filePath).toBe(join(sharedDir, 'Block_Bad.rule-meta.xml'));
+  });
+});

@@ -3,6 +3,8 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
+import { directoryOccupancy } from '../../metadata/sharedDirectories.js';
+
 export type ProcessedMeta = {
   directoryName: string;
   metaSuffix: string;
@@ -23,6 +25,12 @@ function buildPatterns(directoryName: string, metaSuffix: string, format: string
       `!**/${directoryName}/*/*.bot-meta.xml`,
       `!**/${directoryName}/*/*.botVersion-meta.xml`,
     ];
+  }
+  if (directoryOccupancy(directoryName, metaSuffix).others.length > 0) {
+    // Shared dir (e.g. `moderation` holds KeywordList and ModerationRule): the general pattern below
+    // would also hide the other types' original files, since it only re-allows this suffix. Ignore
+    // just the nested decomposed pieces and leave every original at the root level deployable.
+    return [`**/${directoryName}/*/**/*.${format}`];
   }
   // General case: ignore everything nested inside the type dir (decomposed pieces),
   // then re-allow the original -meta.xml at the root level of that dir.

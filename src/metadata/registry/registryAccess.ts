@@ -51,6 +51,11 @@ export class RegistryAccess {
     return type.aliasFor ? registry.types[type.aliasFor] : type;
   }
 
+  /** Every top-level registry type (child types are reachable through each entry's `children`). */
+  listTypes(): MetadataType[] {
+    return Object.values(registry.types);
+  }
+
   getTypeBySuffix(suffix: string): MetadataType | undefined {
     const typeId = registry.suffixes[suffix];
     return typeId ? this.getTypeByName(typeId) : undefined;

@@ -14,6 +14,8 @@ export type MetadataType = {
   folderContentType?: string;
   inFolder?: boolean;
   aliasFor?: string;
+  /** `false` on child types that can't be addressed on their own (e.g. CustomFieldTranslation). */
+  isAddressable?: boolean;
   strategies?: {
     adapter?: string;
   };

@@ -345,3 +345,76 @@ describe('recomposeFileHandler', () => {
     });
   });
 });
+
+describe('recomposeFileHandler in a directory shared by several metadata types', () => {
+  const root = join(TMP_ROOT, 'shared');
+  const moderation = join(root, 'moderation');
+
+  async function put(path: string, content = ''): Promise<void> {
+    await mkdir(join(path, '..'), { recursive: true });
+    await writeFile(path, content);
+  }
+
+  function reassembledDirs(): string[] {
+    return reassembleSpy.mock.calls.map((call) => (call[0] as { filePath: string }).filePath).sort();
+  }
+
+  beforeEach(async () => {
+    reassembleSpy.mockReset();
+    // Ours, identified by the leaf file name.
+    await put(join(moderation, 'Bad_Words', 'Bad_Words.keywords-meta.xml'), '<KeywordList/>');
+    // Ours without a leaf file (root had only nested elements): identified by the fragment root, in each format.
+    await put(
+      join(moderation, 'NoLeafXml', 'keywords', 'a.keywords-meta.xml'),
+      '<?xml version="1.0"?>\n<KeywordList xmlns="x">',
+    );
+    await put(join(moderation, 'NoLeafJson', 'keywords', 'a.keywords-meta.json'), '{\n  "KeywordList": {}\n}');
+    await put(join(moderation, 'NoLeafYaml', 'keywords', 'a.keywords-meta.yaml'), 'KeywordList:\n  keywords: []\n');
+    // The other type's decomposed dirs, with and without a leaf file.
+    await put(join(moderation, 'Block_Bad', 'Block_Bad.rule-meta.xml'), '<ModerationRule/>');
+    await put(join(moderation, 'RuleNoLeaf', 'entitiesAndFields', 'a.xml'), '<ModerationRule xmlns="x">');
+    // Nothing to identify.
+    await mkdir(join(moderation, 'Empty'), { recursive: true });
+  });
+
+  afterEach(async () => {
+    await rm(TMP_ROOT, { recursive: true, force: true });
+  });
+
+  it('reassembles only the decomposed directories that belong to the requested type', async () => {
+    await recomposeFileHandler(makeAttrs({ metaSuffix: 'keywords', metadataPaths: [moderation] }), false);
+    expect(reassembledDirs()).toEqual(
+      ['Bad_Words', 'NoLeafJson', 'NoLeafXml', 'NoLeafYaml'].map((name) => join(moderation, name)),
+    );
+  });
+
+  it('reassembles the other type from the same directory', async () => {
+    await recomposeFileHandler(makeAttrs({ metaSuffix: 'rule', metadataPaths: [moderation] }), false);
+    expect(reassembledDirs()).toEqual(['Block_Bad', 'RuleNoLeaf'].map((name) => join(moderation, name)));
+  });
+
+  it('skips a folder-meta type decomposed into the same folder as its content (strict types)', async () => {
+    // dashboards/Sales holds both a decomposed Dashboard and the DashboardFolder's own fragments.
+    const sales = join(root, 'dashboards', 'Sales');
+    await put(join(sales, 'Pipeline', 'Pipeline.dashboard-meta.xml'), '<Dashboard/>');
+    await put(join(sales, 'folderShares', 'a.folderShares-meta.xml'), '<DashboardFolder xmlns="x">');
+    await recomposeFileHandler(
+      makeAttrs({ metaSuffix: 'dashboard', strictDirectoryName: true, metadataPaths: [join(root, 'dashboards')] }),
+      false,
+    );
+    expect(reassembledDirs()).toEqual([join(sales, 'Pipeline')]);
+  });
+
+  it('filters strict-type manifest recomposes in a shared directory the same way', async () => {
+    const sales = join(root, 'dashboards', 'Sales');
+    await put(join(sales, 'Pipeline.dashboard-meta.xml'), '<Dashboard/>');
+    await put(join(sales, 'Pipeline', 'Pipeline.dashboard-meta.xml'), '<Dashboard/>');
+    await put(join(sales, 'folderShares', 'a.folderShares-meta.xml'), '<DashboardFolder xmlns="x">');
+    await recomposeFileHandler(
+      makeAttrs({ metaSuffix: 'dashboard', strictDirectoryName: true }),
+      false,
+      new Set([join(sales, 'Pipeline.dashboard-meta.xml')]),
+    );
+    expect(reassembledDirs()).toEqual([join(sales, 'Pipeline')]);
+  });
+});
