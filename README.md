@@ -176,7 +176,8 @@ FLAGS
       Ignore a package directory.
 
   -m, --metadata-type=<value>...
-      The metadata suffix to process, such as 'flow', 'labels', etc. Required unless --manifest is provided.
+      The metadata suffix to process, such as 'flow', 'labels', etc., or an exact type name such as 'CustomSite' for a
+      type whose suffix is shared with another type. Required unless --manifest is provided.
 
   -p, --decompose-nested-permissions
       Additionally decompose object and field permissions on a permission set when strategy is set to "grouped-by-tag".
@@ -243,8 +244,9 @@ FLAGS
                                              over config values. Makes --metadata-type and --manifest optional when
                                              either is defined in the config.
   -i, --ignore-package-directory=<value>...  Ignore a package directory.
-  -m, --metadata-type=<value>...             The metadata suffix to process, such as 'flow', 'labels', etc. Required
-                                             unless --manifest is provided.
+  -m, --metadata-type=<value>...             The metadata suffix to process, such as 'flow', 'labels', etc., or an exact
+                                             type name such as 'CustomSite' for a type whose suffix is shared with
+                                             another type. Required unless --manifest is provided.
   -x, --manifest=<value>                     Path to a package.xml manifest file. When provided, only the metadata
                                              listed in the manifest is recomposed. If --metadata-type is also provided,
                                              the intersection of the two is used.
@@ -297,7 +299,8 @@ FLAGS
       Ignore a package directory.
 
   -m, --metadata-type=<value>...
-      The metadata suffix to verify, such as 'flow', 'labels', etc. Required unless --manifest is provided.
+      The metadata suffix to verify, such as 'flow', 'labels', etc., or an exact type name such as 'CustomSite' for a type
+      whose suffix is shared with another type. Required unless --manifest is provided.
 
   -p, --decompose-nested-permissions
       Additionally decompose object and field permissions on a permission set when strategy is set to "grouped-by-tag".
