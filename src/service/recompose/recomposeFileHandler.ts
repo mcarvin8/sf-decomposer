@@ -6,6 +6,7 @@ import { ReassembleXMLFileHandler } from 'config-disassembler';
 
 import { CONCURRENCY_LIMITS } from '../../helpers/constants.js';
 import { pLimit } from '../../helpers/pLimit.js';
+import { directoryOccupancy, isDecomposedDirOfType } from '../../metadata/sharedDirectories.js';
 import { reassembleLabels } from './reassembleLabels.js';
 import { renameBotVersionFile } from './renameBotVersionFiles.js';
 
@@ -36,7 +37,13 @@ export async function recomposeFileHandler(
       } else {
         let recurse: boolean = false;
         if (strictDirectoryName || folderType) recurse = true;
-        await reassembleDirectories(metadataPath, metaSuffix, recurse, postpurge);
+        await reassembleDirectories(
+          metadataPath,
+          metaSuffix,
+          recurse,
+          postpurge,
+          sharedDirectoryOwner(basename(metadataPath), metaSuffix),
+        );
       }
 
       if (metaSuffix === 'bot') await renameBotVersionFile(metadataPath);
@@ -70,7 +77,15 @@ async function recomposeFromManifest(
     // Dedupe by that parent directory and reassemble each decomposed child subdir.
     const parentDirs = new Set(xmlPaths.map((xml) => dirname(xml)));
     const tasks = Array.from(parentDirs).map((parentDir) =>
-      limit(() => reassembleDirectories(parentDir, metaSuffix, false, postpurge)),
+      limit(() =>
+        reassembleDirectories(
+          parentDir,
+          metaSuffix,
+          false,
+          postpurge,
+          sharedDirectoryOwner(basename(dirname(parentDir)), metaSuffix),
+        ),
+      ),
     );
     await Promise.all(tasks);
 
@@ -124,11 +139,22 @@ export async function reassembleHandler(filePath: string, fileExtension: string,
   });
 }
 
+/**
+ * When `directoryName` can also hold other metadata types' files, returns this type's name so
+ * `reassembleDirectories` only rebuilds the decomposed directories that belong to it. Returns
+ * `undefined` for unshared directories, which keeps their path free of extra file reads.
+ */
+function sharedDirectoryOwner(directoryName: string, metaSuffix: string): string | undefined {
+  const { typeName, others } = directoryOccupancy(directoryName, metaSuffix);
+  return others.length > 0 ? typeName : undefined;
+}
+
 async function reassembleDirectories(
   metadataPath: string,
   metaSuffix: string,
   recurse: boolean,
   postpurge: boolean,
+  ownerTypeName?: string,
 ): Promise<void> {
   const subdirectories = (await readdir(metadataPath)).map((file) => join(metadataPath, file));
 
@@ -151,8 +177,11 @@ async function reassembleDirectories(
       processLimit(async () => {
         if (recurse) {
           // recursively call this function and set recurse to false
-          await reassembleDirectories(subdirectory, metaSuffix, false, postpurge);
+          await reassembleDirectories(subdirectory, metaSuffix, false, postpurge, ownerTypeName);
         } else {
+          // In a shared directory, skip other types' decomposed directories rather than rebuilding
+          // them as `<dir>.<this suffix>-meta.xml`.
+          if (ownerTypeName && !(await isDecomposedDirOfType(subdirectory, metaSuffix, ownerTypeName))) return;
           await reassembleHandler(subdirectory, `${metaSuffix}-meta.xml`, postpurge);
         }
       }),

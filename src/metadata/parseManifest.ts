@@ -4,6 +4,7 @@ import { readdir, readFile, stat } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { getRepoRoot } from '../service/core/getRepoRoot.js';
 import { buildPackageDirectoryIndex } from './getPackageDirectories.js';
+import { parentForInFileChildSuffix } from './getRegistryValuesBySuffix.js';
 import { RegistryAccess } from './registry/registryAccess.js';
 import { resolveManifestComponents } from './registry/resolveManifestComponents.js';
 import { MetadataType } from './registry/types.js';
@@ -173,6 +174,8 @@ export async function resolveEffectiveMetadataTypes(
 ): Promise<{ manifestFilter: ManifestFilter | undefined; effectiveTypes: string[] }> {
   let manifestFilter: ManifestFilter | undefined;
   let effectiveTypes: string[];
+  // Redirect before the manifest filter so `-m assignmentRule` still matches a manifest's `assignmentRules`.
+  const requestedTypes = metadataTypes && redirectInFileChildSuffixes(metadataTypes, log);
 
   if (manifest) {
     manifestFilter = await parseManifest(manifest, ignoreDirs, repoRoot);
@@ -180,17 +183,17 @@ export async function resolveEffectiveMetadataTypes(
       log(`Warning: manifest component ${type}:${member} not found in local source; skipping.`);
     }
     // Stryker disable next-line ConditionalExpression, EqualityOperator
-    if (metadataTypes && metadataTypes.length > 0) {
+    if (requestedTypes && requestedTypes.length > 0) {
       const manifestTypes = new Set(manifestFilter.suffixes);
-      effectiveTypes = metadataTypes.filter((type) => manifestTypes.has(type));
+      effectiveTypes = requestedTypes.filter((type) => manifestTypes.has(type));
     } else {
       effectiveTypes = manifestFilter.suffixes;
     }
   } else {
-    if (!metadataTypes || metadataTypes.length === 0) {
+    if (!requestedTypes || requestedTypes.length === 0) {
       throw Error('Either --metadata-type or --manifest must be provided.');
     }
-    effectiveTypes = metadataTypes;
+    effectiveTypes = requestedTypes;
   }
 
   if (effectiveTypes.some((t) => t === 'botVersion')) {
@@ -199,6 +202,24 @@ export async function resolveEffectiveMetadataTypes(
   }
 
   return { manifestFilter, effectiveTypes };
+}
+
+/**
+ * Child types stored inside their parent's file (e.g. `assignmentRule`, `sharingCriteriaRule`,
+ * `workflowAlert`) have no files of their own, so process the parent instead. Without this, the child
+ * suffix resolves to its own registry entry and either decomposes the parent under the child's
+ * suffix (wrong `.forceignore` entries) or fails with "No directories named ...".
+ */
+function redirectInFileChildSuffixes(metadataTypes: string[], log: (message: string) => void): string[] {
+  const redirected = metadataTypes.map((type) => {
+    const parent = parentForInFileChildSuffix(type);
+    if (!parent) return type;
+    log(
+      `Warning: \`${type}\` (${parent.childName}) is processed through its parent ${parent.parentName}; automatically using \`${parent.parentSuffix}\` instead.`,
+    );
+    return parent.parentSuffix;
+  });
+  return [...new Set(redirected)];
 }
 
 async function resolveMemberXml(

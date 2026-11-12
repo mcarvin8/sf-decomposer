@@ -668,12 +668,13 @@ For a comprehensive breakdown of supported, leaf-only, and unsupported metadata 
 
 #### Exceptions
 
-| Situation                                                                                      | Message                                                                                                                           |
-| ---------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `botVersion` used directly                                                                     | Automatically redirected to `bot` with a warning. No error is thrown.                                                             |
-| Custom Objects                                                                                 | `Custom Objects are not supported by this plugin.`                                                                                |
-| Unsupported SDR strategies (e.g. matchingContentFile, digitalExperience, mixedContent, bundle) | `Metadata types with [matchingContentFile, digitalExperience, mixedContent, bundle] strategies are not supported by this plugin.` |
-| Invalid or unknown suffix                                                                      | `Metadata type not found for the given suffix: [suffix].`                                                                         |
+| Situation                                                                                                             | Message                                                                                                                           |
+| --------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `botVersion` used directly                                                                                            | Automatically redirected to `bot` with a warning. No error is thrown.                                                             |
+| Child type stored with its parent (e.g. `assignmentRule`, `sharingCriteriaRule`, `workflowAlert`, `fieldTranslation`) | Automatically redirected to the parent suffix (e.g. `assignmentRules`) with a warning. No error is thrown.                        |
+| Custom Objects                                                                                                        | `Custom Objects are not supported by this plugin.`                                                                                |
+| Unsupported SDR strategies (e.g. matchingContentFile, digitalExperience, mixedContent, bundle)                        | `Metadata types with [matchingContentFile, digitalExperience, mixedContent, bundle] strategies are not supported by this plugin.` |
+| Invalid or unknown suffix                                                                                             | `Metadata type not found for the given suffix: [suffix].`                                                                         |
 
 ---
 
@@ -724,7 +725,7 @@ See [CONFIGURATION.md](docs/CONFIGURATION.md) for the full reference: override f
 
 The Salesforce CLI must **ignore** decomposed files and **allow** recomposed files. Use `--update-forceignore` on your first `sf decomposer decompose` run to populate this file automatically, or copy the [sample .forceignore](https://raw.githubusercontent.com/mcarvin8/sf-decomposer/main/examples/.forceignore) and set patterns for the extensions you use (`.xml`, `.json`, `.yaml`, etc.).
 
-> **Note:** For each processed type, `--update-forceignore` adds a pattern like `**/flows/**/*.xml` (ignore all decomposed pieces) plus `!**/flows/*.flow-meta.xml` (re-allow the original file). Labels use a flat pattern (`**/labels/*.xml` + `!**/labels/CustomLabels.labels-meta.xml`) since they decompose directly into the type directory. Bots use a component-dir pattern (`**/bots/**/*.xml` + `!**/bots/*/*.bot-meta.xml` + `!**/bots/*/*.botVersion-meta.xml`) to handle nested decomposed files and both original suffixes.
+> **Note:** For each processed type, `--update-forceignore` adds a pattern like `**/flows/**/*.xml` (ignore all decomposed pieces) plus `!**/flows/*.flow-meta.xml` (re-allow the original file). Labels use a flat pattern (`**/labels/*.xml` + `!**/labels/CustomLabels.labels-meta.xml`) since they decompose directly into the type directory. Bots use a component-dir pattern (`**/bots/**/*.xml` + `!**/bots/*/*.bot-meta.xml` + `!**/bots/*/*.botVersion-meta.xml`) to handle nested decomposed files and both original suffixes. Directories shared by several metadata types (e.g. `moderation`, which holds both `keywords` and `rule` files) use a nested-only pattern (`**/moderation/*/**/*.xml`) so the other types' original files stay deployable; decompose and recompose likewise only touch the requested type's files there.
 
 #### .sfdecomposerignore
 

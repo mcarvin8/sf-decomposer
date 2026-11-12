@@ -75,6 +75,26 @@ export function resolveMetadataTypeEntry(metaSuffix: string): MetadataType {
   return metadataTypeEntry;
 }
 
+/**
+ * For a child-type suffix whose components only exist inside the parent's file (e.g. `assignmentRule`
+ * inside `.assignmentRules-meta.xml`, `workflowAlert` inside `.workflow-meta.xml`), returns the
+ * parent to process instead. Returns `undefined` for top-level types, unknown suffixes, and children
+ * stored as their own files (children of a `decomposed` parent, e.g. CustomObject's `field`).
+ * CustomFieldTranslation is redirected too: it is unaddressable on its own, and its registry
+ * directoryName (`fields`) would otherwise point at CustomField files.
+ */
+export function parentForInFileChildSuffix(
+  metaSuffix: string,
+): { parentSuffix: string; parentName: string; childName: string } | undefined {
+  const registryAccess = getRegistryAccessInstance();
+  const entry = registryAccess.getTypeBySuffix(metaSuffix) ?? getChildSuffixMap(registryAccess).get(metaSuffix);
+  if (!entry) return undefined;
+  const parent = registryAccess.getParentType(entry.id);
+  if (!parent?.suffix) return undefined;
+  if (parent.strategies?.adapter === 'decomposed' && entry.isAddressable !== false) return undefined;
+  return { parentSuffix: parent.suffix, parentName: parent.name, childName: entry.name };
+}
+
 export async function getRegistryValuesBySuffix(
   metaSuffix: string,
   command: string,
