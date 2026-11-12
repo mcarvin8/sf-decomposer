@@ -22,6 +22,8 @@ Use the metadata **suffix** (the CLI value) with `-m` / `--metadata-type`, e.g. 
 
 Counts come from the table below; a unit test fails if they drift.
 
+> **Comparing with SDR's count.** The [SDR support list](https://github.com/forcedotcom/source-deploy-retrieve/blob/main/METADATA_SUPPORT.md) reports a different total (821/996 for API v68) because it counts different things. It lists each per-feature settings type (`AccountSettings`, `SecuritySettings`, …) separately, about 300 of them. Here they are one `Settings` row, since the registry handles them all through `-m settings`. SDR's total also includes types the registry doesn't support at all, which sf-decomposer can't select either. In the other direction, this table includes child, alias and folder types that SDR's list leaves out, because each has its own suffix.
+
 ## Legend
 
 | Symbol | Meaning                                                                                                                                                                                                                                                            |
