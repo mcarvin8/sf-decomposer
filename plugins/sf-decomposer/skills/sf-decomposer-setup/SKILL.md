@@ -1,6 +1,7 @@
 ---
-name: setup
+name: sf-decomposer-setup
 description: Use when the user wants to start using sf-decomposer in a Salesforce DX project, or to change how a project decomposes metadata, such as "set up sf-decomposer", "decompose our permission sets and profiles in git", "make our metadata diffs smaller", "switch to grouped-by-tag", or "add a pre-commit hook to recompose". Walks through choosing metadata types, strategy and format, checks the round trip, writes .sfdecomposer.config.json, updates .forceignore and .gitattributes, and sets up recompose before commit or deploy. Needs Node.js 22.19+; the Salesforce CLI is optional.
+license: MIT
 ---
 
 # Set up sf-decomposer in a project
@@ -128,4 +129,4 @@ hook, so the root files sgd compares are updated in each commit.
 Summarize the chosen settings, the files created or changed (config,
 `.forceignore`, `.gitattributes`, hook), and the new folders. Suggest reviewing
 the diff and committing in one dedicated commit, separate from metadata changes.
-To edit metadata later, the `edit-metadata` skill works with this layout.
+To edit metadata later, the `sf-decomposer-edit-metadata` skill works with this layout.

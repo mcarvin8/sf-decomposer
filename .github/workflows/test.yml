@@ -48,6 +48,13 @@ jobs:
           npx -y @anthropic-ai/claude-code@2.1.316 plugin validate .
           npx -y @anthropic-ai/claude-code@2.1.316 plugin validate plugins/sf-decomposer
 
+      # Checks the skills against the Agent Skills spec for gh skill and other agents.
+      # --dry-run never creates a release; warnings (such as tag protection) don't fail it.
+      - name: Validate agent skills
+        run: gh skill publish --dry-run
+        env:
+          GH_TOKEN: ${{ github.token }}
+
   unit-tests:
     name: Unit Tests (${{ matrix.os }}, node ${{ matrix.node-version }})
     runs-on: ${{ matrix.os }}

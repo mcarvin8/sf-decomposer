@@ -13,6 +13,7 @@
 - Using the Salesforce CLI? Start at [Setup](#setup).
 - Running this in CI without the CLI? Skip straight to [GitHub Action](#github-action).
 - No Salesforce CLI at all? Use the [standalone command](#standalone-command-without-the-salesforce-cli) from `sf-decomposer-core`.
+- Using Claude Code, GitHub Copilot, or another AI coding agent? Install the [agent skills](#ai-coding-agent-skills).
 
 <!-- TABLE OF CONTENTS -->
 <details>
@@ -27,6 +28,7 @@
 - [Commands](#commands)
 - [GitHub Action](#github-action)
 - [Standalone Command (without the Salesforce CLI)](#standalone-command-without-the-salesforce-cli)
+- [AI Coding Agent Skills](#ai-coding-agent-skills)
 - [Reference](#reference)
   - [Decompose Strategies](#decompose-strategies)
   - [Supported Metadata](#supported-metadata)
@@ -397,6 +399,35 @@ npx sf-decomposer-core verify -x "manifest/package.xml" --config
 ```
 
 The retrieve/deploy [hooks](#4-configure-hooks-recommended) need the Salesforce CLI, so run `decompose` and `recompose` yourself (or from a pre-commit hook) when using the standalone command. The package also exports a programmatic API; see [its README](packages/core/README.md).
+
+---
+
+## AI Coding Agent Skills
+
+Two [Agent Skills](https://agentskills.io) let Claude Code, GitHub Copilot, and other coding agents work with large metadata files through sf-decomposer. Both run [`sf-decomposer-core`](#standalone-command-without-the-salesforce-cli) with `npx`, so they need Node.js 22.19+ and no Salesforce CLI.
+
+| Skill                         | What it does                                                                                                                                                                                                                                                                                    |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sf-decomposer-edit-metadata` | Reads, compares, or changes large metadata files, such as "give Sales Ops read on Account.Industry" or "which permission sets can edit Opportunity.Amount". In projects that don't use sf-decomposer, it splits only the files it needs and rebuilds them, so only the intended change remains. |
+| `sf-decomposer-setup`         | Sets up sf-decomposer in a project: types, strategy and format, a round-trip check, `.sfdecomposer.config.json`, `.forceignore`, `.gitattributes`, and a recompose hook.                                                                                                                        |
+
+```sh
+# Claude Code (type these inside a Claude Code session)
+/plugin marketplace add mcarvin8/sf-decomposer
+/plugin install sf-decomposer@sf-decomposer
+
+# GitHub Copilot CLI (reads the same marketplace files)
+copilot plugin marketplace add mcarvin8/sf-decomposer
+copilot plugin install sf-decomposer@sf-decomposer
+
+# Any agent, with the skills CLI (skills.sh.json points it at plugins/sf-decomposer/skills)
+npx skills add mcarvin8/sf-decomposer
+
+# Any agent, with the GitHub CLI
+gh skill install mcarvin8/sf-decomposer --agent github-copilot
+```
+
+See the [plugin README](plugins/sf-decomposer/README.md) for example requests and data handling.
 
 ---
 
