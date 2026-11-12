@@ -3,7 +3,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { resolveMetadataTypeEntry } from '../../src/metadata/getRegistryValuesBySuffix.js';
+import { resolveMetadataTypeEntry, typesSharingSuffix } from '../../src/metadata/getRegistryValuesBySuffix.js';
 
 // Guards docs/METADATA_SUPPORT.md against drifting from the vendored SDR registry: every row's
 // "CLI Suffix" must be the registry's exact (case-sensitive) suffix, every registry type must have a
@@ -63,6 +63,16 @@ function resolvesTo(suffix: string): string | undefined {
   }
 }
 
+/**
+ * Whether `-m` can select this row's type: by its suffix, or by its exact type name when the type
+ * loses a shared suffix (e.g. CustomSite, whose `site` resolves to SiteDotCom).
+ */
+function isSelectable(r: DocRow): boolean {
+  if (r.suffix === undefined) return false;
+  if (resolvesTo(r.suffix) === r.name) return true;
+  return Boolean(typesSharingSuffix(r.suffix)?.others.includes(r.name)) && resolvesTo(r.name) === r.name;
+}
+
 describe('docs/METADATA_SUPPORT.md', () => {
   const rows = readDocRows();
 
@@ -79,10 +89,10 @@ describe('docs/METADATA_SUPPORT.md', () => {
     expect(mismatches).toEqual([]);
   });
 
-  it('marks a type ✅/🔀 only when its suffix resolves to that type', () => {
+  it('marks a type ✅/🔀 only when -m can select it', () => {
     const broken = rows
       .filter((r) => r.status === '✅' || r.status === '🔀')
-      .filter((r) => r.suffix === undefined || resolvesTo(r.suffix) !== r.name)
+      .filter((r) => !isSelectable(r))
       .map((r) => r.name);
     expect(broken).toEqual([]);
   });
@@ -123,10 +133,8 @@ describe('docs/METADATA_SUPPORT.md', () => {
     });
   });
 
-  it('marks a type ❌ only when its suffix does not resolve to that type', () => {
-    const resolvable = rows
-      .filter((r) => r.status === '❌' && r.suffix !== undefined && resolvesTo(r.suffix) === r.name)
-      .map((r) => r.name);
+  it('marks a type ❌ only when -m cannot select it', () => {
+    const resolvable = rows.filter((r) => r.status === '❌' && isSelectable(r)).map((r) => r.name);
     expect(resolvable).toEqual([]);
   });
 });

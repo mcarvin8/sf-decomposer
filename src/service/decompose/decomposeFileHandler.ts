@@ -18,6 +18,7 @@ import { resolveEffectiveDisassembleOptions } from './resolveEffectiveDisassembl
 
 export async function decomposeFileHandler(
   metaAttributes: {
+    metadataType?: string;
     metadataPaths: string[];
     metaSuffix: string;
     strictDirectoryName: boolean;
@@ -31,6 +32,9 @@ export async function decomposeFileHandler(
   repoRoot?: string,
 ): Promise<void> {
   const { metadataPaths, metaSuffix, strictDirectoryName, folderType, uniqueIdElements } = metaAttributes;
+  // Overrides are keyed by the value the type was selected by: its suffix, or its type name for a
+  // type that loses a shared suffix (e.g. CustomSite). File matching always uses metaSuffix.
+  const overrideKey = metaAttributes.metadataType ?? metaSuffix;
 
   if (manifestXmlPaths && manifestXmlPaths.size > 0) {
     await decomposeFromManifest(
@@ -39,6 +43,7 @@ export async function decomposeFileHandler(
       typeResolved,
       ignorePath,
       metaSuffix,
+      overrideKey,
       strictDirectoryName,
       folderType,
       overrides,
@@ -59,6 +64,7 @@ export async function decomposeFileHandler(
           typeResolved,
           ignorePath,
           metaSuffix,
+          overrideKey,
           overrides,
           repoRoot,
         );
@@ -78,13 +84,22 @@ export async function decomposeFileHandler(
         );
         await moveAndRenameLabels(metadataPath);
       } else if (
-        hasComponentOverridesForType(metaSuffix, overrides) ||
+        hasComponentOverridesForType(overrideKey, overrides) ||
         // The directory can also hold other types' files (e.g. `moderation` holds KeywordList and
         // ModerationRule): handing the disassembler the whole directory would decompose those too,
         // so disassemble only this type's `.<suffix>-meta.xml` files.
         directoryOccupancy(basename(metadataPath), metaSuffix).others.length > 0
       ) {
-        await perFileHandler(metadataPath, uniqueIdElements, typeResolved, ignorePath, metaSuffix, overrides, repoRoot);
+        await perFileHandler(
+          metadataPath,
+          uniqueIdElements,
+          typeResolved,
+          ignorePath,
+          metaSuffix,
+          overrideKey,
+          overrides,
+          repoRoot,
+        );
       } else {
         await disassembleHandler(metadataPath, uniqueIdElements, typeResolved, ignorePath, metaSuffix, repoRoot);
       }
@@ -103,6 +118,7 @@ async function decomposeFromManifest(
   typeResolved: ResolvedDecomposeTypeOptions,
   ignorePath: string,
   metaSuffix: string,
+  overrideKey: string,
   strictDirectoryName: boolean,
   folderType: string,
   overrides?: DecomposerOverride[],
@@ -142,7 +158,7 @@ async function decomposeFromManifest(
     const tasks = Array.from(parentDirs).map((parentDir) =>
       limit(() => {
         const fullName = basename(parentDir);
-        const resolved = resolveDecomposeOptionsForComponent(metaSuffix, fullName, typeResolved, overrides);
+        const resolved = resolveDecomposeOptionsForComponent(overrideKey, fullName, typeResolved, overrides);
         return disassembleHandler(parentDir, uniqueIdElements, resolved, ignorePath, metaSuffix, repoRoot);
       }),
     );
@@ -153,7 +169,7 @@ async function decomposeFromManifest(
   const tasks = xmlPaths.map((xmlPath) =>
     limit(() => {
       const fullName = stripMetaSuffix(basename(xmlPath), metaSuffix);
-      const resolved = resolveDecomposeOptionsForComponent(metaSuffix, fullName, typeResolved, overrides);
+      const resolved = resolveDecomposeOptionsForComponent(overrideKey, fullName, typeResolved, overrides);
       return disassembleHandler(xmlPath, uniqueIdElements, resolved, ignorePath, metaSuffix, repoRoot);
     }),
   );
@@ -206,6 +222,7 @@ async function subDirectoryHandler(
   typeResolved: ResolvedDecomposeTypeOptions,
   ignorePath: string,
   metaSuffix: string,
+  overrideKey: string,
   overrides?: DecomposerOverride[],
   repoRoot?: string,
 ): Promise<void> {
@@ -229,7 +246,7 @@ async function subDirectoryHandler(
     .map(({ subFilePath }) =>
       processLimit(() => {
         const fullName = basename(subFilePath);
-        const resolved = resolveDecomposeOptionsForComponent(metaSuffix, fullName, typeResolved, overrides);
+        const resolved = resolveDecomposeOptionsForComponent(overrideKey, fullName, typeResolved, overrides);
         return disassembleHandler(subFilePath, uniqueIdElements, resolved, ignorePath, metaSuffix, repoRoot);
       }),
     );
@@ -250,6 +267,7 @@ async function perFileHandler(
   typeResolved: ResolvedDecomposeTypeOptions,
   ignorePath: string,
   metaSuffix: string,
+  overrideKey: string,
   overrides?: DecomposerOverride[],
   repoRoot?: string,
 ): Promise<void> {
@@ -262,7 +280,7 @@ async function perFileHandler(
     limit(() => {
       const filePath = join(metadataPath, entry.name);
       const fullName = entry.name.slice(0, -metaEnding.length);
-      const resolved = resolveDecomposeOptionsForComponent(metaSuffix, fullName, typeResolved, overrides);
+      const resolved = resolveDecomposeOptionsForComponent(overrideKey, fullName, typeResolved, overrides);
       return disassembleHandler(filePath, uniqueIdElements, resolved, ignorePath, metaSuffix, repoRoot);
     }),
   );

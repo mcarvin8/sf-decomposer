@@ -133,14 +133,16 @@ export async function verifyMetadataTypes(options: VerifyOptions): Promise<Verif
                 typeResolved,
                 overrides,
               );
-              const effective = resolveEffectiveDisassembleOptions(metadataType, resolved);
+              // Type behavior (multi-level defaults, labels/bot rules) is keyed by the real suffix,
+              // which differs from `metadataType` when the type was selected by name.
+              const effective = resolveEffectiveDisassembleOptions(metaAttributes.metaSuffix, resolved);
 
               const result = await verifyXmlRoundtrip({
                 filePath: parent.filePath,
                 uniqueIdElements: metaAttributes.uniqueIdElements,
                 strategy: effective.strategy,
                 ignorePath,
-                fileExtension: `${metadataType}-meta.xml`,
+                fileExtension: `${metaAttributes.metaSuffix}-meta.xml`,
                 multiLevel: effective.multiLevel,
                 splitTags: effective.splitTags,
                 sidecarElements: effective.sidecarElements,

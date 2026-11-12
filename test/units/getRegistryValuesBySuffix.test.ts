@@ -64,7 +64,7 @@ describe('getRegistryValuesBySuffix', () => {
 
   it('rejects unknown suffixes and surfaces the offending suffix in the message', async () => {
     await expect(getRegistryValuesBySuffix('definitelyNotARealSuffix', 'decompose', undefined)).rejects.toThrow(
-      'Metadata type not found for the given suffix: definitelyNotARealSuffix.',
+      'Metadata type not found for the given suffix or type name: definitelyNotARealSuffix.',
     );
   });
 

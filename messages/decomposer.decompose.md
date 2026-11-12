@@ -18,7 +18,7 @@ You should run this after you retrieve metadata from an org.
 
 # flags.metadata-type.summary
 
-The metadata suffix to process, such as 'flow', 'labels', etc. Required unless --manifest is provided.
+The metadata suffix to process, such as 'flow', 'labels', etc., or an exact type name such as 'CustomSite' for a type whose suffix is shared with another type. Required unless --manifest is provided.
 
 # flags.manifest.summary
 
