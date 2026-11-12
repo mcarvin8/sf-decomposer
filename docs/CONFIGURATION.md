@@ -54,7 +54,7 @@ The `<fullName>` part of a component key is the SDR fullName for the component, 
 
 - **Plain types** (e.g. `permissionset`, `flow`, `profile`, `workflow`): use the file stem, e.g. `permissionset:HR_Admin` for `permissionsets/HR_Admin.permissionset-meta.xml`.
 - **Strict-directory types** (e.g. `bot`): use the bot directory name, e.g. `bot:My_Bot` for `bots/My_Bot/My_Bot.bot-meta.xml`.
-- **Folder-typed metadata** (e.g. `report`, `dashboard`, `email`, `document`): the unit of decomposition is the folder; use the folder name, e.g. `report:MyFolder` to scope every report inside `reports/MyFolder/`.
+- **Folder-typed metadata** (e.g. `report`, `dashboard`): the unit of decomposition is the folder; use the folder name, e.g. `report:MyFolder` to scope every report inside `reports/MyFolder/`.
 - **`labels`**: there is exactly one labels file per labels directory, so component-scope keys are not meaningful — use the type-scope `metadataTypes: ["labels"]` instead.
 
 Component overrides are not a filter. If `--metadata` / `metadataSuffixes` includes `permissionset`, every permission set is still decomposed; the override only changes how the named ones are decomposed. Use `--manifest` / the hook's `manifest` field if you want to scope the run itself to a subset of components.
