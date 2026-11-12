@@ -8,13 +8,13 @@ Use the metadata **suffix** (the CLI value) with `-m` / `--metadata-type`, e.g. 
 
 ## Legend
 
-| Symbol | Meaning                                                                                                                                                                                                                       |
-| :----- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ✅     | **Decomposable** — sf-decomposer can split and recompose this type                                                                                                                                                            |
-| 🔀     | **Decomposable with notes** — supported but with forced strategy, multi-level decomposition, or special behavior                                                                                                              |
-| ⚠️     | **Leaf-only / no-op** — type is valid XML metadata but has no nested repeatable children to split; decompose skips these files non-fatally (the Rust disassembler logs a skip at `RUST_LOG=error`, but the CLI does not fail) |
-| ❌     | **Unsupported** — explicitly blocked due to adapter strategy or hard-coded rejection                                                                                                                                          |
-| ➡️     | **Use parent type** — this is a child type; access it through its parent suffix instead                                                                                                                                       |
+| Symbol | Meaning                                                                                                                                                                                                                                                            |
+| :----- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ✅     | **Decomposable** — sf-decomposer can split and recompose this type                                                                                                                                                                                                 |
+| 🔀     | **Decomposable with notes** — supported but with forced strategy, multi-level decomposition, or special behavior                                                                                                                                                   |
+| ⚠️     | **Leaf-only / no-op** — type is valid XML metadata but has no nested elements (only text-only leaf elements, repeated or not) to split; decompose skips these files non-fatally (the Rust disassembler logs a skip at `RUST_LOG=error`, but the CLI does not fail) |
+| ❌     | **Unsupported** — explicitly blocked due to adapter strategy or hard-coded rejection                                                                                                                                                                               |
+| ➡️     | **Use parent type** — this is a child type; access it through its parent suffix instead                                                                                                                                                                            |
 
 > **Note on ⚠️ leaf-only types:** These are not errors. sf-decomposer will accept the suffix but the underlying Rust disassembler will log a skip at `RUST_LOG=error` because the file contains only primitive leaf elements with nothing to decompose. The file is left untouched.
 
