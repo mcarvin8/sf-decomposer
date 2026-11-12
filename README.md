@@ -439,9 +439,11 @@ Two primary strategies control how nested XML elements are split on disk. Both r
 
 **Nested vs. leaf elements**
 
-The decomposition strategies operate on nested, repeatable XML elements. A nested element is an element that appears multiple times under the same parent and contain its own child elements. These are the entries that may be split into separate files or subdirectories.
+The decomposition strategies operate on nested XML elements. A nested element is a child of the root element that contains its own child elements. These are the entries split into separate files or subdirectories. Nesting is what matters, not repetition: a nested element is split out even if it appears only once. In practice, though, most nested elements are repeatable blocks such as `<fieldPermissions>`.
 
-A leaf element is a property or scalar value that does not contain child elements. Leaf content stays in the original XML file unless the type's decomposition rules explicitly extract it to a sidecar file (see `externalServiceRegistration`).
+A leaf element is a property or scalar value that contains only text, with no child elements. Leaf content stays in the original XML file unless the type's decomposition rules explicitly extract it to a sidecar file (see `externalServiceRegistration`). This holds even when a leaf element repeats: a list like `<narrowComponents>` on a home page layout is still leaf content.
+
+A file with no nested elements at all is **leaf-only**: there is nothing to split, so decompose skips it and leaves it untouched (logged at `RUST_LOG=error`, not a failure). [METADATA_SUPPORT.md](./docs/METADATA_SUPPORT.md) lists which types are leaf-only.
 
 Example:
 
@@ -464,7 +466,7 @@ Example:
 </PermissionSet>
 ```
 
-Nested/repeatable elements:
+Nested elements:
 
 ```xml
 <fieldPermissions>
