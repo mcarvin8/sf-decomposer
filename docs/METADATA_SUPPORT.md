@@ -6,6 +6,22 @@ Use the metadata **suffix** (the CLI value) with `-m` / `--metadata-type`, e.g. 
 
 > **How types are classified.** Rows whose notes cite the **v68 WSDL** come from the Metadata API schema (`npm run audit:classify`): leaf-only there is certain, while "nested elements … not yet round-trip tested" means the schema allows nesting but the type hasn't been run through the CLI. Types missing from that WSDL (features not enabled in the org it came from) are still untested guesses; see the notes column per type. Any type can still be passed to the plugin at your own discretion — try it in a low-stakes/sandbox environment first. If a type turns out leaf-only, decompose is a non-fatal no-op; if you find a misclassified type, open an issue or PR.
 
+## At a glance
+
+| Status                                                                  |   Types |   Share |
+| :---------------------------------------------------------------------- | ------: | ------: |
+| ✅ Decomposable — round-trip tested                                     |      62 |     11% |
+| 🔀 Decomposable with special behavior                                   |       4 |      1% |
+| ✅ Decomposable — nested elements per schema, not yet round-trip tested |     132 |     23% |
+| **Decomposable total**                                                  | **198** | **34%** |
+| ⚠️ Leaf-only — confirmed by schema                                      |     168 |     29% |
+| ⚠️ Leaf-only — unverified guess                                         |     135 |     23% |
+| ❌ Unsupported                                                          |      48 |      8% |
+| ➡️ Child type — use parent                                              |      29 |      5% |
+| **Total registry types**                                                | **578** |         |
+
+Counts come from the table below; a unit test fails if they drift.
+
 ## Legend
 
 | Symbol | Meaning                                                                                                                                                                                                                                                            |

@@ -23,20 +23,36 @@ for (const type of Object.values(registry.types)) {
   }
 }
 
-type DocRow = { name: string; suffix: string | undefined; status: string };
+type DocRow = { name: string; suffix: string | undefined; status: string; note: string };
+
+const docLines = readFileSync(resolve(process.cwd(), 'docs/METADATA_SUPPORT.md'), 'utf-8').split(/\r?\n/);
+
+function tableCells(line: string): string[] {
+  return line
+    .split('|')
+    .slice(1, -1)
+    .map((c) => c.trim());
+}
 
 function readDocRows(): DocRow[] {
-  const lines = readFileSync(resolve(process.cwd(), 'docs/METADATA_SUPPORT.md'), 'utf-8').split(/\r?\n/);
-  const header = lines.findIndex((l) => l.startsWith('| Metadata Type'));
+  const header = docLines.findIndex((l) => l.startsWith('| Metadata Type'));
   const rows: DocRow[] = [];
-  for (let i = header + 2; i < lines.length && lines[i].startsWith('|'); i++) {
-    const [name, suffixCell, status] = lines[i]
-      .split('|')
-      .slice(1, -1)
-      .map((c) => c.trim());
-    rows.push({ name, suffix: suffixCell === '—' ? undefined : suffixCell.replace(/`/g, ''), status });
+  for (let i = header + 2; i < docLines.length && docLines[i].startsWith('|'); i++) {
+    const [name, suffixCell, status, note] = tableCells(docLines[i]);
+    rows.push({ name, suffix: suffixCell === '—' ? undefined : suffixCell.replace(/`/g, ''), status, note });
   }
   return rows;
+}
+
+/** Reads the "At a glance" table as label -> { count, share } (bold markers stripped). */
+function readGlance(): Map<string, { count: number; share: string }> {
+  const header = docLines.findIndex((l) => l.startsWith('| Status '));
+  const out = new Map<string, { count: number; share: string }>();
+  for (let i = header + 2; i < docLines.length && docLines[i].startsWith('|'); i++) {
+    const [label, count, share] = tableCells(docLines[i]).map((c) => c.replace(/\*\*/g, ''));
+    out.set(label, { count: Number(count), share });
+  }
+  return out;
 }
 
 function resolvesTo(suffix: string): string | undefined {
@@ -77,6 +93,34 @@ describe('docs/METADATA_SUPPORT.md', () => {
       .filter((r) => r.status === '⚠️' && r.suffix !== undefined && resolvesTo(r.suffix) === undefined)
       .map((r) => r.name);
     expect(rejected).toEqual([]);
+  });
+
+  it('keeps the "At a glance" counts in sync with the table', () => {
+    const count = (pred: (r: DocRow) => boolean): number => rows.filter(pred).length;
+    const untested = (r: DocRow): boolean => r.note.includes('not yet round-trip tested');
+    const confirmedLeaf = (r: DocRow): boolean => /confirmed by v\d+ WSDL/.test(r.note);
+    const tested = count((r) => r.status === '✅' && !untested(r));
+    const special = count((r) => r.status === '🔀');
+    const schemaOnly = count((r) => r.status === '✅' && untested(r));
+    const glance = readGlance();
+    const wrongShares = [...glance]
+      .filter(
+        ([label, { count, share }]) =>
+          label !== 'Total registry types' && share !== `${Math.round((count / rows.length) * 100)}%`,
+      )
+      .map(([label]) => label);
+    expect(wrongShares).toEqual([]);
+    expect(Object.fromEntries([...glance].map(([label, { count }]) => [label, count]))).toEqual({
+      '✅ Decomposable — round-trip tested': tested,
+      '🔀 Decomposable with special behavior': special,
+      '✅ Decomposable — nested elements per schema, not yet round-trip tested': schemaOnly,
+      'Decomposable total': tested + special + schemaOnly,
+      '⚠️ Leaf-only — confirmed by schema': count((r) => r.status === '⚠️' && confirmedLeaf(r)),
+      '⚠️ Leaf-only — unverified guess': count((r) => r.status === '⚠️' && !confirmedLeaf(r)),
+      '❌ Unsupported': count((r) => r.status === '❌'),
+      '➡️ Child type — use parent': count((r) => r.status === '➡️'),
+      'Total registry types': rows.length,
+    });
   });
 
   it('marks a type ❌ only when its suffix does not resolve to that type', () => {
