@@ -5,6 +5,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.16.0](https://github.com/mcarvin8/sf-decomposer/compare/v7.15.0...v7.16.0) (2026-11-13)
+
+
+### Features
+
+* select metadata types that share a suffix by type name ([#683](https://github.com/mcarvin8/sf-decomposer/issues/683)) ([3db2e6d](https://github.com/mcarvin8/sf-decomposer/commit/3db2e6d4bac3d5644d73ed682112f22a5de25092))
+
+
+### Bug Fixes
+
+* **config-disassembler:** bump config-disassembler to 3.6.9 to preserve sibling order ([#684](https://github.com/mcarvin8/sf-decomposer/issues/684)) ([4b55973](https://github.com/mcarvin8/sf-decomposer/commit/4b5597302f0d2edef4e97edb6b4e3a561c1d098b))
+* only process the requested type's files in shared metadata directories ([#681](https://github.com/mcarvin8/sf-decomposer/issues/681)) ([633028a](https://github.com/mcarvin8/sf-decomposer/commit/633028a971366b37ac55b65221fcaa4294a00b9a))
+
 ## [7.15.0](https://github.com/mcarvin8/sf-decomposer/compare/v7.14.2...v7.15.0) (2026-11-12)
 
 
