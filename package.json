@@ -6,7 +6,7 @@
     "@oclif/core": "5.1.12",
     "@salesforce/core": "9.4.5",
     "@salesforce/sf-plugins-core": "13.0.9",
-    "config-disassembler": "3.6.9"
+    "config-disassembler": "4.0.0"
   },
   "devDependencies": {
     "@actions/core": "3.0.1",
