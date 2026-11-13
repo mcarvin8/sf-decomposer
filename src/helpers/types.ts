@@ -129,8 +129,10 @@ export type VerifyResult = {
   /** One entry per file that did not survive the round trip semantically. Empty on success. */
   drift: VerifyDrift[];
   /**
-   * Files where the only delta was sibling/attribute ordering — content is semantically identical
-   * but not byte-identical. Reported for awareness; does not fail `verify`.
+   * Files where the only delta was element ordering — content is semantically identical but not
+   * byte-identical. Repeated siblings keep their order, so this only covers order the round trip
+   * can't record (interleaved tags, grouped-by-tag `group` rules). Does not fail `verify`, but
+   * review these: order matters for some metadata.
    */
   reordered: string[];
 };

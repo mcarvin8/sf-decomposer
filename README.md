@@ -323,12 +323,17 @@ DESCRIPTION
   For every parent metadata XML file belonging to the requested metadata types, disassembles and
   reassembles it in an isolated temp directory using the same flags and `.sfdecomposer.config.json`
   overrides you would use in production, then compares the reconstructed XML against the original.
-  Comparison is **structural** (sibling and attribute order are ignored, matching how Salesforce
-  treats metadata). The command never modifies your working tree.
+  Comparison is **structural**: content must match, and element-order differences are reported
+  separately. The command never modifies your working tree.
 
-  Files where the only delta is ordering are surfaced as informational notices ("reordered") and do
-  not fail the run. Genuine semantic differences are reported as drift and exit non-zero, which
-  makes the command suitable as a CI gate before committing strategy, format, or override changes.
+  Repeated sibling elements keep their original order through a round trip (recorded in
+  `.element_order.json`), so files normally come back byte-identical. Files whose only delta is
+  element order are surfaced as informational notices ("reordered") and do not fail the run. This
+  happens when the order can't be recorded, for example different tags interleaved (`<a>`, `<b>`,
+  `<a>`) or a grouped-by-tag `group` rule. Some metadata depends on order (picklist values,
+  page-layout sections, approval steps), so review reordered files before committing. Genuine
+  semantic differences are reported as drift and exit non-zero, which makes the command suitable as
+  a CI gate before committing strategy, format, or override changes.
 
 EXAMPLES
   `sf decomposer verify -m "permissionset" -f "xml"`
