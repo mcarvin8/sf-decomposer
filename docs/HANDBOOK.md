@@ -337,7 +337,7 @@ sf decomposer recompose -m "bot"
 sf decomposer verify -m "bot" --config
 ```
 
-`sf decomposer verify` is non-destructive: for each parent metadata XML file it disassembles and reassembles a copy in an isolated temp directory and compares the result to your committed source. If anything drifts (content, missing file, sibling reorder) it tells you exactly which paths broke. Treat any drift as a blocker — fix the override (or fall back to the previous one) before committing.
+`sf decomposer verify` is non-destructive: for each parent metadata XML file it disassembles and reassembles a copy in an isolated temp directory and compares the result to your committed source. If anything drifts (content, missing file) it tells you exactly which paths broke; files whose only change is element order are listed separately as "reordered" and don't fail the run. Treat any drift as a blocker — fix the override (or fall back to the previous one) before committing.
 
 ---
 

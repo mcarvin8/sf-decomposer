@@ -19,7 +19,7 @@
     "THIRD_PARTY_NOTICES.md"
   ],
   "dependencies": {
-    "config-disassembler": "3.6.8"
+    "config-disassembler": "3.6.9"
   },
   "engines": {
     "node": ">=22.19.0"
