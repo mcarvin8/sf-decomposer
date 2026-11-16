@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794578399854,
+  "lastUpdate": 1794835787203,
   "repoUrl": "https://github.com/mcarvin8/sf-decomposer",
   "entries": {
     "Decompose Memory (large)": [
@@ -7109,6 +7109,76 @@ window.BENCHMARK_DATA = {
             "name": "large.yaml.recompose",
             "value": 138.22,
             "range": "126.63-140.82MB",
+            "unit": "MB"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "mcarvin8",
+            "username": "mcarvin8",
+            "email": "90224411+mcarvin8@users.noreply.github.com"
+          },
+          "committer": {
+            "name": "github-actions[bot]",
+            "username": "github-actions[bot]",
+            "email": "41898282+github-actions[bot]@users.noreply.github.com"
+          },
+          "id": "90bfe66d387e43e7af881db7319cc5dae905c255",
+          "message": "docs: regenerate command reference [skip ci]",
+          "timestamp": "2026-11-13T13:41:12Z",
+          "url": "https://github.com/mcarvin8/sf-decomposer/commit/90bfe66d387e43e7af881db7319cc5dae905c255"
+        },
+        "date": 1794835787164,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "large.xml.decompose",
+            "value": 156.76,
+            "range": "152.31-177.41MB",
+            "unit": "MB"
+          },
+          {
+            "name": "large.xml.recompose",
+            "value": 138.93,
+            "range": "138.41-144.21MB",
+            "unit": "MB"
+          },
+          {
+            "name": "large.json.decompose",
+            "value": 156.93,
+            "range": "156.32-169.54MB",
+            "unit": "MB"
+          },
+          {
+            "name": "large.json.recompose",
+            "value": 135.93,
+            "range": "134.76-140.88MB",
+            "unit": "MB"
+          },
+          {
+            "name": "large.json5.decompose",
+            "value": 164.75,
+            "range": "158.81-169.45MB",
+            "unit": "MB"
+          },
+          {
+            "name": "large.json5.recompose",
+            "value": 140.79,
+            "range": "137.57-141.13MB",
+            "unit": "MB"
+          },
+          {
+            "name": "large.yaml.decompose",
+            "value": 174.13,
+            "range": "155.82-175.39MB",
+            "unit": "MB"
+          },
+          {
+            "name": "large.yaml.recompose",
+            "value": 134.37,
+            "range": "123.53-141.13MB",
             "unit": "MB"
           }
         ]
