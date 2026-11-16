@@ -91,6 +91,7 @@
     "audit:sweep": "tsx scripts/audit/sweep.ts",
     "audit:classify": "tsx scripts/audit/classify-from-wsdl.ts",
     "audit:xsd": "tsx scripts/audit/xsd-unique-id-candidates.ts",
+    "corpus": "tsx scripts/corpus/run.ts",
     "build": "wireit",
     "build:core": "wireit",
     "clean": "wireit",

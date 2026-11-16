@@ -1,0 +1,104 @@
+# Byte-equality round trip against real public Salesforce DX repos (scripts/corpus/).
+#
+# Each repo in scripts/corpus/corpus.json is cloned at its pinned SHA, every supported
+# metadata type found in it is decomposed and recomposed, and the whole work tree must
+# hash back to the pristine checkout. Runs on ubuntu and windows because line-ending
+# bugs often show on only one.
+#
+# Triggers:
+#   - schedule (weekly)  : Monday 06:00 UTC (after perf.yml's 05:00 slot).
+#   - pull_request       : only when the harness itself changes.
+#   - workflow_dispatch  : ad-hoc, with optional repo/type/format filters.
+name: Corpus round trip
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  pull_request:
+    paths:
+      - "scripts/corpus/**"
+      - ".github/workflows/corpus.yml"
+  workflow_dispatch:
+    inputs:
+      repos:
+        description: "Comma-separated corpus repo names (blank = all)"
+        type: string
+        default: ""
+      types:
+        description: "Comma-separated suffixes (blank = every supported type found)"
+        type: string
+        default: ""
+      formats:
+        description: 'Comma-separated formats, or "all"'
+        type: string
+        default: "xml"
+
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      repos: ${{ steps.repos.outputs.repos }}
+    steps:
+      - uses: actions/checkout@v7
+      - id: repos
+        env:
+          FILTER: ${{ inputs.repos }}
+        run: |
+          repos=$(node -e '
+            const f = (process.env.FILTER || "").split(",").map((s) => s.trim()).filter(Boolean);
+            const names = require("./scripts/corpus/corpus.json").map((r) => r.name).filter((n) => !f.length || f.includes(n));
+            process.stdout.write(JSON.stringify(names));
+          ')
+          echo "repos=$repos" >> "$GITHUB_OUTPUT"
+
+  corpus:
+    needs: plan
+    name: ${{ matrix.repo }} (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        repo: ${{ fromJSON(needs.plan.outputs.repos) }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "lts/*"
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+
+      - name: Run corpus harness
+        shell: bash
+        env:
+          TYPES: ${{ inputs.types }}
+          FORMATS: ${{ inputs.formats || 'xml' }}
+          REPO: ${{ matrix.repo }}
+        run: |
+          args=(--repos "$REPO" --formats "$FORMATS" --nested-perms --work-root "$RUNNER_TEMP/sfd-corpus" --out "$RUNNER_TEMP/corpus-report")
+          if [ -n "$TYPES" ]; then args+=(--types "$TYPES"); fi
+          npm run corpus -- "${args[@]}"
+
+      - name: Job summary
+        if: always()
+        shell: bash
+        run: |
+          if [ -f "$RUNNER_TEMP/corpus-report/summary.md" ]; then
+            cat "$RUNNER_TEMP/corpus-report/summary.md" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: corpus-${{ matrix.repo }}-${{ matrix.os }}
+          path: ${{ runner.temp }}/corpus-report
+          if-no-files-found: ignore
+          retention-days: 30
