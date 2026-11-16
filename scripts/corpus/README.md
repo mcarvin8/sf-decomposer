@@ -49,16 +49,18 @@ writes the committed blob bytes and the repo's own `.gitattributes` can't normal
 `<repo>/<cell>/files/<path>.orig` and `.rebuilt`, and labeled with the first normalization
 that makes the two equal:
 
-| Kind                  | Meaning                                                           |
-| --------------------- | ----------------------------------------------------------------- |
-| `bom`                 | Byte-order mark added or dropped                                  |
-| `declaration`         | `<?xml ...?>` spacing or quotes, e.g. `"UTF-8" ?>` vs `"UTF-8"?>` |
-| `eol`                 | CRLF vs LF                                                        |
-| `trailing-whitespace` | Trailing newline or whitespace at end of file                     |
-| `entity`              | `&apos;` vs `'` and similar                                       |
-| `whitespace`          | Indentation or whitespace between tags                            |
-| `reorder`             | Same lines, different order                                       |
-| `drift`               | None of the above explains it: content changed                    |
+| Kind                  | Meaning                                                                                       |
+| --------------------- | --------------------------------------------------------------------------------------------- |
+| `bom`                 | Byte-order mark added or dropped                                                              |
+| `declaration`         | `<?xml ...?>` spacing or quotes, e.g. `"UTF-8" ?>` vs `"UTF-8"?>`                             |
+| `eol`                 | CRLF vs LF                                                                                    |
+| `trailing-whitespace` | Trailing newline or whitespace at end of file                                                 |
+| `entity`              | `&apos;` vs `'` and similar                                                                   |
+| `tag-whitespace`      | Whitespace inside tag markup (Prettier's `<tag` + newline + `>value`, one attribute per line) |
+| `whitespace`          | Indentation or whitespace between tags                                                        |
+| `self-closing`        | `<a/>` vs `<a></a>`                                                                           |
+| `reorder`             | Same lines, different order                                                                   |
+| `drift`               | None of the above explains it: content changed                                                |
 
 ## Adding repos
 

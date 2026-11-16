@@ -31,7 +31,9 @@ export type MismatchKind =
   | 'eol'
   | 'trailing-whitespace'
   | 'entity'
+  | 'tag-whitespace'
   | 'whitespace'
+  | 'self-closing'
   | 'reorder'
   | 'drift';
 
@@ -230,6 +232,15 @@ const normDecl = (s: string): string =>
   );
 const lf = (s: string): string => s.replace(/\r\n/g, '\n');
 const decodeEntities = (s: string): string => ENTITIES.reduce((acc, [re, v]) => acc.replace(re, v), s);
+/**
+ * Whitespace inside tag markup: Prettier wraps long elements as `<tag` + newline + `>value</tag>`
+ * and puts each attribute on its own line. Collapses runs to one space and drops the space
+ * before `>` / `/>`.
+ */
+const tagWs = (s: string): string =>
+  s.replace(/<[^<>!?][^<>]*>/g, (tag) => tag.replace(/\s+/g, ' ').replace(/ (\/?>)$/, '$1'));
+/** `<a></a>` and `<a/>` are the same empty element. Dropped empty elements stay `drift`. */
+const selfClose = (s: string): string => s.replace(/<([\w:.-]+)((?: [^<>]*)?)><\/\1>/g, '<$1$2/>');
 const collapseWs = (s: string): string => s.replace(/>\s+</g, '><').trim();
 const sortedLines = (s: string): string =>
   s
@@ -255,7 +266,9 @@ export function classifyMismatch(origBuf: Buffer, rebuiltBuf: Buffer): Mismatch 
     ['eol', lf],
     ['trailing-whitespace', (s) => s.trimEnd()],
     ['entity', decodeEntities],
+    ['tag-whitespace', tagWs],
     ['whitespace', collapseWs],
+    ['self-closing', selfClose],
   ];
   let o = o0;
   let r = r0;
@@ -265,7 +278,7 @@ export function classifyMismatch(origBuf: Buffer, rebuiltBuf: Buffer): Mismatch 
     if (o === r) return { kind, ...first };
   }
   // Reorder check runs on the entity-decoded, line-based text (before whitespace collapse).
-  const lines = (s: string): string => sortedLines(decodeEntities(lf(normDecl(stripBom(s)))));
+  const lines = (s: string): string => sortedLines(tagWs(decodeEntities(lf(normDecl(stripBom(s))))));
   if (lines(o0) === lines(r0)) {
     return { kind: 'reorder', ...first };
   }
