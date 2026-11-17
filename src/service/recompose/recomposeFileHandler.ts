@@ -16,11 +16,14 @@ export async function recomposeFileHandler(
     strictDirectoryName: boolean;
     folderType: string;
     metadataPaths: string[];
+    typeName?: string;
+    extraPaths?: string[];
   },
   postpurge: boolean,
   manifestXmlPaths?: Set<string>,
 ): Promise<void> {
-  const { metaSuffix, strictDirectoryName, folderType, metadataPaths } = metaAttributes;
+  const { metaSuffix, strictDirectoryName, folderType, metadataPaths, typeName, extraPaths } = metaAttributes;
+  const extra = new Set(extraPaths ?? []);
 
   if (manifestXmlPaths && manifestXmlPaths.size > 0) {
     await recomposeFromManifest(manifestXmlPaths, metaSuffix, strictDirectoryName, folderType, postpurge);
@@ -37,13 +40,13 @@ export async function recomposeFileHandler(
       } else {
         let recurse: boolean = false;
         if (strictDirectoryName || folderType) recurse = true;
-        await reassembleDirectories(
-          metadataPath,
-          metaSuffix,
-          recurse,
-          postpurge,
-          directoryOwner(basename(metadataPath), metaSuffix),
-        );
+        // A folder the type's files were found in by suffix isn't named after the type and can hold
+        // other types' decomposed directories: identify this type's strictly.
+        const owner: DirectoryOwner | undefined =
+          extra.has(metadataPath) && typeName
+            ? { typeName, shared: true, requireSidecar: true }
+            : directoryOwner(basename(metadataPath), metaSuffix);
+        await reassembleDirectories(metadataPath, metaSuffix, recurse, postpurge, owner);
       }
 
       if (metaSuffix === 'bot') await renameBotVersionFile(metadataPath);
@@ -146,7 +149,7 @@ export async function reassembleHandler(filePath: string, fileExtension: string,
  * all (e.g. UTAM page objects in `flexipages/__utam__/`), which used to be rebuilt as
  * `__utam__.flexipage-meta.xml` and then deleted by --postpurge.
  */
-type DirectoryOwner = { typeName: string; shared: boolean };
+type DirectoryOwner = { typeName: string; shared: boolean; requireSidecar?: boolean };
 
 function directoryOwner(directoryName: string, metaSuffix: string): DirectoryOwner | undefined {
   const { typeName, others } = directoryOccupancy(directoryName, metaSuffix);
@@ -159,8 +162,14 @@ function directoryOwner(directoryName: string, metaSuffix: string): DirectoryOwn
  * `renameBotVersionFile` then renames.
  */
 async function isOwnDecomposedDir(dir: string, metaSuffix: string, owner: DirectoryOwner): Promise<boolean> {
-  if (await isDecomposedDirOfType(dir, metaSuffix, owner.typeName, { shared: owner.shared })) return true;
-  return metaSuffix === 'bot' && isDecomposedDirOfType(dir, 'botVersion', 'BotVersion', { shared: owner.shared });
+  const options = { shared: owner.shared, requireSidecar: owner.requireSidecar };
+  try {
+    if (await isDecomposedDirOfType(dir, metaSuffix, owner.typeName, options)) return true;
+    return metaSuffix === 'bot' && (await isDecomposedDirOfType(dir, 'botVersion', 'BotVersion', options));
+  } catch {
+    // The directory was rebuilt and removed by another type's recompose while being checked.
+    return false;
+  }
 }
 
 async function reassembleDirectories(
@@ -178,7 +187,9 @@ async function reassembleDirectories(
     subdirectories.map((subdirectory) =>
       statLimit(async () => ({
         subdirectory,
-        isDirectory: (await stat(subdirectory)).isDirectory(),
+        // Another type's recompose may rebuild and remove a directory in a shared or custom-named
+        // folder while this one walks it: a vanished entry simply isn't ours.
+        isDirectory: (await stat(subdirectory).catch(() => undefined))?.isDirectory() ?? false,
       })),
     ),
   );

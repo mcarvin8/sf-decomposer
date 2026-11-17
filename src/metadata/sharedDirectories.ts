@@ -58,9 +58,21 @@ export function directoryOccupancy(
   };
 }
 
+/**
+ * Root element names a type's files can carry. Usually the type name, with known exceptions: each
+ * Settings file's root is `<{Name}Settings>` (`BusinessHours.settings-meta.xml` -> `<BusinessHoursSettings>`),
+ * and InvocableActionExtension's is `<InvocableActionExt>`.
+ */
+const ROOT_NAME_ALIASES: Record<string, string[]> = { InvocableActionExtension: ['InvocableActionExt'] };
+
+function rootNamesFor(typeName: string, stem: string): string[] {
+  if (typeName === 'Settings') return [`${stem}Settings`];
+  return [typeName, ...(ROOT_NAME_ALIASES[typeName] ?? [])];
+}
+
 /** Matches the root element in any decomposed format: `<Name` (xml) or a `Name:` / `"Name":` key (yaml/json/json5). */
-function hasRootElement(content: string, typeName: string): boolean {
-  return new RegExp(`<${typeName}[\\s/>]|^\\s*["']?${typeName}["']?\\s*:`, 'm').test(content);
+function hasRootElement(content: string, rootNames: string[]): boolean {
+  return rootNames.some((name) => new RegExp(`<${name}[\\s/>]|^\\s*["']?${name}["']?\\s*:`, 'm').test(content));
 }
 
 async function firstFragmentFile(dir: string): Promise<string | undefined> {
@@ -107,22 +119,28 @@ async function holdsOwnSuffixFiles(dir: string, metaSuffix: string): Promise<boo
  *   (`shared: false`), the disassembler's sidecars identify it. The root element every fragment
  *   carries is checked where types must be told apart (`shared: true`), and as the fallback for
  *   directories decomposed before the sidecars existed. It can't be required everywhere: a root
- *   need not be named after its type (`BusinessHours.settings-meta.xml` has `<BusinessHoursSettings>`).
+ *   need not be named after its type (`BusinessHours.settings-meta.xml` has `<BusinessHoursSettings>`;
+ *   see `rootNamesFor` for the known exceptions).
+ * - `requireSidecar`: in a folder the type's files were found in by suffix (not named after the
+ *   type), only a directory the disassembler produced counts -- a real folder of metadata laid out
+ *   one component per folder (`MyFlow/MyFlow.flow-meta.xml`) looks like a leaf file otherwise.
  */
 export async function isDecomposedDirOfType(
   dir: string,
   metaSuffix: string,
   typeName: string,
-  { shared }: { shared: boolean } = { shared: true },
+  { shared, requireSidecar = false }: { shared: boolean; requireSidecar?: boolean } = { shared: true },
 ): Promise<boolean> {
   const stem = basename(dir);
   const files = (await readdir(dir, { withFileTypes: true })).filter((e) => e.isFile()).map((e) => e.name);
+  const hasSidecar = files.some((name) => DISASSEMBLER_SIDECARS.includes(name));
+  if (requireSidecar && !hasSidecar) return false;
   if (files.some((name) => name.startsWith(`${stem}.${metaSuffix}-meta.`))) return true;
   if (files.some((name) => name.startsWith(`${stem}.`) && name.includes('-meta.'))) return false;
   if (await holdsOwnSuffixFiles(dir, metaSuffix)) return false;
 
-  if (!shared && files.some((name) => DISASSEMBLER_SIDECARS.includes(name))) return true;
+  if (!shared && hasSidecar) return true;
   const fragment = await firstFragmentFile(dir);
   if (!fragment) return false;
-  return hasRootElement(await readFile(fragment, 'utf-8'), typeName);
+  return hasRootElement(await readFile(fragment, 'utf-8'), rootNamesFor(typeName, stem));
 }

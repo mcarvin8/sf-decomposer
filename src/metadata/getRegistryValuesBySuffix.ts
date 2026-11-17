@@ -1,7 +1,8 @@
 'use strict';
 
+import { basename } from 'node:path';
 import { DEFAULT_UNIQUE_ID_ELEMENTS, UNSUPPORTED_ADAPTERS } from '../helpers/constants.js';
-import { MetaAttributes } from '../helpers/types.js';
+import { MetaAttributes, PathIndex } from '../helpers/types.js';
 import { getPackageDirectories } from './getPackageDirectories.js';
 import { getUniqueIdElements } from './getUniqueIdElements.js';
 import { RegistryAccess } from './registry/registryAccess.js';
@@ -160,7 +161,7 @@ export async function getRegistryValuesBySuffix(
   ignoreDirs: string[] | undefined,
   repoRootOverride?: string,
   uniqueIdOverride?: string,
-  pathIndex?: { index: Map<string, string[]>; ignorePath: string },
+  pathIndex?: PathIndex,
 ): Promise<{ metaAttributes: MetaAttributes; ignorePath: string }> {
   const metadataTypeEntry = resolveMetadataTypeEntry(metaSuffix);
 
@@ -168,12 +169,14 @@ export async function getRegistryValuesBySuffix(
   if (command === 'decompose')
     uniqueIdElements = uniqueIdOverride ?? getUniqueIdElements(metadataTypeEntry.suffix as string);
 
-  const { metadataPaths, ignorePath } = pathIndex
-    ? {
-        metadataPaths: pathIndex.index.get(`${metadataTypeEntry.directoryName}`) ?? [],
-        ignorePath: pathIndex.ignorePath,
-      }
-    : await getPackageDirectories(`${metadataTypeEntry.directoryName}`, ignoreDirs, repoRootOverride);
+  const directoryName = `${metadataTypeEntry.directoryName}`;
+  const { metadataPaths: namedPaths, ignorePath } = pathIndex
+    ? { metadataPaths: pathIndex.index.get(directoryName) ?? [], ignorePath: pathIndex.ignorePath }
+    : await getPackageDirectories(directoryName, ignoreDirs, repoRootOverride);
+  const extraPaths = pathIndex
+    ? foundBySuffix(pathIndex, metadataTypeEntry, command).filter((path) => !namedPaths.includes(path))
+    : [];
+  const metadataPaths = [...namedPaths, ...extraPaths];
   if (metadataPaths.length === 0)
     throw Error(`No directories named ${metadataTypeEntry.directoryName} were found in any package directory.`);
 
@@ -188,6 +191,48 @@ export async function getRegistryValuesBySuffix(
     uniqueIdElements: uniqueIdElements
       ? `${DEFAULT_UNIQUE_ID_ELEMENTS},${uniqueIdElements}`
       : DEFAULT_UNIQUE_ID_ELEMENTS,
+    typeName: metadataTypeEntry.name,
+    directoryName,
+    extraPaths,
   };
   return { metaAttributes, ignorePath };
+}
+
+/**
+ * Whether the type's files are found by suffix anywhere, the way SDR resolves a `-meta.xml` file,
+ * rather than only in folders named after the type. Strict-folder types (bots, object translations,
+ * bundles) are resolved by their folder in SDR too, folder-typed content (reports, dashboards, ...)
+ * is laid out by folder, and labels have their own handling, so those keep the folder lookup.
+ */
+export function findsFilesBySuffix(type: MetadataType): boolean {
+  return Boolean(type.suffix) && !type.strictDirectoryName && !type.folderType && type.suffix !== 'labels';
+}
+
+/**
+ * Folders the index found for `type` by suffix: those holding its files (decompose/verify), plus
+ * those holding decomposed directories to rebuild (recompose). A decomposed directory without a
+ * leaf file doesn't name its type, so recompose gets those folders too and checks each directory.
+ */
+function foundBySuffix(pathIndex: PathIndex, type: MetadataType, command: string): string[] {
+  if (!findsFilesBySuffix(type)) return [];
+  const suffix = type.suffix as string;
+  const paths = new Set(pathIndex.suffixDirs?.get(suffix) ?? []);
+  if (command === 'recompose') {
+    for (const path of pathIndex.decomposedParents?.get(suffix) ?? []) paths.add(path);
+    // A folder named after a type is that type's own (its recompose covers it), so only custom-named
+    // folders are searched for decomposed directories that don't name their type.
+    const typeDirs = registryDirectoryNames();
+    for (const path of pathIndex.sidecarParents ?? []) if (!typeDirs.has(basename(path))) paths.add(path);
+  }
+  return [...paths];
+}
+
+let directoryNames: Set<string> | undefined;
+function registryDirectoryNames(): Set<string> {
+  directoryNames ??= new Set(
+    getRegistryAccessInstance()
+      .listTypes()
+      .map((type) => type.directoryName),
+  );
+  return directoryNames;
 }

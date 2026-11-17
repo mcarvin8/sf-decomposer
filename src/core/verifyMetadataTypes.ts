@@ -11,9 +11,13 @@ import {
 } from '../helpers/configOverrides.js';
 import { CONCURRENCY_LIMITS, SFDX_PROJECT_FILE_NAME } from '../helpers/constants.js';
 import { pLimit } from '../helpers/pLimit.js';
-import { SfdxProject, VerifyDrift, VerifyOptions, VerifyResult } from '../helpers/types.js';
+import { PathIndex, SfdxProject, VerifyDrift, VerifyOptions, VerifyResult } from '../helpers/types.js';
 import { buildPackageDirectoryIndex } from '../metadata/getPackageDirectories.js';
-import { getRegistryValuesBySuffix, resolveMetadataTypeEntry } from '../metadata/getRegistryValuesBySuffix.js';
+import {
+  findsFilesBySuffix,
+  getRegistryValuesBySuffix,
+  resolveMetadataTypeEntry,
+} from '../metadata/getRegistryValuesBySuffix.js';
 import { listParentXmlFilesForType } from '../metadata/listParentXmlFiles.js';
 import { resolveEffectiveMetadataTypes } from '../metadata/parseManifest.js';
 import { getRepoRoot } from '../service/core/getRepoRoot.js';
@@ -79,19 +83,22 @@ export async function verifyMetadataTypes(options: VerifyOptions): Promise<Verif
   // one pass, instead of each type re-walking the whole package directory tree. Unsupported/
   // unknown suffixes are skipped here; the per-type getRegistryValuesBySuffix call below still
   // throws (and, in manifest mode, is caught/logged there) exactly as it does today.
-  let pathIndex: { index: Map<string, string[]>; ignorePath: string };
+  let pathIndex: PathIndex;
   if (manifestFilter) {
     pathIndex = manifestFilter.directoryIndex;
   } else {
     const directoryNames = new Set<string>();
+    const suffixes = new Set<string>();
     for (const metadataType of effectiveTypes) {
       try {
-        directoryNames.add(`${resolveMetadataTypeEntry(metadataType).directoryName}`);
+        const entry = resolveMetadataTypeEntry(metadataType);
+        directoryNames.add(`${entry.directoryName}`);
+        if (findsFilesBySuffix(entry)) suffixes.add(entry.suffix as string);
       } catch {
         /* istanbul ignore next -- @preserve: handled per-type by getRegistryValuesBySuffix below */
       }
     }
-    pathIndex = await buildPackageDirectoryIndex(directoryNames, ignoreDirs, undefined);
+    pathIndex = await buildPackageDirectoryIndex(directoryNames, ignoreDirs, undefined, suffixes);
   }
 
   const typeLimit = pLimit(CONCURRENCY_LIMITS.METADATA_TYPES);
