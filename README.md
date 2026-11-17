@@ -11,7 +11,7 @@
 **Decomposes** large Salesforce metadata XML files into smaller, version-control–friendly files (XML, JSON, YAML, JSON5), and **recomposes** them back into deployment-ready metadata.
 
 - Using the Salesforce CLI? Start at [Setup](#setup).
-- Running this in CI without the CLI? Skip straight to [GitHub Action](#github-action).
+- Running this in GitHub CI without the CLI? Skip straight to [GitHub Action](#github-action).
 - No Salesforce CLI at all? Use the [standalone command](#standalone-command-without-the-salesforce-cli) from `sf-decomposer-core`.
 - Using Claude Code, GitHub Copilot, or another AI coding agent? Install the [agent skills](#ai-coding-agent-skills).
 
