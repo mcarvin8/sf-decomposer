@@ -282,8 +282,11 @@ export function classifyMismatch(origBuf: Buffer, rebuiltBuf: Buffer): Mismatch 
     r = fn(r);
     if (o === r) return { kind, ...first };
   }
-  // Reorder check runs on the entity-decoded, line-based text (before whitespace collapse).
-  const lines = (s: string): string => sortedLines(tagWs(decodeEntities(lf(normDecl(stripBom(s))))));
+  // Reorder check on the fully normalized text, one tag per line: splitting on the source's own
+  // line breaks missed a reorder whenever lines were also joined or split (e.g. a hand-written
+  // `<allowRead>true</allowRead>        <object>X</object>    </objectPermissions>`).
+  const lines = (s: string): string =>
+    sortedLines(selfClose(collapseWs(tagWs(decodeEntities(lf(normDecl(stripBom(s))))))).replace(/></g, '>\n<'));
   if (lines(o0) === lines(r0)) {
     return { kind: 'reorder', ...first };
   }
