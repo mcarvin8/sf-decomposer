@@ -146,18 +146,21 @@ export async function reassembleHandler(filePath: string, fileExtension: string,
  * all (e.g. UTAM page objects in `flexipages/__utam__/`), which used to be rebuilt as
  * `__utam__.flexipage-meta.xml` and then deleted by --postpurge.
  */
-function directoryOwner(directoryName: string, metaSuffix: string): string | undefined {
-  return directoryOccupancy(directoryName, metaSuffix).typeName;
+type DirectoryOwner = { typeName: string; shared: boolean };
+
+function directoryOwner(directoryName: string, metaSuffix: string): DirectoryOwner | undefined {
+  const { typeName, others } = directoryOccupancy(directoryName, metaSuffix);
+  return typeName ? { typeName, shared: others.length > 0 } : undefined;
 }
 
 /**
- * Whether `dir` is a decomposed `metaSuffix` directory of `typeName`. A bot's folder also holds its
- * versions' decomposed directories, which recompose rebuilds with the bot suffix and
+ * Whether `dir` is a decomposed `metaSuffix` directory of the owning type. A bot's folder also holds
+ * its versions' decomposed directories, which recompose rebuilds with the bot suffix and
  * `renameBotVersionFile` then renames.
  */
-async function isOwnDecomposedDir(dir: string, metaSuffix: string, typeName: string): Promise<boolean> {
-  if (await isDecomposedDirOfType(dir, metaSuffix, typeName)) return true;
-  return metaSuffix === 'bot' && isDecomposedDirOfType(dir, 'botVersion', 'BotVersion');
+async function isOwnDecomposedDir(dir: string, metaSuffix: string, owner: DirectoryOwner): Promise<boolean> {
+  if (await isDecomposedDirOfType(dir, metaSuffix, owner.typeName, { shared: owner.shared })) return true;
+  return metaSuffix === 'bot' && isDecomposedDirOfType(dir, 'botVersion', 'BotVersion', { shared: owner.shared });
 }
 
 async function reassembleDirectories(
@@ -165,7 +168,7 @@ async function reassembleDirectories(
   metaSuffix: string,
   recurse: boolean,
   postpurge: boolean,
-  ownerTypeName?: string,
+  owner?: DirectoryOwner,
 ): Promise<void> {
   const subdirectories = (await readdir(metadataPath)).map((file) => join(metadataPath, file));
 
@@ -188,11 +191,11 @@ async function reassembleDirectories(
       processLimit(async () => {
         if (recurse) {
           // recursively call this function and set recurse to false
-          await reassembleDirectories(subdirectory, metaSuffix, false, postpurge, ownerTypeName);
+          await reassembleDirectories(subdirectory, metaSuffix, false, postpurge, owner);
         } else {
-          // Skip other types' decomposed directories and folders that aren't metadata, rather than
-          // rebuilding them as `<dir>.<this suffix>-meta.xml`.
-          if (ownerTypeName && !(await isOwnDecomposedDir(subdirectory, metaSuffix, ownerTypeName))) return;
+          // Skip other types' decomposed directories, plain subfolders of metadata files and folders
+          // that aren't metadata, rather than rebuilding them as `<dir>.<this suffix>-meta.xml`.
+          if (owner && !(await isOwnDecomposedDir(subdirectory, metaSuffix, owner))) return;
           await reassembleHandler(subdirectory, `${metaSuffix}-meta.xml`, postpurge);
         }
       }),
