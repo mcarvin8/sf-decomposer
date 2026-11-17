@@ -922,7 +922,7 @@ Example `WARN` (CustomApplication where four `actionOverrides` siblings shared t
 
 ## Built With
 
-- [config-disassembler-node](https://github.com/mcarvin8/config-disassembler-node) – Disassemble XML (and other config formats) into smaller, manageable files and reassemble when needed. Node.js + Rust (NAPI-RS).
+- [config-disassembler-node](https://github.com/mcarvin8/config-disassembler-node) – Disassemble large XML files into smaller, manageable files and reassemble when needed. Node.js + Rust (NAPI-RS).
 - [@salesforce/source-deploy-retrieve](https://github.com/forcedotcom/source-deploy-retrieve) – Source of the vendored metadata registry (`src/metadata/registry/metadataRegistry.json`), synced weekly. Not a runtime dependency — this plugin ships its own minimal registry lookup and package.xml parser instead.
 
 ---
