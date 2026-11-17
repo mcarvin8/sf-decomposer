@@ -1,5 +1,6 @@
 'use strict';
 
+import { existsSync } from 'node:fs';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -130,6 +131,7 @@ function collectLeafValues(nodes: FuzzNode[], out: string[]): void {
 }
 
 async function roundTripOnce(dir: string, filePath: string): Promise<string> {
+  const before = await readFile(filePath, 'utf-8');
   const disassembler = new DisassembleXMLFileHandler();
   await disassembler.disassemble({
     filePath,
@@ -139,6 +141,15 @@ async function roundTripOnce(dir: string, filePath: string): Promise<string> {
     postPurge: true,
     format: 'xml',
   });
+
+  // Since config-disassembler 4.0.3 (crate 0.11.15), a document with comments that can't be kept in
+  // place (before a later child element, or directly in the root) is skipped like a leaf-only file:
+  // no output, and the file is left as it was even with postPurge. There is nothing to reassemble.
+  if (!existsSync(join(dir, 'Fuzz'))) {
+    const after = await readFile(filePath, 'utf-8');
+    expect(after, 'a skipped document must be left unchanged').toBe(before);
+    return after;
+  }
 
   const reassembler = new ReassembleXMLFileHandler();
   await reassembler.reassemble({
