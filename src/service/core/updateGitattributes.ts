@@ -32,8 +32,13 @@ export async function updateGitattributesFile(processedMeta: ProcessedMeta[], re
   const existingSet = new Set(existingLines.map((l) => l.trim()));
 
   const toAdd: string[] = [];
-  for (const { directoryName, metaSuffix } of processedMeta) {
-    for (const pattern of buildPatterns(directoryName, metaSuffix)) {
+  for (const { directoryName, metaSuffix, extraDirs } of processedMeta) {
+    const patterns = [
+      ...buildPatterns(directoryName, metaSuffix),
+      // Originals in folders the type's files were found in by suffix.
+      ...(extraDirs ?? []).map((dir) => `${dir}/*.${metaSuffix}-meta.xml ${ATTRS}`),
+    ];
+    for (const pattern of patterns) {
       if (!existingSet.has(pattern)) {
         toAdd.push(pattern);
         existingSet.add(pattern);

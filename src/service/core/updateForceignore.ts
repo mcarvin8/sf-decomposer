@@ -9,7 +9,19 @@ export type ProcessedMeta = {
   directoryName: string;
   metaSuffix: string;
   format: string;
+  /** Repo-relative POSIX paths of folders the type's files were found in by suffix. */
+  extraDirs?: string[];
 };
+
+/**
+ * A folder the type's files were found in by suffix (`unpackaged/pre/1_settings`,
+ * `flexipages/record-pages`, ...) can hold other types' files, so ignore only what is nested below it
+ * (the decomposed directories) and re-allow this type's originals directly in it. The re-allow also
+ * matters for a folder nested in the type's own directory, whose general pattern would hide its files.
+ */
+function extraDirPatterns(extraDirs: string[] | undefined, metaSuffix: string, format: string): string[] {
+  return (extraDirs ?? []).flatMap((dir) => [`${dir}/*/**/*.${format}`, `!${dir}/*.${metaSuffix}-meta.xml`]);
+}
 
 function buildPatterns(directoryName: string, metaSuffix: string, format: string): string[] {
   if (metaSuffix === 'labels') {
@@ -53,8 +65,12 @@ export async function updateForceignoreFile(processedMeta: ProcessedMeta[], repo
   const existingSet = new Set(existingLines.map((l) => l.trim()));
 
   const toAdd: string[] = [];
-  for (const { directoryName, metaSuffix, format } of processedMeta) {
-    for (const pattern of buildPatterns(directoryName, metaSuffix, format)) {
+  for (const { directoryName, metaSuffix, format, extraDirs } of processedMeta) {
+    const patterns = [
+      ...buildPatterns(directoryName, metaSuffix, format),
+      ...extraDirPatterns(extraDirs, metaSuffix, format),
+    ];
+    for (const pattern of patterns) {
       if (!existingSet.has(pattern)) {
         toAdd.push(pattern);
         existingSet.add(pattern);

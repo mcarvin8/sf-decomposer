@@ -78,6 +78,30 @@ export type MetaAttributes = {
   folderType: string;
   metadataPaths: string[];
   uniqueIdElements: string;
+  /** The registry type's name and directory name. */
+  typeName?: string;
+  directoryName?: string;
+  /**
+   * Members of `metadataPaths` not named after the type's directory: folders where the type's files
+   * were found by suffix (custom names such as `1_settings`, other types' folders, nested
+   * subfolders). They can hold other types' files, so recompose identifies its directories strictly.
+   */
+  extraPaths?: string[];
+};
+
+/**
+ * One walk of the package directories: directories by name, and -- for the suffixes being looked
+ * for -- where those types' files and decomposed directories actually are, wherever they live.
+ */
+export type PathIndex = {
+  index: Map<string, string[]>;
+  ignorePath: string;
+  /** suffix -> directories directly holding `<name>.<suffix>-meta.xml` files. */
+  suffixDirs?: Map<string, string[]>;
+  /** suffix -> directories holding a decomposed directory whose leaf names the suffix. */
+  decomposedParents?: Map<string, string[]>;
+  /** Directories holding a decomposed directory with no leaf file (its type is checked later). */
+  sidecarParents?: string[];
 };
 
 export type DecomposeOptions = {

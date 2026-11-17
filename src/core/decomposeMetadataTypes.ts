@@ -1,12 +1,16 @@
 'use strict';
 
-import { basename, dirname } from 'node:path';
+import { basename, dirname, relative, sep } from 'node:path';
 import { resolveDecomposeOptionsForType } from '../helpers/configOverrides.js';
 import { CONCURRENCY_LIMITS } from '../helpers/constants.js';
 import { pLimit } from '../helpers/pLimit.js';
-import { DecomposeOptions, DecomposerResult } from '../helpers/types.js';
+import { DecomposeOptions, DecomposerResult, PathIndex } from '../helpers/types.js';
 import { buildPackageDirectoryIndex } from '../metadata/getPackageDirectories.js';
-import { getRegistryValuesBySuffix, resolveMetadataTypeEntry } from '../metadata/getRegistryValuesBySuffix.js';
+import {
+  findsFilesBySuffix,
+  getRegistryValuesBySuffix,
+  resolveMetadataTypeEntry,
+} from '../metadata/getRegistryValuesBySuffix.js';
 import { resolveEffectiveMetadataTypes } from '../metadata/parseManifest.js';
 import { ProcessedMeta, updateForceignoreFile } from '../service/core/updateForceignore.js';
 import { updateGitattributesFile } from '../service/core/updateGitattributes.js';
@@ -48,19 +52,22 @@ export async function decomposeMetadataTypes(options: DecomposeOptions): Promise
   // one pass, instead of each type re-walking the whole package directory tree. Unsupported/
   // unknown suffixes are skipped here; the per-type getRegistryValuesBySuffix call below still
   // throws (and, in manifest mode, is caught/logged there) exactly as it does today.
-  let pathIndex: { index: Map<string, string[]>; ignorePath: string };
+  let pathIndex: PathIndex;
   if (manifestFilter) {
     pathIndex = manifestFilter.directoryIndex;
   } else {
     const directoryNames = new Set<string>();
+    const suffixes = new Set<string>();
     for (const metadataType of effectiveTypes) {
       try {
-        directoryNames.add(`${resolveMetadataTypeEntry(metadataType).directoryName}`);
+        const entry = resolveMetadataTypeEntry(metadataType);
+        directoryNames.add(`${entry.directoryName}`);
+        if (findsFilesBySuffix(entry)) suffixes.add(entry.suffix as string);
       } catch {
         /* istanbul ignore next -- @preserve: handled per-type by getRegistryValuesBySuffix below */
       }
     }
-    pathIndex = await buildPackageDirectoryIndex(directoryNames, ignoreDirs, repoRoot);
+    pathIndex = await buildPackageDirectoryIndex(directoryNames, ignoreDirs, repoRoot, suffixes);
   }
 
   // Limit concurrent metadata type processing to prevent file system overload
@@ -115,12 +122,15 @@ export async function decomposeMetadataTypes(options: DecomposeOptions): Promise
 
       processed.push(metadataType);
       if (updateForceignore || updateGitattributes) {
+        const repoRootDir = dirname(ignorePath);
         processedMeta.push({
-          directoryName: basename(metaAttributes.metadataPaths[0]),
+          directoryName: metaAttributes.directoryName ?? basename(metaAttributes.metadataPaths[0]),
           metaSuffix: metaAttributes.metaSuffix,
           format: typeResolved.format,
+          // Folders found by suffix (custom names, nested subfolders) need patterns of their own.
+          extraDirs: (metaAttributes.extraPaths ?? []).map((path) => relative(repoRootDir, path).split(sep).join('/')),
         });
-        effectiveRepoRoot ??= dirname(ignorePath);
+        effectiveRepoRoot ??= repoRootDir;
       }
       log(`All metadata files have been decomposed for the metadata type: ${metadataType}`);
     }),
