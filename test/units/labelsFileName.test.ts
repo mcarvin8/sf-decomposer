@@ -94,4 +94,27 @@ describe('labels files not named CustomLabels.labels-meta.xml', () => {
     await expect(decompose()).rejects.toThrow('Found more than one labels file');
     expect((await readdir(labelsDir)).sort()).toEqual(['CustomLabels.labels-meta.xml', FILE_NAME].sort());
   });
+
+  it('keeps going when config-disassembler skips another labels file (comments it cannot place)', async () => {
+    // NPSP's main labels file has comments between labels, which config-disassembler leaves
+    // undisassembled. Moving its (missing) output used to throw and abort the whole labels run,
+    // stranding this directory's labels half-decomposed.
+    const mainDir = join(projectDir, 'force-app', 'main', 'default', 'labels');
+    const commented = LABELS.replace(
+      '    <labels>\n        <fullName>fflib_First',
+      '    <!-- section -->\n    <labels>\n        <fullName>fflib_First',
+    );
+    await mkdir(mainDir, { recursive: true });
+    await writeFile(join(mainDir, 'CustomLabels.labels-meta.xml'), commented);
+    await writeFile(join(labelsDir, FILE_NAME), LABELS);
+
+    await decompose();
+    expect(await readdir(mainDir)).toEqual(['CustomLabels.labels-meta.xml']);
+    expect(await readdir(labelsDir)).not.toContain(FILE_NAME);
+
+    await recomposeMetadataTypes({ ...options, postpurge: true });
+    expect(await readFile(join(mainDir, 'CustomLabels.labels-meta.xml'), 'utf-8')).toBe(commented);
+    expect(await readdir(labelsDir)).toEqual([FILE_NAME]);
+    expect(await readFile(join(labelsDir, FILE_NAME), 'utf-8')).toBe(LABELS);
+  });
 });

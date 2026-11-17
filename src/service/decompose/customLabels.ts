@@ -39,7 +39,15 @@ export async function moveAndRenameLabels(metadataPath: string, labelsFileName: 
   const stemDirectory = join(metadataPath, labelsFileStem(labelsFileName));
   const sourceDirectory = join(stemDirectory, 'labels');
   const destinationDirectory = metadataPath;
-  const labelFiles = await readdir(sourceDirectory);
+  let labelFiles: string[];
+  try {
+    labelFiles = await readdir(sourceDirectory);
+  } catch {
+    // config-disassembler skipped the file (e.g. comments it can't keep in place, or no labels)
+    // and wrote nothing: it is left as it was, so there is nothing to move. Throwing here used to
+    // abort the whole labels run, stranding other labels directories half-decomposed.
+    return;
+  }
 
   // Limit concurrent file operations to prevent file system overload
   const limit = pLimit(CONCURRENCY_LIMITS.FILE_OPERATIONS);
