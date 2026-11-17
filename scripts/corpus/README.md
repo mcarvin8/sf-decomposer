@@ -38,8 +38,9 @@ strategy/format:
 2. `decompose -m <type> -s <strategy> -f <format> --postpurge`.
 3. Originals still present after the purge were left alone by the disassembler. Each is recorded
    with the reason it logged: `only has leaf elements`, `has no child elements`, or
-   `has comments between elements` (comments it can't keep in place). If none were decomposed,
-   the cell is **SKIPPED**, because it proves nothing.
+   `has comments outside its root element` (a comment before or after the root, which it can't
+   keep in place; builds on config-disassembler 4.0.3 log `has comments between elements`). If
+   none were decomposed, the cell is **SKIPPED**, because it proves nothing.
 4. `recompose -m <type> --postpurge`.
 5. Hash the whole work tree and compare with the pristine tree. Any missing file,
    leftover file (a shard or sidecar) or changed byte **FAILS** the cell.
