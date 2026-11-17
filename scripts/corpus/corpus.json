@@ -2,31 +2,61 @@
   {
     "name": "dreamhouse-lwc",
     "url": "https://github.com/trailheadapps/dreamhouse-lwc",
-    "sha": "a01e7c0d7393ba5b26087e44d76af33cd88e275f"
+    "sha": "a01e7c0d7393ba5b26087e44d76af33cd88e275f",
+    "style": "prettier"
   },
   {
     "name": "lwc-recipes",
     "url": "https://github.com/trailheadapps/lwc-recipes",
-    "sha": "b5af6ecb2f8d5d75d161b2a702d899f6e4ffc878"
+    "sha": "b5af6ecb2f8d5d75d161b2a702d899f6e4ffc878",
+    "style": "prettier"
   },
   {
     "name": "ebikes-lwc",
     "url": "https://github.com/trailheadapps/ebikes-lwc",
-    "sha": "ab1a3235365eb3a779589f5b971503ee6d62fe55"
+    "sha": "ab1a3235365eb3a779589f5b971503ee6d62fe55",
+    "style": "prettier"
   },
   {
     "name": "coral-cloud",
     "url": "https://github.com/trailheadapps/coral-cloud",
-    "sha": "854216765da8565b6410297443e071f8fec7a769"
+    "sha": "854216765da8565b6410297443e071f8fec7a769",
+    "style": "prettier"
   },
   {
     "name": "easy-spaces-lwc",
     "url": "https://github.com/trailheadapps/easy-spaces-lwc",
-    "sha": "d68a09ff7d17469a24a2f2825d906314ae787181"
+    "sha": "d68a09ff7d17469a24a2f2825d906314ae787181",
+    "style": "prettier"
   },
   {
     "name": "apex-recipes",
     "url": "https://github.com/trailheadapps/apex-recipes",
-    "sha": "eda6167c5126a34daf66d9e1371ff6957ae223bd"
+    "sha": "eda6167c5126a34daf66d9e1371ff6957ae223bd",
+    "style": "prettier"
+  },
+  {
+    "name": "NPSP",
+    "url": "https://github.com/SalesforceFoundation/NPSP",
+    "sha": "f5072b44781e7f31cb396c6919cfa7d0ead0ec6a",
+    "style": "salesforce"
+  },
+  {
+    "name": "EDA",
+    "url": "https://github.com/SalesforceFoundation/EDA",
+    "sha": "b311845eb082fc6b8fafdbcebdbe03cc570df3a6",
+    "style": "salesforce"
+  },
+  {
+    "name": "PMM",
+    "url": "https://github.com/SalesforceFoundation/PMM",
+    "sha": "4c5f3c79b930485f1fafb65b5acd6e1becf8a071",
+    "style": "salesforce"
+  },
+  {
+    "name": "fflib-apex-common-samplecode",
+    "url": "https://github.com/apex-enterprise-patterns/fflib-apex-common-samplecode",
+    "sha": "43a8350bcdee22e2af54ddcd246951e0988a9e10",
+    "style": "salesforce"
   }
 ]

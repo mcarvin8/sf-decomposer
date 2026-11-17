@@ -39,6 +39,12 @@ import {
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ALL_FORMATS = ['xml', 'json', 'yaml', 'json5'];
 const ALL_STRATEGIES = ['unique-id', 'grouped-by-tag'];
+/**
+ * Mismatch kinds that are formatting only and don't fail a cell unless --strict: whitespace
+ * inside tag markup (Prettier's `<tag` + newline + `>value`, one attribute per line) and
+ * between tags. Salesforce never writes these; Prettier does, and re-applies them anyway.
+ */
+const FORMATTING_KINDS: ReadonlySet<MismatchKind> = new Set(['tag-whitespace', 'whitespace']);
 
 const HELP_TEXT = `Usage: npm run corpus -- [options]
 
@@ -51,15 +57,19 @@ Options:
   --strategies <a,b>     unique-id,grouped-by-tag (default: both)
   --formats <a,b|all>    xml,json,yaml,json5 (default: xml)
   --nested-perms         Add a -p cell for permissionset under grouped-by-tag
+  --strict               Fail formatting-only differences too (tag-whitespace, whitespace)
   --plugin <path>        sf-decomposer repo root (default: cwd)
   --work-root <path>     Clone + scratch root (default: <tmp>/sfd-corpus)
   --out <path>           Report dir (default: <work-root>/reports/<timestamp>)
   --help, -h             Show this help
 
-Exit codes: 0 all cells byte-equal (or skipped), 2 any cell failed, 1 harness error.
+Statuses: PASS byte-equal; FORMAT only formatting kinds differ (passes unless --strict);
+SKIPPED nothing decomposed; FAIL anything else differs; ERROR harness error.
+
+Exit codes: 0 no FAIL/ERROR, 2 any FAIL/ERROR, 1 harness error.
 `;
 
-type Status = 'PASS' | 'FAIL' | 'SKIPPED' | 'ERROR';
+type Status = 'PASS' | 'FORMAT' | 'FAIL' | 'SKIPPED' | 'ERROR';
 
 interface Cell {
   repo: string;
@@ -87,6 +97,7 @@ interface Options {
   strategies: string[];
   formats: string[];
   nestedPerms: boolean;
+  strict: boolean;
   pluginRoot: string;
   workRoot: string;
   out: string;
@@ -129,6 +140,7 @@ function parseCli(argv: readonly string[]): Options {
     strategies,
     formats,
     nestedPerms: flags.has('nested-perms'),
+    strict: flags.has('strict'),
     pluginRoot: resolve((flags.get('plugin') as string | undefined) ?? process.cwd()),
     workRoot,
     out: resolve((flags.get('out') as string | undefined) ?? join(workRoot, 'reports', stamp)),
@@ -210,7 +222,12 @@ function runCell(cell: Cell, type: DiscoveredType, repoDir: string, baseline: Sn
     writeFileSync(`${saveBase}.orig`, orig);
     writeFileSync(`${saveBase}.rebuilt`, rebuilt);
   }
-  if (diff.missing.length || diff.extra.length || diff.changed.length) result.status = 'FAIL';
+  if (diff.missing.length || diff.extra.length) {
+    result.status = 'FAIL';
+  } else if (result.changed.length) {
+    const formattingOnly = !opts.strict && result.changed.every((c) => FORMATTING_KINDS.has(c.kind));
+    result.status = formattingOnly ? 'FORMAT' : 'FAIL';
+  }
   return result;
 }
 
@@ -220,8 +237,8 @@ function markdownSummary(results: CellResult[], opts: Options, pluginSha: string
     '# sf-decomposer corpus byte-equality report',
     '',
     `- sf-decomposer: \`${pluginSha}\``,
-    `- strategies: ${opts.strategies.join(', ')} | formats: ${opts.formats.join(', ')}${opts.nestedPerms ? ' | nested perms' : ''}`,
-    `- cells: ${results.length} | PASS ${count('PASS')} | FAIL ${count('FAIL')} | SKIPPED ${count('SKIPPED')} | ERROR ${count('ERROR')}`,
+    `- strategies: ${opts.strategies.join(', ')} | formats: ${opts.formats.join(', ')}${opts.nestedPerms ? ' | nested perms' : ''}${opts.strict ? ' | strict' : ''}`,
+    `- cells: ${results.length} | PASS ${count('PASS')} | FORMAT ${count('FORMAT')} | FAIL ${count('FAIL')} | SKIPPED ${count('SKIPPED')} | ERROR ${count('ERROR')}`,
     '',
     '| repo | type | strategy | format | status | files | decomposed | missing | extra | changed (kinds) |',
     '| --- | --- | --- | --- | --- | --: | --: | --: | --: | --- |',
@@ -266,7 +283,7 @@ function main(): number {
 
   const results: CellResult[] = [];
   for (const repo of opts.corpus) {
-    process.stdout.write(`\n== ${repo.name} @ ${repo.sha.slice(0, 12)}\n`);
+    process.stdout.write(`\n== ${repo.name} @ ${repo.sha.slice(0, 12)}${repo.style ? ` (${repo.style})` : ''}\n`);
     let repoDir: string;
     try {
       repoDir = cloneAtSha(repo, opts.workRoot);
@@ -326,7 +343,7 @@ function main(): number {
   writeFileSync(join(opts.out, 'summary.md'), markdownSummary(results, opts, pluginSha), 'utf8');
 
   const rows = results
-    .filter((r) => r.status !== 'PASS')
+    .filter((r) => r.status === 'FAIL' || r.status === 'ERROR')
     .map((r) => ({
       repo: r.repo,
       cell: cellId(r),
@@ -337,7 +354,7 @@ function main(): number {
     }));
   const count = (s: Status): number => results.filter((r) => r.status === s).length;
   process.stdout.write(
-    `\nPASS ${count('PASS')}  FAIL ${count('FAIL')}  SKIPPED ${count('SKIPPED')}  ERROR ${count('ERROR')}\n`,
+    `\nPASS ${count('PASS')}  FORMAT ${count('FORMAT')}  FAIL ${count('FAIL')}  SKIPPED ${count('SKIPPED')}  ERROR ${count('ERROR')}\n`,
   );
   if (rows.length) process.stdout.write(`${formatTable(rows)}\n`);
   process.stdout.write(`\nReport: ${opts.out}\n`);

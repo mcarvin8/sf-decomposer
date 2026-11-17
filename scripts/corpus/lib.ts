@@ -15,6 +15,8 @@ export interface CorpusRepo {
   url: string;
   /** Full commit SHA. Never a branch: upstream commits must not look like regressions. */
   sha: string;
+  /** How the repo's XML is formatted: `salesforce` (as retrieved) or `prettier`. Informational. */
+  style?: 'salesforce' | 'prettier';
 }
 
 export interface DiscoveredType {
