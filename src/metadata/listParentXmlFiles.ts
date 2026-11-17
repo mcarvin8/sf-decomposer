@@ -61,7 +61,7 @@ async function pathExists(path: string): Promise<boolean> {
  * the crate's directory-mode disassemble processes, so both must be discovered here too, or
  * bot version files are silently never verified at all.
  */
-async function listComponentDirFiles(componentDir: string, metaSuffix: string): Promise<ParentXmlFile[]> {
+export async function listComponentDirFiles(componentDir: string, metaSuffix: string): Promise<ParentXmlFile[]> {
   const files = await listSuffixFiles(componentDir, metaSuffix);
   const versionFiles = metaSuffix === 'bot' ? await listSuffixFiles(componentDir, 'botVersion') : [];
   const fullName = basename(componentDir);

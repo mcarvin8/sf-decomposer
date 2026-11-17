@@ -11,6 +11,7 @@ import {
 import { CONCURRENCY_LIMITS, CUSTOM_LABELS_FILE } from '../../helpers/constants.js';
 import { pLimit } from '../../helpers/pLimit.js';
 import { DecomposerOverride } from '../../helpers/types.js';
+import { listComponentDirFiles } from '../../metadata/listParentXmlFiles.js';
 import { directoryOccupancy } from '../../metadata/sharedDirectories.js';
 import { moveAndRenameLabels, prePurgeLabels } from './customLabels.js';
 import { renameWorkflows } from './renameWorkflows.js';
@@ -159,7 +160,7 @@ async function decomposeFromManifest(
       limit(() => {
         const fullName = basename(parentDir);
         const resolved = resolveDecomposeOptionsForComponent(overrideKey, fullName, typeResolved, overrides);
-        return disassembleHandler(parentDir, uniqueIdElements, resolved, ignorePath, metaSuffix, repoRoot);
+        return disassembleComponentDir(parentDir, uniqueIdElements, resolved, ignorePath, metaSuffix, repoRoot);
       }),
     );
     await Promise.all(tasks);
@@ -247,11 +248,45 @@ async function subDirectoryHandler(
       processLimit(() => {
         const fullName = basename(subFilePath);
         const resolved = resolveDecomposeOptionsForComponent(overrideKey, fullName, typeResolved, overrides);
-        return disassembleHandler(subFilePath, uniqueIdElements, resolved, ignorePath, metaSuffix, repoRoot);
+        return disassembleComponentDir(subFilePath, uniqueIdElements, resolved, ignorePath, metaSuffix, repoRoot);
       }),
     );
 
   await Promise.all(processTasks);
+}
+
+/**
+ * Disassemble one component folder (`bots/MyBot/`, `objectTranslations/Account-de/`). Handing the
+ * disassembler the whole folder decomposes every XML file in it, but some folders also hold a child
+ * type's own files -- CustomObjectTranslation keeps `<Field>.fieldTranslation-meta.xml` beside
+ * `<Object>-<lang>.objectTranslation-meta.xml` -- which recompose would then rebuild as this type
+ * (`<Field>.objectTranslation-meta.xml`). When the folder holds such files, disassemble only this
+ * type's own files (bot version files included, see `listComponentDirFiles`).
+ */
+async function disassembleComponentDir(
+  componentDir: string,
+  uniqueIdElements: string,
+  resolved: ResolvedDecomposeTypeOptions,
+  ignorePath: string,
+  metaSuffix: string,
+  repoRoot?: string,
+): Promise<void> {
+  const ownFiles = await listComponentDirFiles(componentDir, metaSuffix);
+  const ownNames = new Set(ownFiles.map((file) => basename(file.filePath)));
+  // An unreadable folder keeps the whole-folder path (the disassembler reports it), matching
+  // `listComponentDirFiles`, which treats it as empty.
+  const entries = await readdir(componentDir, { withFileTypes: true }).catch(() => []);
+  const holdsOtherTypes = entries.some(
+    (entry) => entry.isFile() && entry.name.endsWith('-meta.xml') && !ownNames.has(entry.name),
+  );
+  if (!holdsOtherTypes) {
+    await disassembleHandler(componentDir, uniqueIdElements, resolved, ignorePath, metaSuffix, repoRoot);
+    return;
+  }
+  for (const file of ownFiles) {
+    // eslint-disable-next-line no-await-in-loop
+    await disassembleHandler(file.filePath, uniqueIdElements, resolved, ignorePath, metaSuffix, repoRoot);
+  }
 }
 
 /**

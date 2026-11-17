@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObjectTranslation xmlns="http://soap.sforce.com/2006/04/metadata">
+    <caseValues>
+        <plural>false</plural>
+        <value>Programm</value>
+    </caseValues>
+    <caseValues>
+        <plural>true</plural>
+        <value>Programme</value>
+    </caseValues>
+    <validationRules>
+        <errorMessage>Enddatum muss nach dem Startdatum liegen.</errorMessage>
+        <name>End_After_Start</name>
+    </validationRules>
+</CustomObjectTranslation>
