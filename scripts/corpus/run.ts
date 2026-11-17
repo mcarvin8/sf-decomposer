@@ -251,8 +251,14 @@ function runCell(cell: Cell, type: DiscoveredType, repoDir: string, baseline: Sn
   return result;
 }
 
-/** "The XML file <path> only has leaf elements. This file will not be disassembled." */
-const SKIP_LOG_RE = /The XML file (.+?) (only has leaf elements|has no child elements|has comments between elements)/;
+/**
+ * "The XML file <path> only has leaf elements. This file will not be disassembled." The comment
+ * reason is "has comments outside its root element" since config-disassembler 4.1.0 (comments inside
+ * the root are kept); "has comments between elements" is the 4.0.3 wording, still matched for
+ * reports of builds on that version.
+ */
+const SKIP_LOG_RE =
+  /The XML file (.+?) (only has leaf elements|has no child elements|has comments outside its root element|has comments between elements)/;
 
 /**
  * Pair each file decompose left in place with the reason config-disassembler logged for it. A file
