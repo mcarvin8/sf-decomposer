@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794882713926,
+  "lastUpdate": 1794882824368,
   "repoUrl": "https://github.com/mcarvin8/sf-decomposer",
   "entries": {
     "Decompose CPU (large)": [
@@ -3663,6 +3663,78 @@ window.BENCHMARK_DATA = {
             "name": "manyfiles-overrides.yaml.recompose",
             "value": 5572.21,
             "range": "5482.64-5691.51ms",
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "41898282+github-actions[bot]@users.noreply.github.com",
+            "name": "github-actions[bot]",
+            "username": "github-actions[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "4ba35df3d2daa3c861ba11d32588aa417d18407b",
+          "message": "chore(main): release 7.16.2 (#689)",
+          "timestamp": "2026-11-16T21:18:22-05:00",
+          "tree_id": "486572c32ae179d3c6ec8fc77ceb4999c917fe06",
+          "url": "https://github.com/mcarvin8/sf-decomposer/commit/4ba35df3d2daa3c861ba11d32588aa417d18407b"
+        },
+        "date": 1794882824321,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "manyfiles-overrides.xml.decompose",
+            "value": 2418.42,
+            "range": "2409.07-2428.41ms",
+            "unit": "ms"
+          },
+          {
+            "name": "manyfiles-overrides.xml.recompose",
+            "value": 3766.13,
+            "range": "3692.5-3856.64ms",
+            "unit": "ms"
+          },
+          {
+            "name": "manyfiles-overrides.json.decompose",
+            "value": 2359.47,
+            "range": "2321.62-2375.95ms",
+            "unit": "ms"
+          },
+          {
+            "name": "manyfiles-overrides.json.recompose",
+            "value": 3592.16,
+            "range": "3500.75-3604.33ms",
+            "unit": "ms"
+          },
+          {
+            "name": "manyfiles-overrides.json5.decompose",
+            "value": 2320.95,
+            "range": "2297.8-2459.48ms",
+            "unit": "ms"
+          },
+          {
+            "name": "manyfiles-overrides.json5.recompose",
+            "value": 3639.52,
+            "range": "3541.45-3711.64ms",
+            "unit": "ms"
+          },
+          {
+            "name": "manyfiles-overrides.yaml.decompose",
+            "value": 2591.67,
+            "range": "2568.98-2660.91ms",
+            "unit": "ms"
+          },
+          {
+            "name": "manyfiles-overrides.yaml.recompose",
+            "value": 5123.4,
+            "range": "5007.7-5248.75ms",
             "unit": "ms"
           }
         ]
