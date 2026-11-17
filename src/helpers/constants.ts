@@ -6,6 +6,13 @@ export const CUSTOM_LABELS_FILE = 'CustomLabels.labels-meta.xml';
 // CustomLabels' decompose/recompose shuffle (customLabels.ts / reassembleLabels.ts) must
 // carry it across manually since it lives one level up from the actual label shard files.
 export const TRAILING_NEWLINE_SIDECAR = '.trailing_newline.json';
+/** config-disassembler's record of repeated siblings' original order (`{ tag: [shard paths] }`). */
+export const ELEMENT_ORDER_SIDECAR = '.element_order.json';
+/**
+ * Sidecars config-disassembler writes in a decomposed file's stem directory that custom labels keep
+ * beside their flat `.label-meta.xml` files (labels have no stem directory once decomposed).
+ */
+export const LABEL_SIDECARS: readonly string[] = [TRAILING_NEWLINE_SIDECAR, ELEMENT_ORDER_SIDECAR];
 export const DEFAULT_UNIQUE_ID_ELEMENTS: string = 'fullName,name';
 export const DECOMPOSED_FILE_TYPES: string[] = ['xml', 'json', 'yaml', 'json5'];
 export const DECOMPOSED_STRATEGIES: string[] = ['unique-id', 'grouped-by-tag'];
