@@ -26,7 +26,7 @@ npm run corpus -- --repos dreamhouse-lwc --types permissionset,flow --formats al
 | `--work-root <path>`  | `<tmp>/sfd-corpus`                         |
 | `--out <path>`        | `<work-root>/reports/<timestamp>`          |
 
-Statuses: **PASS** (byte-equal), **FORMAT** (only `tag-whitespace`/`whitespace` differ; passes unless `--strict`), **SKIPPED** (nothing decomposed), **FAIL**, **ERROR**. Exit code: `0` when there's no FAIL or ERROR, `2` otherwise, `1` on a harness error.
+Statuses: **PASS** (byte-equal), **FORMAT** (only `tag-whitespace`/`whitespace` differ; passes unless `--strict`), **REORDER** (a `--nested-perms` cell where only permission order, plus any formatting, differs: `-p` sorts object and field permissions by design; passes unless `--strict`), **SKIPPED** (nothing decomposed), **FAIL**, **ERROR**. Exit code: `0` when there's no FAIL or ERROR, `2` otherwise, `1` on a harness error.
 
 ## How each cell works
 

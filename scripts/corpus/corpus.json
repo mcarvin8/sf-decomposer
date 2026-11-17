@@ -58,5 +58,47 @@
     "url": "https://github.com/apex-enterprise-patterns/fflib-apex-common-samplecode",
     "sha": "43a8350bcdee22e2af54ddcd246951e0988a9e10",
     "style": "salesforce"
+  },
+  {
+    "name": "crm-arbeidsgiver-base",
+    "url": "https://github.com/navikt/crm-arbeidsgiver-base",
+    "sha": "fd528bf56e11aff8480400a92b44a0537e803319",
+    "style": "salesforce"
+  },
+  {
+    "name": "rlm-base-dev",
+    "url": "https://github.com/bgaldino/rlm-base-dev",
+    "sha": "7188aaa712f801bb991670a9ef418bbab88e23f8",
+    "style": "salesforce"
+  },
+  {
+    "name": "minlopro-dx",
+    "url": "https://github.com/awesomeandrey/minlopro-dx",
+    "sha": "9e32123f96a69fac1321addad488f80f85ce4687",
+    "style": "salesforce"
+  },
+  {
+    "name": "ET_OrderOfExecution",
+    "url": "https://github.com/eltoroit/ET_OrderOfExecution",
+    "sha": "e9d798755ea1f65eee9c5a27aa468f109f79a1ad",
+    "style": "salesforce"
+  },
+  {
+    "name": "NebulaLogger",
+    "url": "https://github.com/jongpie/NebulaLogger",
+    "sha": "b792ac8d8b4eb31b14a164a24951c3cb4125a616",
+    "style": "salesforce"
+  },
+  {
+    "name": "AnimalShelterStarter",
+    "url": "https://github.com/SalesforceLabs/AnimalShelterStarter",
+    "sha": "c6eec92002eedde52ed332469b37f5552912ab86",
+    "style": "salesforce"
+  },
+  {
+    "name": "apex-rollup",
+    "url": "https://github.com/jamessimone/apex-rollup",
+    "sha": "5f16190f7ff4337db8b7acdd1769cbc23b88cc15",
+    "style": "prettier"
   }
 ]
