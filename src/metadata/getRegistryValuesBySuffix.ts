@@ -79,6 +79,15 @@ export function resolveMetadataTypeEntry(metadataType: string): MetadataType {
     throw Error('Custom Objects are not supported by this plugin.');
   }
 
+  // A folder's decomposed directory (`reports/MyFolder/`) is the folder's own content directory, so
+  // decompose writes shards in among its reports/dashboards/... and recompose merges those files into
+  // the folder file, then --postpurge deletes them.
+  if (metadataTypeEntry.folderContentType) {
+    throw Error(
+      `Folder types (${metadataTypeEntry.name}) are not supported by this plugin: a folder decomposes into its own content directory, which holds its ${metadataTypeEntry.folderContentType} files.`,
+    );
+  }
+
   if (metadataTypeEntry.strategies?.adapter && UNSUPPORTED_ADAPTERS.includes(metadataTypeEntry.strategies.adapter)) {
     throw Error(
       `Metadata types with ${metadataTypeEntry.strategies.adapter} strategies are not supported by this plugin.`,
