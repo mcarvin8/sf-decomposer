@@ -453,6 +453,12 @@ A leaf element is a property or scalar value that contains only text, with no ch
 
 A file with no nested elements at all is **leaf-only**: there is nothing to split, so decompose skips it and leaves it untouched (logged at `RUST_LOG=error`, not a failure). [METADATA_SUPPORT.md](./docs/METADATA_SUPPORT.md) lists which types are leaf-only.
 
+**XML comments**
+
+Comments Salesforce retrieves are kept. These are the placeholders in untranslated values, such as `<translation><!-- Planned --></translation>` in a global value set translation or `<label><!-- Status --></label>` in an object translation.
+
+A file with comments added _between_ elements is left untouched, the same way as a leaf-only file (logged at `RUST_LOG=error`, not a failure). That includes commented-out XML or notes above an element, because those comments can't be kept in place when the file is split. To decompose such a file, move the comment into an element's text or remove it.
+
 Example:
 
 ```xml
@@ -891,7 +897,7 @@ The underlying Rust crate logs through [env_logger](https://docs.rs/env_logger).
 
 | Level            | What it covers                                                                                                                                                                                |
 | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `RUST_LOG=error` | Default. Parse errors and skipped files (leaf-only XML — primitives only, nothing to decompose).                                                                                              |
+| `RUST_LOG=error` | Default. Parse errors and skipped files: leaf-only XML (nothing to decompose), an empty root element, or [comments between elements](#decompose-strategies).                                  |
 | `RUST_LOG=warn`  | Adds [sibling-collision fallback](#filename-safety-unique-id) signals — one line per colliding group (parent tag, collided id, sibling count). **Recommended in CI** when shipping overrides. |
 | `RUST_LOG=off`   | Disables rust crate logging. **Recommended** for the `sf decomposer verify` command.                                                                                                          |
 
