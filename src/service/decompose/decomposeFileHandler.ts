@@ -77,7 +77,10 @@ export async function decomposeFileHandler(
         // The directory can also hold other types' files (e.g. `moderation` holds KeywordList and
         // ModerationRule): handing the disassembler the whole directory would decompose those too,
         // so disassemble only this type's `.<suffix>-meta.xml` files.
-        directoryOccupancy(basename(metadataPath), metaSuffix).others.length > 0
+        directoryOccupancy(basename(metadataPath), metaSuffix).others.length > 0 ||
+        // Any directory can, too: a type is resolved by its suffix, not its folder, so projects
+        // place files where they like (NebulaLogger keeps flows in a `customMetadata` folder).
+        (await holdsOtherSuffixFiles(metadataPath, metaSuffix))
       ) {
         await perFileHandler(
           metadataPath,
@@ -305,6 +308,16 @@ async function disassembleComponentDir(
  * individually, so different components can use different strategies/formats and other types' files
  * are left alone.
  */
+/**
+ * Whether `dir` directly holds metadata files of another suffix. The disassembler's whole-directory
+ * mode (like `perFileHandler`) only reads the directory's own files, so one level is enough.
+ */
+async function holdsOtherSuffixFiles(dir: string, metaSuffix: string): Promise<boolean> {
+  const metaEnding = `.${metaSuffix}-meta.xml`;
+  const entries = await readdir(dir, { withFileTypes: true }).catch(() => []);
+  return entries.some((e) => e.isFile() && e.name.endsWith('-meta.xml') && !e.name.endsWith(metaEnding));
+}
+
 async function perFileHandler(
   metadataPath: string,
   uniqueIdElements: string,
