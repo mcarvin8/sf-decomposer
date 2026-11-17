@@ -8,11 +8,12 @@ import {
   ResolvedDecomposeTypeOptions,
   resolveDecomposeOptionsForComponent,
 } from '../../helpers/configOverrides.js';
-import { CONCURRENCY_LIMITS, CUSTOM_LABELS_FILE } from '../../helpers/constants.js';
+import { CONCURRENCY_LIMITS } from '../../helpers/constants.js';
 import { pLimit } from '../../helpers/pLimit.js';
 import { DecomposerOverride } from '../../helpers/types.js';
 import { listComponentDirFiles } from '../../metadata/listParentXmlFiles.js';
 import { directoryOccupancy } from '../../metadata/sharedDirectories.js';
+import { findLabelsFile } from '../core/labelsFile.js';
 import { moveAndRenameLabels, prePurgeLabels } from './customLabels.js';
 import { renameWorkflows } from './renameWorkflows.js';
 import { resolveEffectiveDisassembleOptions } from './resolveEffectiveDisassembleOptions.js';
@@ -70,20 +71,7 @@ export async function decomposeFileHandler(
           repoRoot,
         );
       } else if (metaSuffix === 'labels') {
-        // Labels live in a single shared file; component-scope overrides are not applicable.
-        // Skip the prePurge flag in the disassembler for labels due to file moving.
-        if (typeResolved.prepurge) await prePurgeLabels(metadataPath);
-        const absoluteLabelFilePath = resolve(metadataPath, CUSTOM_LABELS_FILE);
-
-        await disassembleHandler(
-          absoluteLabelFilePath,
-          uniqueIdElements,
-          { ...typeResolved, prepurge: false },
-          ignorePath,
-          metaSuffix,
-          repoRoot,
-        );
-        await moveAndRenameLabels(metadataPath);
+        await decomposeLabelsDir(metadataPath, uniqueIdElements, typeResolved, ignorePath, metaSuffix, repoRoot);
       } else if (
         hasComponentOverridesForType(overrideKey, overrides) ||
         // The directory can also hold other types' files (e.g. `moderation` holds KeywordList and
@@ -129,22 +117,13 @@ async function decomposeFromManifest(
   const xmlPaths = Array.from(manifestXmlPaths);
 
   if (metaSuffix === 'labels') {
-    // Labels have a single source file per labels directory; dedupe by containing dir.
-    const labelDirs = new Set(xmlPaths.map((xml) => dirname(xml)));
-    const tasks = Array.from(labelDirs).map((labelDir) =>
-      limit(async () => {
-        if (typeResolved.prepurge) await prePurgeLabels(labelDir);
-        const absoluteLabelFilePath = resolve(labelDir, CUSTOM_LABELS_FILE);
-        await disassembleHandler(
-          absoluteLabelFilePath,
-          uniqueIdElements,
-          { ...typeResolved, prepurge: false },
-          ignorePath,
-          metaSuffix,
-          repoRoot,
-        );
-        await moveAndRenameLabels(labelDir);
-      }),
+    // Labels have a single source file per labels directory; dedupe by containing dir, keeping the
+    // file's own name (it need not be CustomLabels.labels-meta.xml).
+    const labelFiles = new Map(xmlPaths.map((xml) => [dirname(xml), basename(xml)]));
+    const tasks = Array.from(labelFiles).map(([labelDir, labelsFileName]) =>
+      limit(() =>
+        decomposeLabelsDir(labelDir, uniqueIdElements, typeResolved, ignorePath, metaSuffix, repoRoot, labelsFileName),
+      ),
     );
     await Promise.all(tasks);
     return;
@@ -183,6 +162,36 @@ async function decomposeFromManifest(
       await renameWorkflows(workflowDir);
     }
   }
+}
+
+/**
+ * Decompose the labels file in `labelDir`, whatever its name (the registry ignores a CustomLabels
+ * file's parsed fullName), into flat `.label-meta.<ext>` files. Labels live in a single shared file,
+ * so component-scope overrides don't apply. The disassembler's prePurge is skipped because of the
+ * file moving; `prePurgeLabels` does it instead.
+ */
+async function decomposeLabelsDir(
+  labelDir: string,
+  uniqueIdElements: string,
+  typeResolved: ResolvedDecomposeTypeOptions,
+  ignorePath: string,
+  metaSuffix: string,
+  repoRoot?: string,
+  knownLabelsFileName?: string,
+): Promise<void> {
+  // A manifest already names the file; otherwise find it (any `<name>.labels-meta.xml`).
+  const labelsFileName = knownLabelsFileName ?? (await findLabelsFile(labelDir));
+  if (!labelsFileName) return;
+  if (typeResolved.prepurge) await prePurgeLabels(labelDir);
+  await disassembleHandler(
+    resolve(labelDir, labelsFileName),
+    uniqueIdElements,
+    { ...typeResolved, prepurge: false },
+    ignorePath,
+    metaSuffix,
+    repoRoot,
+  );
+  await moveAndRenameLabels(labelDir, labelsFileName);
 }
 
 async function disassembleHandler(

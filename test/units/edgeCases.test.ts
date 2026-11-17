@@ -298,7 +298,7 @@ describe('Edge case coverage tests', () => {
 
       const forceignoreContent = await readFile(join(tempProjectDir, '.forceignore'), 'utf-8');
       expect(forceignoreContent).toContain('**/labels/*.xml');
-      expect(forceignoreContent).toContain('!**/labels/CustomLabels.labels-meta.xml');
+      expect(forceignoreContent).toContain('!**/labels/*.labels-meta.xml');
     });
 
     it('writes .gitattributes and logs update message when updateGitattributes is true', async () => {
@@ -321,7 +321,7 @@ describe('Edge case coverage tests', () => {
       expect(output).toContain('Updated .gitattributes with root metadata file patterns.');
 
       const gitattributesContent = await readFile(join(tempProjectDir, '.gitattributes'), 'utf-8');
-      expect(gitattributesContent).toContain('**/labels/CustomLabels.labels-meta.xml -diff linguist-generated=true');
+      expect(gitattributesContent).toContain('**/labels/*.labels-meta.xml -diff linguist-generated=true');
     });
   });
 });

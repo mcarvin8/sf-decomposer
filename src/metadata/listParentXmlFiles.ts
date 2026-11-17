@@ -1,9 +1,9 @@
 'use strict';
 
-import { readdir, stat } from 'node:fs/promises';
+import { readdir } from 'node:fs/promises';
 import { basename, dirname, join } from 'node:path';
 
-import { CONCURRENCY_LIMITS, CUSTOM_LABELS_FILE } from '../helpers/constants.js';
+import { CONCURRENCY_LIMITS } from '../helpers/constants.js';
 import { pLimit } from '../helpers/pLimit.js';
 import { MetaAttributes } from '../helpers/types.js';
 
@@ -34,15 +34,6 @@ export async function listSuffixFiles(dir: string, metaSuffix: string): Promise<
       filePath: join(dir, entry.name),
       fullName: entry.name.slice(0, -metaEnding.length),
     }));
-}
-
-async function pathExists(path: string): Promise<boolean> {
-  try {
-    await stat(path);
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 /**
@@ -110,10 +101,8 @@ export async function listParentXmlFilesForType(
   if (metaSuffix === 'labels') {
     const results = await Promise.all(
       metadataPaths.map((metadataPath) =>
-        dirLimit(async () => {
-          const filePath = join(metadataPath, CUSTOM_LABELS_FILE);
-          return (await pathExists(filePath)) ? [{ filePath, fullName: 'CustomLabels' }] : [];
-        }),
+        // Any `<name>.labels-meta.xml` is a CustomLabels file (the registry ignores its parsed fullName).
+        dirLimit(() => listSuffixFiles(metadataPath, metaSuffix)),
       ),
     );
     return results.flat();

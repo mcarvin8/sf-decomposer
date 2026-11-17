@@ -6,25 +6,38 @@ import { join } from 'node:path';
 
 import {
   CONCURRENCY_LIMITS,
-  CUSTOM_LABELS_FILE,
   ELEMENT_ORDER_SIDECAR,
   LABEL_SIDECARS,
+  LABELS_FILE_SIDECAR,
 } from '../../helpers/constants.js';
 import { pLimit } from '../../helpers/pLimit.js';
+import { isLabelShard, labelsFileStem, writeLabelsFileName } from '../core/labelsFile.js';
 import { moveFiles } from '../core/moveFiles.js';
 
+/**
+ * Removes a previous decompose's output: the flat label files and their sidecars. Other files in
+ * the directory -- the labels file itself, whatever its name -- are left alone.
+ */
 export async function prePurgeLabels(metadataPath: string): Promise<void> {
   const subFiles = await readdir(metadataPath);
   for (const subFile of subFiles) {
     const subfilePath = join(metadataPath, subFile);
-    if ((await stat(subfilePath)).isFile() && subFile !== CUSTOM_LABELS_FILE) {
-      await rm(subfilePath, { recursive: true });
+    const isDecomposeOutput =
+      isLabelShard(subFile) || LABEL_SIDECARS.includes(subFile) || subFile === LABELS_FILE_SIDECAR;
+    if (isDecomposeOutput && (await stat(subfilePath)).isFile()) {
+      await rm(subfilePath);
     }
   }
 }
 
-export async function moveAndRenameLabels(metadataPath: string): Promise<void> {
-  const sourceDirectory = join(metadataPath, 'CustomLabels', 'labels');
+/**
+ * Flattens the shards config-disassembler wrote to `<stem>/labels/` into the labels directory as
+ * `.label-meta.<ext>` files, rescues its sidecars, and records the labels file's name when it isn't
+ * the default so recompose rebuilds the same file.
+ */
+export async function moveAndRenameLabels(metadataPath: string, labelsFileName: string): Promise<void> {
+  const stemDirectory = join(metadataPath, labelsFileStem(labelsFileName));
+  const sourceDirectory = join(stemDirectory, 'labels');
   const destinationDirectory = metadataPath;
   const labelFiles = await readdir(sourceDirectory);
 
@@ -47,16 +60,15 @@ export async function moveAndRenameLabels(metadataPath: string): Promise<void> {
   // istanbul ignore next -- callback only invoked if non-label files exist after rename
   await moveFiles(sourceDirectory, destinationDirectory, () => true);
 
-  // config-disassembler wrote its sidecars in the "CustomLabels" stem directory itself
-  // (sibling to the "labels" shard subdirectory we just emptied above), not inside it --
-  // rescue them before the rm() below destroys them, so reassembleLabels can hand them back
-  // to reassemble(): the trailing newline and the labels' original order then round-trip
-  // like every other metadata type's.
-  const stemDirectory = join(metadataPath, 'CustomLabels');
+  // config-disassembler wrote its sidecars in the stem directory itself (sibling to the "labels"
+  // shard subdirectory we just emptied above), not inside it -- rescue them before the rm()
+  // below destroys them, so reassembleLabels can hand them back to reassemble(): the trailing
+  // newline and the labels' original order then round-trip like every other metadata type's.
   await renameLabelsInElementOrder(join(stemDirectory, ELEMENT_ORDER_SIDECAR));
   await moveFiles(stemDirectory, destinationDirectory, (fileName) => LABEL_SIDECARS.includes(fileName));
 
   await rm(stemDirectory, { recursive: true });
+  await writeLabelsFileName(metadataPath, labelsFileName);
 }
 
 /**

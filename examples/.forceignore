@@ -37,7 +37,7 @@ package.xml
 
 # Allow the recomposed files
 !**/permissionsets/*.permissionset-meta.xml
-!**/labels/CustomLabels.labels-meta.xml
+!**/labels/*.labels-meta.xml
 !**/workflows/*.workflow-meta.xml
 !**/profiles/*.profile-meta.xml
 !**/flows/*.flow-meta.xml
