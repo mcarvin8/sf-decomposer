@@ -75,17 +75,53 @@ async function firstFragmentFile(dir: string): Promise<string | undefined> {
   return undefined;
 }
 
+/** Files the disassembler writes beside every file it decomposes. */
+const DISASSEMBLER_SIDECARS = ['.key_order.json', '.element_order.json', '.trailing_newline.json'];
+
 /**
- * Whether the decomposed directory `dir` was produced from a `metaSuffix` file of type `typeName`.
- * The leaf file (`<dir>.<suffix>-meta.<ext>`) names the suffix directly; when the root had no
- * leaf elements there is no leaf file, so fall back to the root element every fragment carries.
+ * Whether `dir`, at any depth, holds a real `<name>.<suffix>-meta.xml` file, meaning `dir` is a
+ * plain subfolder of metadata (e.g. `flexipages/record-pages/`), not a decomposed directory. Shards
+ * are named after their element tag and sit in a folder of that name (`<tag>/<id>.<tag>-meta.<ext>`),
+ * so a file with the type's suffix only counts when its folder isn't named after the suffix: a
+ * KeywordList's `<keywords>` tag matches its `keywords` suffix (`keywords/a.keywords-meta.xml`).
  */
-export async function isDecomposedDirOfType(dir: string, metaSuffix: string, typeName: string): Promise<boolean> {
+async function holdsOwnSuffixFiles(dir: string, metaSuffix: string): Promise<boolean> {
+  const metaEnding = `.${metaSuffix}-meta.xml`;
+  const entries = await readdir(dir, { withFileTypes: true });
+  if (basename(dir) !== metaSuffix && entries.some((e) => e.isFile() && e.name.endsWith(metaEnding))) return true;
+  for (const sub of entries.filter((e) => e.isDirectory())) {
+    // eslint-disable-next-line no-await-in-loop
+    if (await holdsOwnSuffixFiles(join(dir, sub.name), metaSuffix)) return true;
+  }
+  return false;
+}
+
+/**
+ * Whether `dir` is a directory decomposed from a `metaSuffix` file of type `typeName`, rather than
+ * another type's decomposed directory, a plain subfolder of metadata files, or a folder that isn't
+ * metadata at all (e.g. UTAM page objects in `flexipages/__utam__/`).
+ *
+ * - The leaf file (`<dir>.<suffix>-meta.<ext>`) names the suffix directly.
+ * - A real `.<suffix>-meta.xml` file anywhere inside means a plain subfolder of metadata.
+ * - Otherwise (a root with no leaf elements has no leaf file): in a directory only this type uses
+ *   (`shared: false`), the disassembler's sidecars identify it. The root element every fragment
+ *   carries is checked where types must be told apart (`shared: true`), and as the fallback for
+ *   directories decomposed before the sidecars existed. It can't be required everywhere: a root
+ *   need not be named after its type (`BusinessHours.settings-meta.xml` has `<BusinessHoursSettings>`).
+ */
+export async function isDecomposedDirOfType(
+  dir: string,
+  metaSuffix: string,
+  typeName: string,
+  { shared }: { shared: boolean } = { shared: true },
+): Promise<boolean> {
   const stem = basename(dir);
   const files = (await readdir(dir, { withFileTypes: true })).filter((e) => e.isFile()).map((e) => e.name);
   if (files.some((name) => name.startsWith(`${stem}.${metaSuffix}-meta.`))) return true;
   if (files.some((name) => name.startsWith(`${stem}.`) && name.includes('-meta.'))) return false;
+  if (await holdsOwnSuffixFiles(dir, metaSuffix)) return false;
 
+  if (!shared && files.some((name) => DISASSEMBLER_SIDECARS.includes(name))) return true;
   const fragment = await firstFragmentFile(dir);
   if (!fragment) return false;
   return hasRootElement(await readFile(fragment, 'utf-8'), typeName);
