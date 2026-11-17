@@ -5,6 +5,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.16.2](https://github.com/mcarvin8/sf-decomposer/compare/v7.16.1...v7.16.2) (2026-11-17)
+
+
+### Bug Fixes
+
+* bump config-disassembler to 4.0.2 ([#692](https://github.com/mcarvin8/sf-decomposer/issues/692)) ([f70db64](https://github.com/mcarvin8/sf-decomposer/commit/f70db640213a3c0440e76b2a6f6fb5d406cafa32))
+* bump config-disassembler to 4.0.3 ([#695](https://github.com/mcarvin8/sf-decomposer/issues/695)) ([c4f0960](https://github.com/mcarvin8/sf-decomposer/commit/c4f096058e543107d0ad1cff13ca5a4dab140fa7))
+* keep custom label order through decompose and recompose ([#691](https://github.com/mcarvin8/sf-decomposer/issues/691)) ([5968923](https://github.com/mcarvin8/sf-decomposer/commit/59689232e08568535192861ab9d894aecef27fdf))
+* keep decomposing labels when a labels file is skipped ([#696](https://github.com/mcarvin8/sf-decomposer/issues/696)) ([52796ef](https://github.com/mcarvin8/sf-decomposer/commit/52796ef0885bb577509730077ad2c524657c9e40))
+* leave fieldTranslation files alone when decomposing objectTranslation ([#690](https://github.com/mcarvin8/sf-decomposer/issues/690)) ([a89affc](https://github.com/mcarvin8/sf-decomposer/commit/a89affc91b93dd22df9003794b8d389bf74d0899))
+* reject folder types to stop recompose from purging folder contents ([#688](https://github.com/mcarvin8/sf-decomposer/issues/688)) ([0ec67ad](https://github.com/mcarvin8/sf-decomposer/commit/0ec67ad5442582bdff4bf5ba27f0b7e5569baa8b))
+* skip folders that are not decomposed metadata on recompose ([#693](https://github.com/mcarvin8/sf-decomposer/issues/693)) ([f3d9bda](https://github.com/mcarvin8/sf-decomposer/commit/f3d9bda68b29732312f9977edcb971bdc2d5ab79))
+* support labels files under any name ([#694](https://github.com/mcarvin8/sf-decomposer/issues/694)) ([c2288f4](https://github.com/mcarvin8/sf-decomposer/commit/c2288f4607282eaa103550cbf06f2b8079319698))
+
 ## [7.16.1](https://github.com/mcarvin8/sf-decomposer/compare/v7.16.0...v7.16.1) (2026-11-13)
 
 
