@@ -96,13 +96,13 @@ describe('labels files not named CustomLabels.labels-meta.xml', () => {
   });
 
   it('keeps going when config-disassembler skips another labels file (comments it cannot place)', async () => {
-    // NPSP's main labels file has comments between labels, which config-disassembler leaves
-    // undisassembled. Moving its (missing) output used to throw and abort the whole labels run,
-    // stranding this directory's labels half-decomposed.
+    // config-disassembler leaves a file with a comment outside its root element undisassembled
+    // (comments inside the root are kept since 4.1.0). Moving its (missing) output used to throw and
+    // abort the whole labels run, stranding this directory's labels half-decomposed.
     const mainDir = join(projectDir, 'force-app', 'main', 'default', 'labels');
     const commented = LABELS.replace(
-      '    <labels>\n        <fullName>fflib_First',
-      '    <!-- section -->\n    <labels>\n        <fullName>fflib_First',
+      '<CustomLabels xmlns',
+      '<!-- Labels for the main package -->\n<CustomLabels xmlns',
     );
     await mkdir(mainDir, { recursive: true });
     await writeFile(join(mainDir, 'CustomLabels.labels-meta.xml'), commented);
