@@ -62,6 +62,22 @@ describe('getRegistryValuesBySuffix', () => {
     );
   });
 
+  it.each([
+    ['reportFolder', 'ReportFolder', 'report'],
+    ['dashboardFolder', 'DashboardFolder', 'dashboard'],
+    ['documentFolder', 'DocumentFolder', 'document'],
+    ['emailFolder', 'EmailFolder', 'emailtemplate'],
+  ])(
+    'rejects folder type %s for decompose and recompose (it would purge the folder contents)',
+    async (suffix, name, content) => {
+      for (const mode of ['decompose', 'recompose'] as const) {
+        await expect(getRegistryValuesBySuffix(suffix, mode, undefined)).rejects.toThrow(
+          `Folder types (${name}) are not supported by this plugin: a folder decomposes into its own content directory, which holds its ${content} files.`,
+        );
+      }
+    },
+  );
+
   it('rejects unknown suffixes and surfaces the offending suffix in the message', async () => {
     await expect(getRegistryValuesBySuffix('definitelyNotARealSuffix', 'decompose', undefined)).rejects.toThrow(
       'Metadata type not found for the given suffix or type name: definitelyNotARealSuffix.',

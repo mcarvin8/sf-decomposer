@@ -35,6 +35,7 @@ type RegistryType = {
   name: string;
   suffix?: string;
   strategies?: { adapter?: string };
+  folderContentType?: string;
   children?: { types: Record<string, RegistryChildType> };
 };
 
@@ -88,6 +89,9 @@ function classify(type: RegistryType, parentName: string | undefined): { status:
   }
   if (type.suffix === 'object') {
     return { status: '❌', note: 'Unsupported — Custom Objects are explicitly rejected by this plugin' };
+  }
+  if (type.folderContentType) {
+    return { status: '❌', note: 'Unsupported — folder types are explicitly rejected by this plugin' };
   }
   const adapter = type.strategies?.adapter;
   if (adapter && UNSUPPORTED_ADAPTERS.includes(adapter)) {
