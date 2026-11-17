@@ -455,9 +455,13 @@ A file with no nested elements at all is **leaf-only**: there is nothing to spli
 
 **XML comments**
 
-Comments Salesforce retrieves are kept. These are the placeholders in untranslated values, such as `<translation><!-- Planned --></translation>` in a global value set translation or `<label><!-- Status --></label>` in an object translation.
+Comments stay where they were through decompose and recompose:
 
-A file with comments added _between_ elements is left untouched, the same way as a leaf-only file (logged at `RUST_LOG=error`, not a failure). That includes commented-out XML or notes above an element, because those comments can't be kept in place when the file is split. To decompose such a file, move the comment into an element's text or remove it.
+- A comment above an element, such as a note or commented-out XML, travels with that element. It goes into the element's decomposed file and is written back on its own line just above it, even if elements are reordered.
+- A comment after an element's last child stays just before its closing tag.
+- A comment in an element's text stays part of that text. That includes the placeholders Salesforce retrieves for untranslated values, such as `<translation><!-- Planned --></translation>` in a global value set translation or `<label><!-- Status --></label>` in an object translation.
+
+A comment written on the same line as the next element (`--><value>`) comes back on its own line. A file with a comment _outside_ its root element (before or after it) is left untouched, the same way as a leaf-only file (logged at `RUST_LOG=error`, not a failure), because there is no element to carry that comment.
 
 Example:
 
@@ -901,7 +905,7 @@ The underlying Rust crate logs through [env_logger](https://docs.rs/env_logger).
 
 | Level            | What it covers                                                                                                                                                                                |
 | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `RUST_LOG=error` | Default. Parse errors and skipped files: leaf-only XML (nothing to decompose), an empty root element, or [comments between elements](#decompose-strategies).                                  |
+| `RUST_LOG=error` | Default. Parse errors and skipped files: leaf-only XML (nothing to decompose), an empty root element, or [comments outside the root element](#decompose-strategies).                          |
 | `RUST_LOG=warn`  | Adds [sibling-collision fallback](#filename-safety-unique-id) signals — one line per colliding group (parent tag, collided id, sibling count). **Recommended in CI** when shipping overrides. |
 | `RUST_LOG=off`   | Disables rust crate logging. **Recommended** for the `sf decomposer verify` command.                                                                                                          |
 
