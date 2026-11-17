@@ -15,10 +15,10 @@ Use the metadata **suffix** (the CLI value) with `-m` / `--metadata-type`, e.g. 
 | ✅ Decomposable — nested elements per schema, not yet round-trip tested |     132 |     23% |
 | **Decomposable total**                                                  | **200** | **35%** |
 | ⚠️ Leaf-only — confirmed by schema                                      |     172 |     30% |
-| ⚠️ Leaf-only — unverified guess                                         |     128 |     22% |
+| ⚠️ Leaf-only — unverified guess                                         |     129 |     22% |
 | ❌ Unsupported                                                          |      51 |      9% |
 | ➡️ Child type — use parent                                              |      27 |      5% |
-| **Total registry types**                                                | **578** |         |
+| **Total registry types**                                                | **579** |         |
 
 Counts come from the table below; a unit test fails if they drift.
 
@@ -288,6 +288,7 @@ AccessControlPolicy (`policy`), AiAgentDefinitionVersion, AiAuthoringBundle, Ape
 | DiscoveryAIModel                         | `model`                                    | ❌      | `matchingContentFile` adapter — not supported                                                                                                                                                                                                                                                                                               |
 | DiscoveryGoal                            | `goal`                                     | ✅      | Nested elements per v68 WSDL (`deployedModels`, `modelCards`, `outcome`, `terminalStateFilters`); not yet round-trip tested.                                                                                                                                                                                                                |
 | DiscoveryStory                           | `story`                                    | ❌      | `matchingContentFile` adapter — not supported                                                                                                                                                                                                                                                                                               |
+| DocProcDefinition                        | `docProcDefinition`                        | ⚠️      | Leaf-only (draft guess — newly added by SDR; NEEDS REVIEW against the Metadata API schema)                                                                                                                                                                                                                                                  |
 | Document                                 | `document`                                 | ❌      | `mixedContent` adapter — not supported (binary content). The suffix is also absent from the registry suffix index, so `-m document` fails with "Metadata type not found".                                                                                                                                                                   |
 | DocumentCategory                         | `documentCategory`                         | ⚠️      | Leaf-only — confirmed by v68 WSDL (no nested elements).                                                                                                                                                                                                                                                                                     |
 | DocumentCategoryDocumentType             | `documentCategoryDocumentType`             | ⚠️      | Leaf-only — confirmed by v68 WSDL (no nested elements).                                                                                                                                                                                                                                                                                     |
