@@ -166,6 +166,8 @@ interface RegistryType {
   name: string;
   suffix?: string;
   strategies?: { adapter?: string };
+  /** Set on folder types (ReportFolder, ...), which sf-decomposer rejects. */
+  folderContentType?: string;
 }
 
 interface Registry {
@@ -188,7 +190,7 @@ function packageDirs(repoDir: string): string[] {
 
 /**
  * Find every metadata type in the repo's package directories that sf-decomposer
- * accepts (not a child type, not CustomObject, not an unsupported adapter).
+ * accepts (not a child type, not CustomObject, not an unsupported adapter, not a folder type).
  * Leaf-only types are included; the runner reports them as SKIPPED when
  * decompose leaves their files in place.
  */
@@ -207,6 +209,7 @@ export function discoverTypes(repoDir: string, registry: Registry): DiscoveredTy
       const type = registry.types[typeId];
       if (!type || type.suffix === 'object') continue;
       if (type.strategies?.adapter && UNSUPPORTED_ADAPTERS.includes(type.strategies.adapter)) continue;
+      if (type.folderContentType) continue;
       const entry = byType.get(type.id) ?? { suffix, typeName: type.name, files: [] };
       entry.files.push(rel);
       byType.set(type.id, entry);
