@@ -632,6 +632,8 @@ permissionsets/
 
 **Extending with decomposeNestedPermissions.** For `permissionset` and `mutingpermissionset`, add `--decompose-nested-permissions` (`-p`) to further decompose `<objectPermissions>` into per-object files and group `<fieldPermissions>` by object — similar to Salesforce's `decomposePermissionSetBeta2` but with more format and strategy options.
 
+Because entries are grouped by object, recompose writes `<objectPermissions>` and `<fieldPermissions>` in sorted order, not their original order. Their order doesn't affect deployment. Permission sets retrieved from Salesforce already list them sorted, so those come back unchanged. A file whose entries were ordered by hand is re-sorted once, and `sf decomposer verify` reports it as reordered rather than as drift.
+
 ```bash
 sf decomposer decompose -m "permissionset" -s "grouped-by-tag" -p
 sf decomposer decompose -m "mutingpermissionset" -s "grouped-by-tag" -p
