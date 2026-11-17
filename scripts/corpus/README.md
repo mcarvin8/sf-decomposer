@@ -14,18 +14,19 @@ npm run corpus           # every corpus repo, both strategies, xml
 npm run corpus -- --repos dreamhouse-lwc --types permissionset,flow --formats all --nested-perms
 ```
 
-| Option                | Default                                  |
-| --------------------- | ---------------------------------------- |
-| `--corpus <path>`     | `scripts/corpus/corpus.json`             |
-| `--repos <a,b>`       | all corpus entries                       |
-| `--types <a,b>`       | every supported type found in the repo   |
-| `--strategies <a,b>`  | `unique-id,grouped-by-tag`               |
-| `--formats <a,b/all>` | `xml`                                    |
-| `--nested-perms`      | off (adds a `-p` cell for permissionset) |
-| `--work-root <path>`  | `<tmp>/sfd-corpus`                       |
-| `--out <path>`        | `<work-root>/reports/<timestamp>`        |
+| Option                | Default                                    |
+| --------------------- | ------------------------------------------ |
+| `--corpus <path>`     | `scripts/corpus/corpus.json`               |
+| `--repos <a,b>`       | all corpus entries                         |
+| `--types <a,b>`       | every supported type found in the repo     |
+| `--strategies <a,b>`  | `unique-id,grouped-by-tag`                 |
+| `--formats <a,b/all>` | `xml`                                      |
+| `--nested-perms`      | off (adds a `-p` cell for permissionset)   |
+| `--strict`            | off (fail formatting-only differences too) |
+| `--work-root <path>`  | `<tmp>/sfd-corpus`                         |
+| `--out <path>`        | `<work-root>/reports/<timestamp>`          |
 
-Exit code: `0` when every cell passes or is skipped, `2` when any cell fails, `1` on a harness error.
+Statuses: **PASS** (byte-equal), **FORMAT** (only `tag-whitespace`/`whitespace` differ; passes unless `--strict`), **SKIPPED** (nothing decomposed), **FAIL**, **ERROR**. Exit code: `0` when there's no FAIL or ERROR, `2` otherwise, `1` on a harness error.
 
 ## How each cell works
 
@@ -63,6 +64,8 @@ that makes the two equal:
 | `drift`               | None of the above explains it: content changed                                                |
 
 ## Adding repos
+
+Tag each entry with `style`: `salesforce` for metadata as retrieved (`"UTF-8"?>`, self-closing `<a/>`), `prettier` for Prettier-formatted repos. Keep both styles in the corpus.
 
 Add `{ "name", "url", "sha" }` to `corpus.json`. `sha` must be a full commit SHA, never a
 branch, so upstream commits don't show up as regressions. Get it with
