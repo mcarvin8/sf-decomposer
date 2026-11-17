@@ -3,7 +3,7 @@
 import { rm } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { CUSTOM_LABELS_FILE, TRAILING_NEWLINE_SIDECAR } from '../../helpers/constants.js';
+import { CUSTOM_LABELS_FILE, LABEL_SIDECARS } from '../../helpers/constants.js';
 import { moveFiles } from '../core/moveFiles.js';
 import { reassembleHandler } from './recomposeFileHandler.js';
 
@@ -16,22 +16,23 @@ export async function reassembleLabels(metadataPath: string, metaSuffix: string,
   await moveFiles(
     metadataPath,
     shardDirectory,
-    (fileName) => fileName !== CUSTOM_LABELS_FILE && fileName !== TRAILING_NEWLINE_SIDECAR,
+    (fileName) => fileName !== CUSTOM_LABELS_FILE && !LABEL_SIDECARS.includes(fileName),
   );
 
-  // The trailing-newline sidecar (rescued to metadataPath during decompose -- see
-  // moveAndRenameLabels in customLabels.ts) belongs in the "CustomLabels" stem directory
+  // The sidecars (trailing newline, label order -- rescued to metadataPath during decompose,
+  // see moveAndRenameLabels in customLabels.ts) belong in the "CustomLabels" stem directory
   // itself, sibling to the "labels" shard subdirectory, not inside it -- that's where
-  // config-disassembler's reassemble() looks for it, matching how it wrote the sidecar
-  // for every other metadata type's single-level disassembly.
-  await moveFiles(metadataPath, customLabelsDir, (fileName) => fileName === TRAILING_NEWLINE_SIDECAR);
+  // config-disassembler's reassemble() looks for them, matching how it wrote them for every
+  // other metadata type's single-level disassembly.
+  await moveFiles(metadataPath, customLabelsDir, (fileName) => LABEL_SIDECARS.includes(fileName));
 
   // do not use postpurge flag due to file moving
   await reassembleHandler(customLabelsDir, `${metaSuffix}-meta.xml`, false);
 
   if (!postpurge) {
-    // Keep the shards: put them back where decompose left them.
+    // Keep the decomposed state: put the shards and sidecars back where decompose left them.
     await moveFiles(shardDirectory, metadataPath, () => true);
+    await moveFiles(customLabelsDir, metadataPath, (fileName) => LABEL_SIDECARS.includes(fileName));
   }
   // With postpurge the shards would only be moved back to be deleted again, one file at
   // a time -- thousands of renames and removals for a large org's labels. Removing the

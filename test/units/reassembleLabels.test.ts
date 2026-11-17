@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 
-import { CUSTOM_LABELS_FILE, TRAILING_NEWLINE_SIDECAR } from '../../src/helpers/constants.js';
+import { CUSTOM_LABELS_FILE, LABEL_SIDECARS } from '../../src/helpers/constants.js';
 import { reassembleLabels } from '../../src/service/recompose/reassembleLabels.js';
 
 // Stand-in for config-disassembler's reassemble: records what was staged where at call
@@ -30,7 +30,7 @@ describe('reassembleLabels', () => {
     labelsDir = join(await mkdtemp(join(tmpdir(), 'reassemble-labels-')), 'labels');
     await mkdir(join(labelsDir, 'nested'), { recursive: true });
     for (const shard of SHARDS) await writeFile(join(labelsDir, shard), `<label>${shard}</label>`);
-    await writeFile(join(labelsDir, TRAILING_NEWLINE_SIDECAR), 'true');
+    for (const sidecar of LABEL_SIDECARS) await writeFile(join(labelsDir, sidecar), '{}');
 
     staged = { shards: [], stemDir: [] };
     reassembleSpy.mockImplementation(async (stemDir: string) => {
@@ -46,13 +46,13 @@ describe('reassembleLabels', () => {
     reassembleSpy.mockReset();
   });
 
-  it('stages shards under CustomLabels/labels and the sidecar beside them, then reassembles without postpurge', async () => {
+  it('stages shards under CustomLabels/labels and the sidecars beside them, then reassembles without postpurge', async () => {
     await reassembleLabels(labelsDir, 'labels', true);
 
     expect(reassembleSpy).toHaveBeenCalledTimes(1);
     expect(reassembleSpy).toHaveBeenCalledWith(join(labelsDir, 'CustomLabels'), 'labels-meta.xml', false);
     expect(staged.shards).toEqual([...SHARDS].sort());
-    expect(staged.stemDir).toEqual([TRAILING_NEWLINE_SIDECAR, 'labels'].sort());
+    expect(staged.stemDir).toEqual([...LABEL_SIDECARS, 'labels'].sort());
   });
 
   it('with postpurge, leaves only the reassembled file and never moves shards back', async () => {
@@ -60,15 +60,16 @@ describe('reassembleLabels', () => {
 
     // Subdirectories are left alone; every file but the reassembled parent is gone.
     expect((await readdir(labelsDir)).sort()).toEqual([CUSTOM_LABELS_FILE, 'nested'].sort());
-    // Only the staging moves happened (3 shards + 1 sidecar): no move-back renames.
-    expect(renameMock).toHaveBeenCalledTimes(SHARDS.length + 1);
+    // Only the staging moves happened (shards + sidecars): no move-back renames.
+    expect(renameMock).toHaveBeenCalledTimes(SHARDS.length + LABEL_SIDECARS.length);
   });
 
-  it('without postpurge, moves the shards back and removes the staging directory', async () => {
+  it('without postpurge, moves the shards and sidecars back and removes the staging directory', async () => {
     await reassembleLabels(labelsDir, 'labels', false);
 
-    expect((await readdir(labelsDir)).sort()).toEqual([CUSTOM_LABELS_FILE, 'nested', ...SHARDS].sort());
-    // The sidecar was consumed with the staging directory, matching the postpurge path.
-    expect(await readdir(labelsDir)).not.toContain(TRAILING_NEWLINE_SIDECAR);
+    // The sidecars come back too, so recomposing again keeps the trailing newline and label order.
+    expect((await readdir(labelsDir)).sort()).toEqual(
+      [CUSTOM_LABELS_FILE, 'nested', ...SHARDS, ...LABEL_SIDECARS].sort(),
+    );
   });
 });
