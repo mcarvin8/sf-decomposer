@@ -165,6 +165,7 @@ interface RegistryType {
   id: string;
   name: string;
   suffix?: string;
+  directoryName?: string;
   strategies?: { adapter?: string };
   /** Set on folder types (ReportFolder, ...), which sf-decomposer rejects. */
   folderContentType?: string;
@@ -195,6 +196,15 @@ function packageDirs(repoDir: string): string[] {
  * decompose leaves their files in place.
  */
 export function discoverTypes(repoDir: string, registry: Registry): DiscoveredType[] {
+  // Directories of bundle-style types (`aura`, `lwc`, `staticresources`, ...): their `-meta.xml` files
+  // belong to the bundle, not to the type their suffix names -- `aura/X/X.app-meta.xml` is an Aura
+  // application, not a CustomApplication.
+  const bundleDirs = new Set(
+    Object.values(registry.types)
+      .filter((t) => t.strategies?.adapter && UNSUPPORTED_ADAPTERS.includes(t.strategies.adapter))
+      .map((t) => t.directoryName)
+      .filter((d): d is string => Boolean(d)),
+  );
   const byType = new Map<string, DiscoveredType>();
   for (const pkg of packageDirs(repoDir)) {
     const files: string[] = [];
@@ -202,6 +212,13 @@ export function discoverTypes(repoDir: string, registry: Registry): DiscoveredTy
     for (const rel of files) {
       const base = rel.slice(rel.lastIndexOf('/') + 1);
       if (!base.endsWith(META_SUFFIX)) continue;
+      if (
+        rel
+          .split('/')
+          .slice(0, -1)
+          .some((segment) => bundleDirs.has(segment))
+      )
+        continue;
       const stem = base.slice(0, -META_SUFFIX.length);
       const suffix = stem.slice(stem.lastIndexOf('.') + 1);
       const typeId = registry.suffixes[suffix];
