@@ -83,6 +83,8 @@ interface CellResult extends Cell {
   status: Status;
   files: number;
   decomposed: number;
+  /** Files of the type decompose left in place, with the disassembler's logged reason. */
+  skippedFiles: Array<{ path: string; reason: string }>;
   missing: string[];
   extra: string[];
   changed: Array<{ path: string; kind: MismatchKind; line: number; orig: string; rebuilt: string }>;
@@ -172,6 +174,7 @@ function runCell(cell: Cell, type: DiscoveredType, repoDir: string, baseline: Sn
     status: 'PASS',
     files: type.files.length,
     decomposed: 0,
+    skippedFiles: [],
     missing: [],
     extra: [],
     changed: [],
@@ -196,6 +199,10 @@ function runCell(cell: Cell, type: DiscoveredType, repoDir: string, baseline: Sn
   // were skipped (leaf-only) -- a cell where nothing decomposed proves nothing.
   const afterDecompose = snapshotTree(repoDir);
   result.decomposed = type.files.filter((f) => !afterDecompose.has(f)).length;
+  result.skippedFiles = skipReasons(
+    type.files.filter((f) => afterDecompose.has(f)),
+    `${dec.stdout ?? ''}\n${dec.stderr ?? ''}`,
+  );
   if (result.decomposed === 0) {
     result.status = 'SKIPPED';
     return result;
@@ -231,6 +238,25 @@ function runCell(cell: Cell, type: DiscoveredType, repoDir: string, baseline: Sn
   return result;
 }
 
+/** "The XML file <path> only has leaf elements. This file will not be disassembled." */
+const SKIP_LOG_RE = /The XML file (.+?) (only has leaf elements|has no child elements|has comments between elements)/;
+
+/**
+ * Pair each file decompose left in place with the reason config-disassembler logged for it. A file
+ * with no log line was left alone by sf-decomposer itself (or the log format changed).
+ */
+function skipReasons(paths: string[], log: string): Array<{ path: string; reason: string }> {
+  const reasons = new Map<string, string>();
+  for (const line of log.split(/\r?\n/)) {
+    const m = SKIP_LOG_RE.exec(line);
+    if (m?.[1] && m[2]) reasons.set(m[1].replace(/\\/g, '/'), m[2]);
+  }
+  return paths.map((path) => {
+    const hit = [...reasons].find(([logged]) => logged.endsWith(`/${path}`));
+    return { path, reason: hit?.[1] ?? 'no logged reason' };
+  });
+}
+
 function markdownSummary(results: CellResult[], opts: Options, pluginSha: string): string {
   const count = (s: Status): number => results.filter((r) => r.status === s).length;
   const lines = [
@@ -240,15 +266,42 @@ function markdownSummary(results: CellResult[], opts: Options, pluginSha: string
     `- strategies: ${opts.strategies.join(', ')} | formats: ${opts.formats.join(', ')}${opts.nestedPerms ? ' | nested perms' : ''}${opts.strict ? ' | strict' : ''}`,
     `- cells: ${results.length} | PASS ${count('PASS')} | FORMAT ${count('FORMAT')} | FAIL ${count('FAIL')} | SKIPPED ${count('SKIPPED')} | ERROR ${count('ERROR')}`,
     '',
-    '| repo | type | strategy | format | status | files | decomposed | missing | extra | changed (kinds) |',
-    '| --- | --- | --- | --- | --- | --: | --: | --: | --: | --- |',
+    '| repo | type | strategy | format | status | files | decomposed | skipped | missing | extra | changed (kinds) |',
+    '| --- | --- | --- | --- | --- | --: | --: | --: | --: | --: | --- |',
   ];
   for (const r of results) {
     const kinds = [...new Set(r.changed.map((c) => c.kind))].join(', ');
     lines.push(
-      `| ${r.repo} | ${r.type} | ${r.strategy}${r.nestedPerms ? ' -p' : ''} | ${r.format} | ${r.status} | ${r.files} | ${r.decomposed} | ${r.missing.length} | ${r.extra.length} | ${r.changed.length}${kinds ? ` (${kinds})` : ''} |`,
+      `| ${r.repo} | ${r.type} | ${r.strategy}${r.nestedPerms ? ' -p' : ''} | ${r.format} | ${r.status} | ${r.files} | ${r.decomposed} | ${r.skippedFiles.length} | ${r.missing.length} | ${r.extra.length} | ${r.changed.length}${kinds ? ` (${kinds})` : ''} |`,
     );
   }
+  // Files left in place inside cells that otherwise decomposed: a SKIPPED cell shows in the table,
+  // but these would hide behind a PASS. One row per file (strategies and formats repeat it).
+  const partial = new Map<string, { repo: string; type: string; path: string; reason: string }>();
+  for (const r of results) {
+    if (r.status === 'SKIPPED') continue;
+    for (const f of r.skippedFiles) partial.set(`${r.repo}:${f.path}`, { repo: r.repo, type: r.type, ...f });
+  }
+  if (partial.size) {
+    lines.push('', '## Files left undecomposed in decomposed cells', '');
+    lines.push('| repo | type | file | reason |', '| --- | --- | --- | --- |');
+    for (const f of partial.values()) lines.push(`| ${f.repo} | ${f.type} | \`${f.path}\` | ${f.reason} |`);
+  }
+  const byReason = new Map<string, Set<string>>();
+  for (const r of results) {
+    for (const f of r.skippedFiles) {
+      const files = byReason.get(f.reason) ?? new Set<string>();
+      files.add(`${r.repo}:${f.path}`);
+      byReason.set(f.reason, files);
+    }
+  }
+  if (byReason.size) {
+    lines.push('', '## Skipped files by reason', '', '| reason | files |', '| --- | --: |');
+    for (const [reason, files] of [...byReason].sort((a, b) => b[1].size - a[1].size)) {
+      lines.push(`| ${reason} | ${files.size} |`);
+    }
+  }
+
   const failures = results.filter((r) => r.status === 'FAIL' || r.status === 'ERROR');
   if (failures.length) {
     lines.push('', '## Failures', '');
@@ -298,6 +351,7 @@ function main(): number {
         status: 'ERROR',
         files: 0,
         decomposed: 0,
+        skippedFiles: [],
         missing: [],
         extra: [],
         changed: [],
@@ -322,6 +376,7 @@ function main(): number {
             status: 'ERROR',
             files: type.files.length,
             decomposed: 0,
+            skippedFiles: [],
             missing: [],
             extra: [],
             changed: [],
@@ -332,7 +387,7 @@ function main(): number {
         }
         results.push(r);
         process.stdout.write(
-          `  ${r.status.padEnd(7)} ${cellId(cell)}${r.changed.length ? ` changed=${r.changed.length}` : ''}${r.missing.length ? ` missing=${r.missing.length}` : ''}${r.extra.length ? ` extra=${r.extra.length}` : ''}\n`,
+          `  ${r.status.padEnd(7)} ${cellId(cell)}${r.changed.length ? ` changed=${r.changed.length}` : ''}${r.missing.length ? ` missing=${r.missing.length}` : ''}${r.extra.length ? ` extra=${r.extra.length}` : ''}${r.status !== 'SKIPPED' && r.skippedFiles.length ? ` skipped=${r.skippedFiles.length}` : ''}\n`,
         );
       }
     }

@@ -30,19 +30,30 @@ Statuses: **PASS** (byte-equal), **FORMAT** (only `tag-whitespace`/`whitespace` 
 
 ## How each cell works
 
-For each repo, each supported type found in its package directories, and each
+For each repo, each supported type found in its package directories (child types, CustomObject,
+unsupported adapters and folder types are left out, as sf-decomposer rejects them), and each
 strategy/format:
 
 1. Reset the clone to its pinned commit (`git reset --hard` and `git clean -fdx`).
 2. `decompose -m <type> -s <strategy> -f <format> --postpurge`.
-3. Originals still present after the purge were skipped as leaf-only. If none were
-   decomposed, the cell is **SKIPPED**, because it proves nothing.
+3. Originals still present after the purge were left alone by the disassembler. Each is recorded
+   with the reason it logged: `only has leaf elements`, `has no child elements`, or
+   `has comments between elements` (comments it can't keep in place). If none were decomposed,
+   the cell is **SKIPPED**, because it proves nothing.
 4. `recompose -m <type> --postpurge`.
 5. Hash the whole work tree and compare with the pristine tree. Any missing file,
    leftover file (a shard or sidecar) or changed byte **FAILS** the cell.
 
 Clones use `core.autocrlf=false` plus `* -text` in `.git/info/attributes`, so checkout
 writes the committed blob bytes and the repo's own `.gitattributes` can't normalize them.
+
+## Skipped files
+
+`summary.md` has a `skipped` column per cell and two sections:
+
+- **Files left undecomposed in decomposed cells:** files left in place in a cell that still
+  passed because other files of the type decomposed. These would otherwise hide behind a PASS.
+- **Skipped files by reason:** unique files per reason across the run.
 
 ## Reading failures
 
