@@ -250,11 +250,13 @@ async function resolveMemberXml(
   /* v8 ignore next -- @preserve: types reaching this point always have a suffix. */
   if (!suffix) return undefined;
 
-  // Labels type has a single file regardless of member name.
+  // Labels type has a single file regardless of member name, under any `<name>.labels-meta.xml`
+  // (the registry ignores its parsed fullName).
   if (parentType.name === 'CustomLabels') {
-    const labelsFile = join(typeDir, `CustomLabels.${suffix}-meta.xml`);
+    const metaEnding = `.${suffix}-meta.xml`;
+    const labelsFile = (await readdir(typeDir).catch(() => [] as string[])).find((name) => name.endsWith(metaEnding));
     /* istanbul ignore next -- @preserve: labels file absence implies a broken labels directory */
-    return (await exists(labelsFile)) ? resolve(labelsFile) : undefined;
+    return labelsFile ? resolve(typeDir, labelsFile) : undefined;
   }
 
   // Stryker disable next-line ConditionalExpression, BlockStatement

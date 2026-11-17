@@ -14,8 +14,9 @@ export type ProcessedMeta = {
 function buildPatterns(directoryName: string, metaSuffix: string, format: string): string[] {
   if (metaSuffix === 'labels') {
     // Labels decompose to flat files in the labels dir — one level deep is enough.
-    // Allow only the original monolithic file; all individual label files stay ignored.
-    return [`**/${directoryName}/*.${format}`, `!**/${directoryName}/CustomLabels.labels-meta.xml`];
+    // Allow only the original monolithic file, under any name (`<name>.labels-meta.xml`, e.g. a
+    // library's own labels file); the individual `.label-meta.*` files stay ignored.
+    return [`**/${directoryName}/*.${format}`, `!**/${directoryName}/*.labels-meta.xml`];
   }
   if (metaSuffix === 'bot') {
     // Bots have component dirs at bots/BotName/ containing decomposed pieces; originals are

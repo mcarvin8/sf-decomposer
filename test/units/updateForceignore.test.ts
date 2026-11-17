@@ -50,7 +50,7 @@ describe('updateForceignoreFile', () => {
     // Labels are flat — one level deep only, not recursive
     expect(lines).toContain('**/labels/*.xml');
     expect(lines).not.toContain('**/labels/**/*.xml');
-    expect(lines).toContain('!**/labels/CustomLabels.labels-meta.xml');
+    expect(lines).toContain('!**/labels/*.labels-meta.xml');
   });
 
   it('uses the decomposed format in the ignore pattern', async () => {

@@ -9,7 +9,7 @@ const ATTRS = '-diff linguist-generated=true';
 
 function buildPatterns(directoryName: string, metaSuffix: string): string[] {
   if (metaSuffix === 'labels') {
-    return [`**/labels/CustomLabels.labels-meta.xml ${ATTRS}`];
+    return [`**/labels/*.labels-meta.xml ${ATTRS}`];
   }
   if (metaSuffix === 'bot') {
     return [`**/${directoryName}/*/*.bot-meta.xml ${ATTRS}`, `**/${directoryName}/*/*.botVersion-meta.xml ${ATTRS}`];

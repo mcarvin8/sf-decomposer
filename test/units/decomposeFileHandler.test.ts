@@ -167,6 +167,7 @@ describe('decomposeFileHandler', () => {
     it('skips prePurgeLabels for labels when prepurge=false but still calls disassemble + moveAndRenameLabels', async () => {
       const pkgDir = join(TMP_ROOT, 'labels-no-purge');
       await mkdir(pkgDir, { recursive: true });
+      await writeFile(join(pkgDir, 'CustomLabels.labels-meta.xml'), '<CustomLabels/>');
 
       await decomposeFileHandler(
         makeAttrs({ metadataPaths: [pkgDir], metaSuffix: 'labels' }),
@@ -337,6 +338,7 @@ describe('decomposeFileHandler', () => {
     it('forces labels to unique-id even when grouped-by-tag is requested', async () => {
       const pkgDir = join(TMP_ROOT, 'labels-hard');
       await mkdir(pkgDir, { recursive: true });
+      await writeFile(join(pkgDir, 'CustomLabels.labels-meta.xml'), '<CustomLabels/>');
 
       await decomposeFileHandler(
         makeAttrs({ metadataPaths: [pkgDir], metaSuffix: 'labels' }),

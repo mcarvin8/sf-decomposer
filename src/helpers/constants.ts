@@ -1,6 +1,14 @@
 'use strict';
 export const SFDX_PROJECT_FILE_NAME = 'sfdx-project.json';
 export const CUSTOM_LABELS_FILE = 'CustomLabels.labels-meta.xml';
+/** Any `<name>.labels-meta.xml` is a CustomLabels file: the registry ignores its parsed fullName. */
+export const LABELS_META_ENDING = '.labels-meta.xml';
+/**
+ * Written beside decomposed labels whose source file wasn't named `CustomLabels.labels-meta.xml`
+ * (e.g. a library's `fflib-Apex-Common-CustomLabels.labels-meta.xml`), holding that file name as a
+ * JSON string so recompose rebuilds the same file.
+ */
+export const LABELS_FILE_SIDECAR = '.labels_file.json';
 // config-disassembler writes this alongside the shard directory it disassembles a parent XML
 // into, recording whether the source file ended in a newline, and reads it back on reassemble.
 // CustomLabels' decompose/recompose shuffle (customLabels.ts / reassembleLabels.ts) must

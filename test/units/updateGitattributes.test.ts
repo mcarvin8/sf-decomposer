@@ -42,7 +42,7 @@ describe('updateGitattributesFile', () => {
 
     const content = await readGitattributes();
     const lines = content.split('\n').filter(Boolean);
-    expect(lines).toContain('**/labels/CustomLabels.labels-meta.xml -diff linguist-generated=true');
+    expect(lines).toContain('**/labels/*.labels-meta.xml -diff linguist-generated=true');
     expect(lines).toHaveLength(1);
   });
 

@@ -57,7 +57,7 @@ IlluminatedCloud/
 # Ignore recomposed files
 **/permissionsets/*.permissionset-meta.xml
 **/profiles/*.profile-meta.xml
-**/labels/CustomLabels.labels-meta.xml
+**/labels/*.labels-meta.xml
 **/workflows/*.workflow-meta.xml
 **/flows/*.flow-meta.xml
 **/matchingRules/*.matchingRule-meta.xml
