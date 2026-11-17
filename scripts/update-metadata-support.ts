@@ -4,7 +4,7 @@
  *
  * Classification is derived only from data the registry actually provides:
  *   - child types (registered under a parent's `children.types`)        -> "Use parent type"
- *   - `object` suffix / adapters in UNSUPPORTED_ADAPTERS                -> "Unsupported" (matches
+ *   - `object` suffix / adapters in UNSUPPORTED_ADAPTERS / folder types -> "Unsupported" (matches
  *     the hard rejections in src/metadata/getRegistryValuesBySuffix.ts, so this is exact, not a guess)
  *   - everything else                                                   -> "Leaf-only" draft guess,
  *     flagged NEEDS REVIEW, because whether a type has nested repeatable XML elements can only be
@@ -12,6 +12,9 @@
  *
  * Usage:
  *   node --import ts-node/esm scripts/update-metadata-support.ts --old <old-registry.json> --new <new-registry.json> [--doc docs/METADATA_SUPPORT.md]
+ *
+ * Then recomputes the "At a glance" counts and shares from the table (the same rules
+ * test/units/metadataSupportDoc.test.ts checks), so added rows don't leave them stale.
  *
  * Prints a summary (added top-level types / added child types) to stdout for reuse in a PR body.
  */
@@ -188,6 +191,69 @@ function insertRows(doc: string, rows: Row[]): { doc: string; skipped: string[] 
   return { doc: lines.join('\n'), skipped };
 }
 
+type DocRow = { status: string; note: string };
+
+function readDocRows(lines: string[]): DocRow[] {
+  const header = lines.findIndex((l) => l.startsWith('| Metadata Type'));
+  if (header === -1) throw Error('Could not find the "| Metadata Type" table header in docs/METADATA_SUPPORT.md');
+  const rows: DocRow[] = [];
+  for (let i = header + 2; i < lines.length && lines[i].startsWith('|'); i++) {
+    const [, , status, note] = lines[i]
+      .split('|')
+      .slice(1, -1)
+      .map((c) => c.trim());
+    rows.push({ status, note });
+  }
+  return rows;
+}
+
+/**
+ * Recompute the "At a glance" counts and shares from the table, with the same rules
+ * test/units/metadataSupportDoc.test.ts checks, so a PR that adds rows keeps them in sync.
+ * Cells are rewritten in place (bold rows stay bold); `biome format` re-pads the table afterwards.
+ */
+function refreshGlance(doc: string): string {
+  const lines = doc.split('\n');
+  const rows = readDocRows(lines);
+  const count = (pred: (r: DocRow) => boolean): number => rows.filter(pred).length;
+  const untested = (r: DocRow): boolean => r.note.includes('not yet round-trip tested');
+  const confirmedLeaf = (r: DocRow): boolean => /confirmed by v\d+ WSDL/.test(r.note);
+  const tested = count((r) => r.status === '✅' && !untested(r));
+  const special = count((r) => r.status === '🔀');
+  const schemaOnly = count((r) => r.status === '✅' && untested(r));
+  const counts: Record<string, number> = {
+    '✅ Decomposable — round-trip tested': tested,
+    '🔀 Decomposable with special behavior': special,
+    '✅ Decomposable — nested elements per schema, not yet round-trip tested': schemaOnly,
+    'Decomposable total': tested + special + schemaOnly,
+    '⚠️ Leaf-only — confirmed by schema': count((r) => r.status === '⚠️' && confirmedLeaf(r)),
+    '⚠️ Leaf-only — unverified guess': count((r) => r.status === '⚠️' && !confirmedLeaf(r)),
+    '❌ Unsupported': count((r) => r.status === '❌'),
+    '➡️ Child type — use parent': count((r) => r.status === '➡️'),
+    'Total registry types': rows.length,
+  };
+
+  const header = lines.findIndex((l) => l.startsWith('| Status '));
+  if (header === -1) throw Error('Could not find the "At a glance" table in docs/METADATA_SUPPORT.md');
+  for (let i = header + 2; i < lines.length && lines[i].startsWith('|'); i++) {
+    const [labelCell] = lines[i]
+      .split('|')
+      .slice(1, -1)
+      .map((c) => c.trim());
+    const bold = labelCell.startsWith('**');
+    const label = labelCell.replace(/\*\*/g, '');
+    const value = counts[label];
+    if (value === undefined) throw Error(`Unknown "At a glance" row: ${label}`);
+    const isTotal = label === 'Total registry types';
+    const share = isTotal ? '' : `${Math.round((value / rows.length) * 100)}%`;
+    const wrap = (s: string): string => (bold && s ? `**${s}**` : s);
+    // Unpadded: the workflow runs `biome format` next, which aligns the table (and measures emoji
+    // widths the way the rest of the doc was formatted).
+    lines[i] = `| ${labelCell} | ${wrap(String(value))} | ${wrap(share)} |`;
+  }
+  return lines.join('\n');
+}
+
 function main(): void {
   const { old: oldPath, new: newPath, doc: docPath } = parseArgs(process.argv.slice(2));
   const oldRegistry = loadRegistry(oldPath);
@@ -195,14 +261,16 @@ function main(): void {
 
   const { rows, addedTop, addedChildren } = collectNewRows(oldRegistry, newRegistry);
 
+  const original = readFileSync(docPath, 'utf8');
+  const { doc: inserted, skipped } = insertRows(original, rows);
+  // Always refresh: the counts must match the table even when no row was added this time.
+  const updated = refreshGlance(inserted);
+  if (updated !== original) writeFileSync(docPath, updated);
+
   if (rows.length === 0) {
-    console.log('No new metadata types found; docs/METADATA_SUPPORT.md left unchanged.');
+    console.log('No new metadata types found; "At a glance" counts refreshed.');
     return;
   }
-
-  const original = readFileSync(docPath, 'utf8');
-  const { doc: updated, skipped } = insertRows(original, rows);
-  writeFileSync(docPath, updated);
 
   const addedNames = new Set(rows.map((r) => r.name));
   for (const name of skipped) addedNames.delete(name);
