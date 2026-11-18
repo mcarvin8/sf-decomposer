@@ -417,4 +417,24 @@ describe('recomposeFileHandler in a directory shared by several metadata types',
     );
     expect(reassembledDirs()).toEqual([join(sales, 'Pipeline')]);
   });
+
+  it('leaves a metadata path nested in another to its own walk', async () => {
+    // `record-pages/` was found by suffix inside `flexipages/` and is walked on its own, at the same
+    // time. Its decomposed FlexiPage has no leaf file, so the outer walk, checking `record-pages/`
+    // while that walk rebuilds it, took `record-pages/` itself for a decomposed FlexiPage.
+    const flexipages = join(root, 'flexipages');
+    const recordPages = join(flexipages, 'record-pages');
+    const decomposed = join(recordPages, 'Account_Default');
+    await put(join(decomposed, '.key_order.json'), '[]');
+    await put(join(decomposed, 'flexiPageRegions', 'main.flexiPageRegions-meta.xml'), '<FlexiPage xmlns="x">');
+    await recomposeFileHandler(
+      {
+        ...makeAttrs({ metaSuffix: 'flexipage', metadataPaths: [flexipages, recordPages] }),
+        typeName: 'FlexiPage',
+        extraPaths: [recordPages],
+      },
+      false,
+    );
+    expect(reassembledDirs()).toEqual([decomposed]);
+  });
 });
