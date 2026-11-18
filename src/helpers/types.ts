@@ -155,7 +155,7 @@ export type VerifyResult = {
   /**
    * Files where the only delta was element ordering — content is semantically identical but not
    * byte-identical. Repeated siblings keep their order, so this only covers order the round trip
-   * can't record (interleaved tags, grouped-by-tag `group` rules). Does not fail `verify`, but
+   * can't record (interleaved tags). Does not fail `verify`, but
    * review these: order matters for some metadata.
    */
   reordered: string[];
