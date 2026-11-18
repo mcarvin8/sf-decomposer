@@ -75,6 +75,20 @@ that makes the two equal:
 | `reorder`             | Same lines, different order                                                                   |
 | `drift`               | None of the above explains it: content changed                                                |
 
+## Coverage page
+
+[COVERAGE.md](COVERAGE.md) lists the metadata types verified in each project, generated from a run's
+`results.json` files:
+
+```bash
+npm run corpus:coverage -- --reports <dir> --source "<run link>"   # writes scripts/corpus/COVERAGE.md
+```
+
+`--reports` is searched recursively, so it can be a local report dir or a CI run's downloaded
+artifacts (`gh run download <run-id> -D <dir>`). Every CI run also builds the page into its job
+summary and a `corpus-coverage` artifact. Refresh the committed copy from a green weekly run after
+adding repos or when coverage changes.
+
 ## Adding repos
 
 Tag each entry with `style`: `salesforce` for metadata as retrieved (`"UTF-8"?>`, self-closing `<a/>`), `prettier` for Prettier-formatted repos. Keep both styles in the corpus.

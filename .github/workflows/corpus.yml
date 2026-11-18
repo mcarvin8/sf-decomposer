@@ -102,3 +102,37 @@ jobs:
           path: ${{ runner.temp }}/corpus-report
           if-no-files-found: ignore
           retention-days: 30
+
+  coverage:
+    needs: corpus
+    # Also after failed cells: the page lists them as failures.
+    if: ${{ !cancelled() && needs.corpus.result != 'skipped' }}
+    name: Coverage page
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "lts/*"
+          cache: npm
+
+      - run: npm ci
+
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: corpus-*
+          path: ${{ runner.temp }}/corpus-reports
+
+      - name: Build coverage page
+        env:
+          SOURCE: "[Corpus round trip #${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+        run: |
+          npm run corpus:coverage -- --reports "$RUNNER_TEMP/corpus-reports" --out "$RUNNER_TEMP/COVERAGE.md" --source "$SOURCE"
+          cat "$RUNNER_TEMP/COVERAGE.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: corpus-coverage
+          path: ${{ runner.temp }}/COVERAGE.md
+          retention-days: 90

@@ -37,6 +37,7 @@
   - [Ignore Files](#ignore-files)
   - [Using with sfdx-git-delta](#using-with-sfdx-git-delta)
   - [Troubleshooting](#troubleshooting)
+- [Tested Against Real Projects](#tested-against-real-projects)
 - [Built With](#built-with)
 - [Migrating from Native Decomposition](#migrating-from-native-decomposition)
 - [Contributing](#contributing)
@@ -917,6 +918,14 @@ Example `WARN` (CustomApplication where four `actionOverrides` siblings shared t
   falling back to SHA-256 content hashes for the colliding group.
   Consider adding more discriminating fields to uniqueIdElements for this metadata type.
 ```
+
+---
+
+## Tested Against Real Projects
+
+Every week, CI decomposes and recomposes the metadata in public Salesforce DX projects, each pinned to a fixed commit, on Linux and Windows. It checks that every file comes back byte-for-byte; the only accepted difference is whitespace in files formatted with tools like Prettier. The [corpus coverage page](https://github.com/mcarvin8/sf-decomposer/blob/main/scripts/corpus/COVERAGE.md) lists the projects and the metadata types verified in each.
+
+To check that your own project's metadata survives a round trip, without changing any files, run [`sf decomposer verify`](#sf-decomposer-verify).
 
 ---
 
