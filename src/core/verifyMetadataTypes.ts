@@ -11,6 +11,7 @@ import {
 } from '../helpers/configOverrides.js';
 import { CONCURRENCY_LIMITS, SFDX_PROJECT_FILE_NAME } from '../helpers/constants.js';
 import { pLimit } from '../helpers/pLimit.js';
+import { toPortablePath } from '../helpers/projectPath.js';
 import { PathIndex, SfdxProject, VerifyDrift, VerifyOptions, VerifyResult } from '../helpers/types.js';
 import { buildPackageDirectoryIndex } from '../metadata/getPackageDirectories.js';
 import {
@@ -67,7 +68,7 @@ export async function verifyMetadataTypes(options: VerifyOptions): Promise<Verif
   // Stryker disable next-line StringLiteral: JSON.parse(Buffer) defaults to UTF-8 decoding
   const sfdxProjectRaw = await readFile(join(repoRoot, SFDX_PROJECT_FILE_NAME), 'utf-8');
   const sfdxProject = JSON.parse(sfdxProjectRaw) as SfdxProject;
-  const packageDirs = sfdxProject.packageDirectories.map((p) => resolve(repoRoot, p.path));
+  const packageDirs = sfdxProject.packageDirectories.map((p) => resolve(repoRoot, toPortablePath(p.path)));
 
   const baseOptions: ResolvedDecomposeTypeOptions = {
     format,

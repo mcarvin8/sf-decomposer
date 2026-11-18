@@ -186,7 +186,10 @@ function packageDirs(repoDir: string): string[] {
   const project = JSON.parse(readFileSync(join(repoDir, 'sfdx-project.json'), 'utf8')) as {
     packageDirectories: Array<{ path: string }>;
   };
-  return project.packageDirectories.map((p) => resolve(repoDir, p.path)).filter((p) => existsSync(p));
+  // `\` separators (e.g. apex-rollup's `plugins\\CustomObjectRollupLogger`) only resolve on Windows.
+  return project.packageDirectories
+    .map((p) => resolve(repoDir, p.path.replace(/\\/g, '/')))
+    .filter((p) => existsSync(p));
 }
 
 /**

@@ -4,6 +4,7 @@ import { readdir, readFile } from 'node:fs/promises';
 import { basename, join, resolve } from 'node:path';
 import { CONCURRENCY_LIMITS, IGNORE_FILE, SFDX_PROJECT_FILE_NAME } from '../helpers/constants.js';
 import { pLimit } from '../helpers/pLimit.js';
+import { toPortablePath } from '../helpers/projectPath.js';
 import { PathIndex, SfdxProject } from '../helpers/types.js';
 import { getRepoRoot } from '../service/core/getRepoRoot.js';
 import { RegistryAccess } from './registry/registryAccess.js';
@@ -26,9 +27,9 @@ async function resolvePackageDirContext(
   // Stryker disable next-line ArrayDeclaration: an empty default is only distinguishable from a
   // non-empty one by a real directory named after the mutant's placeholder text, which isn't a
   // meaningful test.
-  const normalizedIgnoreDirs = (ignoreDirs ?? []).map((dir) => basename(dir));
+  const normalizedIgnoreDirs = (ignoreDirs ?? []).map((dir) => basename(toPortablePath(dir)));
   const packageDirectories = sfdxProject.packageDirectories
-    .map((directory) => resolve(repoRoot, directory.path))
+    .map((directory) => resolve(repoRoot, toPortablePath(directory.path)))
     .filter((directory) => !normalizedIgnoreDirs.includes(basename(directory)));
 
   return { ignorePath, packageDirectories };
