@@ -5,6 +5,25 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.17.0](https://github.com/mcarvin8/sf-decomposer/compare/v7.16.2...v7.17.0) (2026-11-18)
+
+
+### Features
+
+* find metadata files by suffix wherever they live ([#707](https://github.com/mcarvin8/sf-decomposer/issues/707)) ([d90a302](https://github.com/mcarvin8/sf-decomposer/commit/d90a302e0c8351d2493ba7db7ef4b68b37da9e13))
+* keep XML comments in place by bumping config-disassembler to 4.1.0 ([#708](https://github.com/mcarvin8/sf-decomposer/issues/708)) ([e45aaa5](https://github.com/mcarvin8/sf-decomposer/commit/e45aaa50d7a43c71cf1626d17fa8f1aa8eba15a6))
+* **metadata:** support DocProcDefinition ([#706](https://github.com/mcarvin8/sf-decomposer/issues/706)) ([22dc668](https://github.com/mcarvin8/sf-decomposer/commit/22dc668ee20e2f5b980e00a3f080312403e05be3))
+
+
+### Bug Fixes
+
+* decompose only the type's own files in a mixed directory ([#700](https://github.com/mcarvin8/sf-decomposer/issues/700)) ([981f5f2](https://github.com/mcarvin8/sf-decomposer/commit/981f5f2757340ed332898a97dccbbe5ef8b94d59))
+* don't rebuild a nested metadata folder as a component on recompose ([#713](https://github.com/mcarvin8/sf-decomposer/issues/713)) ([ae60bb0](https://github.com/mcarvin8/sf-decomposer/commit/ae60bb0057672f372c4bfc8d1be87dc5057bb9e3))
+* keep External Service schemas byte-for-byte by bumping config-disassembler to 5.0.2 ([#714](https://github.com/mcarvin8/sf-decomposer/issues/714)) ([7aaa561](https://github.com/mcarvin8/sf-decomposer/commit/7aaa5618089b9fa59b48272d7e694ae01069fc61))
+* keep permission order with -p by bumping config-disassembler to 5.0.1 ([#711](https://github.com/mcarvin8/sf-decomposer/issues/711)) ([df38a71](https://github.com/mcarvin8/sf-decomposer/commit/df38a716d8142d46db9b74f8bce9c3a1df8d2975))
+* recompose only directories decompose produced ([#703](https://github.com/mcarvin8/sf-decomposer/issues/703)) ([fcafa89](https://github.com/mcarvin8/sf-decomposer/commit/fcafa8964ff2f353917a21981e867f77c8bfbe9b))
+* resolve package directories written with backslashes on any OS ([#710](https://github.com/mcarvin8/sf-decomposer/issues/710)) ([f6d55ec](https://github.com/mcarvin8/sf-decomposer/commit/f6d55ec18503494b585322666e1c738a150181b4))
+
 ## [7.16.2](https://github.com/mcarvin8/sf-decomposer/compare/v7.16.1...v7.16.2) (2026-11-17)
 
 
