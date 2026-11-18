@@ -45,7 +45,7 @@ type TypeVerifyResult = {
  * semantically; otherwise each entry names the offending file (relative to its package directory)
  * and a short reason. `reordered` is informational: repeated siblings keep their order through the
  * round trip (config-disassembler's `.element_order.json`), so it only lists files whose order
- * can't be recorded, such as interleaved tags or grouped-by-tag `group` rules. It doesn't fail the
+ * can't be recorded, such as interleaved tags. It doesn't fail the
  * run, but order matters for some metadata (picklist values, layout sections, approval steps).
  */
 export async function verifyMetadataTypes(options: VerifyOptions): Promise<VerifyResult> {
@@ -196,7 +196,7 @@ export async function verifyMetadataTypes(options: VerifyOptions): Promise<Verif
 
   if (reordered.length > 0) {
     // Informational: content matches, only element order changed. Repeated siblings keep their
-    // order, so these are cases the round trip can't record (interleaved tags, `group` rules).
+    // order, so these are cases the round trip can't record (interleaved tags).
     log(`Note: ${reordered.length} file(s) round-tripped semantically but with sibling/attribute reordering:`);
     for (const path of reordered) {
       log(`  - ${path}`);
