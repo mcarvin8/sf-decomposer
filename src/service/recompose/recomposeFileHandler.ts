@@ -1,7 +1,7 @@
 'use strict';
 
 import { readdir, stat } from 'node:fs/promises';
-import { basename, dirname, join } from 'node:path';
+import { basename, dirname, join, resolve } from 'node:path';
 import { ReassembleXMLFileHandler } from 'config-disassembler';
 
 import { CONCURRENCY_LIMITS } from '../../helpers/constants.js';
@@ -32,6 +32,11 @@ export async function recomposeFileHandler(
 
   // Limit concurrent package directory processing
   const limit = pLimit(CONCURRENCY_LIMITS.PACKAGE_DIRS);
+  // A metadata path can sit inside another (`flexipages/record-pages/`, found by suffix, inside
+  // `flexipages/`). Each is walked on its own, concurrently, so the outer walk must leave the inner
+  // one alone: checking it while the inner walk rebuilds and purges its decomposed directories could
+  // mistake it for a decomposed directory and rebuild it as `record-pages.flexipage-meta.xml`.
+  const walkedPaths = new Set(metadataPaths.map((path) => resolve(path)));
 
   const tasks = metadataPaths.map((metadataPath) =>
     limit(async () => {
@@ -46,7 +51,7 @@ export async function recomposeFileHandler(
           extra.has(metadataPath) && typeName
             ? { typeName, shared: true, requireSidecar: true }
             : directoryOwner(basename(metadataPath), metaSuffix);
-        await reassembleDirectories(metadataPath, metaSuffix, recurse, postpurge, owner);
+        await reassembleDirectories(metadataPath, metaSuffix, recurse, postpurge, owner, walkedPaths);
       }
 
       if (metaSuffix === 'bot') await renameBotVersionFile(metadataPath);
@@ -178,8 +183,11 @@ async function reassembleDirectories(
   recurse: boolean,
   postpurge: boolean,
   owner?: DirectoryOwner,
+  walkedPaths?: ReadonlySet<string>,
 ): Promise<void> {
-  const subdirectories = (await readdir(metadataPath)).map((file) => join(metadataPath, file));
+  const subdirectories = (await readdir(metadataPath))
+    .map((file) => join(metadataPath, file))
+    .filter((subdirectory) => !walkedPaths?.has(resolve(subdirectory)));
 
   // Limit concurrent stat operations
   const statLimit = pLimit(CONCURRENCY_LIMITS.FILE_OPERATIONS);
@@ -202,7 +210,7 @@ async function reassembleDirectories(
       processLimit(async () => {
         if (recurse) {
           // recursively call this function and set recurse to false
-          await reassembleDirectories(subdirectory, metaSuffix, false, postpurge, owner);
+          await reassembleDirectories(subdirectory, metaSuffix, false, postpurge, owner, walkedPaths);
         } else {
           // Skip other types' decomposed directories, plain subfolders of metadata files and folders
           // that aren't metadata, rather than rebuilding them as `<dir>.<this suffix>-meta.xml`.
