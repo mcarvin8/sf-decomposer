@@ -45,12 +45,6 @@ const ALL_STRATEGIES = ['unique-id', 'grouped-by-tag'];
  * between tags. Salesforce never writes these; Prettier does, and re-applies them anyway.
  */
 const FORMATTING_KINDS: ReadonlySet<MismatchKind> = new Set(['tag-whitespace', 'whitespace']);
-/**
- * `--decompose-nested-permissions` (`-p`) groups object and field permissions by object, which
- * can't record their source order, so it sorts them; that is documented, accepted behavior. In
- * `-p` cells a reorder (with or without formatting) doesn't fail unless --strict.
- */
-const NESTED_PERMS_KINDS: ReadonlySet<MismatchKind> = new Set([...FORMATTING_KINDS, 'reorder']);
 
 const HELP_TEXT = `Usage: npm run corpus -- [options]
 
@@ -63,20 +57,19 @@ Options:
   --strategies <a,b>     unique-id,grouped-by-tag (default: both)
   --formats <a,b|all>    xml,json,yaml,json5 (default: xml)
   --nested-perms         Add a -p cell for permissionset under grouped-by-tag
-  --strict               Fail formatting-only and -p reorder differences too
+  --strict               Fail formatting-only differences too
   --plugin <path>        sf-decomposer repo root (default: cwd)
   --work-root <path>     Clone + scratch root (default: <tmp>/sfd-corpus)
   --out <path>           Report dir (default: <work-root>/reports/<timestamp>)
   --help, -h             Show this help
 
 Statuses: PASS byte-equal; FORMAT only formatting kinds differ (passes unless --strict);
-REORDER a -p cell where only permission order (and formatting) differs (passes unless --strict);
 SKIPPED nothing decomposed; FAIL anything else differs; ERROR harness error.
 
 Exit codes: 0 no FAIL/ERROR, 2 any FAIL/ERROR, 1 harness error.
 `;
 
-type Status = 'PASS' | 'FORMAT' | 'REORDER' | 'FAIL' | 'SKIPPED' | 'ERROR';
+type Status = 'PASS' | 'FORMAT' | 'FAIL' | 'SKIPPED' | 'ERROR';
 
 interface Cell {
   repo: string;
@@ -242,8 +235,6 @@ function runCell(cell: Cell, type: DiscoveredType, repoDir: string, baseline: Sn
     const kinds = result.changed.map((c) => c.kind);
     if (!opts.strict && kinds.every((k) => FORMATTING_KINDS.has(k))) {
       result.status = 'FORMAT';
-    } else if (!opts.strict && cell.nestedPerms && kinds.every((k) => NESTED_PERMS_KINDS.has(k))) {
-      result.status = 'REORDER';
     } else {
       result.status = 'FAIL';
     }
@@ -283,7 +274,7 @@ function markdownSummary(results: CellResult[], opts: Options, pluginSha: string
     '',
     `- sf-decomposer: \`${pluginSha}\``,
     `- strategies: ${opts.strategies.join(', ')} | formats: ${opts.formats.join(', ')}${opts.nestedPerms ? ' | nested perms' : ''}${opts.strict ? ' | strict' : ''}`,
-    `- cells: ${results.length} | PASS ${count('PASS')} | FORMAT ${count('FORMAT')} | REORDER ${count('REORDER')} | FAIL ${count('FAIL')} | SKIPPED ${count('SKIPPED')} | ERROR ${count('ERROR')}`,
+    `- cells: ${results.length} | PASS ${count('PASS')} | FORMAT ${count('FORMAT')} | FAIL ${count('FAIL')} | SKIPPED ${count('SKIPPED')} | ERROR ${count('ERROR')}`,
     '',
     '| repo | type | strategy | format | status | files | decomposed | skipped | missing | extra | changed (kinds) |',
     '| --- | --- | --- | --- | --- | --: | --: | --: | --: | --: | --- |',
@@ -428,7 +419,7 @@ function main(): number {
     }));
   const count = (s: Status): number => results.filter((r) => r.status === s).length;
   process.stdout.write(
-    `\nPASS ${count('PASS')}  FORMAT ${count('FORMAT')}  REORDER ${count('REORDER')}  FAIL ${count('FAIL')}  SKIPPED ${count('SKIPPED')}  ERROR ${count('ERROR')}\n`,
+    `\nPASS ${count('PASS')}  FORMAT ${count('FORMAT')}  FAIL ${count('FAIL')}  SKIPPED ${count('SKIPPED')}  ERROR ${count('ERROR')}\n`,
   );
   if (rows.length) process.stdout.write(`${formatTable(rows)}\n`);
   process.stdout.write(`\nReport: ${opts.out}\n`);
