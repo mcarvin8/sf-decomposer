@@ -78,7 +78,7 @@ body:
     attributes:
       label: audit:sweep output before (optional)
       description: |
-        Output from `npm run audit:sweep -- --types <suffix> --root <repo>` before any
+        Output from `pnpm run audit:sweep -- --types <suffix> --root <repo>` before any
         change. Helps quantify the win. Skip if you don't have a corpus to run it against.
       render: text
 
@@ -88,7 +88,7 @@ body:
       label: audit:sweep output after (optional)
       description: |
         Same command after editing `src/metadata/uniqueIdElements.ts` locally and
-        running `npm run build`. The hash-count for the parent tag should drop.
+        running `pnpm run build`. The hash-count for the parent tag should drop.
       render: text
 
   - type: textarea

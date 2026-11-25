@@ -12,7 +12,7 @@
  * reorder, drift) and both versions are saved under the report dir.
  *
  * Usage:
- *   npm run build && npm run corpus -- [options]
+ *   pnpm run build && pnpm run corpus -- [options]
  */
 
 import { spawnSync } from 'node:child_process';
@@ -46,9 +46,9 @@ const ALL_STRATEGIES = ['unique-id', 'grouped-by-tag'];
  */
 const FORMATTING_KINDS: ReadonlySet<MismatchKind> = new Set(['tag-whitespace', 'whitespace']);
 
-const HELP_TEXT = `Usage: npm run corpus -- [options]
+const HELP_TEXT = `Usage: pnpm run corpus -- [options]
 
-Builds nothing itself: run \`npm run build\` first (bin/run.js loads lib/).
+Builds nothing itself: run \`pnpm run build\` first (bin/run.js loads lib/).
 
 Options:
   --corpus <path>        Corpus JSON (default: scripts/corpus/corpus.json)
@@ -337,7 +337,7 @@ function main(): number {
   const opts = parseCli(process.argv.slice(2));
   if (!existsSync(join(opts.pluginRoot, 'lib', 'commands'))) {
     throw new Error(
-      `No lib/ under ${opts.pluginRoot}. Run \`npm run build\` first (${resolveCliBin(opts.pluginRoot)} loads lib/).`,
+      `No lib/ under ${opts.pluginRoot}. Run \`pnpm run build\` first (${resolveCliBin(opts.pluginRoot)} loads lib/).`,
     );
   }
   mkdirSync(opts.out, { recursive: true });

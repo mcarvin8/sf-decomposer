@@ -21,14 +21,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
       - name: Setup Node
         uses: actions/setup-node@v7
         with:
           node-version: 'lts/*'
-          cache: npm
+          cache: pnpm
 
       - name: Install Dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Install Salesforce CLI and plugin
         shell: bash
@@ -43,7 +46,7 @@ jobs:
         run: node -e "require('fs').appendFileSync(process.env.GITHUB_ENV, 'TESTKIT_HOMEDIR=' + require('os').homedir() + '\n')"
 
       - name: Decompose / recompose and compare to baselines
-        run: npm run test:nuts
+        run: pnpm run test:nuts
         env:
           TESTKIT_EXECUTABLE_PATH: sf
           SF_DISABLE_TELEMETRY: true

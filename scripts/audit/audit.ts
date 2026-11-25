@@ -11,7 +11,7 @@
  *   - parent-only output dirs    (dotted-fullName merge bug)
  *
  * Usage:
- *   npm run audit -- \
+ *   pnpm run audit -- \
  *     --type quickActions \
  *     --suffix quickAction \
  *     --source-root C:/path/to/force-app/main/default \
@@ -48,7 +48,7 @@ import {
 
 const HELP_HINT = 'Run with --help for full usage.';
 
-const HELP_TEXT = `Usage: npm run audit -- [options]
+const HELP_TEXT = `Usage: pnpm run audit -- [options]
 
 Required:
   --type <dirName>           Source directory name (e.g. quickActions, applications)

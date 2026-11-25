@@ -11,7 +11,7 @@
  * archives.
  *
  * Usage:
- *   npm run audit:roundtrip -- --source-root C:/path/to/force-app/main/default \
+ *   pnpm run audit:roundtrip -- --source-root C:/path/to/force-app/main/default \
  *     [--sample 0] [--plugin /path/to/sf-decomposer]
  */
 
@@ -30,7 +30,7 @@ import {
 } from './lib.js';
 import { ROUNDTRIP_PAIRS } from './type-pairs.js';
 
-const HELP_TEXT = `Usage: npm run audit:roundtrip -- [options]
+const HELP_TEXT = `Usage: pnpm run audit:roundtrip -- [options]
 
 Required:
   --source-root <path>     Path to force-app/main/default (or equivalent)

@@ -161,8 +161,8 @@ function main() {
   console.log(`[incremental-mutation] Running Stryker against ${files.length} changed file(s):`);
   for (const file of files) console.log(`  - ${file}`);
 
-  const args = ['stryker', 'run', '--mutate', files.join(',')];
-  const stryker = spawnSync('npx', args, { stdio: 'inherit', shell: true });
+  const args = ['exec', 'stryker', 'run', '--mutate', files.join(',')];
+  const stryker = spawnSync('pnpm', args, { stdio: 'inherit', shell: true });
 
   const comment = generateComment(files);
   if (comment) {

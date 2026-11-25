@@ -35,26 +35,29 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
       - name: Setup Node
         uses: actions/setup-node@v7
         with:
           node-version: 'lts/*'
-          cache: npm
-          registry-url: 'https://registry.npmjs.org'
+          cache: pnpm
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Build
-        run: npm run compile
+        run: pnpm run compile
 
       - name: Pin TypeScript for Stryker (TS7 unsupported)
-        run: npm install typescript@6.0.3 --no-save
+        # CI only: the package.json and lock file changes are not committed.
+        run: pnpm add --save-dev typescript@6.0.3
 
       - name: Run incremental mutation testing
         env:
           MUTATION_BASE_BRANCH: origin/${{ github.base_ref }}
-        run: npm run test:mutation:incremental
+        run: pnpm run test:mutation:incremental
 
       - name: Post mutation results comment
         if: always() && github.event_name == 'pull_request'
@@ -82,21 +85,24 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
       - name: Setup Node
         uses: actions/setup-node@v7
         with:
           node-version: 'lts/*'
-          cache: npm
-          registry-url: 'https://registry.npmjs.org'
+          cache: pnpm
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Build
-        run: npm run compile
+        run: pnpm run compile
 
       - name: Pin TypeScript for Stryker (TS7 unsupported)
-        run: npm install typescript@6.0.3 --no-save
+        # CI only: the package.json and lock file changes are not committed.
+        run: pnpm add --save-dev typescript@6.0.3
 
       - name: Run mutation testing
         # GitHub-hosted ubuntu-latest runners have 4 cores (as of 2026). Stryker
@@ -111,7 +117,7 @@ jobs:
         # somewhere other than main.
         env:
           STRYKER_DASHBOARD_API_KEY: ${{ secrets.STRYKER_DASHBOARD_API_KEY }}
-        run: npm run test:mutation -- --concurrency 3 --dashboard.version "${{ github.ref_name }}"
+        run: pnpm run test:mutation -- --concurrency 3 --dashboard.version "${{ github.ref_name }}"
 
       - name: Upload mutation report
         if: always()

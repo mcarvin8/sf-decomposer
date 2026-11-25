@@ -34,6 +34,7 @@
   "engines": {
     "node": ">=22.19.0"
   },
+  "packageManager": "pnpm@12.21.0",
   "files": [
     "/lib",
     "!/lib/action/**",
@@ -99,7 +100,7 @@
     "clean:build": "wireit",
     "clean:package-manager": "wireit",
     "compile": "wireit",
-    "dependencies:upgrade": "npx npm-check-updates -u && npm install && npm audit fix && cd docker && npx npm-check-updates -u",
+    "dependencies:upgrade": "pnpm dlx npm-check-updates -u && pnpm install && cd docker && pnpm dlx npm-check-updates -u",
     "docs:metadata-support": "tsx scripts/update-metadata-support.ts",
     "format": "wireit",
     "lint": "wireit",
@@ -213,10 +214,10 @@
       ]
     },
     "lint:engine": {
-      "command": "ls-engines --no-current --no-dev --mode=virtual",
+      "command": "ls-engines --no-current --no-dev --mode=actual",
       "files": [
         "package.json",
-        "package-lock.json"
+        "pnpm-lock.yaml"
       ],
       "output": []
     },
