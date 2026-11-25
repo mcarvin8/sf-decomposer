@@ -2,7 +2,7 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { Hook } from '@oclif/core';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, type MockInstance, vi } from 'vitest';
 
 const { recomposeSpy, decomposeSpy } = vi.hoisted(() => ({
   recomposeSpy: vi.fn(async (_options: unknown) => undefined),
@@ -64,7 +64,7 @@ function runHardisRetrieveDone(status: 'success' | 'failed'): Promise<void> {
 
 describe('hooks', () => {
   let repo: string;
-  const originalCwd = process.cwd();
+  let cwdSpy: MockInstance<typeof process.cwd>;
 
   async function writeConfig(config: Partial<ConfigFile>): Promise<void> {
     await writeFile(join(repo, HOOK_CONFIG_JSON), JSON.stringify(config));
@@ -73,13 +73,14 @@ describe('hooks', () => {
   beforeEach(async () => {
     repo = await mkdtemp(join(tmpdir(), 'sfd-hooks-'));
     await writeFile(join(repo, 'sfdx-project.json'), '{"packageDirectories":[{"path":"force-app"}]}');
-    process.chdir(repo);
+    // Not process.chdir(): Stryker runs the tests in worker threads, which don't support it.
+    cwdSpy = vi.spyOn(process, 'cwd').mockReturnValue(repo);
     delete process.env[HARDIS_RECOMPOSED_ENV];
     logs.length = 0;
   });
 
   afterEach(async () => {
-    process.chdir(originalCwd);
+    cwdSpy.mockRestore();
     delete process.env[HARDIS_RECOMPOSED_ENV];
     await rm(repo, { recursive: true, force: true });
   });
@@ -114,7 +115,7 @@ describe('hooks', () => {
 
     it('skips when sfdx-hardis already recomposed this repo', async () => {
       await writeConfig({ metadataSuffixes: 'flow', sfdxHardis: true });
-      process.env[HARDIS_RECOMPOSED_ENV] = process.cwd();
+      process.env[HARDIS_RECOMPOSED_ENV] = repo;
       await runPrerun('project:deploy:start');
       expect(recomposeSpy).not.toHaveBeenCalled();
     });
@@ -153,7 +154,7 @@ describe('hooks', () => {
       await runHardisStart(true);
       expect(recomposeSpy).toHaveBeenCalledOnce();
       expect(logs.some((msg) => msg.includes('sfdx-hardis validation'))).toBe(true);
-      expect(process.env[HARDIS_RECOMPOSED_ENV]).toBe(process.cwd());
+      expect(process.env[HARDIS_RECOMPOSED_ENV]).toBe(repo);
 
       await runPrerun('project:deploy:validate');
       expect(recomposeSpy).toHaveBeenCalledOnce();
