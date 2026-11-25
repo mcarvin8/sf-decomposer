@@ -6,7 +6,8 @@
     "@oclif/core": "5.1.12",
     "@salesforce/core": "9.4.5",
     "@salesforce/sf-plugins-core": "13.0.9",
-    "config-disassembler": "5.0.2"
+    "config-disassembler": "5.0.2",
+    "sfdx-hardis": "8.27.0"
   },
   "devDependencies": {
     "@actions/core": "3.0.1",
@@ -82,7 +83,9 @@
     ],
     "hooks": {
       "scopedPostRetrieve": "./lib/hooks/scopedPostRetrieve",
-      "prerun": "./lib/hooks/prerun"
+      "prerun": "./lib/hooks/prerun",
+      "sfdx-hardis:validation-start": "./lib/hooks/sfdxHardisStart",
+      "sfdx-hardis:deployment-start": "./lib/hooks/sfdxHardisStart"
     },
     "flexibleTaxonomy": true
   },

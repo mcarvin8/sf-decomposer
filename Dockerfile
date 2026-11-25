@@ -20,7 +20,7 @@ COPY src ./src
 RUN pnpm exec tsc -p . --pretty
 
 # The runtime stage does NOT install the repo's own package.json -- that lists
-# @oclif/core/@salesforce/core/@salesforce/sf-plugins-core as production dependencies too
+# @oclif/core/@salesforce/core/@salesforce/sf-plugins-core/sfdx-hardis as production dependencies too
 # (needed for the sf CLI plugin), which the Action's code never imports at runtime (verified:
 # nothing compiled from src/action, src/core, src/metadata, src/service, or src/helpers requires
 # any @oclif/@salesforce package -- the one @oclif/core import in helpers/types.ts is type-only
