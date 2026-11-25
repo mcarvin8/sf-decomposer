@@ -85,7 +85,8 @@
       "scopedPostRetrieve": "./lib/hooks/scopedPostRetrieve",
       "prerun": "./lib/hooks/prerun",
       "sfdx-hardis:validation-start": "./lib/hooks/sfdxHardisStart",
-      "sfdx-hardis:deployment-start": "./lib/hooks/sfdxHardisStart"
+      "sfdx-hardis:deployment-start": "./lib/hooks/sfdxHardisStart",
+      "sfdx-hardis:retrieve-done": "./lib/hooks/sfdxHardisRetrieveDone"
     },
     "flexibleTaxonomy": true
   },

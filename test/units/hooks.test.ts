@@ -4,14 +4,20 @@ import { join } from 'node:path';
 import type { Hook } from '@oclif/core';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { recomposeSpy } = vi.hoisted(() => ({ recomposeSpy: vi.fn(async (_options: unknown) => undefined) }));
+const { recomposeSpy, decomposeSpy } = vi.hoisted(() => ({
+  recomposeSpy: vi.fn(async (_options: unknown) => undefined),
+  decomposeSpy: vi.fn(async (_options: unknown) => undefined),
+}));
 vi.mock('../../src/core/recomposeMetadataTypes.js', () => ({ recomposeMetadataTypes: recomposeSpy }));
+vi.mock('../../src/core/decomposeMetadataTypes.js', () => ({ decomposeMetadataTypes: decomposeSpy }));
 
 import { HOOK_CONFIG_JSON } from '../../src/helpers/constants.js';
 import type { ConfigFile } from '../../src/helpers/types.js';
 import { prerun } from '../../src/hooks/prerun.js';
+import { scopedPostRetrieve } from '../../src/hooks/scopedPostRetrieve.js';
+import { sfdxHardisRetrieveDone } from '../../src/hooks/sfdxHardisRetrieveDone.js';
 import { sfdxHardisStart } from '../../src/hooks/sfdxHardisStart.js';
-import { buildRecomposeOptions, HARDIS_RECOMPOSED_ENV } from '../../src/hooks/shared/recomposeConfig.js';
+import { buildRecomposeOptions, HARDIS_RECOMPOSED_ENV } from '../../src/hooks/shared/hookConfig.js';
 
 const logs: string[] = [];
 const context = { log: (msg: string) => logs.push(msg) } as unknown as Hook.Context;
@@ -36,7 +42,27 @@ function runHardisStart(checkOnly: boolean): Promise<void> {
   });
 }
 
-describe('deploy hooks', () => {
+function runPostRetrieve(status?: string): Promise<void> {
+  // biome-ignore lint/suspicious/noExplicitAny: the hook reads only result.retrieveResult.response.status.
+  return scopedPostRetrieve.call(context, { result: { retrieveResult: { response: { status } } } } as any);
+}
+
+function runHardisRetrieveDone(status: 'success' | 'failed'): Promise<void> {
+  return sfdxHardisRetrieveDone.call(context, {
+    payloadVersion: 1,
+    event: 'sfdx-hardis:retrieve-done',
+    commandId: 'hardis:source:retrieve',
+    reportDir: 'hardis-report',
+    currentBranch: null,
+    pullRequest: null,
+    org: { username: null },
+    data: { status, manifest: null, metadata: [], sourcePaths: [], packageNames: [] },
+    // biome-ignore lint/suspicious/noExplicitAny: the oclif Config is never read by the hook.
+    config: {} as any,
+  });
+}
+
+describe('hooks', () => {
   let repo: string;
   const originalCwd = process.cwd();
 
@@ -145,6 +171,97 @@ describe('deploy hooks', () => {
       recomposeSpy.mockRejectedValueOnce(new Error('boom'));
       await expect(runHardisStart(false)).rejects.toThrow('boom');
       expect(process.env[HARDIS_RECOMPOSED_ENV]).toBeUndefined();
+    });
+  });
+
+  describe('scopedPostRetrieve', () => {
+    it('ignores a retrieve without a status', async () => {
+      await writeConfig({ metadataSuffixes: 'flow' });
+      await runPostRetrieve(undefined);
+      expect(decomposeSpy).not.toHaveBeenCalled();
+    });
+
+    it('does nothing without a config file', async () => {
+      await runPostRetrieve('Succeeded');
+      expect(decomposeSpy).not.toHaveBeenCalled();
+    });
+
+    it('decomposes with the config settings', async () => {
+      await writeConfig({
+        metadataSuffixes: 'flow',
+        prePurge: true,
+        decomposedFormat: 'yaml',
+        strategy: 'grouped-by-tag',
+        decomposeNestedPermissions: true,
+        updateForceignore: true,
+        updateGitattributes: true,
+      });
+      await runPostRetrieve('Succeeded');
+      expect(decomposeSpy).toHaveBeenCalledOnce();
+      expect(decomposeSpy.mock.calls[0][0]).toMatchObject({
+        metadataTypes: ['flow'],
+        prepurge: true,
+        postpurge: false,
+        format: 'yaml',
+        strategy: 'grouped-by-tag',
+        decomposeNestedPerms: true,
+        updateForceignore: true,
+        updateGitattributes: true,
+      });
+    });
+
+    it('uses the defaults for unset settings', async () => {
+      await writeConfig({ manifest: 'manifest/package.xml' });
+      await runPostRetrieve('Succeeded');
+      expect(decomposeSpy.mock.calls[0][0]).toMatchObject({
+        metadataTypes: undefined,
+        manifest: 'manifest/package.xml',
+        prepurge: false,
+        format: 'xml',
+        strategy: 'unique-id',
+        decomposeNestedPerms: false,
+        updateForceignore: false,
+        updateGitattributes: false,
+      });
+    });
+
+    it('honors skipPostRetrieveHook', async () => {
+      await writeConfig({ metadataSuffixes: 'flow', skipPostRetrieveHook: true });
+      await runPostRetrieve('Succeeded');
+      expect(decomposeSpy).not.toHaveBeenCalled();
+    });
+
+    it('does nothing when the config names no types or manifest', async () => {
+      await writeConfig({});
+      await runPostRetrieve('Succeeded');
+      expect(decomposeSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('sfdx-hardis retrieve-done', () => {
+    it('does nothing without a config file', async () => {
+      await runHardisRetrieveDone('success');
+      expect(decomposeSpy).not.toHaveBeenCalled();
+    });
+
+    it('does nothing unless sfdxHardis is true', async () => {
+      await writeConfig({ metadataSuffixes: 'flow' });
+      await runHardisRetrieveDone('success');
+      expect(decomposeSpy).not.toHaveBeenCalled();
+    });
+
+    it('does nothing when the config names no types or manifest', async () => {
+      await writeConfig({ sfdxHardis: true });
+      await runHardisRetrieveDone('success');
+      expect(decomposeSpy).not.toHaveBeenCalled();
+    });
+
+    it('decomposes after a retrieve, failed ones included', async () => {
+      await writeConfig({ metadataSuffixes: 'flow', sfdxHardis: true });
+      await runHardisRetrieveDone('failed');
+      expect(decomposeSpy).toHaveBeenCalledOnce();
+      expect(decomposeSpy.mock.calls[0][0]).toMatchObject({ metadataTypes: ['flow'] });
+      expect(logs.some((msg) => msg.includes('hardis:source:retrieve, failed'))).toBe(true);
     });
   });
 

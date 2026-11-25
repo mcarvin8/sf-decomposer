@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 import { HOOK_CONFIG_JSON } from '../../helpers/constants.js';
-import { ConfigFile, RecomposeOptions } from '../../helpers/types.js';
+import { ConfigFile, DecomposeOptions, RecomposeOptions } from '../../helpers/types.js';
 import { getRepoRoot } from '../../service/core/getRepoRoot.js';
 
 /**
@@ -63,6 +63,30 @@ export function buildRecomposeOptions(
     postpurge: configFile.postPurge || false,
     ignoreDirs,
     manifest: manifest.trim() !== '' ? manifest.trim() : undefined,
+    log,
+  };
+}
+
+export function buildDecomposeOptions(
+  configFile: ConfigFile,
+  log: (msg: string) => void,
+): DecomposeOptions | undefined {
+  const recompose = buildRecomposeOptions(configFile, log);
+  if (!recompose) {
+    return undefined;
+  }
+  return {
+    metadataTypes: recompose.metadataTypes,
+    prepurge: configFile.prePurge || false,
+    postpurge: recompose.postpurge,
+    format: configFile.decomposedFormat || 'xml',
+    ignoreDirs: recompose.ignoreDirs,
+    strategy: configFile.strategy || 'unique-id',
+    decomposeNestedPerms: configFile.decomposeNestedPermissions || false,
+    updateForceignore: configFile.updateForceignore ?? false,
+    updateGitattributes: configFile.updateGitattributes ?? false,
+    manifest: recompose.manifest,
+    overrides: configFile.overrides,
     log,
   };
 }

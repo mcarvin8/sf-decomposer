@@ -4,7 +4,7 @@ import type { Hook } from '@oclif/core';
 import type { SfdxHardisDeploymentStartEvent, SfdxHardisEventHookOptions } from 'sfdx-hardis/plugin-api';
 
 import { recomposeMetadataTypes } from '../core/recomposeMetadataTypes.js';
-import { buildRecomposeOptions, HARDIS_RECOMPOSED_ENV, loadHookConfig } from './shared/recomposeConfig.js';
+import { buildRecomposeOptions, HARDIS_RECOMPOSED_ENV, loadHookConfig } from './shared/hookConfig.js';
 
 type HookFunction = (
   this: Hook.Context,

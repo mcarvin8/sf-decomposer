@@ -3,7 +3,7 @@
 import { Hook } from '@oclif/core';
 
 import { recomposeMetadataTypes } from '../core/recomposeMetadataTypes.js';
-import { buildRecomposeOptions, HARDIS_RECOMPOSED_ENV, loadHookConfig } from './shared/recomposeConfig.js';
+import { buildRecomposeOptions, HARDIS_RECOMPOSED_ENV, loadHookConfig } from './shared/hookConfig.js';
 
 export const prerun: Hook<'prerun'> = async function (options) {
   if (!['project:deploy:validate', 'project:deploy:start'].includes(options.Command.id)) {
