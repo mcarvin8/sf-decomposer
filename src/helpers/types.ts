@@ -64,7 +64,7 @@ export type ConfigFile = {
   overrides?: DecomposerOverride[];
   skipPrerunHook?: boolean;
   skipPostRetrieveHook?: boolean;
-  /** Recompose on sfdx-hardis validation-start/deployment-start and decompose on sfdx-hardis retrieve-done. */
+  /** Recompose on sfdx-hardis validation-start/deployment-start, before sfdx-hardis reads the sources. */
   sfdxHardis?: boolean;
 };
 

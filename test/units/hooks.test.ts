@@ -15,7 +15,6 @@ import { HOOK_CONFIG_JSON } from '../../src/helpers/constants.js';
 import type { ConfigFile } from '../../src/helpers/types.js';
 import { prerun } from '../../src/hooks/prerun.js';
 import { scopedPostRetrieve } from '../../src/hooks/scopedPostRetrieve.js';
-import { sfdxHardisRetrieveDone } from '../../src/hooks/sfdxHardisRetrieveDone.js';
 import { sfdxHardisStart } from '../../src/hooks/sfdxHardisStart.js';
 import { buildRecomposeOptions, HARDIS_RECOMPOSED_ENV } from '../../src/hooks/shared/hookConfig.js';
 
@@ -45,21 +44,6 @@ function runHardisStart(checkOnly: boolean): Promise<void> {
 function runPostRetrieve(status?: string): Promise<void> {
   // biome-ignore lint/suspicious/noExplicitAny: the hook reads only result.retrieveResult.response.status.
   return scopedPostRetrieve.call(context, { result: { retrieveResult: { response: { status } } } } as any);
-}
-
-function runHardisRetrieveDone(status: 'success' | 'failed'): Promise<void> {
-  return sfdxHardisRetrieveDone.call(context, {
-    payloadVersion: 1,
-    event: 'sfdx-hardis:retrieve-done',
-    commandId: 'hardis:source:retrieve',
-    reportDir: 'hardis-report',
-    currentBranch: null,
-    pullRequest: null,
-    org: { username: null },
-    data: { status, manifest: null, metadata: [], sourcePaths: [], packageNames: [] },
-    // biome-ignore lint/suspicious/noExplicitAny: the oclif Config is never read by the hook.
-    config: {} as any,
-  });
 }
 
 describe('hooks', () => {
@@ -236,33 +220,6 @@ describe('hooks', () => {
       await writeConfig({});
       await runPostRetrieve('Succeeded');
       expect(decomposeSpy).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('sfdx-hardis retrieve-done', () => {
-    it('does nothing without a config file', async () => {
-      await runHardisRetrieveDone('success');
-      expect(decomposeSpy).not.toHaveBeenCalled();
-    });
-
-    it('does nothing unless sfdxHardis is true', async () => {
-      await writeConfig({ metadataSuffixes: 'flow' });
-      await runHardisRetrieveDone('success');
-      expect(decomposeSpy).not.toHaveBeenCalled();
-    });
-
-    it('does nothing when the config names no types or manifest', async () => {
-      await writeConfig({ sfdxHardis: true });
-      await runHardisRetrieveDone('success');
-      expect(decomposeSpy).not.toHaveBeenCalled();
-    });
-
-    it('decomposes after a retrieve, failed ones included', async () => {
-      await writeConfig({ metadataSuffixes: 'flow', sfdxHardis: true });
-      await runHardisRetrieveDone('failed');
-      expect(decomposeSpy).toHaveBeenCalledOnce();
-      expect(decomposeSpy.mock.calls[0][0]).toMatchObject({ metadataTypes: ['flow'] });
-      expect(logs.some((msg) => msg.includes('hardis:source:retrieve, failed'))).toBe(true);
     });
   });
 
