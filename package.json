@@ -6,7 +6,8 @@
     "@oclif/core": "5.1.12",
     "@salesforce/core": "9.4.5",
     "@salesforce/sf-plugins-core": "13.0.9",
-    "config-disassembler": "5.0.2"
+    "config-disassembler": "5.0.2",
+    "sfdx-hardis": "8.27.0"
   },
   "devDependencies": {
     "@actions/core": "3.0.1",
@@ -34,6 +35,7 @@
   "engines": {
     "node": ">=22.19.0"
   },
+  "packageManager": "pnpm@12.21.0",
   "files": [
     "/lib",
     "!/lib/action/**",
@@ -81,7 +83,9 @@
     ],
     "hooks": {
       "scopedPostRetrieve": "./lib/hooks/scopedPostRetrieve",
-      "prerun": "./lib/hooks/prerun"
+      "prerun": "./lib/hooks/prerun",
+      "sfdx-hardis:validation-start": "./lib/hooks/sfdxHardisStart",
+      "sfdx-hardis:deployment-start": "./lib/hooks/sfdxHardisStart"
     },
     "flexibleTaxonomy": true
   },
@@ -99,7 +103,7 @@
     "clean:build": "wireit",
     "clean:package-manager": "wireit",
     "compile": "wireit",
-    "dependencies:upgrade": "npx npm-check-updates -u && npm install && npm audit fix && cd docker && npx npm-check-updates -u",
+    "dependencies:upgrade": "pnpm dlx npm-check-updates -u && pnpm install && cd docker && pnpm dlx npm-check-updates -u",
     "docs:metadata-support": "tsx scripts/update-metadata-support.ts",
     "format": "wireit",
     "lint": "wireit",
@@ -213,10 +217,10 @@
       ]
     },
     "lint:engine": {
-      "command": "ls-engines --no-current --no-dev --mode=virtual",
+      "command": "ls-engines --no-current --no-dev --mode=actual",
       "files": [
         "package.json",
-        "package-lock.json"
+        "pnpm-lock.yaml"
       ],
       "output": []
     },

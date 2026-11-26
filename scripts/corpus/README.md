@@ -9,9 +9,9 @@ Not part of the published plugin. Runs weekly in CI (`.github/workflows/corpus.y
 ## Run it
 
 ```bash
-npm run build            # bin/run.js loads lib/, so build first
-npm run corpus           # every corpus repo, both strategies, xml
-npm run corpus -- --repos dreamhouse-lwc --types permissionset,flow --formats all --nested-perms
+pnpm run build            # bin/run.js loads lib/, so build first
+pnpm run corpus           # every corpus repo, both strategies, xml
+pnpm run corpus -- --repos dreamhouse-lwc --types permissionset,flow --formats all --nested-perms
 ```
 
 | Option                | Default                                    |
@@ -81,7 +81,7 @@ that makes the two equal:
 `results.json` files:
 
 ```bash
-npm run corpus:coverage -- --reports <dir> --source "<run link>"   # writes scripts/corpus/COVERAGE.md
+pnpm run corpus:coverage -- --reports <dir> --source "<run link>"   # writes scripts/corpus/COVERAGE.md
 ```
 
 `--reports` is searched recursively, so it can be a local report dir or a CI run's downloaded

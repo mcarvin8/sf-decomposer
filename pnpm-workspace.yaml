@@ -1,0 +1,11 @@
+# Dependency install scripts pnpm may run. esbuild's fetches its native binary; sfdx-hardis's only
+# sets up husky for its own repository.
+allowBuilds:
+  esbuild: true
+  sfdx-hardis: false
+
+# Keep pnpm-lock.yaml a single YAML document. Pinning the pnpm version (packageManager in
+# package.json) otherwise makes pnpm 12 add a leading document for pnpm itself, which GitHub's
+# dependency graph can't read, so Dependabot alerts and security updates would stop working.
+# CI still installs the pinned version with pnpm/action-setup.
+pmOnFail: ignore

@@ -7,7 +7,7 @@ PR #430, #432, and #433; this is the portable, dependency-free Node port so
 anyone can run them on macOS / Linux / CI without a PowerShell host.
 
 The harness is **not** part of the published plugin — it lives under
-`scripts/audit/` and is invoked via `npm run audit*`. None of these scripts
+`scripts/audit/` and is invoked via `pnpm run audit*`. None of these scripts
 mutate the source archive; everything happens in a per-type workspace under
 `<os.tmpdir()>/sfd-audit/`.
 
@@ -23,13 +23,13 @@ mutate the source archive; everything happens in a per-type workspace under
 
 ## Scripts
 
-### `npm run audit` — single-type focused audit
+### `pnpm run audit` — single-type focused audit
 
 Drives one (type, suffix) pair end-to-end. Useful for iterating on a new
 `uniqueIdElements` entry against a known-good archive.
 
 ```bash
-npm run audit -- \
+pnpm run audit -- \
   --type quickActions \
   --suffix quickAction \
   --source-root /path/to/force-app/main/default \
@@ -38,7 +38,7 @@ npm run audit -- \
 
 Exits `2` if `contentSetDiff > 0` or `parentOnlyDirs > 0`, otherwise `0`.
 
-### `npm run audit:sweep` — broad decompose-only sweep
+### `pnpm run audit:sweep` — broad decompose-only sweep
 
 Iterates over a curated list of metadata types (see `type-pairs.ts`), runs
 decompose-only with a per-type sample cap, and ranks types by hash-filename
@@ -46,12 +46,12 @@ count. Used to surface uniqueIdElements coverage opportunities across the
 whole archive.
 
 ```bash
-npm run audit:sweep -- \
+pnpm run audit:sweep -- \
   --source-root /path/to/force-app/main/default \
   --sample 30
 ```
 
-### `npm run audit:roundtrip` — multi-type round-trip integrity
+### `pnpm run audit:roundtrip` — multi-type round-trip integrity
 
 Iterates a focused list of high-risk types and runs the full decompose +
 recompose pair, asserting `origFiles == rebuiltFiles` and `contentSetDiff == 0`.
@@ -59,11 +59,11 @@ Exits `2` when any type shows data loss, so this can gate CI against a real
 metadata archive.
 
 ```bash
-npm run audit:roundtrip -- \
+pnpm run audit:roundtrip -- \
   --source-root /path/to/force-app/main/default
 ```
 
-### `npm run audit:classify` — schema-based leaf-only check
+### `pnpm run audit:classify` — schema-based leaf-only check
 
 Classifies every registry type from the Metadata API WSDL (`metadata.wsdl` in
 this directory) and prints the rows where `docs/METADATA_SUPPORT.md` disagrees.
@@ -71,11 +71,11 @@ The disassembler only splits elements that have child elements, so a type
 whose schema has no complexType children (repeated text elements included) is
 **certainly leaf-only**. A type with complexType children is a decomposable
 **candidate**: real files may omit those elements, so confirm with
-`npm run audit` before marking it ✅. Types missing from the WSDL (features not
+`pnpm run audit` before marking it ✅. Types missing from the WSDL (features not
 enabled in the org it came from) are reported as unverified.
 
 ```bash
-npm run audit:classify -- [--wsdl path/to/metadata.wsdl] [--md report.md] [--all]
+pnpm run audit:classify -- [--wsdl path/to/metadata.wsdl] [--md report.md] [--all]
 ```
 
 To refresh the WSDL, use Setup → Integrations → API → Generate Metadata WSDL

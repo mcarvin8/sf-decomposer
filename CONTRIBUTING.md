@@ -7,7 +7,7 @@ Contributions are welcome. This guide covers how to set up your environment, run
 ## Requirements
 
 - **Node.js** ≥ 22.19
-- **npm** (package manager)
+- **[pnpm](https://pnpm.io/installation)**, at the version pinned in `packageManager` in `package.json` (e.g. `npm install --global pnpm@<version>`)
 
 ---
 
@@ -20,13 +20,13 @@ Fork the [repository](https://github.com/mcarvin8/sf-decomposer) and clone your 
 ### 2. Install dependencies
 
 ```bash
-npm install
+pnpm install
 ```
 
 ### 3. Build
 
 ```bash
-npm run build
+pnpm run build
 ```
 
 Rebuild after source changes when you want to run or test the plugin locally.
@@ -47,9 +47,9 @@ Then use `sf decomposer` in a Salesforce DX project to test your changes.
 
 ### Lint and format
 
-- **Lint:** `npm run lint` (runs Biome check on `src` and `test`)
-- **Format:** `npm run format` (runs Biome formatter on source and test files)
-- **Dependency lint:** `npm run lint:dependencies` (runs Knip to detect unused exports and dependencies)
+- **Lint:** `pnpm run lint` (runs Biome check on `src` and `test`)
+- **Format:** `pnpm run format` (runs Biome formatter on source and test files)
+- **Dependency lint:** `pnpm run lint:dependencies` (runs Knip to detect unused exports and dependencies)
 
 Fix lint/format issues before submitting a PR.
 
@@ -75,7 +75,7 @@ Example: `feat(decompose): add support for custom metadata type X`
 Run unit tests (with coverage). New code should maintain 100% coverage (enforced by Vitest + V8).
 
 ```bash
-npm run test:only
+pnpm run test:only
 ```
 
 ### Non-unit (NUT) tests
@@ -83,19 +83,19 @@ npm run test:only
 Run the non-unit tests to verify CLI commands:
 
 ```bash
-npm run test:nuts
+pnpm run test:nuts
 ```
 
 ### Full test pipeline
 
-The default `npm test` runs the full pipeline (compile, lint, unit tests). Use it before pushing.
+The default `pnpm test` runs the full pipeline (compile, lint, unit tests). Use it before pushing.
 
 ### Mutation testing
 
 This plugin runs [Stryker](https://stryker-mutator.io/) over `src/` to keep the unit-test suite honest. Two modes are supported:
 
-- **Incremental (PR jobs):** `npm run test:mutation:incremental` — runs Stryker only against files changed in the current diff (the workflow in `.github/workflows/mutation.yml` invokes this on every pull request).
-- **Full (on demand):** `npm run test:mutation` — full suite; published to the [Stryker Dashboard](https://dashboard.stryker-mutator.io/reports/github.com/mcarvin8/sf-decomposer/main) via `workflow_dispatch` with `full: true`.
+- **Incremental (PR jobs):** `pnpm run test:mutation:incremental` — runs Stryker only against files changed in the current diff (the workflow in `.github/workflows/mutation.yml` invokes this on every pull request).
+- **Full (on demand):** `pnpm run test:mutation` — full suite; published to the [Stryker Dashboard](https://dashboard.stryker-mutator.io/reports/github.com/mcarvin8/sf-decomposer/main) via `workflow_dispatch` with `full: true`.
 
 Local runs honor the `commands/` and `hooks/` exclusions (those folders are only meaningfully exercised by NUTs, which Stryker does not run). The current mutation badge in the README reflects the last `main` run.
 
@@ -210,7 +210,7 @@ There's no manual publish step for the image itself: `action.yml`'s `runs.image`
 
 1. Create a branch from `main` (e.g. `feat/my-feature` or `fix/issue-123`).
 2. Make your changes, add or update tests as needed.
-3. Run `npm test` and fix any failures or lint issues.
+3. Run `pnpm test` and fix any failures or lint issues.
 4. Commit with [conventional commit](https://www.conventionalcommits.org/) messages.
 5. Push to your fork and open a PR against `main`.
 6. Fill in the PR template (if any) and reference any related issues.

@@ -51,17 +51,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
       - name: Setup Node
         uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node-version }}
-          cache: npm
+          cache: pnpm
 
       - name: Pack this checkout
         if: github.event_name == 'pull_request'
         run: |
-          npm ci
-          npm run build:core
+          pnpm install --frozen-lockfile
+          pnpm run build:core
           # --ignore-scripts skips core's prepack, which would rebuild what build:core just built.
           PACK_DIR="$RUNNER_TEMP/pack"
           mkdir -p "$PACK_DIR"

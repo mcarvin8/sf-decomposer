@@ -67,13 +67,16 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
       - uses: actions/setup-node@v7
         with:
           node-version: "lts/*"
-          cache: npm
+          cache: pnpm
 
-      - run: npm ci
-      - run: npm run build
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run build
 
       - name: Run corpus harness
         shell: bash
@@ -84,7 +87,7 @@ jobs:
         run: |
           args=(--repos "$REPO" --formats "$FORMATS" --nested-perms --work-root "$RUNNER_TEMP/sfd-corpus" --out "$RUNNER_TEMP/corpus-report")
           if [ -n "$TYPES" ]; then args+=(--types "$TYPES"); fi
-          npm run corpus -- "${args[@]}"
+          pnpm run corpus -- "${args[@]}"
 
       - name: Job summary
         if: always()
@@ -112,12 +115,15 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
       - uses: actions/setup-node@v7
         with:
           node-version: "lts/*"
-          cache: npm
+          cache: pnpm
 
-      - run: npm ci
+      - run: pnpm install --frozen-lockfile
 
       - uses: actions/download-artifact@v8
         with:
@@ -128,7 +134,7 @@ jobs:
         env:
           SOURCE: "[Corpus round trip #${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"
         run: |
-          npm run corpus:coverage -- --reports "$RUNNER_TEMP/corpus-reports" --out "$RUNNER_TEMP/COVERAGE.md" --source "$SOURCE"
+          pnpm run corpus:coverage -- --reports "$RUNNER_TEMP/corpus-reports" --out "$RUNNER_TEMP/COVERAGE.md" --source "$SOURCE"
           cat "$RUNNER_TEMP/COVERAGE.md" >> "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/upload-artifact@v7

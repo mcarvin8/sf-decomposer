@@ -9,7 +9,7 @@
  * readability and source-control diffs.
  *
  * Usage:
- *   npm run audit:sweep -- --source-root C:/path/to/force-app/main/default \
+ *   pnpm run audit:sweep -- --source-root C:/path/to/force-app/main/default \
  *     [--sample 30] [--plugin /path/to/sf-decomposer]
  */
 
@@ -34,7 +34,7 @@ import {
 } from './lib.js';
 import { SWEEP_PAIRS } from './type-pairs.js';
 
-const HELP_TEXT = `Usage: npm run audit:sweep -- [options]
+const HELP_TEXT = `Usage: pnpm run audit:sweep -- [options]
 
 Required:
   --source-root <path>     Path to force-app/main/default (or equivalent)

@@ -17,20 +17,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
       - name: Setup Node
         uses: actions/setup-node@v7
         with:
           node-version: 'lts/*'
-          cache: npm
+          cache: pnpm
 
       - name: Install Dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Check unused dependencies
-        run: npm run lint:dependencies
+        run: pnpm run lint:dependencies
 
       - name: Check Node.js engine versions
-        run: npm run lint:engine
+        run: pnpm run lint:engine
 
       - name: Check plugin file types allowed by the Claude plugin directory
         run: |
@@ -71,21 +74,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
       - name: Setup Node
         uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node-version }}
-          cache: npm
-          registry-url: 'https://registry.npmjs.org'
+          cache: pnpm
 
       - name: Install Dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Build
-        run: npm run build
+        run: pnpm run build
 
       - name: Test
-        run: npm run test
+        run: pnpm run test
         env:
           SF_DISABLE_TELEMETRY: true
 
@@ -114,21 +119,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
       - name: Setup Node
         uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node-version }}
-          cache: npm
-          registry-url: 'https://registry.npmjs.org'
+          cache: pnpm
 
       - name: Install Salesforce CLI
         run: npm install -g @salesforce/cli@nightly
 
       - name: Install Dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: NUTs
-        run: npm run test:nuts
+        run: pnpm run test:nuts
         env:
           TESTKIT_AUTH_URL: ${{ secrets.TESTKIT_AUTH_URL }}
           TESTKIT_HUB_USERNAME: ${{ secrets.TESTKIT_HUB_USERNAME }}

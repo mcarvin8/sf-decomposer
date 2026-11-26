@@ -128,7 +128,7 @@ jobs:
         # to the two-profile matrix. See the trigger-comment block above for the full
         # rationale.
         profile: ${{ inputs.profile && fromJSON(format('["{0}"]', inputs.profile)) || fromJSON('["large","manyfiles","manyfiles-overrides"]') }}
-    # Read-only on purpose. This job runs the PR's own code (`npm ci` install
+    # Read-only on purpose. This job runs the PR's own code (`pnpm install` install
     # scripts, src/, test/perf/), so it must not hold a token that can write
     # anywhere: a compromised dependency would otherwise get push access to
     # every unprotected branch and gh-pages. Writing happens in perf-comment
@@ -144,20 +144,23 @@ jobs:
           # base-ref fetch below works without it (public repo).
           persist-credentials: false
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
       - name: Setup Node
         uses: actions/setup-node@v7
         with:
           node-version: 'lts/*'
-          cache: npm
+          cache: pnpm
 
       - name: Install Dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       # -----------------------------------------------------------------
       # Same-runner, interleaved baseline (PR only).
       #
       # The PR base ref is checked out into a separate git worktree with its
-      # own `npm ci` (so its own config-disassembler build). The single
+      # own `pnpm install` (so its own config-disassembler build). The single
       # "Run performance suite" step below then times BOTH source trees in
       # one loop, alternating base/head and head/base per repeat, each
       # operation in a fresh child process (test/perf/decompose.perf.ts).
@@ -176,7 +179,8 @@ jobs:
           git fetch --no-tags --prune --depth=1 origin "${{ github.event.pull_request.base.sha }}"
           git worktree add --detach "$RUNNER_TEMP/perf-base" "${{ github.event.pull_request.base.sha }}"
           cd "$RUNNER_TEMP/perf-base"
-          npm ci
+          # Base refs from before the switch to pnpm only have package-lock.json.
+          if [ -f pnpm-lock.yaml ]; then pnpm install --frozen-lockfile; else npm ci; fi
         env:
           # Skip husky's prepare hook inside the throwaway worktree.
           HUSKY: '0'
@@ -193,7 +197,7 @@ jobs:
           echo '```' >> "$GITHUB_STEP_SUMMARY"
 
       - name: Run performance suite
-        run: npm run test:perf
+        run: pnpm run test:perf
         env:
           PERF_PROFILE: ${{ matrix.profile }}
           PERF_FORMATS: ${{ inputs.formats || 'xml,json,json5,yaml' }}

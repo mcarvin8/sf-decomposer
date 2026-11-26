@@ -25,7 +25,7 @@
     "node": ">=22.19.0"
   },
   "scripts": {
-    "prepack": "npm run --prefix ../.. build:core"
+    "prepack": "pnpm --dir ../.. run build:core"
   },
   "publishConfig": {
     "access": "public"

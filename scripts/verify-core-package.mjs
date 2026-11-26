@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Guards the sf-decomposer-core package after `npm run build:core`:
+// Guards the sf-decomposer-core package after `pnpm run build:core`:
 // - its only runtime dependency is config-disassembler, pinned to the same version as the
 //   sf-decomposer plugin (so a Dependabot bump of the root can't leave core behind),
 // - its version matches the plugin's,
@@ -47,7 +47,7 @@ let files;
 try {
   files = walk(libDir);
 } catch {
-  problems.push(`${libDir} is missing - run "npm run build:core" first`);
+  problems.push(`${libDir} is missing - run "pnpm run build:core" first`);
   files = [];
 }
 

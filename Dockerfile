@@ -6,19 +6,21 @@
 # Two stages so the shipped image only carries production dependencies -- config-disassembler's
 # native addon is the reason this can't be a plain esbuild-bundled JS action: it ships
 # platform-specific prebuilt binaries as optional dependencies, resolved by npm at install time
-# for whatever platform actually runs `npm install`. Building (and installing) on the same
+# for whatever platform actually runs the install. Building (and installing) on the same
 # node:22-slim (glibc, linux/amd64) image the Action itself runs on guarantees the right one
 # (config-disassembler-linux-x64-gnu) lands in node_modules.
 FROM node:22-slim AS build
 WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm ci
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+# The pnpm version pinned in package.json's packageManager field.
+RUN npm install --global "pnpm@$(node -p "require('./package.json').packageManager.split('@')[1]")"
+RUN pnpm install --frozen-lockfile
 COPY tsconfig.json ./
 COPY src ./src
-RUN npx tsc -p . --pretty
+RUN pnpm exec tsc -p . --pretty
 
-# The runtime stage does NOT `npm ci` the repo's own package.json -- that lists
-# @oclif/core/@salesforce/core/@salesforce/sf-plugins-core as production dependencies too
+# The runtime stage does NOT install the repo's own package.json -- that lists
+# @oclif/core/@salesforce/core/@salesforce/sf-plugins-core/sfdx-hardis as production dependencies too
 # (needed for the sf CLI plugin), which the Action's code never imports at runtime (verified:
 # nothing compiled from src/action, src/core, src/metadata, src/service, or src/helpers requires
 # any @oclif/@salesforce package -- the one @oclif/core import in helpers/types.ts is type-only
