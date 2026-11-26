@@ -5,6 +5,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.18.0](https://github.com/mcarvin8/sf-decomposer/compare/v7.17.0...v7.18.0) (2026-11-26)
+
+
+### Features
+
+* recompose on sfdx-hardis validation and deployment start events ([#717](https://github.com/mcarvin8/sf-decomposer/issues/717)) ([885860c](https://github.com/mcarvin8/sf-decomposer/commit/885860c208ca837ffa9671bbc59a886682b1e414))
+
 ## [7.17.0](https://github.com/mcarvin8/sf-decomposer/compare/v7.16.2...v7.17.0) (2026-11-18)
 
 
